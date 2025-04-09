@@ -2,9 +2,35 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Formation extends Model
 {
-    //
+    use HasFactory;
+
+    /**
+     * Les attributs qui peuvent être assignés en masse.
+     */
+    protected $fillable = [
+        'titre',
+        'description',
+        'statut',
+        'duree',
+    ];
+
+    public function formateurs()
+    {
+        return $this->belongsToMany(Formateur::class, 'formateur_formation');
+    }
+
+    public function formations()
+    {
+        return $this->belongsToMany(Formation::class, 'stagiaire_formations');
+    }
+
+    public function stagiaires()
+    {
+        return $this->hasMany(Stagiaire::class);
+    }
 }

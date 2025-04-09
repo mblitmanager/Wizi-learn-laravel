@@ -2,9 +2,59 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Stagiaire extends Model
 {
-    //
+    use HasFactory;
+    protected $fillable = [
+        'civilite',
+        'telephone',
+        'adresse',
+        'date_naissance',
+        'ville',
+        'code_postal',
+        'role',
+        'statut',
+        'formation_id',
+        'user_id',
+        'formateur_id',
+        'commercial_id',
+    ];
+
+    public function formation()
+    {
+        return $this->belongsTo(Formation::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function formateur()
+    {
+        return $this->belongsTo(Formateur::class);
+    }
+
+    public function commercial()
+    {
+        return $this->belongsTo(Commercial::class);
+    }
+
+    public function agendas()
+    {
+        return $this->hasMany(Agenda::class);
+    }
+
+    public function participations()
+    {
+        return $this->hasMany(Participation::class);
+    }
+
+    public function stagiaires()
+    {
+        return $this->belongsToMany(Stagiaire::class, 'stagiaire_formations');
+    }
 }
