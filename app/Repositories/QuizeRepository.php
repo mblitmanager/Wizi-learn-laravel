@@ -1,0 +1,36 @@
+<?php
+
+namespace App\Repositories;
+
+use App\Models\Quiz;
+use App\Repositories\Interfaces\QuizRepositoryInterface;
+use Illuminate\Support\Collection;
+
+class QuizeRepository implements QuizRepositoryInterface
+{
+    public function all(): Collection
+    {
+        return Quiz::with('participations', 'qustionReponses')->get();
+    }
+
+    public function find(int $id): ?Quiz
+    {
+        return Quiz::with('participations', 'qustionReponses')->find($id);
+    }
+
+    public function create(array $data): Quiz
+    {
+        return Quiz::create($data);
+    }
+
+    public function update(int $id, array $data): bool
+    {
+        $quiz = Quiz::findOrFail($id);
+        return $quiz->update($data);
+    }
+
+    public function delete(int $id): bool
+    {
+        return Quiz::destroy($id) > 0;
+    }
+}

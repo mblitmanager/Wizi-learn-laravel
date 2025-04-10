@@ -40,7 +40,7 @@
                 <div class="menu-title">Quiz</div>
             </a>
             <ul>
-                <li> <a href="#"><i class="bx bx-right-arrow-alt"></i>Listes</a>
+                <li> <a href="{{ route('quiz.index') }}"><i class="bx bx-right-arrow-alt"></i>Listes</a>
                 </li>
             </ul>
         </li>
@@ -51,7 +51,11 @@
                 <div class="menu-title">Contact</div>
             </a>
             <ul>
-                <li> <a href="#"><i class="bx bx-right-arrow-alt"></i>Listes</a>
+                <li> <a href="{{ route('formateur.index') }}"><i class="bx bx-right-arrow-alt"></i>Formateur</a>
+                </li>
+                <li> <a href="#"><i class="bx bx-right-arrow-alt"></i>Pole relation client</a>
+                </li>
+                <li> <a href="#"><i class="bx bx-right-arrow-alt"></i>Commercial</a>
                 </li>
             </ul>
         </li>

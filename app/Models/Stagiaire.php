@@ -23,10 +23,13 @@ class Stagiaire extends Model
         'commercial_id',
     ];
 
-    public function formation()
+
+
+    public function formations()
     {
-        return $this->belongsTo(Formation::class);
+        return $this->belongsToMany(Formation::class, 'stagiaire_formations');
     }
+
 
     public function user()
     {

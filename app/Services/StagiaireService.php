@@ -27,7 +27,7 @@ class StagiaireService
 
     public function create(array $data)
     {
-        // Créer l'utilisateur associé
+        // 1. Créer l'utilisateur associé
         $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
@@ -35,9 +35,20 @@ class StagiaireService
             'role' => 'stagiaire',
         ]);
 
+        // 2. Associer l'utilisateur
         $data['user_id'] = $user->id;
 
-        return $this->stagiaireRepository->create($data);
+        // 3. Récupérer et retirer les formations du tableau avant création du stagiaire
+        $formationIds = $data['formation_id']; // Tableau d'IDs
+        unset($data['formation_id']);
+
+        // 4. Créer le stagiaire
+        $stagiaire = $this->stagiaireRepository->create($data);
+
+        // 5. Associer les formations via la table pivot
+        $stagiaire->formations()->sync($formationIds);
+
+        return $stagiaire;
     }
 
     public function update(int $id, array $data)

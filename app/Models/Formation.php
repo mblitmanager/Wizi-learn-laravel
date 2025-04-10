@@ -31,6 +31,7 @@ class Formation extends Model
 
     public function stagiaires()
     {
-        return $this->hasMany(Stagiaire::class);
+        return $this->belongsToMany(Stagiaire::class, 'formation_stagiaire');
     }
+
 }
