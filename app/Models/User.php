@@ -46,4 +46,9 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function hasAdminRole(): bool
+    {
+        return $this->role === 'administrateur';
+    }
 }
