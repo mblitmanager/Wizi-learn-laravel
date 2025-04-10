@@ -12,6 +12,7 @@ class JwtMiddleware
     {
         $except = [
             'api/login',
+            '/',
             'api/user',
             'api/register',
             'api/docs',
