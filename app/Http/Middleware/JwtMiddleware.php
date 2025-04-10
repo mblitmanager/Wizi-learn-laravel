@@ -15,10 +15,14 @@ class JwtMiddleware
             'api/user',
             'api/register',
             'api/docs',
+            'api',
             'login',
             'register',
+            'stagiaires/*',
             'stagiaires',
             'dashboard',
+            'logout',
+            'api/logout',
         ];
 
         if (in_array($request->path(), $except)) {
