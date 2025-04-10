@@ -8,10 +8,11 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\ApiResource;
+use Tymon\JWTAuth\Contracts\JWTSubject;
 #[ApiResource(
     paginationItemsPerPage: 10
     )]
-class User extends Authenticatable
+class User extends Authenticatable implements JWTSubject
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
@@ -51,7 +52,17 @@ class User extends Authenticatable
         ];
     }
 
-    public function hasAdminRole(): bool
+
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    public function getJWTCustomClaims()
+    {
+        return [];
+    }
+     public function hasAdminRole(): bool
     {
         return $this->role === 'administrateur';
     }
