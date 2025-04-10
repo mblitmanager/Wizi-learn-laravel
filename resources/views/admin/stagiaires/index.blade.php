@@ -56,15 +56,13 @@
                                     <td>{{ $row->user->email }}</td>
                                     <td>{{ $row->adresse }}</td>
                                     <td>
-                                        <a href="{{ route('stagiaires.edit', $row->id) }}" class="btn btn-sm btn-success "
-                                            data-bs-toggle="tooltip" data-bs-placement="top" title=""
-                                            data-bs-original-title="Modifier">
-                                            <i class="fadeIn animated bx bx-message-square-edit"></i>
+                                        <a href="{{ route('stagiaires.edit', $row->id) }}" data-bs-toggle="tooltip"
+                                            data-bs-placement="top" title="" data-bs-original-title="Modifier">
+                                            <i class="btn btn-sm btn-success fadeIn animated bx bx-message-square-edit"></i>
                                         </a>
-                                        <a href="{{ route('stagiaires.show', $row->id) }}"
-                                            class="btn btn-sm btn-info text-white" data-bs-toggle="tooltip"
+                                        <a href="{{ route('stagiaires.show', $row->id) }}" class="" data-bs-toggle="tooltip"
                                             data-bs-placement="top" title="" data-bs-original-title="Afficher">
-                                            <i class="fadeIn animated bx bx-show"></i>
+                                            <i class="btn btn-sm btn-info text-white fadeIn animated bx bx-show"></i>
                                         </a>
                                         @if ($row->statut == 1)
                                             <form action="{{ route('stagiaires.desactive', $row->id) }}" method="POST"

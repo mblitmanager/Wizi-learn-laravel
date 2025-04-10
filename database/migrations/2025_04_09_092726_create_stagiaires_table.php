@@ -20,10 +20,10 @@ return new class extends Migration {
             $table->string('code_postal')->nullable();
             $table->string('role')->default('stagiaire');
             $table->boolean('statut')->default(true);
-            $table->foreignId('formation_id')->constrained('formations')->onDelete('cascade');
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('formateur_id')->constrained('formateurs')->onDelete('cascade');
-            $table->foreignId('commercial_id')->constrained('commercials')->onDelete('cascade');
+            $table->foreignId('formation_id')->nullable()->constrained('formations')->onDelete('cascade');
+            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade')->null;
+            $table->foreignId('formateur_id')->nullable()->constrained('formateurs')->onDelete('cascade')->null;
+            $table->foreignId('commercial_id')->nullable()->constrained('commercials')->onDelete('cascade')->null;
             $table->timestamps();
         });
     }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\FormateurStoreRequest;
 use App\Services\FormateurService;
 use Illuminate\Http\Request;
 
@@ -27,15 +28,18 @@ class FormateurController extends Controller
      */
     public function create()
     {
-        //
+        return view('admin.formateur.create');
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(FormateurStoreRequest $request)
     {
-        //
+        $this->formateurService->create($request->validated());
+
+        return redirect()->route('formateur.index')
+            ->with('success', 'Le formateur a été créé avec succès.');
     }
 
     /**
@@ -51,15 +55,19 @@ class FormateurController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $formateur = $this->formateurService->show($id);
+        return view('admin.formateur.edit', compact('formateur'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(FormateurStoreRequest $request, string $id)
     {
-        //
+        $this->formateurService->update($id, $request->validated());
+
+        return redirect()->route('formateur.index')
+            ->with('success', 'Le formateur a été mis à jour avec succès.');
     }
 
     /**

@@ -10,7 +10,7 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('formateur_formations', function (Blueprint $table) {
+        Schema::create('formateur_formation', function (Blueprint $table) {
             $table->id();
             $table->foreignId('formateur_id')->constrained('formateurs')->onDelete('cascade');
             $table->foreignId('formation_id')->constrained('formations')->onDelete('cascade');
@@ -24,6 +24,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('formateur_formations');
+        Schema::dropIfExists('formateur_formation');
     }
 };

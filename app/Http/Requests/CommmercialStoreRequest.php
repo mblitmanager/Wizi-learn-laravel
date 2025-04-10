@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class FormateurStoreRequest extends FormRequest
+class CommmercialStoreRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,9 +22,9 @@ class FormateurStoreRequest extends FormRequest
      */
     public function rules(): array
     {
-        $formateurId = $this->route('formateur');
+        $commecrailId = $this->route('commecrail');
 
-        $userId = \App\Models\Formateur::find($formateurId)?->user_id;
+        $userId = \App\Models\Formateur::find($commecrailId)?->user_id;
         return [
             'name' => 'required|string|max:255',
             'email' => [
