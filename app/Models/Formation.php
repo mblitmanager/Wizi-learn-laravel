@@ -4,7 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use ApiPlatform\Metadata\ApiResource;
 
+#[ApiResource]
 class Formation extends Model
 {
     use HasFactory;
@@ -15,6 +17,8 @@ class Formation extends Model
     protected $fillable = [
         'titre',
         'description',
+        'categorie',
+        'image',
         'statut',
         'duree',
     ];

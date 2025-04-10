@@ -4,7 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Patch;
 
+#[ApiResource(
+    paginationItemsPerPage: 10
+    )]
 class PoleRelationClient extends Model
 {
     use HasFactory;
