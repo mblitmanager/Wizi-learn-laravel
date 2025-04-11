@@ -27,7 +27,7 @@ class StoreFormationRequest extends FormRequest
             'categorie' => 'required|string|max:255',
             'image' => 'nullable|string',
             'statut' => 'required|string',
-            'duree' => 'required|string',
+            'duree' => 'required|integer|min:1',
         ];
     }
 

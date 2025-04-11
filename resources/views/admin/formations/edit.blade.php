@@ -1,25 +1,24 @@
 @extends('admin.layout')
-@section('title', 'Ajouter un stagiaire')
+@section('title', 'Ajouter un formations')
 @section('content')
     <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
-
         <div class="ps-3">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0 p-0">
                     <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
                     </li>
-                    <li class="breadcrumb-item active" aria-current="page">commercial</li>
+                    <li class="breadcrumb-item active" aria-current="page">formations</li>
                 </ol>
             </nav>
         </div>
         <div class="ms-auto">
             <div class="btn-group">
-                <a href="{{ route('commercials.index') }}" type="button" class="btn btn-primary">Retour</a>
+                <a href="{{ route('formations.index') }}" type="button" class="btn btn-primary">Retour</a>
             </div>
         </div>
     </div>
     <div class="card-body">
-        <h5 class="card-title">Ajouter commercial</h5>
+        <h5 class="card-title">Editer formations</h5>
         <hr>
         @if ($errors->any())
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
@@ -41,17 +40,17 @@
 
             @endif
             <div class="card-body p-4 border rounded">
-                <form class="row g-3" action="{{ route('commercials.update', $commercial->id) }}" method="POST">
+                <form class="row g-3" action="{{ route('formations.update', $formation->id) }}') }}" method="POST">
                     @csrf
                     @method('PUT')
                     <div class="col-md-4">
                         <!-- Nom -->
                         <div class="mb-3">
-                            <label for="name">Nom</label>
-                            <input type="text" name="name" id="name"
-                                class="form-control @error('name') is-invalid @enderror"
-                                value="{{ old('name', $commercial->user->name ?? '') }}">
-                            @error('name')
+                            <label for="titre">Titre</label>
+                            <input type="text" name="titre" id="titre"
+                                class="form-control @error('titre') is-invalid @enderror"
+                                value="{{ old('titre', $formation->titre ?? '') }}">
+                            @error('titre')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
@@ -59,23 +58,39 @@
                     <div class="col-md-4">
                         <!-- Nom -->
                         <div class="mb-3">
-                            <label for="prenom">Prenom</label>
-                            <input type="text" name="prenom" id="prenom"
-                                class="form-control @error('prenom') is-invalid @enderror"
-                                value="{{ old('prenom', $commercial->user->prenom ?? '') }}">
-                            @error('prenom')
+                            <label for="description">description</label>
+                            <input type="text" name="description" id="description"
+                                class="form-control @error('description') is-invalid @enderror"
+                                value="{{ old('description', $formation->description ?? '') }}">
+                            @error('description')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
                     </div>
+
                     <div class="col-md-4">
                         <!-- Email -->
                         <div class="mb-3">
-                            <label for="email">Adresse e-mail</label>
-                            <input type="email" name="email" id="email"
-                                class="form-control @error('email') is-invalid @enderror"
-                                value="{{ old('email', $commercial->user->email ?? '') }}">
-                            @error('email')
+                            <label for="categorie">Categorie</label>
+                            <input type="text" name="categorie" id="categorie"
+                                class="form-control @error('categorie') is-invalid @enderror"
+                                value="{{ old('categorie', $formation->categorie ?? '') }}">
+                            @error('categorie')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+
+
+
+                    <div class="col-md-4">
+                        <!-- Email -->
+                        <div class="mb-3">
+                            <label for="duree">Duree</label>
+                            <input type="number" name="duree" id="duree"
+                                class="form-control @error('categorie') is-invalid @enderror"
+                                value="{{ old('duree', $formation->duree ?? '') }}">
+                            @error('duree')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
@@ -85,14 +100,20 @@
                     <div class="col-md-4">
                         <!-- Mot de passe -->
                         <div class="mb-3">
-                            <label for="password">Mot de passe</label>
-                            <input type="password" name="password" id="password"
-                                class="form-control @error('password') is-invalid @enderror" value="">
+                            <label for="password">Statut</label>
+                            <select name="statut" id="statut" class="form-control">
+                                <option value="1" {{ old('statut', $formations->statut ?? '') == 1 ? 'selected' : '' }}>Actif
+                                </option>
+                                <option value="0" {{ old('statut', $formations->statut ?? '') == 0 ? 'selected' : '' }}>
+                                    Inactif</option>
+                            </select>
                             @error('password')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
                     </div>
+
+
                     <div class="col-12">
                         <button type="submit" class="btn btn-primary px-5">Enregistrer</button>
                     </div>
@@ -102,5 +123,14 @@
     </div>
 @endsection
 @section('scripts')
-
+    @section('scripts')
+        <script>
+            $(document).ready(function () {
+                $('.js-example-basic-multiple').select2({
+                    placeholder: "Choisir une ou plusieurs formations", // Placeholder
+                    allowClear: true
+                });
+            });
+        </script>
+    @endsection
 @endsection

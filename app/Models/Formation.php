@@ -35,7 +35,7 @@ class Formation extends Model
 
     public function stagiaires()
     {
-        return $this->belongsToMany(Stagiaire::class, 'formation_stagiaire');
+        return $this->belongsToMany(Stagiaire::class, 'stagiaire_formations');
     }
 
 }

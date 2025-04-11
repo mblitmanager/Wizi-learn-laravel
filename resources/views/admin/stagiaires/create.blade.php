@@ -22,10 +22,9 @@
         <h5 class="card-title">Ajouter stagiaire</h5>
         <hr>
         @if ($errors->any())
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+            <div class="bg-danger  border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
                 <strong class="font-bold">Whoops!</strong>
-                <span class="block sm:inline">There were some problems with your input.</span>
-                <ul class="mt-2 list-disc list-inside">
+                <ul class="mt-2 list-disc list-inside text-white">
                     @foreach ($errors->all() as $error)
                         <li>{{ $error }}</li>
                     @endforeach
@@ -55,7 +54,18 @@
                             @enderror
                         </div>
                     </div>
-
+                    <div class="col-md-4">
+                        <!-- Nom -->
+                        <div class="mb-3">
+                            <label for="prenom">prenom</label>
+                            <input type="text" name="prenom" id="prenom"
+                                class="form-control @error('prenom') is-invalid @enderror"
+                                value="{{ old('prenom', $stagiaire->user->prenom ?? '') }}">
+                            @error('prenom')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
                     <div class="col-md-4">
                         <!-- Email -->
                         <div class="mb-3">
@@ -167,6 +177,8 @@
                                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                         data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
                                         Selectionz les formations
+                                        <span class="badge bg-primary float-end"> {{ count($formations) }}</span>
+
                                     </button>
                                 </h2>
                                 <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne"
@@ -199,7 +211,7 @@
 
                         </div>
 
-
+                    </div>
 
                   <div class="row">
                     <div class="col-md-4">
@@ -211,7 +223,7 @@
                                 <option value="">-- Choisir un formateur --</option>
                                 @foreach($formateurs as $formateur)
                                     <option value="{{ $formateur->id }}" {{ old('formateur_id', $stagiaire->formateur_id ?? '') == $formateur->id ? 'selected' : '' }}>
-                                        {{ $formateur->nom }}
+                                        {{ $formateur->user->name }}
                                     </option>
                                 @endforeach
                             </select>
@@ -230,7 +242,7 @@
                                 <option value="">-- Choisir un commercial --</option>
                                 @foreach($commercials as $commercial)
                                     <option value="{{ $commercial->id }}" {{ old('commercial_id', $stagiaire->commercial_id ?? '') == $commercial->id ? 'selected' : '' }}>
-                                        {{ $commercial->nom }}
+                                        {{ $commercial->user->name }}
                                     </option>
                                 @endforeach
                             </select>

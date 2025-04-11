@@ -33,9 +33,9 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
     Route::resource('formateur', FormateurController::class);
 
     // Formateur
-    Route::resource('commercial', CommercialController::class);
+    Route::resource('commercials', CommercialController::class);
 
-//    Formation
+    //    Formation
 
     Route::resource('formations', FormationController::class);
 });

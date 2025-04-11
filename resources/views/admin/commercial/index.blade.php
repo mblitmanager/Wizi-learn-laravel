@@ -14,7 +14,7 @@
         </div>
         <div class="ms-auto">
             <div class="btn-group">
-                <a href="{{ route('commercial.create') }}" type="button" class="btn btn-sm btn-primary px-4"> <i
+                <a href="{{ route('commercials.create') }}" type="button" class="btn btn-sm btn-primary px-4"> <i
                         class="fadeIn animated bx bx-plus"></i> Nouveau commercial</a>
             </div>
         </div>
@@ -30,6 +30,7 @@
                             <tr>
                                 <th>#</th>
                                 <th>Nom</th>
+                                <th>Prenom</th>
 
                                 <th>Email</th>
 
@@ -37,6 +38,7 @@
                             </tr>
                             <tr>
                                 <th></th>
+                                <th><input type="text" placeholder="Filtrer" class="form-control form-control-sm" /></th>
                                 <th><input type="text" placeholder="Filtrer" class="form-control form-control-sm" /></th>
                                 <th><input type="text" placeholder="Filtrer" class="form-control form-control-sm" /></th>
                                 <th></th>
@@ -48,15 +50,16 @@
                                     <td>{{ $row->id }}</td>
 
                                     <td>{{ $row->user->name }}</td>
+                                    <td>{{ $row->prenom }}</td>
 
                                     <td>{{ $row->user->email }}</td>
 
                                     <td>
-                                        <a href="{{ route('commercial.edit', $row->id) }}" data-bs-toggle="tooltip"
+                                        <a href="{{ route('commercials.edit', $row->id) }}" data-bs-toggle="tooltip"
                                             data-bs-placement="top" title="" data-bs-original-title="Modifier">
                                             <i class="btn btn-sm btn-success fadeIn animated bx bx-message-square-edit"></i>
                                         </a>
-                                        <a href="{{ route('commercial.show', $row->id) }}" class="" data-bs-toggle="tooltip"
+                                        <a href="{{ route('commercials.show', $row->id) }}" class="" data-bs-toggle="tooltip"
                                             data-bs-placement="top" title="" data-bs-original-title="Afficher">
                                             <i class="btn btn-sm btn-info text-white fadeIn animated bx bx-show"></i>
                                         </a>

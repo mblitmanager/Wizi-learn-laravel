@@ -55,7 +55,7 @@
                 </li>
                 <li> <a href="#"><i class="bx bx-right-arrow-alt"></i>Pole relation client</a>
                 </li>
-                <li> <a href="{{route('commercial.index')}}"><i class="bx bx-right-arrow-alt"></i>Commercial</a>
+                <li> <a href="{{route('commercials.index')}}"><i class="bx bx-right-arrow-alt"></i>Commercial</a>
                 </li>
             </ul>
         </li>
@@ -67,6 +67,17 @@
             </a>
             <ul>
                 <li> <a href="#"><i class="bx bx-right-arrow-alt"></i>Listes</a>
+                </li>
+            </ul>
+        </li>
+        <li>
+            <a href="javascript:;" class="has-arrow">
+                <div class="parent-icon"><i class='fadeIn animated bx bx-list-ol'></i>
+                </div>
+                <div class="menu-title">Formation</div>
+            </a>
+            <ul>
+                <li> <a href="{{ route('formations.index') }}"><i class="bx bx-right-arrow-alt"></i>Listes</a>
                 </li>
             </ul>
         </li>

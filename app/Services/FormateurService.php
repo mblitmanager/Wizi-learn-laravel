@@ -37,7 +37,10 @@ class FormateurService
         $data['user_id'] = $user->id;
 
         // Créer le quiz
-        return $this->formateurInterface->create($data);
+        $formateur = $this->formateurInterface->create($data);
+        $formateur->formations()->sync($data['formation_id']);
+
+        return $formateur;
     }
 
     public function update(int $id, array $data)

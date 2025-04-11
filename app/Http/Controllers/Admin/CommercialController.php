@@ -9,11 +9,11 @@ use Illuminate\Http\Request;
 
 class CommercialController extends Controller
 {
-    protected $commercialService;
+    protected $commercialsService;
 
-    public function __construct(CommercialService $commercialService)
+    public function __construct(CommercialService $commercialsService)
     {
-        $this->commercialService = $commercialService;
+        $this->commercialsService = $commercialsService;
     }
 
     /**
@@ -21,8 +21,8 @@ class CommercialController extends Controller
      */
     public function index()
     {
-        $commercial = $this->commercialService->list();
-        return view('admin.commercial.index',compact('commercial'));
+        $commercial = $this->commercialsService->list();
+        return view('admin.commercial.index', compact('commercial'));
     }
 
     /**
@@ -38,10 +38,10 @@ class CommercialController extends Controller
      */
     public function store(CommmercialStoreRequest $request)
     {
-        $this->commercialService->create($request->validated());
+        $this->commercialsService->create($request->validated());
 
-        return redirect()->route('commercial.index')
-            ->with('success', 'Le commercial a été créé avec succès.');
+        return redirect()->route('commercials.index')
+            ->with('success', 'Le commercials a été créé avec succès.');
     }
 
     /**
@@ -57,7 +57,7 @@ class CommercialController extends Controller
      */
     public function edit(string $id)
     {
-        $commercial = $this->commercialService->show($id);
+        $commercial = $this->commercialsService->show($id);
         return view('admin.commercial.edit', compact('commercial'));
     }
 
@@ -66,11 +66,10 @@ class CommercialController extends Controller
      */
     public function update(CommmercialStoreRequest $request, string $id)
     {
-        dd($request->validated());
-        $this->commercialService->update($id, $request->validated());
+        $this->commercialsService->update($id, $request->validated());
 
-        return redirect()->route('commercial.index')
-            ->with('success', 'Le commercial a été mis à jour avec succès.');
+        return redirect()->route('commercials.index')
+            ->with('success', 'Le commercials a été mis à jour avec succès.');
     }
 
     /**
@@ -80,4 +79,5 @@ class CommercialController extends Controller
     {
         //
     }
+
 }

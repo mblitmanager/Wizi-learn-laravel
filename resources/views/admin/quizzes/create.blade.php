@@ -78,7 +78,7 @@
                             @enderror
                         </div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <!-- Nom -->
                         <div class="mb-3">
                             <label for="niveau">Niveau</label>
@@ -86,8 +86,8 @@
                                 class="form-control @error('niveau') is-invalid @enderror"
                                 value="{{ old('duree', $quiz->niveau ?? '') }}"> --}}
                             <select name="niveau" id="niveau" class="form-select @error('niveau') is-invalid @enderror">
-                                <option value="" {{ old('niveau') == '' ? 'selected' : '' }}>==================== Choisir un
-                                    niveau ================= </option>
+                                <option value="" {{ old('niveau') == '' ? 'selected' : '' }}> Choisir un
+                                    niveau </option>
                                 <option value="débutant" {{ old('niveau') == "débutant" ? 'selected' : '' }}>débutant</option>
                                 <option value="intermédiaire" {{ old('niveau') == "intermédiaire" ? 'selected' : '' }}>
                                     intermédiaire
@@ -99,7 +99,26 @@
                             @enderror
                         </div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-4">
+                        <!-- Nom -->
+                        <div class="mb-3">
+                            <label for="formation_id">Formation</label>
+                            <select name="formation_id" id="formation_id"
+                                class="form-select @error('formation_id') is-invalid @enderror">
+                                <option value="" {{ old('formation_id') == '' ? 'selected' : '' }}> Choisir un
+                                    formation </option>
+                                @foreach($formations as $formation)
+                                    <option value="{{ $formation->id }}" {{ old('formation_id', $formation->formation_id ?? '') == $formation->id ? 'selected' : '' }}>
+                                        {{ $formation->titre }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('formation_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="col-md-4">
                         <!-- Nom -->
                         <div class="mb-3">
                             <label for="nb_points_total">Nombre total de points</label>

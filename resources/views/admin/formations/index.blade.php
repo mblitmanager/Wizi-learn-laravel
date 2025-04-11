@@ -14,8 +14,8 @@
         </div>
         <div class="ms-auto">
             <div class="btn-group">
-                <a href="{{ route('formateur.create') }}" type="button" class="btn btn-sm btn-primary px-4"> <i
-                        class="fadeIn animated bx bx-plus"></i> Nouveau formateur</a>
+                <a href="{{ route('formations.create') }}" type="button" class="btn btn-sm btn-primary px-4"> <i
+                        class="fadeIn animated bx bx-plus"></i> Nouveau formations</a>
             </div>
         </div>
     </div>
@@ -29,11 +29,9 @@
                         <thead>
                             <tr>
                                 <th>#</th>
-                                <th>Nom</th>
-                                <th>Prenom</th>
-
-                                <th>Email</th>
-
+                                <th>Titre</th>
+                                <th>Description</th>
+                                <th>Duree</th>
                                 <th>Action</th>
                             </tr>
                             <tr>
@@ -45,18 +43,18 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($formateurs as $row)
+                            @foreach ($formations as $row)
                                 <tr>
                                     <td>{{ $row->id }}</td>
-                                    <td>{{ $row->user->name }}</td>
-                                    <td>{{ $row->prenom }}</td>
-                                    <td>{{ $row->user->email }}</td>
+                                    <td>{{ $row->titre }}</td>
+                                    <td>{{ $row->description }}</td>
+                                    <td>{{ $row->duree }}</td>
                                     <td>
-                                        <a href="{{ route('formateur.edit', $row->id) }}" data-bs-toggle="tooltip"
+                                        <a href="{{ route('formations.edit', $row->id) }}" data-bs-toggle="tooltip"
                                             data-bs-placement="top" title="" data-bs-original-title="Modifier">
                                             <i class="btn btn-sm btn-success fadeIn animated bx bx-message-square-edit"></i>
                                         </a>
-                                        <a href="{{ route('formateur.show', $row->id) }}" class="" data-bs-toggle="tooltip"
+                                        <a href="{{ route('formations.show', $row->id) }}" class="" data-bs-toggle="tooltip"
                                             data-bs-placement="top" title="" data-bs-original-title="Afficher">
                                             <i class="btn btn-sm btn-info text-white fadeIn animated bx bx-show"></i>
                                         </a>

@@ -93,7 +93,47 @@
                             @enderror
                         </div>
                     </div>
+                    <div class="col-md-12">
+                        <div class="accordion mb-3" id="accordionExample">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingOne">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                                        Selectionz les formations associées 
+                                        <span class="badge bg-primary float-end"> {{ count($formations) }}</span>
+                                    </button>
+                                </h2>
+                                <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne"
+                                    data-bs-parent="#accordionExample" style="">
+                                    <div class="accordion-body">
+                                        <div class="row row-cols-1 row-cols-md-3 row-cols-lg-3 row-cols-xl-3">
+                                            @foreach($formations as $formation)
+                                            <div class="col">
+                                                <div class="card">
+                                                    <div class="card-body">
+                                                        <h5 class="card-title">{{ $formation->titre }}</h5>
+                                                        <p class="card-text">Description rapide de la formation.</p>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" name="formation_id[]"
+                                                                id="formation_{{ $formation->id }}" value="{{ $formation->id }}"
+                                                                {{ in_array($formation->id, old('formation_id', [])) ? 'checked' : '' }}>
+                                                            <label class="form-check-label" for="formation_{{ $formation->id }}">
+                                                                Sélectionner
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                        </div>
+                                    </div>
+                                </div>
 
+                            </div>
+
+                        </div>
+
+                    </div>
 
                     <div class="col-12">
                         <button type="submit" class="btn btn-primary px-5">Enregistrer</button>

@@ -27,6 +27,7 @@ class QuizStoreRequest extends FormRequest
             'niveau' => 'required|in:débutant,intermédiaire,avancé',
             'duree' => 'required|integer|min:1',
             'nb_points_total' => 'required|integer|min:1',
+            'formation_id' => 'required|exists:formations,id',
         ];
     }
 

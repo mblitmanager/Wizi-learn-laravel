@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\QuizStoreRequest;
+use App\Models\Formation;
 use App\Services\QuizService;
 use Illuminate\Http\Request;
 
@@ -30,7 +31,9 @@ class QuizController extends Controller
      */
     public function create()
     {
-        return view('admin.quizzes.create');
+        $formations = Formation::all();
+
+        return view('admin.quizzes.create', compact('formations'));
     }
 
     /**
@@ -58,7 +61,8 @@ class QuizController extends Controller
     public function edit(string $id)
     {
         $quiz = $this->quizeService->show($id);
-        return view('admin.quizzes.edit', compact('quiz'));
+        $formations = Formation::all();
+        return view('admin.quizzes.edit', compact('quiz', 'formations'));
     }
 
     /**

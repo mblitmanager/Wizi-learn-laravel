@@ -43,6 +43,7 @@ class CommercialService
 
     public function update(int $id, array $data)
     {
+
         $formateur = $this->commercialInterface->find($id);
 
         if (!$formateur) {

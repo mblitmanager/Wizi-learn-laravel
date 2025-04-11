@@ -21,11 +21,17 @@ class Quiz extends Model
         'duree',
         'niveau',
         'nb_points_total',
+        'formation_id'
     ];
 
     public function participations()
     {
         return $this->hasMany(Participation::class);
+    }
+
+    public function formation()
+    {
+        return $this->belongsTo(Formation::class);
     }
 
     public function qustionReponses()

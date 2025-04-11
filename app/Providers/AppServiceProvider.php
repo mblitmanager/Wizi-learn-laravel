@@ -4,8 +4,10 @@ namespace App\Providers;
 
 use App\Repositories\CommercialRepository;
 use App\Repositories\FormateurRepository;
+use App\Repositories\FormationRepository;
 use App\Repositories\Interfaces\CommercialInterface;
 use App\Repositories\Interfaces\FormateurInterface;
+use App\Repositories\Interfaces\FormationRepositoryInterface;
 use App\Repositories\Interfaces\QuizRepositoryInterface;
 use App\Repositories\Interfaces\StagiaireRepositoryInterface;
 use App\Repositories\QuizeRepository;
@@ -24,6 +26,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(QuizRepositoryInterface::class, QuizeRepository::class);
         $this->app->bind(FormateurInterface::class, FormateurRepository::class);
         $this->app->bind(CommercialInterface::class, CommercialRepository::class);
+        $this->app->bind(FormationRepositoryInterface::class, FormationRepository::class);
     }
 
     /**

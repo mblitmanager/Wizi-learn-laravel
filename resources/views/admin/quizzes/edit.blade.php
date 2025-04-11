@@ -71,21 +71,22 @@
                     <div class="col-md-4">
                         <!-- Nom -->
                         <div class="mb-3">
-                            <label for="description">Duree</label>
-                            <input type="number" name="duree" id="v" class="form-control @error('duree') is-invalid @enderror"
-                                value="{{ old('duree', $quiz->description ?? '') }}">
+                            <label for="duree">Duree</label>
+                            <input type="number" name="duree" id="v"
+                                class="form-control @error('duree') is-invalid @enderror"
+                                value="{{ old('duree', $quiz->duree ?? '') }}">
                             @error('duree')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <!-- Nom -->
                         <div class="mb-3">
                             <label for="niveau">Niveau</label>
                             <select name="niveau" id="niveau" class="form-select @error('niveau') is-invalid @enderror">
                                 <option value="" {{ old('niveau', $quiz->niveau ?? '') == '' ? 'selected' : '' }}>
-                                    ==================== Choisir un niveau ====================
+                                    Choisir un niveau
                                 </option>
                                 <option value="débutant" {{ old('niveau', $quiz->niveau ?? '') == 'débutant' ? 'selected' : '' }}>
                                     débutant
@@ -102,7 +103,27 @@
                             @enderror
                         </div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-4">
+                        <!-- Nom -->
+                        <div class="mb-3">
+                            <label for="formation_id">Formation</label>
+                            <select name="formation_id" id="formation_id"
+                                class="form-select @error('formation_id') is-invalid @enderror">
+                                <option value="" {{ old('formation_id', $quiz->formation_id ?? '') == '' ? 'selected' : '' }}>
+                                    Choisir une formation
+                                </option>
+                                @foreach($formations as $formation)
+                                    <option value="{{ $formation->id }}" {{ old('formation_id', $quiz->formation_id ?? '') == $formation->id ? 'selected' : '' }}>
+                                        {{ $formation->titre }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('formation_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="col-md-4">
                         <!-- Nom -->
                         <div class="mb-3">
                             <label for="nb_points_total">Nombre total de points</label>

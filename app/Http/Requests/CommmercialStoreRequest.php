@@ -23,7 +23,7 @@ class CommmercialStoreRequest extends FormRequest
     public function rules(): array
     {
         $commecrailId = $this->route('commercial');
-        $userId = \App\Models\Formateur::find($commecrailId)?->user_id;
+        $userId = \App\Models\Commercial::find($commecrailId)?->user_id;
 
         return [
             'name' => 'required|string|max:255',

@@ -37,6 +37,7 @@ class FormateurStoreRequest extends FormRequest
             'role' => [
                 Rule::in(['formateur']),
             ],
+            'formation_id' => 'required|exists:formations,id',
         ];
     }
 }

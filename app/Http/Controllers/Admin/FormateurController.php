@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\FormateurStoreRequest;
+use App\Models\Formation;
 use App\Services\FormateurService;
 use Illuminate\Http\Request;
 
@@ -28,7 +29,9 @@ class FormateurController extends Controller
      */
     public function create()
     {
-        return view('admin.formateur.create');
+        $formations = Formation::all();
+
+        return view('admin.formateur.create', compact('formations'));
     }
 
     /**
@@ -47,7 +50,8 @@ class FormateurController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $formateur = $this->formateurService->show($id);
+        return view('admin.formateur.show', compact('formateur'));
     }
 
     /**
