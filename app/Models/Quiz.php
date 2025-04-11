@@ -34,7 +34,7 @@ class Quiz extends Model
         return $this->belongsTo(Formation::class);
     }
 
-    public function qustionReponses()
+    public function questions()
     {
         return $this->hasMany(Questions::class);
     }
