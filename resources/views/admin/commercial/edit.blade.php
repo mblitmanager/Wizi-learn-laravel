@@ -56,7 +56,18 @@
                             @enderror
                         </div>
                     </div>
-
+                    <div class="col-md-4">
+                        <!-- Nom -->
+                        <div class="mb-3">
+                            <label for="prenom">Prenom</label>
+                            <input type="text" name="prenom" id="prenom"
+                                class="form-control @error('prenom') is-invalid @enderror"
+                                value="{{ old('prenom', $commercial->user->prenom ?? '') }}">
+                            @error('prenom')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
                     <div class="col-md-4">
                         <!-- Email -->
                         <div class="mb-3">
@@ -77,7 +88,7 @@
                             <label for="password">Mot de passe</label>
                             <input type="password" name="password" id="password"
                                 class="form-control @error('password') is-invalid @enderror"
-                                value="{{ old('password', $commercial->user->password ?? '') }}">
+                                value="">
                             @error('password')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror

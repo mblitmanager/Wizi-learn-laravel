@@ -1,5 +1,5 @@
 @extends('admin.layout')
-@section('title', 'Ajouter un stagiaire')
+@section('title', 'Ajouter un Quiz')
 @section('content')
     <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
 
@@ -19,7 +19,7 @@
         </div>
     </div>
     <div class="card-body">
-        <h5 class="card-title">Ajouter stagiaire</h5>
+        <h5 class="card-title">Ajouter Quiz</h5>
         <hr>
         @if ($errors->any())
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">

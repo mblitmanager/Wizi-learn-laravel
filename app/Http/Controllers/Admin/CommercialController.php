@@ -64,8 +64,9 @@ class CommercialController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(CommmercialStoreRequest $request, string $id)
     {
+        dd($request->validated());
         $this->commercialService->update($id, $request->validated());
 
         return redirect()->route('commercial.index')

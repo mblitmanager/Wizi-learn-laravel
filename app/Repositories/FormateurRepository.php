@@ -25,8 +25,8 @@ class FormateurRepository implements FormateurInterface
 
     public function update(int $id, array $data): bool
     {
-        $quiz = Formateur::findOrFail($id);
-        return $quiz->update($data);
+        $formateur = Formateur::findOrFail($id);
+        return $formateur->update($data);
     }
 
     public function delete(int $id): bool

@@ -26,8 +26,8 @@ class CommercialRepository implements CommercialInterface
 
     public function update(int $id, array $data): bool
     {
-        $quiz = Commercial::findOrFail($id);
-        return $quiz->update($data);
+        $commercial = Commercial::findOrFail($id);
+        return $commercial->update($data);
     }
 
     public function delete(int $id): bool

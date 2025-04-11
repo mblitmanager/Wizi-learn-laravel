@@ -22,9 +22,9 @@ class CommmercialStoreRequest extends FormRequest
      */
     public function rules(): array
     {
-        $commecrailId = $this->route('commecrail');
-
+        $commecrailId = $this->route('commercial');
         $userId = \App\Models\Formateur::find($commecrailId)?->user_id;
+
         return [
             'name' => 'required|string|max:255',
             'prenom' => 'required|string',
@@ -35,7 +35,7 @@ class CommmercialStoreRequest extends FormRequest
             ],
             'password' => 'nullable|string|min:8',
             'role' => [
-                Rule::in(['formateur']),
+                Rule::in(['commercial']),
             ],
         ];
     }
