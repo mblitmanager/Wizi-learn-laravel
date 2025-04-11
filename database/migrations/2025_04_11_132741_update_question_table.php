@@ -20,6 +20,7 @@ return new class extends Migration
     {
         Schema::table('questions', function (Blueprint $table) {
             $table->dropColumn('question');
+            $table->dropColumn('reponse');
 
         });
     }
