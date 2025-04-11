@@ -27,6 +27,7 @@ class FormateurStoreRequest extends FormRequest
         $userId = \App\Models\Formateur::find($formateurId)?->user_id;
         return [
             'name' => 'required|string|max:255',
+            'prenom' => 'required|string',
             'email' => [
                 'required',
                 'email',

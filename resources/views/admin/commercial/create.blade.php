@@ -1,13 +1,14 @@
 @extends('admin.layout')
-@section('title', 'Ajouter un Formateur')
+@section('title', 'Ajouter un stagiaire')
 @section('content')
     <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
+        <div class="breadcrumb-title pe-3">Components</div>
         <div class="ps-3">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0 p-0">
                     <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
                     </li>
-                    <li class="breadcrumb-item active" aria-current="page">Formateur</li>
+                    <li class="breadcrumb-item active" aria-current="page">Stagiaire</li>
                 </ol>
             </nav>
         </div>
@@ -18,7 +19,7 @@
         </div>
     </div>
     <div class="card-body">
-        <h5 class="card-title">Ajouter Formateur</h5>
+        <h5 class="card-title">Ajouter stagiaire</h5>
         <hr>
         @if ($errors->any())
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
@@ -40,7 +41,7 @@
 
             @endif
             <div class="card-body p-4 border rounded">
-                <form class="row g-3" action="{{ route('formateur.store') }}" method="POST">
+                <form class="row g-3" action="{{ route('commercial.store') }}" method="POST">
                     @csrf
                     <div class="col-md-4">
                         <!-- Nom -->
@@ -54,13 +55,14 @@
                             @enderror
                         </div>
                     </div>
+
                     <div class="col-md-4">
                         <!-- Nom -->
                         <div class="mb-3">
                             <label for="name">Prenom</label>
                             <input type="text" name="prenom" id="prenom"
                                    class="form-control @error('prenom') is-invalid @enderror"
-                                   value="{{ old('prenom', $formateur->prenom ?? '') }}">
+                                   value="{{ old('name', $commercial->prenom ?? '') }}">
                             @error('prenom')
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror

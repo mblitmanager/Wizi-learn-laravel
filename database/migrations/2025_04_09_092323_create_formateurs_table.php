@@ -13,6 +13,7 @@ return new class extends Migration {
         Schema::create('formateurs', function (Blueprint $table) {
             $table->id();
             $table->string('role')->default('formateur');
+            $table->string('prenom')->nullable();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->timestamps();
         });

@@ -20,6 +20,7 @@ class Commercial extends Model
     protected $fillable = [
         'role',
         'user_id',
+        'prenom'
     ];
     public function user()
     {

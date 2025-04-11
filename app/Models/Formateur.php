@@ -22,6 +22,7 @@ class Formateur extends Model
     protected $fillable = [
         'role',
         'user_id',
+        'prenom',
     ];
 
     public function user()

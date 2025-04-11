@@ -12,6 +12,7 @@ return new class extends Migration {
     {
         Schema::create('stagiaires', function (Blueprint $table) {
             $table->id();
+            $table->string('prenom')->nullable();
             $table->string('civilite')->nullable();
             $table->string('telephone')->nullable();
             $table->string('adresse')->nullable();

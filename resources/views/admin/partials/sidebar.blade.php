@@ -55,7 +55,7 @@
                 </li>
                 <li> <a href="#"><i class="bx bx-right-arrow-alt"></i>Pole relation client</a>
                 </li>
-                <li> <a href="#"><i class="bx bx-right-arrow-alt"></i>Commercial</a>
+                <li> <a href="{{route('commercial.index')}}"><i class="bx bx-right-arrow-alt"></i>Commercial</a>
                 </li>
             </ul>
         </li>

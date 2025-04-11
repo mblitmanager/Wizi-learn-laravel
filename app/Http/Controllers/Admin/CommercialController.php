@@ -3,16 +3,26 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\CommmercialStoreRequest;
+use App\Services\CommercialService;
 use Illuminate\Http\Request;
 
 class CommercialController extends Controller
 {
+    protected $commercialService;
+
+    public function __construct(CommercialService $commercialService)
+    {
+        $this->commercialService = $commercialService;
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        //
+        $commercial = $this->commercialService->list();
+        return view('admin.commercial.index',compact('commercial'));
     }
 
     /**
@@ -20,15 +30,18 @@ class CommercialController extends Controller
      */
     public function create()
     {
-        //
+        return view('admin.commercial.create');
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(CommmercialStoreRequest $request)
     {
-        //
+        $this->commercialService->create($request->validated());
+
+        return redirect()->route('commercial.index')
+            ->with('success', 'Le commercial a été créé avec succès.');
     }
 
     /**
@@ -44,7 +57,8 @@ class CommercialController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $commercial = $this->commercialService->show($id);
+        return view('admin.commercial.edit', compact('commercial'));
     }
 
     /**
@@ -52,7 +66,10 @@ class CommercialController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $this->commercialService->update($id, $request->validated());
+
+        return redirect()->route('commercial.index')
+            ->with('success', 'Le commercial a été mis à jour avec succès.');
     }
 
     /**

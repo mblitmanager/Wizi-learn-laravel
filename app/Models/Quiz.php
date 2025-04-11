@@ -30,6 +30,6 @@ class Quiz extends Model
 
     public function qustionReponses()
     {
-        return $this->hasMany(QustionReponse::class);
+        return $this->hasMany(QuestionReponse::class);
     }
 }

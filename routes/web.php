@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\CommercialController;
 use App\Http\Controllers\Admin\FormateurController;
+use App\Http\Controllers\Admin\FormationController;
 use App\Http\Controllers\Admin\QuizController;
 use App\Http\Controllers\Admin\StagiaireController;
 use Illuminate\Support\Facades\Route;
@@ -29,4 +31,11 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
 
     // Formateur
     Route::resource('formateur', FormateurController::class);
+
+    // Formateur
+    Route::resource('commercial', CommercialController::class);
+
+//    Formation
+
+    Route::resource('formations', FormationController::class);
 });

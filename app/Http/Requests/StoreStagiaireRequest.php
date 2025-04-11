@@ -32,6 +32,7 @@ class StoreStagiaireRequest extends FormRequest
             ],
             'password' => 'nullable|string|min:6',
             'civilite' => 'required|string',
+            'prenom' => 'required|string',
             'telephone' => 'required|string',
             'adresse' => 'nullable|string',
             'date_naissance' => 'required|date',
@@ -50,6 +51,7 @@ class StoreStagiaireRequest extends FormRequest
         return [
             'name.required' => 'Le nom est obligatoire.',
             'name.string' => 'Le nom doit être une chaîne de caractères.',
+            'prenom.string' => 'Le prenom doit être une chaîne de caractères.',
             'name.max' => 'Le nom ne doit pas dépasser 255 caractères.',
 
             'email.required' => 'L\'adresse e-mail est obligatoire.',
