@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use ApiPlatform\Metadata\ApiResource;
 
 #[ApiResource]
-class QuestionReponse extends Model
+class Questions extends Model
 {
     use HasFactory;
 

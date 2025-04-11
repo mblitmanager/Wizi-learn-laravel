@@ -10,7 +10,7 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('question_reponses', function (Blueprint $table) {
+        Schema::create('questions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('quiz_id')->constrained('quizzes')->onDelete('cascade');
             $table->string('question')->nullable();
@@ -30,6 +30,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('question_reponses');
+        Schema::dropIfExists('questions');
     }
 };
