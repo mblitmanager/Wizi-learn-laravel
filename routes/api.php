@@ -14,6 +14,7 @@ Route::post('login', [JWTAuthController::class, 'login']);
 Route::middleware(['auth:api'])->group(function () {
     Route::post('logout', [JWTAuthController::class, 'logout']);
     Route::get('user', [JWTAuthController::class, 'getUser']);
-    Route::get('/formations/categories', [FormationStagiaireController::class, 'getCategories']);
-    Route::get('/formations/categories/{categories_id}', [FormationStagiaireController::class, 'getFormationsByCategory']);
+    Route::get('/formation/categories/', [FormationStagiaireController::class, 'getCategories']);
+    Route::get('/formations/categories/{categoryId}', [FormationStagiaireController::class, 'getFormationsByCategory']);
+
 });
