@@ -8,42 +8,45 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
+use OpenApi\Attributes as OA;
 
-/**
- * @OA\Info(
- *     title="JWT Authentication API",
- *     version="1.0.0",
- *     description="API documentation for JWT-based authentication"
- * )
- */
+#[OA\Info(
+    title: "JWT Authentication API",
+    version: "1.0.0",
+    description: "API documentation for JWT-based authentication"
+)]
 class JWTAuthController extends Controller
 {
-    /**
-     * @OA\Post(
-     *     path="/api/register",
-     *     summary="Register a new user",
-     *     tags={"Authentication"},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"name","email","password","password_confirmation"},
-     *             @OA\Property(property="name", type="string", example="John Doe"),
-     *             @OA\Property(property="email", type="string", example="john.doe@example.com"),
-     *             @OA\Property(property="password", type="string", example="password123"),
-     *             @OA\Property(property="password_confirmation", type="string", example="password123")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=201,
-     *         description="User registered successfully",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="user", type="object"),
-     *             @OA\Property(property="token", type="string")
-     *         )
-     *     ),
-     *     @OA\Response(response=400, description="Validation errors")
-     * )
-     */
+    #[OA\Post(
+        path: "/api/register",
+        summary: "Enregistrer un utilisateur",
+        tags: ["Authentication"],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ["name", "email", "password", "password_confirmation"],
+                properties: [
+                    new OA\Property(property: "name", type: "string", example: "Mathieu Dupont"),
+                    new OA\Property(property: "email", type: "string", example: "mathieu.dupont@example.com"),
+                    new OA\Property(property: "password", type: "string", example: "PassWord123"),
+                    new OA\Property(property: "password_confirmation", type: "string", example: "password123"),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 201,
+                description: "Utilisateur enregistré avec succès",
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: "user", type: "object"),
+                        new OA\Property(property: "token", type: "string"),
+                    ]
+                )
+            ),
+            new OA\Response(response: 400, description: "Erreur de validation"),
+        ]
+    )]
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -52,7 +55,7 @@ class JWTAuthController extends Controller
             'password' => 'required|string|min:6|confirmed',
         ]);
 
-        if($validator->fails()){
+        if ($validator->fails()) {
             return response()->json($validator->errors()->toJson(), 400);
         }
 
@@ -64,100 +67,106 @@ class JWTAuthController extends Controller
 
         $token = JWTAuth::fromUser($user);
 
-        return response()->json(compact('user','token'), 201);
+        return response()->json(compact('user', 'token'), 201);
     }
 
-    /**
-     * @OA\Post(
-     *     path="/api/login",
-     *     summary="Login a user",
-     *     tags={"Authentication"},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"email","password"},
-     *             @OA\Property(property="email", type="string", example="john.doe@example.com"),
-     *             @OA\Property(property="password", type="string", example="password123")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Login successful",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="token", type="string")
-     *         )
-     *     ),
-     *     @OA\Response(response=401, description="Invalid credentials")
-     * )
-     */
+    #[OA\Post(
+        path: "/api/login",
+        summary: "Connexion de l'utilisateur",
+        tags: ["Authentication"],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ["email", "password"],
+                properties: [
+                    new OA\Property(property: "email", type: "string", example: "john.doe@example.com"),
+                    new OA\Property(property: "password", type: "string", example: "password123"),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Connexion réussie",
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: "token", type: "string"),
+                    ]
+                )
+            ),
+            new OA\Response(response: 401, description: "Accès invalide"),
+            new OA\Response(response: 500, description: "Erreur interne du serveur"),
+        ]
+    )]
     public function login(Request $request)
     {
         $credentials = $request->only('email', 'password');
 
         try {
-            if (! $token = JWTAuth::attempt($credentials)) {
-                return response()->json(['error' => 'Invalid credentials'], 401);
+            if (!$token = JWTAuth::attempt($credentials)) {
+                return response()->json(['error' => 'Accès invalide'], 401);
             }
 
-            // Get the authenticated user.
             $user = auth()->user();
-
-            // (optional) Attach the role to the token.
             $token = JWTAuth::claims(['role' => $user->role])->fromUser($user);
 
             return response()->json(compact('token'));
         } catch (JWTException $e) {
-            return response()->json(['error' => 'Could not create token'], 500);
+            return response()->json(['error' => 'Impossible de créer le token'], 500);
         }
     }
 
-    /**
-     * @OA\Get(
-     *     path="/api/user",
-     *     summary="Get authenticated user",
-     *     tags={"Authentication"},
-     *     @OA\Response(
-     *         response=200,
-     *         description="Authenticated user details",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="user", type="object")
-     *         )
-     *     ),
-     *     @OA\Response(response=404, description="User not found"),
-     *     @OA\Response(response=400, description="Invalid token")
-     * )
-     */
+    #[OA\Get(
+        path: "/api/user",
+        summary: "Recuperer le profil de l'utilisateur",
+        tags: ["Authentication"],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Données de l'utilisateur récupérées avec succès",
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: "user", type: "object"),
+                    ]
+                )
+            ),
+            new OA\Response(response: 404, description: "Utilisateur non trouvé"),
+            new OA\Response(response: 400, description: "Token invalide"),
+        ]
+    )]
     public function getUser()
     {
         try {
-            if (! $user = JWTAuth::parseToken()->authenticate()) {
-                return response()->json(['error' => 'User not found'], 404);
+            if (!$user = JWTAuth::parseToken()->authenticate()) {
+                return response()->json(['error' => 'Utilisateur non trouvé'], 404);
             }
         } catch (JWTException $e) {
-            return response()->json(['error' => 'Invalid token'], 400);
+            return response()->json(['error' => 'Token invalide'], 400);
         }
 
         return response()->json(compact('user'));
     }
 
-    /**
-     * @OA\Post(
-     *     path="/api/logout",
-     *     summary="Logout the user",
-     *     tags={"Authentication"},
-     *     @OA\Response(
-     *         response=200,
-     *         description="Logout successful",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Successfully logged out")
-     *         )
-     *     )
-     * )
-     */
+    #[OA\Post(
+        path: "/api/logout",
+        summary: "Déconnexion de l'utilisateur",
+        tags: ["Authentication"],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Déconnexion réussie",
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: "message", type: "string", example: "Deconnexion réussie"),
+                    ]
+                )
+            ),
+        ]
+    )]
     public function logout()
     {
         JWTAuth::invalidate(JWTAuth::getToken());
 
-        return response()->json(['message' => 'Successfully logged out']);
+        return response()->json(['message' => 'Deconnexion réussie'], 200);
     }
 }
