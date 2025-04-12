@@ -38,4 +38,8 @@ class Formation extends Model
         return $this->belongsToMany(Stagiaire::class, 'stagiaire_formations');
     }
 
+    public function medias()
+    {
+        return $this->hasMany(Media::class);
+    }
 }

@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\QuizStoreRequest;
 use App\Models\Formation;
 use App\Services\QuizService;
-use Illuminate\Http\Request;
 
 class QuizController extends Controller
 {
@@ -44,7 +43,7 @@ class QuizController extends Controller
         $this->quizeService->create($request->validated());
 
         return redirect()->route('quiz.index')
-            ->with('success', 'Le stagiaire a été créé avec succès.');
+            ->with('success', 'Le quiz a été créé avec succès.');
     }
 
     /**
@@ -73,7 +72,7 @@ class QuizController extends Controller
         $this->quizeService->update($id, $request->validated());
 
         return redirect()->route('quiz.index')
-            ->with('success', 'Le stagiaire a été mis à jour avec succès.');
+            ->with('success', 'Le quiz a été mis à jour avec succès.');
     }
 
     /**

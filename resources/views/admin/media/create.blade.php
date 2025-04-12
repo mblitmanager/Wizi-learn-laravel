@@ -1,5 +1,5 @@
 @extends('admin.layout')
-@section('title', 'Ajouter un Quiz')
+@section('title', 'Ajouter un medias')
 @section('content')
     <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
 
@@ -8,18 +8,18 @@
                 <ol class="breadcrumb mb-0 p-0">
                     <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
                     </li>
-                    <li class="breadcrumb-item active" aria-current="page">Quiz</li>
+                    <li class="breadcrumb-item active" aria-current="page">medias</li>
                 </ol>
             </nav>
         </div>
         <div class="ms-auto">
             <div class="btn-group">
-                <a href="{{ route('quiz.index') }}" type="button" class="btn btn-primary">Retour</a>
+                <a href="{{ route('medias.index') }}" type="button" class="btn btn-primary">Retour</a>
             </div>
         </div>
     </div>
     <div class="card-body">
-        <h5 class="card-title">Ajouter Quiz</h5>
+        <h5 class="card-title">Ajouter medias</h5>
         <hr>
         @if ($errors->any())
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
@@ -40,7 +40,7 @@
 
             @endif
             <div class="card-body p-4 border rounded">
-                <form class="row g-3" action="{{ route('quiz.store') }}" method="POST">
+                <form class="row g-3" action="{{ route('medias.store') }}" method="POST">
                     @csrf
                     <div class="col-md-4">
                         <!-- Nom -->
@@ -48,7 +48,7 @@
                             <label for="titre">Nom</label>
                             <input type="text" name="titre" id="titre"
                                 class="form-control @error('titre') is-invalid @enderror"
-                                value="{{ old('titre', $quiz->titre ?? '') }}">
+                                value="{{ old('titre', $medias->titre ?? '') }}">
                             @error('titre')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -60,7 +60,7 @@
                             <label for="description">Description</label>
                             <input type="text" name="description" id="description"
                                 class="form-control @error('description') is-invalid @enderror"
-                                value="{{ old('description', $quiz->description ?? '') }}">
+                                value="{{ old('description', $media->description ?? '') }}">
                             @error('description')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -69,10 +69,10 @@
                     <div class="col-md-4">
                         <!-- Nom -->
                         <div class="mb-3">
-                            <label for="duree">Duree</label>
-                            <input type="number" name="duree" id="duree" class="form-control @error('duree') is-invalid @enderror"
-                                value="{{ old('duree', $quiz->duree ?? '') }}">
-                            @error('duree')
+                            <label for="url">Url</label>
+                            <input type="text" name="url" id="url" class="form-control @error('url') is-invalid @enderror"
+                                value="{{ old('url', $media->url ?? '') }}">
+                            @error('url')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
@@ -80,17 +80,18 @@
                     <div class="col-md-4">
                         <!-- Nom -->
                         <div class="mb-3">
-                            <label for="niveau">Niveau</label>
-                            <select name="niveau" id="niveau" class="form-select @error('niveau') is-invalid @enderror">
-                                <option value="" {{ old('niveau') == '' ? 'selected' : '' }}> Choisir un
-                                    niveau </option>
-                                <option value="débutant" {{ old('niveau') == "débutant" ? 'selected' : '' }}>débutant</option>
-                                <option value="intermédiaire" {{ old('niveau') == "intermédiaire" ? 'selected' : '' }}>
-                                    intermédiaire
+                            <label for="type">Type</label>
+                           
+                            <select name="type" id="type" class="form-select @error('type') is-invalid @enderror">
+                                <option value="" {{ old('type') == '' ? 'selected' : '' }}> Choisir un
+                                    type </option>
+                                <option value="video" {{ old('type') == "video" ? 'selected' : '' }}>video</option>
+                                <option value="document" {{ old('type') == "document" ? 'selected' : '' }}>
+                                    document
                                 </option>
-                                <option value="avancé" {{ old('niveau') == "avancé" ? 'selected' : '' }}>avancé</option>
+                                <option value="image" {{ old('type') == "image" ? 'selected' : '' }}>image</option>
                             </select>
-                            @error('niveau')
+                            @error('type')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
@@ -114,18 +115,7 @@
                             @enderror
                         </div>
                     </div>
-                    <div class="col-md-4">
-                        <!-- Nom -->
-                        <div class="mb-3">
-                            <label for="nb_points_total">Nombre total de points</label>
-                            <input type="number" name="nb_points_total" id="nb_points_total"
-                                class="form-control @error('nb_points_total') is-invalid @enderror"
-                                value="{{ old('nb_points_total', $quiz->nb_points_total ?? '') }}">
-                            @error('nb_points_total')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
+                   
                     <div class="col-12">
                         <button type="submit" class="btn btn-primary px-5">Enregistrer</button>
                     </div>
