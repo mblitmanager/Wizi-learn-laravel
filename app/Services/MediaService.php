@@ -1,48 +1,43 @@
 <?php
 namespace App\Services;
 
-use App\Repositories\Interfaces\MediaInterface;
-use App\Repositories\Interfaces\QuizRepositoryInterface;
-
+use App\Repositories\Interfaces\MediaRepositoryInterface;
+use App\Repositories\Interfaces\FormationRepositoryInterface;
 
 class MediaService
 {
-    protected $mediaRepositoryInterface;
+    protected $mediaRepository;
+    protected $formationRepository;
 
-    public function __construct(MediaInterface $mediaRepositoryInterface)
-    {
-        $this->mediaRepositoryInterface = $mediaRepositoryInterface;
+    public function __construct(
+        MediaRepositoryInterface $mediaRepository,
+        FormationRepositoryInterface $formationRepository
+    ) {
+        $this->mediaRepository = $mediaRepository;
+        $this->formationRepository = $formationRepository;
     }
 
-    public function list()
+    public function getTutorials()
     {
-        return $this->mediaRepositoryInterface->all();
+        return $this->mediaRepository->getTutorials();
     }
 
-    public function show($id)
+    public function getLanguageSessions()
     {
-        return $this->mediaRepositoryInterface->find($id);
-    }
-    public function create(array $data)
-    {
-        // Créer le quiz
-        return $this->mediaRepositoryInterface->create($data);
+        return $this->mediaRepository->getLanguageSessions();
     }
 
-    public function update(int $id, array $data)
+    public function getInteractiveFormations()
     {
-        $media = $this->mediaRepositoryInterface->find($id);
-
-        if (!$media) {
-            throw new \Exception("Media not found");
-        }
-
-        // Mettre à jour le media
-        return $this->mediaRepositoryInterface->update($id, $data);
-    }
-
-    public function delete($id)
-    {
-        return $this->mediaRepositoryInterface->delete($id);
+        $formations = $this->formationRepository->all();
+        return $formations->map(function($formation) {
+            return [
+                'id' => $formation->id,
+                'title' => $formation->title,
+                'description' => $formation->description,
+                'duration' => $formation->duration,
+                'interactive_content' => $this->mediaRepository->getInteractiveContent($formation->id)
+            ];
+        });
     }
 }
