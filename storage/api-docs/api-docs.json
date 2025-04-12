@@ -27,15 +27,15 @@
                                 "properties": {
                                     "name": {
                                         "type": "string",
-                                        "example": "John Doe"
+                                        "example": "Mathieu Dupont"
                                     },
                                     "email": {
                                         "type": "string",
-                                        "example": "john.doe@example.com"
+                                        "example": "mathieu.dupont@example.com"
                                     },
                                     "password": {
                                         "type": "string",
-                                        "example": "password123"
+                                        "example": "PassWord123"
                                     },
                                     "password_confirmation": {
                                         "type": "string",

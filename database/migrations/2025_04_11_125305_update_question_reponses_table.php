@@ -35,7 +35,7 @@ return new class extends Migration
         Schema::table('questions', function (Blueprint $table) {
             $table->dropColumn('text');
             $table->dropColumn('media_url');
-            $table->enum('type', ['audio', 'text', 'image'])->change(); // Revenir à l'ancien ENUM si nécessaire
+            $table->dropColumn('type'); // Revenir à l'ancien ENUM si nécessaire
             $table->dropColumn('reponse');
             $table->dropColumn('reponse_correct');
             $table->dropColumn('immage_illustration');
