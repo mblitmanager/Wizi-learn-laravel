@@ -48,12 +48,9 @@
                             @foreach ($poleRelationClients as $row)
                                 <tr>
                                     <td>{{ $row->id }}</td>
-
                                     <td>{{ $row->user->name }}</td>
                                     <td>{{ $row->prenom }}</td>
-
                                     <td>{{ $row->user->email }}</td>
-
                                     <td>
                                         <a href="{{ route('pole_relation_clients.edit', $row->id) }}" data-bs-toggle="tooltip"
                                             data-bs-placement="top" title="" data-bs-original-title="Modifier">

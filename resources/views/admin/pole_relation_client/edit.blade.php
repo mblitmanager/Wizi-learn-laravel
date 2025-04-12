@@ -62,7 +62,7 @@
                             <label for="prenom">Prenom</label>
                             <input type="text" name="prenom" id="prenom"
                                 class="form-control @error('prenom') is-invalid @enderror"
-                                value="{{ old('prenom', $poleRelationClient->user->prenom ?? '') }}">
+                                value="{{ old('prenom', $poleRelationClient->prenom ?? '') }}">
                             @error('prenom')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror

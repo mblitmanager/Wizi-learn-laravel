@@ -61,17 +61,7 @@
                                     <div class="col-sm-12">
                                         <h5 class="d-flex align-items-center mb-3">Stagiaire associées</h5>
                                         <div class="row row-cols-1 row-cols-md-3 row-cols-lg-3 row-cols-xl-3">
-                                            @foreach($poleRelationClient->stagiaire as $row)
-                                            
-                                                <div class="col">
-                                                    <div class="card">
-                                                        <div class="card-body">
-                                                            <h5 class="card-title">{{ $row->prenom }}</h5>
-                                                        
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            @endforeach
+                                            {{ $poleRelationClient->stagiaire?->prenom }}
                                         </div>
 
                                     </div>
