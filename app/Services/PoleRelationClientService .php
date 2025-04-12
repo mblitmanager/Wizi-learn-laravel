@@ -33,7 +33,18 @@ class PoleRelationClientService implements PoleRelationClientRepositoryInterface
         // 2. Associer l'utilisateur
         $data['user_id'] = $user->id;
 
-        return $this->repository->create($data);
+        $stagiaireId = $data['stagiaire_id']; // Tableau d'IDs
+        unset($data['stagiaire_id']);
+
+        
+        // 4. Créer le stagiaire
+        $prc = $this->repository->create($data);
+
+        // 5. Associer les formations via la table pivot
+        $prc->stagiaires()->sync($stagiaireId);
+
+        return $prc;
+
     }
     public function update(int $id, array $data): bool
     {
@@ -41,16 +52,29 @@ class PoleRelationClientService implements PoleRelationClientRepositoryInterface
         if (!$prc) {
             throw new \Exception("PoleRelationClient not found");
         }
-
+    
+        // Mise à jour de l'utilisateur lié
         $prc->user->update([
             'name' => $data['name'],
             'email' => $data['email'],
-            'password' => isset($data['password']) ? Hash::make($data['password']) : $prc->user->password,
+            'password' => isset($data['password']) && $data['password'] !== null
+                ? Hash::make($data['password'])
+                : $prc->user->password,
         ]);
-
-        unset($data['name'], $data['email'], $data['password']);
-        return $this->repository->update($id, $data);
+    
+        // Récupération et suppression du tableau de stagiaires pour éviter l'erreur SQL
+        $stagiaireIds = $data['stagiaire_id'] ?? [];
+        unset($data['name'], $data['email'], $data['password'], $data['stagiaire_id']);
+    
+        // Mise à jour des autres champs de PRC
+        $this->repository->update($id, $data);
+    
+        // Synchronisation des stagiaires
+        $prc->stagiaires()->sync($stagiaireIds);
+    
+        return true;
     }
+    
     public function delete(int $id): bool
     {
         return $this->repository->delete($id);

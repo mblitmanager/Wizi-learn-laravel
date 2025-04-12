@@ -57,26 +57,44 @@
 
                                     </div>
                                 </div>
-                                <div class="row">
-                                    <div class="col-sm-12">
-                                        <h5 class="d-flex align-items-center mb-3">Stagiaire associées</h5>
-                                        <div class="row row-cols-1 row-cols-md-3 row-cols-lg-3 row-cols-xl-3">
-                                            @foreach($poleRelationClient->stagiaire as $row)
-                                            
-                                                <div class="col">
-                                                    <div class="card">
-                                                        <div class="card-body">
-                                                            <h5 class="card-title">{{ $row->prenom }}</h5>
-                                                        
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            @endforeach
-                                        </div>
+                            
+                            </div>
+                            <hr>
 
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <h5 class="d-flex align-items-center mb-3">Stagiaire associées</h5>
+                                    <div class="row row-cols-1 row-cols-md-3 row-cols-lg-3 row-cols-xl-3">
+                                        <table class="table mb-0 table-hover align-middle">
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col">#</th>
+                                                    <th scope="col">Nom</th>
+                                                    <th scope="col">Prenom</th>
+                                                    <th scope="col">Adresse</th>
+                                                    <th scope="col">Téléphone</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($poleRelationClient->stagiaires as $row)
+                                                <tr>
+                                                    <th scope="row">{{ $row->id }}</th>
+                                                    <td>{{ $row->user->name }}</td>
+                                                    <td>{{ $row->prenom }}</td>
+                                                    <td>{{ $row->adresse }}</td>
+                                                    <td>{{ $row->telephone }}</td>
+                                                </tr>
+                                            @endforeach
+                                              
+                                               
+                                            </tbody>
+                                        </table>
+                                        
                                     </div>
+
                                 </div>
                             </div>
+                            
                         </div>
                     </div>
                 </div>

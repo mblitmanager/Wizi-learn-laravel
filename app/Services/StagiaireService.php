@@ -50,26 +50,36 @@ class StagiaireService
 
         return $stagiaire;
     }
-
     public function update(int $id, array $data)
     {
         $stagiaire = $this->stagiaireRepository->find($id);
-
+    
         if (!$stagiaire) {
             throw new \Exception("Stagiaire not found");
         }
-
-        // Mise à jour de l'utilisateur lié
+    
+        // 1. Mise à jour de l'utilisateur lié
         $stagiaire->user->update([
             'name' => $data['name'],
             'email' => $data['email'],
-            'password' => isset($data['password']) ? Hash::make($data['password']) : $stagiaire->user->password,
+            'password' => isset($data['password']) && $data['password'] !== null
+                ? Hash::make($data['password'])
+                : $stagiaire->user->password,
         ]);
-
-        unset($data['name'], $data['email'], $data['password']);
-
-        return $this->stagiaireRepository->update($id, $data);
+    
+        // 2. Extraire les formations s’il y en a
+        $formationIds = $data['formation_id'] ?? [];
+        unset($data['name'], $data['email'], $data['password'], $data['formation_id']);
+    
+        // 3. Mise à jour des champs du stagiaire
+        $this->stagiaireRepository->update($id, $data);
+    
+        // 4. Synchronisation des formations
+        $stagiaire->formations()->sync($formationIds);
+    
+        return true;
     }
+    
 
     public function delete($id)
     {

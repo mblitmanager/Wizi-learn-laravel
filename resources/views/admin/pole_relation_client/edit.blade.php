@@ -62,7 +62,7 @@
                             <label for="prenom">Prenom</label>
                             <input type="text" name="prenom" id="prenom"
                                 class="form-control @error('prenom') is-invalid @enderror"
-                                value="{{ old('prenom', $poleRelationClient->user->prenom ?? '') }}">
+                                value="{{ old('prenom', $poleRelationClient->prenom ?? '') }}">
                             @error('prenom')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -94,16 +94,16 @@
                         </div>
                     </div>
 
+
                     <div class="col-md-4">
                         <!-- Stagiaire -->
                         <div class="mb-3">
                             <label for="stagiaire_id">Stagiaire</label>
-                            <select name="stagiaire_id" id="stagiaire_id"
-                                class="form-select @error('stagiaire_id') is-invalid @enderror">
-                                <option value="">Choisir un stagiaire</option>
+                            <select name="stagiaire_id[]" id="stagiaire_id" class="form-select select2 @error('stagiaire_id') is-invalid @enderror" multiple>
+                                <option value="">Choisir un ou plusieurs stagiaires</option>
                                 @foreach ($stagiaires as $stagiaire)
-                                    <option value="{{ $stagiaire->id }}"
-                                        {{ old('stagiaire_id', $poleRelationClient->stagiaire_id) == $stagiaire->id ? 'selected' : '' }}>
+                                    <option value="{{ $stagiaire->id }}" 
+                                        {{ in_array($stagiaire->id, old('stagiaire_id', $poleRelationClient->stagiaires->pluck('id')->toArray())) ? 'selected' : '' }}>
                                         {{ $stagiaire->user->name }}
                                     </option>
                                 @endforeach
@@ -123,5 +123,15 @@
     </div>
 @endsection
 @section('scripts')
-
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('.select2').select2({
+                placeholder: "Choisir des formations",
+                allowClear: true
+            });
+        });
+    </script>
 @endsection
+
