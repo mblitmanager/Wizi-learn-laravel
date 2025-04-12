@@ -6,9 +6,10 @@ use Illuminate\Support\Collection;
 
 interface QuizRepositoryInterface
 {
-    public function all(): Collection;
-    public function find(int $id): ?Quiz;
+    public function all();
+    public function find($id): ?Quiz;
     public function create(array $data): Quiz;
-    public function update(int $id, array $data): bool;
-    public function delete(int $id): bool;
+    public function update($id, array $data): bool;
+    public function delete($id): bool;
+    public function getQuizzesByStagiaire($stagiaireId): Collection;
 }
