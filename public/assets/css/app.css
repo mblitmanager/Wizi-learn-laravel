@@ -23,6 +23,10 @@ a {
     position: relative;
 }
 
+.hidden-until-valid {
+    display: none !important;
+}
+
 .sidebar-wrapper {
     width: 250px;
     height: 100%;

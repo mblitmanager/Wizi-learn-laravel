@@ -10,12 +10,12 @@ class QuizeRepository implements QuizRepositoryInterface
 {
     public function all(): Collection
     {
-        return Quiz::with('participations', 'qustionReponses')->get();
+        return Quiz::with('participations', 'questions')->get();
     }
 
     public function find(int $id): ?Quiz
     {
-        return Quiz::with('participations', 'qustionReponses')->find($id);
+        return Quiz::with('participations', 'questions')->find($id);
     }
 
     public function create(array $data): Quiz
