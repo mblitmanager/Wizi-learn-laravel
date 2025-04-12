@@ -19,7 +19,7 @@
         </div>
     </div>
     <div class="card-body">
-        <h5 class="card-title">Ajouter Quiz</h5>
+        <h5 class="card-title text-wizi">Ajouter Quiz</h5>
         <hr>
         @if ($errors->any())
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
@@ -38,7 +38,7 @@
                 {{-- QUIZ --}}
                 <div class="card mb-4 px-4" id="quiz-form">
                     <div class="card-body">
-                        <h5>Créer un quiz</h5>
+                        <h5 class="text-wizi">Créer un quiz</h5>
                         <div class="row">
                             <div class="col-md-6"> <input type="number" name="quiz[duree]" placeholder="Durée"
                                     class="form-control mb-2">
@@ -81,41 +81,55 @@
                 {{-- QUESTION --}}
                 <div class="card mb-4 px-4" id="question-card">
                     <div class="card-body">
-                        <h5>Ajouter une question</h5>
+                        <h5 class="text-wizi">Ajouter une question</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <input type="text" name="question[text]" placeholder="Texte de la question"
+                                    class="form-control mb-2" required>
+                            </div>
+                            <div class="col-md-6">
+                                {{-- URL média (audio, image, etc.) --}}
+                                <input type="text" name="question[media_url]" placeholder="Media URL"
+                                    class="form-control mb-2">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                {{-- Type de question --}}
+                                <select name="question[type]" class="form-select mb-2" required>
+                                    <option value="">Type</option>
+                                    <option value="question audio">Question audio</option>
+                                    <option value="remplir le champ vide">Remplir le champ vide</option>
+                                    <option value="carte flash">Carte flash</option>
+                                    <option value="correspondance">Correspondance</option>
+                                    <option value="choix multiples">Choix multiples</option>
+                                    <option value="commander">Commander</option>
+                                    <option value="vrai faux">Vrai / Faux</option>
+                                    <option value="banque de mots">Banque de mots</option>
+                                </select>
 
-                        {{-- Texte de la question --}}
-                        <input type="text" name="question[text]" placeholder="Texte de la question"
-                            class="form-control mb-2" required>
+                            </div>
+                            <div class="col-md-6">
+                                <input type="text" name="question[reponse_correct]" placeholder="Réponse correcte"
+                                    class="form-control mb-2">
+                            </div>
+                            <div class="col-md-12">
+                                <textarea type="text" name="question[explication]" placeholder="Explication"
+                                    class="form-control mb-2"></textarea>
 
-                        {{-- URL média (audio, image, etc.) --}}
-                        <input type="text" name="question[media_url]" placeholder="Media URL" class="form-control mb-2">
+                            </div>
 
-                        {{-- Type de question --}}
-                        <select name="question[type]" class="form-select mb-2" required>
-                            <option value="">Type</option>
-                            <option value="question audio">Question audio</option>
-                            <option value="remplir le champ vide">Remplir le champ vide</option>
-                            <option value="carte flash">Carte flash</option>
-                            <option value="correspondance">Correspondance</option>
-                            <option value="choix multiples">Choix multiples</option>
-                            <option value="commander">Commander</option>
-                            <option value="vrai faux">Vrai / Faux</option>
-                            <option value="banque de mots">Banque de mots</option>
-                        </select>
+                        </div>
 
-                        {{-- Réponse correcte (si applicable directement) --}}
-                        <input type="text" name="question[reponse_correct]" placeholder="Réponse correcte"
-                            class="form-control mb-2">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <input type="number" name="question[points]" placeholder="Points" class="form-control mb-2">
+                            </div>
+                            <div class="col-md-6">
+                                <input type="text" name="question[astuce]" placeholder="Astuce" class="form-control mb-2">
 
-                        {{-- Explication (si la réponse est incorrecte par exemple) --}}
-                        <input type="text" name="question[explication]" placeholder="Explication"
-                            class="form-control mb-2">
-
-                        {{-- Points attribués à la question --}}
-                        <input type="number" name="question[points]" placeholder="Points" class="form-control mb-2">
-
-                        {{-- Astuce (facultative) --}}
-                        <input type="text" name="question[astuce]" placeholder="Astuce" class="form-control mb-2">
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -123,19 +137,45 @@
                 {{-- RÉPONSE --}}
                 <div class="card mb-4 px-4" id="reponse-card">
                     <div class="card-body">
-                        <h5>Ajouter une réponse</h5>
-                        <input type="text" name="reponse[text]" placeholder="Texte de la réponse"
-                            class="form-control mb-2">
-                        <select name="reponse[is_correct]" class="form-select mb-2">
-                            <option value="">Bonne réponse ?</option>
-                            <option value="1">Oui</option>
-                            <option value="0">Non</option>
-                        </select>
-                        <input type="number" name="reponse[position]" placeholder="Position" class="form-control mb-2">
-                        <input type="text" name="reponse[match_pair]" placeholder="Pair correspondante"
-                            class="form-control mb-2">
-                        <input type="text" name="reponse[bank_group]" placeholder="Groupe" class="form-control mb-2">
-                        <textarea name="reponse[flashcard_back]" placeholder="Verso de la flashcard" class="form-control"></textarea>
+                        <h5 class="text-wizi">Ajouter une réponse</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <input type="text" name="reponse[text]" placeholder="Texte de la réponse"
+                                    class="form-control mb-2">
+
+                            </div>
+                            <div class="col-md-6">
+                                <select name="reponse[is_correct]" class="form-select mb-2">
+                                    <option value="">Bonne réponse ?</option>
+                                    <option value="1">Oui</option>
+                                    <option value="0">Non</option>
+                                </select>
+
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <input type="number" name="reponse[position]" placeholder="Position"
+                                    class="form-control mb-2">
+                            </div>
+                            <div class="col-md-6">
+                                <input type="text" name="reponse[match_pair]" placeholder="Pair correspondante"
+                                    class="form-control mb-2">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <input type="text" name="reponse[bank_group]" placeholder="Groupe"
+                                    class="form-control mb-2">
+
+                            </div>
+                            <div class="col-md-6">
+                                <textarea name="reponse[flashcard_back]" placeholder="Verso de la flashcard"
+                                    class="form-control"></textarea>
+
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -153,11 +193,11 @@
 @endsection
 @section('scripts')
     <script>
-        $(document).ready(function() {
+        $(document).ready(function () {
             function checkQuizFieldsFilled() {
                 let isValid = true;
 
-                $('#quiz-form input[required], #quiz-form select[required]').each(function() {
+                $('#quiz-form input[required], #quiz-form select[required]').each(function () {
                     const value = $(this).val();
                     if (!value || value.trim() === '') {
                         isValid = false;
@@ -175,7 +215,7 @@
             }
 
             // Sur changement des champs du quiz
-            $('#quiz-form input, #quiz-form select').on('input change', function() {
+            $('#quiz-form input, #quiz-form select').on('input change', function () {
                 checkQuizFieldsFilled();
             });
 
