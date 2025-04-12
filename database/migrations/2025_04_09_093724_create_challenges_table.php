@@ -17,6 +17,7 @@ return new class extends Migration {
             $table->string('date_debut')->nullable();
             $table->string('date_fin')->nullable();
             $table->string('points')->nullable();
+            $table->foreignId('participation_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }

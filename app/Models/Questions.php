@@ -16,11 +16,9 @@ class Questions extends Model
      */
     protected $fillable = [
         'quiz_id',
-        'question',
-        'reponse',
+        'text',
         'type',
-        'reponse_correct',
-        'immage_illustration',
+        'media_url',
         'explication',
         'points',
         'astuce',
@@ -29,5 +27,10 @@ class Questions extends Model
     public function quiz()
     {
         return $this->belongsTo(Quiz::class);
+    }
+
+    public function reponses()
+    {
+        return $this->hasMany(Reponse::class);
     }
 }

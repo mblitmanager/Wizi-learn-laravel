@@ -42,4 +42,10 @@ class Formation extends Model
     {
         return $this->hasMany(Media::class);
     }
+
+
+    public function quizzes()
+    {
+        return $this->hasMany(Quiz::class);
+    }
 }
