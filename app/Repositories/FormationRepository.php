@@ -35,4 +35,9 @@ class FormationRepository implements FormationRepositoryInterface
         $formation = Formation::find($id);
         return $formation ? $formation->delete() : false;
     }
+
+    public function getUniqueCategories(): \Illuminate\Support\Collection
+    {
+        return Formation::select('categorie')->distinct()->pluck('categorie');
+    }
 }
