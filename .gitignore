@@ -20,4 +20,4 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
-/.env
+.env
