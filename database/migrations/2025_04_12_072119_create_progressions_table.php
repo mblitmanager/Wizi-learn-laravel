@@ -13,6 +13,13 @@ return new class extends Migration
     {
         Schema::create('progressions', function (Blueprint $table) {
             $table->id();
+            $table->boolean('termine')->nullable();
+            $table->string('points')->nullable();
+            $table->foreignId('stagiaire_id')->constrained()->onDelete('cascade')->nullable();
+            $table->foreignId('quiz_id')->constrained()->onDelete('cascade')->nullable();
+            $table->foreignId('formation_id')->constrained()->onDelete('cascade')->nullable();
+            $table->integer('pourcentage')->nullable();
+            $table->text('explication')->nullable();
             $table->timestamps();
         });
     }

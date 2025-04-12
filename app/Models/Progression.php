@@ -19,11 +19,12 @@ class Progression extends Model
       * Les attributs qui peuvent être assignés en masse.
       */
      protected $fillable = [
-         'rang',
+         'termine',
          'stagiaire_id',
          'quiz_id',
          'formation_id',
-         'points',
+         'pourcentage',
+         'explication',
      ];
      public function stagiaire()
      {
