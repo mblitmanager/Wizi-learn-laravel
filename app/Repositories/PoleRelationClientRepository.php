@@ -10,12 +10,12 @@ class PoleRelationClientRepository implements PoleRelationClientRepositoryInterf
 
     public function all(): Collection
     {
-        return PoleRelationClient::with('stagiaire','user')->get();
+        return PoleRelationClient::with('stagiaires','user')->get();
     }
 
     public function find(int $id): ?PoleRelationClient
     {
-        return PoleRelationClient::with('stagiaire','user')->where('id', $id)->first();
+        return PoleRelationClient::with('stagiaires','user')->where('id', $id)->first();
     }
 
     public function create(array $data): PoleRelationClient

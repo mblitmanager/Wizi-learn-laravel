@@ -9,7 +9,7 @@ use ApiPlatform\Metadata\ApiResource;
 
 #[ApiResource(
     paginationItemsPerPage: 10
-    )]
+)]
 class Stagiaire extends Model
 {
     use HasFactory;
@@ -61,6 +61,12 @@ class Stagiaire extends Model
     {
         return $this->hasMany(Participation::class);
     }
+
+    public function poleRelationClients()
+    {
+        return $this->belongsToMany(PoleRelationClient::class, 'pole_relation_client_stagiaire');
+    }
+
 
     public function stagiaires()
     {

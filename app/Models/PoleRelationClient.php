@@ -24,10 +24,11 @@ class PoleRelationClient extends Model
         'prenom'
     ];
 
-    public function stagiaire()
+    public function stagiaires()
     {
-        return $this->belongsTo(Stagiaire::class, 'stagiaire_id');
+        return $this->belongsToMany(Stagiaire::class, 'pole_relation_client_stagiaire');
     }
+    
 
     public function user()
     {

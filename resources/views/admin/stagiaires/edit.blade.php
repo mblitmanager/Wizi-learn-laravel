@@ -25,7 +25,6 @@
         @if ($errors->any())
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
                 <strong class="font-bold">Whoops!</strong>
-                <span class="block sm:inline">Il y a des erreurs dans le formulaire :</span>
                 <ul class="mt-2 list-disc list-inside">
                     @foreach ($errors->all() as $error)
                         <li>{{ $error }}</li>
@@ -52,6 +51,12 @@
                         <input type="text" name="name" id="name" class="form-control @error('name') is-invalid @enderror"
                             value="{{ old('name', $stagiaire->user->name) }}">
                         @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    </div>
+                    <div class="col-md-4">
+                        <label for="prenom">Prenom</label>
+                        <input type="text" name="prenom" id="prenom" class="form-control @error('prenom') is-invalid @enderror"
+                            value="{{ old('prenom', $stagiaire->prenom) }}">
+                        @error('prenom') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
 
                     <div class="col-md-4">
@@ -117,18 +122,19 @@
                     </div>
 
                     <div class="col-md-4">
-                        <label for="formation_id">Formation</label>
-                        <select name="formation_id" id="formation_id"
-                            class="form-control @error('formation_id') is-invalid @enderror">
-                            <option value="">-- Choisir une formation --</option>
+                        <label for="formation_id">Formations</label>
+                        <select name="formation_id[]" id="formation_id" multiple
+                            class="form-control select2 @error('formation_id') is-invalid @enderror">
                             @foreach($formations as $formation)
-                                <option value="{{ $formation->id }}" {{ old('formation_id', $stagiaire->formation_id) == $formation->id ? 'selected' : '' }}>
+                                <option value="{{ $formation->id }}"
+                                    {{ in_array($formation->id, old('formation_id', $stagiaire->formations->pluck('id')->toArray())) ? 'selected' : '' }}>
                                     {{ $formation->titre }}
                                 </option>
                             @endforeach
                         </select>
                         @error('formation_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
+                    
 
                     <div class="col-md-4">
                         <label for="formateur_id">Formateur</label>
@@ -165,4 +171,16 @@
             </div>
         </div>
     </div>
+@endsection
+@section('scripts') 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('.select2').select2({
+            placeholder: "Choisir des formations",
+            allowClear: true
+        });
+    });
+</script>
 @endsection
