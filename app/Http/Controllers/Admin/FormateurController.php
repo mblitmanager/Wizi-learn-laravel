@@ -60,7 +60,8 @@ class FormateurController extends Controller
     public function edit(string $id)
     {
         $formateur = $this->formateurService->show($id);
-        return view('admin.formateur.edit', compact('formateur'));
+        $formations = Formation::all();
+        return view('admin.formateur.edit', compact('formateur', 'formations'));
     }
 
     /**

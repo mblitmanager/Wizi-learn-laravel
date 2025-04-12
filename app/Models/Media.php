@@ -18,5 +18,11 @@ class Media extends Model
         'type',
         'titre',
         'description',
+        'formation_id',
     ];
+
+    public function formation()
+    {
+        return $this->belongsTo(Formation::class);
+    }
 }

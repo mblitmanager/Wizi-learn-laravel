@@ -53,7 +53,7 @@
             <ul>
                 <li> <a href="{{ route('formateur.index') }}"><i class="bx bx-right-arrow-alt"></i>Formateur</a>
                 </li>
-                <li> <a href="#"><i class="bx bx-right-arrow-alt"></i>Pole relation client</a>
+                <li> <a href="{{ route('pole_relation_clients.index') }}"><i class="bx bx-right-arrow-alt"></i>Pole relation client</a>
                 </li>
                 <li> <a href="{{route('commercials.index')}}"><i class="bx bx-right-arrow-alt"></i>Commercial</a>
                 </li>
@@ -99,7 +99,7 @@
                 <div class="menu-title">Media</div>
             </a>
             <ul>
-                <li> <a href="#"><i class="bx bx-right-arrow-alt"></i>Listes</a>
+                <li> <a href="{{ route('medias.index') }}"><i class="bx bx-right-arrow-alt"></i>Listes</a>
                 </li>
             </ul>
         </li>
