@@ -11,17 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-            }
+        Schema::create('progressions', function (Blueprint $table) {
+            $table->id();
+            $table->timestamps();
+        });
+    }
 
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::table('questions', function (Blueprint $table) {
-            $table->dropColumn('question');
-            $table->dropColumn('reponse');
-
-        });
+        Schema::dropIfExists('progressions');
     }
 };

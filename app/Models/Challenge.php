@@ -20,5 +20,13 @@ class Challenge extends Model
         'date_debut',
         'date_fin',
         'points',
+        'participation_id',
     ];
+
+
+    public function participations()
+    {
+        return $this->belongsTo(Participation::class);
+    }
+
 }

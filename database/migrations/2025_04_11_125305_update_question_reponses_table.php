@@ -32,13 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('questions', function (Blueprint $table) {
-            $table->dropColumn('text');
-            $table->dropColumn('media_url');
-            $table->dropColumn('type'); // Revenir à l'ancien ENUM si nécessaire
-            $table->dropColumn('reponse');
-            $table->dropColumn('reponse_correct');
-            $table->dropColumn('immage_illustration');
-        });
+        Schema::table('questions');
     }
 };

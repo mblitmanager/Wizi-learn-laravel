@@ -6,19 +6,24 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use ApiPlatform\Metadata\ApiResource;
 
-#[ApiResource]
-class Participation extends Model
+#[ApiResource(
+    paginationItemsPerPage: 10
+    )]
+class Classement extends Model
 {
+    //
+
     use HasFactory;
+
+    /**
+     * Les attributs qui peuvent être assignés en masse.
+     */
     protected $fillable = [
+        'rang',
         'stagiaire_id',
         'quiz_id',
-        'date',
-        'heure',
-        'score',
-        'deja_jouer',
+        'points',
     ];
-
     public function stagiaire()
     {
         return $this->belongsTo(Stagiaire::class);
@@ -27,10 +32,5 @@ class Participation extends Model
     public function quiz()
     {
         return $this->belongsTo(Quiz::class);
-    }
-
-    public function challenges()
-    {
-        return $this->hasMany(Challenge::class);
     }
 }
