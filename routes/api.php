@@ -16,5 +16,5 @@ Route::middleware(['auth:api'])->group(function () {
     Route::get('user', [JWTAuthController::class, 'getUser']);
     Route::get('/formation/categories/', [FormationStagiaireController::class, 'getCategories']);
     Route::get('/formations/categories/{categoryId}', [FormationStagiaireController::class, 'getFormationsByCategory']);
-
+    Route::get('/stagiaire/formations', [FormationStagiaireController::class, 'getMyFormations']);
 });

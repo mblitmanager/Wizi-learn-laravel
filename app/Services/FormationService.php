@@ -48,4 +48,9 @@ class FormationService
     {
         return $this->formationRepository->all()->where('categorie', $category);
     }
+
+    public function getFormationsByStagiaire($stagiaireId)
+    {
+        return $this->formationRepository->getFormationsByStagiaire($stagiaireId);
+    }
 }

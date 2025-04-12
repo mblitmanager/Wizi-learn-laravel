@@ -40,4 +40,11 @@ class FormationRepository implements FormationRepositoryInterface
     {
         return Formation::select('categorie')->distinct()->pluck('categorie');
     }
+
+    public function getFormationsByStagiaire($stagiaireId): \Illuminate\Support\Collection
+    {
+        return Formation::whereHas('stagiaires', function($query) use ($stagiaireId) {
+            $query->where('stagiaires.id', $stagiaireId);
+        })->get();
+    }
 }

@@ -76,4 +76,17 @@ class FormationStagiaireController extends Controller
         $formations = $this->formationService->getFormationsByCategory($categoryId);
         return response()->json($formations);
     }
+
+    public function getMyFormations()
+    {
+        try {
+            $user = JWTAuth::parseToken()->authenticate();
+            // var_dump($user);
+            // die();
+            $formations = $this->formationService->getFormationsByStagiaire($user->id);
+            return response()->json($formations);
+        } catch (JWTException $e) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+    }
 }
