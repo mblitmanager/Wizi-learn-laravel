@@ -13,7 +13,7 @@ class QuizeRepository implements QuizRepositoryInterface
         return Quiz::with('participations', 'questions')->get();
     }
 
-    public function find(int $id): ?Quiz
+    public function find($id): ?Quiz
     {
         return Quiz::with('participations', 'questions')->find($id);
     }
@@ -23,13 +23,13 @@ class QuizeRepository implements QuizRepositoryInterface
         return Quiz::create($data);
     }
 
-    public function update(int $id, array $data): bool
+    public function update($id, array $data): bool
     {
         $quiz = Quiz::findOrFail($id);
         return $quiz->update($data);
     }
 
-    public function delete(int $id): bool
+    public function delete($id): bool
     {
         return Quiz::destroy($id) > 0;
     }
