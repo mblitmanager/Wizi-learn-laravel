@@ -10,18 +10,21 @@ use App\Http\Controllers\Stagiaire\ContactController;
 use App\Http\Controllers\Stagiaire\RankingController;
 use App\Http\Controllers\Stagiaire\ParrainageController;
 use App\Http\Controllers\QuizController;
+use App\Http\Controllers\Stagiaire\FormationController;
 
 
 
 
-Route::post('login', [JWTAuthController::class, 'login']);
+Route::post('auth/login', [JWTAuthController::class, 'login']);
 
 Route::middleware(['auth:api'])->group(function () {
     Route::post('logout', [JWTAuthController::class, 'logout']);
     Route::get('user', [JWTAuthController::class, 'getUser']);
+    Route::get('me', [JWTAuthController::class, 'getMe']);
     Route::get('/formation/categories/', [FormationStagiaireController::class, 'getCategories']);
     Route::get('/formations/categories/{categoryId}', [FormationStagiaireController::class, 'getFormationsByCategory']);
-    Route::get('/stagiaire/formations', [FormationStagiaireController::class, 'getMyFormations']);
+    Route::get('/stagiaire/formations', [FormationStagiaireController::class, 'getFormations']);
+    Route::get('/stagiaire/{id}/formations', [FormationController::class, 'getFormationsByStagiaireId']);
     Route::get('/formations/{stagiaireId}/quizzes', [QuizStagiaireController::class, 'getQuizzesByStagiaire']);
     Route::get('/quiz/categories', [QuizController::class, 'getCategories']);
     

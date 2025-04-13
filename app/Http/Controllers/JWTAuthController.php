@@ -147,6 +147,44 @@ class JWTAuthController extends Controller
         return response()->json(compact('user'));
     }
 
+    #[OA\Get(
+        path: "/api/me",
+        summary: "Récupérer les informations complètes de l'utilisateur connecté",
+        tags: ["Authentication"],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Données de l'utilisateur et du stagiaire récupérées avec succès",
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: "user", type: "object"),
+                        new OA\Property(property: "stagiaire", type: "object"),
+                    ]
+                )
+            ),
+            new OA\Response(response: 404, description: "Utilisateur non trouvé"),
+            new OA\Response(response: 400, description: "Token invalide"),
+        ]
+    )]
+    public function getMe()
+    {
+        try {
+            if (!$user = JWTAuth::parseToken()->authenticate()) {
+                return response()->json(['error' => 'Utilisateur non trouvé'], 404);
+            }
+
+            // Récupérer les informations du stagiaire associé
+            $stagiaire = \App\Models\Stagiaire::where('user_id', $user->id)->first();
+            
+            return response()->json([
+                'user' => $user,
+                'stagiaire' => $stagiaire
+            ]);
+        } catch (JWTException $e) {
+            return response()->json(['error' => 'Token invalide'], 400);
+        }
+    }
+
     #[OA\Post(
         path: "/api/logout",
         summary: "Déconnexion de l'utilisateur",
