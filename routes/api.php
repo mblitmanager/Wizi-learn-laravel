@@ -9,6 +9,7 @@ use App\Http\Controllers\Stagiaire\QuizStagiaireController;
 use App\Http\Controllers\Stagiaire\ContactController;
 use App\Http\Controllers\Stagiaire\RankingController;
 use App\Http\Controllers\Stagiaire\ParrainageController;
+use App\Http\Controllers\QuizController;
 
 
 
@@ -22,6 +23,7 @@ Route::middleware(['auth:api'])->group(function () {
     Route::get('/formations/categories/{categoryId}', [FormationStagiaireController::class, 'getFormationsByCategory']);
     Route::get('/stagiaire/formations', [FormationStagiaireController::class, 'getMyFormations']);
     Route::get('/formations/{stagiaireId}/quizzes', [QuizStagiaireController::class, 'getQuizzesByStagiaire']);
+    Route::get('/quiz/categories', [QuizController::class, 'getCategories']);
     
     // Contacts routes
     Route::get('/stagiaire/contacts', [ContactController::class, 'getContacts']);

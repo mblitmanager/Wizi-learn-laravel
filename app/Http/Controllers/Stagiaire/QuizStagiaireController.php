@@ -32,4 +32,15 @@ class QuizStagiaireController extends Controller
             return response()->json(['error' => 'Unauthorized'], 401);
         }
     }
+
+    public function getCategories()
+    {
+        try {
+            $user = JWTAuth::parseToken()->authenticate();
+            $categories = $this->quizService->getCategories();
+            return response()->json($categories);
+        } catch (JWTException $e) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+    }
 } 

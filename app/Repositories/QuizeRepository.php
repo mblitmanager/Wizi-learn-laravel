@@ -9,6 +9,7 @@ use App\Models\Participation;
 use App\Repositories\Interfaces\QuizRepositoryInterface;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use App\Models\Formation;
 
 class QuizeRepository implements QuizRepositoryInterface
 {
@@ -137,5 +138,10 @@ class QuizeRepository implements QuizRepositoryInterface
         return Quiz::whereHas('formation', function($query) use ($categoryId) {
             $query->where('category_id', $categoryId);
         })->get();
+    }
+
+    public function getUniqueCategories(): Collection
+    {
+        return Formation::select('categorie')->distinct()->pluck('categorie');
     }
 }

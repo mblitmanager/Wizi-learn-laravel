@@ -43,4 +43,9 @@ class QuizService
     {
         return $this->quizRepository->getQuizzesByStagiaire($stagiaireId);
     }
+
+    public function getCategories()
+    {
+        return $this->quizRepository->getUniqueCategories();
+    }
 }
