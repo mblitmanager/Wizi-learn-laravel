@@ -26,7 +26,7 @@ class QuizController extends Controller
      */
     public function index()
     {
-        $quiz = $this->quizeService->list();
+        $quiz = $this->quizeService->getAll();
         return view('admin.quizzes.index', compact('quiz'));
     }
 
@@ -64,7 +64,7 @@ class QuizController extends Controller
      */
     public function edit(string $id)
     {
-        $quiz = $this->quizeService->show($id);
+        $quiz = $this->quizeService->getById($id);
         $formations = Formation::all();
         return view('admin.quizzes.edit', compact('quiz', 'formations'));
     }
