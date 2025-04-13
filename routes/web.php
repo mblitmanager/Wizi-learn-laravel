@@ -38,4 +38,7 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
     Route::resource('medias', MediaController::class);
 
     Route::resource('pole_relation_clients', PoleRelationClientController::class);
+
+    Route::post('/quiz/create-all', [QuizController::class, 'storeAll'])->name('quiz.storeAll');
+
 });

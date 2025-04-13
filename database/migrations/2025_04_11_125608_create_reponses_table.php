@@ -12,7 +12,7 @@ return new class extends Migration {
     {
         Schema::create('reponses', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('questions_id'); // Clé étrangère vers la table questions
+            $table->foreignId('question_id')->constrained('questions')->onDelete('cascade'); // Clé étrangère vers la table questions
             $table->text('text')->nullable(); // Texte de la réponse ou élément à associer
             $table->boolean('is_correct')->nullable(); // Pour multiplechoice, truefalse, etc.
             $table->integer('position')->nullable(); // Pour ordering
@@ -20,9 +20,6 @@ return new class extends Migration {
             $table->string('bank_group')->nullable(); // Pour wordbank ou fillblank (groupe ou tag)
             $table->text('flashcard_back')->nullable(); // Pour flashcards (le verso)
             $table->timestamps();
-
-            // Définir la clé étrangère
-            $table->foreign('question_id')->references('id')->on('questions')->onDelete('cascade');
         });
     }
 
