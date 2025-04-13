@@ -41,4 +41,9 @@ Route::middleware(['auth:api'])->group(function () {
     Route::get('/stagiaire/parrainage/link', [ParrainageController::class, 'getParrainageLink']);
     Route::get('/stagiaire/parrainage/filleuls', [ParrainageController::class, 'getFilleuls']);
     Route::get('/stagiaire/parrainage/stats', [ParrainageController::class, 'getParrainageStats']);
+
+    // Routes pour les stagiaires
+    Route::prefix('stagiaire')->group(function () {
+        Route::get('/formations', [FormationStagiaireController::class, 'getFormations']);
+    });
 });

@@ -43,8 +43,10 @@ class FormationRepository implements FormationRepositoryInterface
 
     public function getFormationsByStagiaire($stagiaireId): \Illuminate\Support\Collection
     {
-        return Formation::whereHas('stagiaires', function($query) use ($stagiaireId) {
-            $query->where('stagiaires.id', $stagiaireId);
-        })->get();
+        return Formation::with(['formateurs', 'stagiaires', 'quizzes'])
+            ->whereHas('stagiaires', function($query) use ($stagiaireId) {
+                $query->where('stagiaires.id', $stagiaireId);
+            })
+            ->get();
     }
 }
