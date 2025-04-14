@@ -22,6 +22,12 @@ body {
     box-shadow: 0 0 0 0.25rem rgb(255 230 0 / -6.75);
 }
 
+.img-fluid {
+    max-width: 50%;
+    height: auto;
+    display: block;
+}
+
 .form-select:focus {
     border-color: #ffb923 !important;
     outline: 0;

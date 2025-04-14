@@ -75,7 +75,7 @@
                                         <div class="row row-cols-1 row-cols-md-3 row-cols-lg-3 row-cols-xl-3">
                                             @foreach($stagiaire->formations as $formation)
                                                 <div class="col">
-                                                    <div class="card">
+                                                    <div class="card  border-warning border-bottom border-3 border-0">
                                                         <div class="card-body">
                                                             <h5 class="card-title">{{ $formation->titre }}</h5>
                                                             <p class="card-text">{{ $formation->description }}</p>

@@ -72,7 +72,7 @@
         </li>
         <li>
             <a href="javascript:;" class="has-arrow">
-                <div class="parent-icon"><i class='fadeIn animated bx bx-list-ol'></i>
+                <div class="parent-icon"><i class="lni lni-library"></i>
                 </div>
                 <div class="menu-title">Formation</div>
             </a>

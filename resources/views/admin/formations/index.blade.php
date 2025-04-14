@@ -111,7 +111,7 @@
         $(document).ready(function () {
             var table = $('#stagiairesTable').DataTable({
                 language: {
-                    url: "//cdn.datatables.net/plug-ins/1.13.5/i18n/fr-FR.json"
+                    url: "https://cdn.datatables.net/plug-ins/1.13.5/i18n/fr-FR.json"
                 },
                 paging: true,
                 searching: true,
