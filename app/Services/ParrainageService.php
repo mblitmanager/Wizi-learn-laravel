@@ -17,7 +17,7 @@ class ParrainageService
     public function getParrainageLink($stagiaireId)
     {
         $parrainage = $this->parrainageRepository->findByStagiaireId($stagiaireId);
-        
+
         if (!$parrainage) {
             $parrainage = $this->parrainageRepository->create([
                 'stagiaire_id' => $stagiaireId,
@@ -37,7 +37,7 @@ class ParrainageService
     public function getParrainageStats($stagiaireId)
     {
         $filleuls = $this->getFilleuls($stagiaireId);
-        
+
         return [
             'total_filleuls' => $filleuls->count(),
             'active_filleuls' => $filleuls->where('active', true)->count(),
@@ -46,4 +46,4 @@ class ParrainageService
             'recent_filleuls' => $filleuls->sortByDesc('created_at')->take(5)
         ];
     }
-} 
+}
