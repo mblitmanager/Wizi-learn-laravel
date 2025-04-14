@@ -35,13 +35,13 @@ class ProfileController extends Controller
 
     public function show($id)
     {
-        $stagiaire = $this->stagiaireService->find($id);
+        $stagiaire = $this->stagiaireService->show($id);
         if (!$stagiaire) {
             return response()->json(['message' => 'Stagiaire not found'], 404);
         }
 
         $stats = $this->dashboardService->getStagiaireDashboard($id);
-        $formations = $this->formationService->getStagiaireFormations($id);
+        $formations = $this->formationService->getFormationsByStagiaire($id);
         $agenda = $this->agendaService->getStagiaireAgenda($id);
         $notifications = $this->agendaService->getStagiaireNotifications($id);
         $media = $this->mediaService->getTutorials();
@@ -73,14 +73,14 @@ class ProfileController extends Controller
         ]);
 
         $updated = $this->stagiaireService->update($id, $validated);
-        
+
         if (!$updated) {
             return response()->json(['message' => 'Failed to update stagiaire'], 500);
         }
 
         return response()->json([
             'message' => 'Profile updated successfully',
-            'stagiaire' => $this->stagiaireService->find($id)
+            'stagiaire' => $this->stagiaireService->show($id)
         ]);
     }
 
@@ -92,7 +92,7 @@ class ProfileController extends Controller
         ]);
 
         $updated = $this->stagiaireService->updatePassword($id, $validated);
-        
+
         if (!$updated) {
             return response()->json(['message' => 'Failed to update password'], 500);
         }
@@ -103,7 +103,7 @@ class ProfileController extends Controller
     public function exportAgenda($id)
     {
         $icsContent = $this->agendaService->exportAgendaToICS($id);
-        
+
         return response($icsContent)
             ->header('Content-Type', 'text/calendar')
             ->header('Content-Disposition', 'attachment; filename="agenda.ics"');
@@ -112,7 +112,7 @@ class ProfileController extends Controller
     public function markNotificationAsRead($id, $notificationId)
     {
         $marked = $this->agendaService->markNotificationAsRead($notificationId);
-        
+
         if (!$marked) {
             return response()->json(['message' => 'Failed to mark notification as read'], 500);
         }
@@ -123,7 +123,7 @@ class ProfileController extends Controller
     public function markAllNotificationsAsRead($id)
     {
         $marked = $this->agendaService->markAllNotificationsAsRead($id);
-        
+
         if (!$marked) {
             return response()->json(['message' => 'Failed to mark notifications as read'], 500);
         }

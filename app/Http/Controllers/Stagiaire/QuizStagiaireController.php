@@ -12,6 +12,7 @@ class QuizStagiaireController extends Controller
 {
     protected $quizService;
 
+
     public function __construct(QuizService $quizService)
     {
         $this->quizService = $quizService;
@@ -25,7 +26,7 @@ class QuizStagiaireController extends Controller
             if ($user->id != $stagiaireId) {
                 return response()->json(['error' => 'Unauthorized'], 403);
             }
-            
+
             $quizzes = $this->quizService->getQuizzesByStagiaire($stagiaireId);
             return response()->json($quizzes);
         } catch (JWTException $e) {
@@ -43,4 +44,9 @@ class QuizStagiaireController extends Controller
             return response()->json(['error' => 'Unauthorized'], 401);
         }
     }
-} 
+    public function getQuestionsByQuizId($quizId)
+    {
+        $questions = $this->quizService->getQuestionsByQuizId($quizId);
+        return response()->json($questions);
+    }
+}

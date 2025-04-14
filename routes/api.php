@@ -11,9 +11,7 @@ use App\Http\Controllers\Stagiaire\RankingController;
 use App\Http\Controllers\Stagiaire\ParrainageController;
 use App\Http\Controllers\QuizController;
 use App\Http\Controllers\Stagiaire\FormationController;
-
-
-
+use App\Http\Controllers\Stagiaire\ProfileController;
 
 Route::post('login', [JWTAuthController::class, 'login']);
 
@@ -27,19 +25,20 @@ Route::middleware(['auth:api'])->group(function () {
     Route::get('/stagiaire/{id}/formations', [FormationController::class, 'getFormationsByStagiaireId']);
     Route::get('/formations/{stagiaireId}/quizzes', [QuizStagiaireController::class, 'getQuizzesByStagiaire']);
     Route::get('/quiz/categories', [QuizController::class, 'getCategories']);
-    
+    Route::get('/quiz/{quizId}/questions', [QuizStagiaireController::class, 'getQuestionsByQuizId']);
+
     // Contacts routes
     Route::get('/stagiaire/contacts', [ContactController::class, 'getContacts']);
     Route::get('/stagiaire/contacts/formateurs', [ContactController::class, 'getFormateurs']);
     Route::get('/stagiaire/contacts/commerciaux', [ContactController::class, 'getCommerciaux']);
     Route::get('/stagiaire/contacts/pole-relation', [ContactController::class, 'getPoleRelation']);
-    
+
     // Ranking and rewards routes
     Route::get('/stagiaire/ranking/global', [RankingController::class, 'getGlobalRanking']);
     Route::get('/stagiaire/ranking/formation/{formationId}', [RankingController::class, 'getFormationRanking']);
     Route::get('/stagiaire/rewards', [RankingController::class, 'getMyRewards']);
     Route::get('/stagiaire/progress', [RankingController::class, 'getMyProgress']);
-    
+
     // Parrainage routes
     Route::get('/stagiaire/parrainage/link', [ParrainageController::class, 'getParrainageLink']);
     Route::get('/stagiaire/parrainage/filleuls', [ParrainageController::class, 'getFilleuls']);
@@ -48,5 +47,6 @@ Route::middleware(['auth:api'])->group(function () {
     // Routes pour les stagiaires
     Route::prefix('stagiaire')->group(function () {
         Route::get('/formations', [FormationStagiaireController::class, 'getFormations']);
+        Route::get('/show', [ProfileController::class, 'show']);
     });
 });

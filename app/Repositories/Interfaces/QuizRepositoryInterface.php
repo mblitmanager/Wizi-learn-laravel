@@ -11,5 +11,7 @@ interface QuizRepositoryInterface
     public function create(array $data): Quiz;
     public function update($id, array $data): bool;
     public function delete($id): bool;
-    
+    public function getQuestionsByQuizId($quizId): Collection;
+    public function getQuizzesByStagiaire($stagiaireId): Collection;
+    public function getUniqueCategories(): Collection;
 }

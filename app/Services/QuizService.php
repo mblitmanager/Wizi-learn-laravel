@@ -48,4 +48,8 @@ class QuizService
     {
         return $this->quizRepository->getUniqueCategories();
     }
+    public function getQuestionsByQuizId($quizId)
+    {
+        return $this->quizRepository->getQuestionsByQuizId($quizId);
+    }
 }
