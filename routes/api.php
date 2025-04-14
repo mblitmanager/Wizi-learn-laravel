@@ -15,7 +15,7 @@ use App\Http\Controllers\Stagiaire\FormationController;
 
 
 
-Route::post('auth/login', [JWTAuthController::class, 'login']);
+Route::post('login', [JWTAuthController::class, 'login']);
 
 Route::middleware(['auth:api'])->group(function () {
     Route::post('logout', [JWTAuthController::class, 'logout']);

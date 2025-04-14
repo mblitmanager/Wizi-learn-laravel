@@ -12,7 +12,7 @@ return new class extends Migration {
     {
         Schema::table('questions', function (Blueprint $table) {
             $table->dropColumn('reponse_correct');
-            $table->dropColumn('immage_illustration');
+            // $table->dropColumn('immage_illustration');
         });
     }
 
@@ -23,7 +23,7 @@ return new class extends Migration {
     {
         Schema::table('questions', function (Blueprint $table) {
             $table->string('reponse_correct')->nullable();
-            $table->string('immage_illustration')->nullable();
+            // $table->string('immage_illustration')->nullable();
         });
     }
 }; 
