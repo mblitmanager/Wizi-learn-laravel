@@ -2,10 +2,9 @@
 
 namespace App\Repositories;
 
-use App\Models\Contact;
 use App\Models\Formateur;
 use App\Models\Commercial;
-use App\Models\PoleRelation;
+use App\Models\PoleRelationClient;
 use App\Repositories\Interfaces\ContactRepositoryInterface;
 
 class ContactRepository implements ContactRepositoryInterface
@@ -14,19 +13,21 @@ class ContactRepository implements ContactRepositoryInterface
     {
         return Formateur::whereHas('formations.stagiaires', function($query) use ($stagiaireId) {
             $query->where('stagiaires.id', $stagiaireId);
-        })->get();
+        })->with('user')->get();
     }
 
     public function getCommercialContacts($stagiaireId)
     {
         return Commercial::whereHas('stagiaires', function($query) use ($stagiaireId) {
             $query->where('stagiaires.id', $stagiaireId);
-        })->get();
+        })->with('user')->get();
     }
 
     public function getPoleRelationContacts($stagiaireId)
     {
-        return PoleRelation::all(); // Tous les contacts du pôle relation sont accessibles
+        return PoleRelationClient::whereHas('stagiaires', function($query) use ($stagiaireId) {
+            $query->where('stagiaires.id', $stagiaireId);
+        })->with('user')->get();
     }
 
     public function getAllContacts($stagiaireId)
@@ -37,4 +38,4 @@ class ContactRepository implements ContactRepositoryInterface
             'pole_relation' => $this->getPoleRelationContacts($stagiaireId)
         ];
     }
-} 
+}
