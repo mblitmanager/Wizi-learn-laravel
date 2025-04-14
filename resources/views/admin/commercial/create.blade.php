@@ -14,7 +14,8 @@
         </div>
         <div class="ms-auto">
             <div class="btn-group">
-                <a href="{{ route('commercials.index') }}" type="button" class="btn btn-primary">Retour</a>
+                <a href="{{ route('commercials.index') }}" type="button" class="btn btn-sm btn-primary"><i
+                    class="fadeIn animated bx bx-chevron-left-circle"></i>Retour</a>
             </div>
         </div>
     </div>
@@ -98,7 +99,7 @@
 
 
                     <div class="col-12">
-                        <button type="submit" class="btn btn-primary px-5">Enregistrer</button>
+                        <button type="submit" class="btn btn-sm btn-primary px-4"><i class="lni lni-save"></i>Enregistrer</button>
                     </div>
                 </form>
             </div>

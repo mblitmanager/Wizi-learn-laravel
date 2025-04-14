@@ -31,6 +31,6 @@ class Questions extends Model
 
     public function reponses()
     {
-        return $this->hasMany(Reponse::class, 'question_id');
+        return $this->hasMany(Reponse::class,'question_id');
     }
 }

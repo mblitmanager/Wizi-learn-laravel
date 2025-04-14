@@ -14,12 +14,13 @@
         </div>
         <div class="ms-auto">
             <div class="btn-group">
-                <a href="{{ route('stagiaires.index') }}" type="button" class="btn btn-primary">Retour</a>
+                <a href="{{ route('stagiaires.index') }}" type="button" class="btn btn-sm btn-primary mx-4"><i
+                    class="fadeIn animated bx bx-chevron-left-circle"></i>Retour</a>
             </div>
         </div>
     </div>
     <div class="card-body">
-        <h5 class="card-title">Ajouter stagiaire</h5>
+        <h5 class="text-wizi">Ajouter stagiaire</h5>
         <hr>
         @if ($errors->any())
             <div class="bg-danger  border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
@@ -187,7 +188,7 @@
                                         <div class="row row-cols-1 row-cols-md-3 row-cols-lg-3 row-cols-xl-3">
                                             @foreach($formations as $formation)
                                             <div class="col">
-                                                <div class="card">
+                                                <div class="card border-warning border-bottom border-3 border-0">
                                                     <div class="card-body">
                                                         <h5 class="card-title">{{ $formation->titre }}</h5>
                                                         <p class="card-text">Description rapide de la formation.</p>
@@ -253,7 +254,7 @@
                     </div>
                   </div>
                         <div class="col-12">
-                            <button type="submit" class="btn btn-primary px-5">Enregistrer</button>
+                            <button type="submit" class="btn btn-primary btn-sm px-4"><i class="lni lni-save"></i>Enregistrer</button>
                         </div>
                 </form>
             </div>

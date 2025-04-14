@@ -14,12 +14,70 @@
         </div>
         <div class="ms-auto">
             <div class="btn-group">
-                <a href="{{ route('stagiaires.create') }}" type="button" class="btn btn-sm btn-primary px-4"> <i
+                <button class="btn btn-sm text-white btn-info mx-2" data-bs-toggle="modal" data-bs-target="#importModal"><i
+                        class="lni lni-cloud-download"></i>importer stagiaires</button>
+                <a href="{{ route('stagiaires.create') }}" type="button" class="btn btn-sm btn-primary mx-2"> <i
                         class="fadeIn animated bx bx-plus"></i> Nouveau stagiaire</a>
             </div>
         </div>
     </div>
 
+    <div>
+        <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Importer stagiaires</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form action="{{ route('stagiaires.import') }}" method="POST" enctype="multipart/form-data">
+                            @csrf
+
+                            <div class="mb-3">
+                                <label for="file" class="form-label">Fichier Excel (.xlsx)</label>
+                                <input type="file" name="file" id="file" class="form-control" required
+                                    accept=".xlsx,.xls">
+                            </div>
+
+                            <div class="progress mb-3 d-none" id="progressBarWrapper">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                    role="progressbar" style="width: 100%;" id="progressBar">
+                                    Importation en cours...
+                                </div>
+                            </div>
+                            
+
+                            <button type="submit" class="btn btn-primary">Importer</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @if (session('ignored'))
+        <div class="alert alert-warning border-0 bg-warning alert-dismissible fade show">
+            <div class="text-white">  <ul>
+                @foreach (session('ignored') as $email)
+                    <li>{{ $email }}</li>
+                @endforeach
+            </ul></div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    @if (session('success'))
+        <div class="alert alert-success border-0 bg-success alert-dismissible fade show">
+            <div class="text-white">  {{ session('success') }}</div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+    @if (session('error'))
+        <div class="alert alert-danger border-0 bg-danger alert-dismissible fade show">
+            <div class="text-white">  {{ session('error') }}</div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
     <div class="card">
         <div class="card-body">
             <div class="col-md-12">
@@ -60,8 +118,9 @@
                                             data-bs-placement="top" title="" data-bs-original-title="Modifier">
                                             <i class="btn btn-sm btn-success fadeIn animated bx bx-message-square-edit"></i>
                                         </a>
-                                        <a href="{{ route('stagiaires.show', $row->id) }}" class="" data-bs-toggle="tooltip"
-                                            data-bs-placement="top" title="" data-bs-original-title="Afficher">
+                                        <a href="{{ route('stagiaires.show', $row->id) }}" class=""
+                                            data-bs-toggle="tooltip" data-bs-placement="top" title=""
+                                            data-bs-original-title="Afficher">
                                             <i class="btn btn-sm btn-info text-white fadeIn animated bx bx-show"></i>
                                         </a>
                                         @if ($row->statut == 1)
@@ -69,8 +128,9 @@
                                                 style="display:inline-block;">
                                                 @csrf
                                                 @method('PATCH')
-                                                <button type="submit" class="btn btn-sm btn-danger" data-bs-toggle="tooltip"
-                                                    data-bs-placement="top" title="" data-bs-original-title="Désactiver">
+                                                <button type="submit" class="btn btn-sm btn-danger"
+                                                    data-bs-toggle="tooltip" data-bs-placement="top" title=""
+                                                    data-bs-original-title="Désactiver">
                                                     <i class="fadeIn animated bx bx-shield-x"></i>
                                                 </button>
                                             </form>
@@ -79,8 +139,9 @@
                                                 style="display:inline-block;">
                                                 @csrf
                                                 @method('PATCH')
-                                                <button type="submit" class="btn btn-sm btn-primary" data-bs-toggle="tooltip"
-                                                    data-bs-placement="top" title="" data-bs-original-title="Activer">
+                                                <button type="submit" class="btn btn-sm btn-primary"
+                                                    data-bs-toggle="tooltip" data-bs-placement="top" title=""
+                                                    data-bs-original-title="Activer">
                                                     <i class="fadeIn animated bx bx-check-shield"></i>
                                                 </button>
                                             </form>
@@ -94,11 +155,11 @@
             </div>
         </div>
     </div>
-    @if(session('success'))
+    @if (session('success'))
         <script>
-            $(document).ready(function () {
+            $(document).ready(function() {
                 Toastify({
-                    text: '{{session('success')}}',
+                    text: '{{ session('success') }}',
                     duration: 3000,
                     close: true,
                     gravity: "top",
@@ -107,17 +168,17 @@
                     style: {
                         background: "linear-gradient(to right, #00b09b, #96c93d)",
                     },
-                    onClick: function () { }
+                    onClick: function() {}
                 }).showToast();
             });
         </script>
     @endif
 
-    @if(session('error'))
+    @if (session('error'))
         <script>
-            $(document).ready(function () {
+            $(document).ready(function() {
                 Toastify({
-                    text: '{{session('error')}}',
+                    text: '{{ session('error') }}',
                     duration: 3000,
                     close: true,
                     gravity: "top",
@@ -126,7 +187,7 @@
                     style: {
                         background: "linear-gradient(to right, #ff5f6d, #ffc371)",
                     },
-                    onClick: function () { }
+                    onClick: function() {}
                 }).showToast();
             });
         </script>
@@ -134,10 +195,10 @@
 @endsection
 @section('scripts')
     <script>
-        $(document).ready(function () {
+        $(document).ready(function() {
             var table = $('#stagiairesTable').DataTable({
                 language: {
-                    url: "//cdn.datatables.net/plug-ins/1.13.5/i18n/fr-FR.json"
+                    url: "https://cdn.datatables.net/plug-ins/1.13.5/i18n/fr-FR.json"
                 },
                 paging: true,
                 searching: true,
@@ -146,10 +207,10 @@
                 pageLength: 10,
                 dom: 'Bfrtip',
                 buttons: ['copy', 'csv', 'excel', 'pdf', 'print'],
-                initComplete: function () {
-                    this.api().columns().every(function () {
+                initComplete: function() {
+                    this.api().columns().every(function() {
                         var that = this;
-                        $('input', this.header()).on('keyup change clear', function () {
+                        $('input', this.header()).on('keyup change clear', function() {
                             if (that.search() !== this.value) {
                                 that.search(this.value).draw();
                             }
@@ -158,6 +219,16 @@
                 }
             });
         });
-
     </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.querySelector('#importModal form');
+            const progressBarWrapper = document.getElementById('progressBarWrapper');
+    
+            form.addEventListener('submit', function () {
+                progressBarWrapper.classList.remove('d-none');
+            });
+        });
+    </script>
+    
 @endsection

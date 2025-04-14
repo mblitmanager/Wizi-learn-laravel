@@ -13,12 +13,13 @@
         </div>
         <div class="ms-auto">
             <div class="btn-group">
-                <a href="{{ route('formateur.index') }}" type="button" class="btn btn-primary">Retour</a>
+                <a href="{{ route('formateur.index') }}" type="button" class="btn btn-sm btn-primary"><i
+                    class="fadeIn animated bx bx-chevron-left-circle"></i>Retour</a>
             </div>
         </div>
     </div>
     <div class="card-body">
-        <h5 class="card-title">Ajouter Formateur</h5>
+        <h5 class="text-wizi">Ajouter Formateur</h5>
         <hr>
         @if ($errors->any())
             <div class="bg-danger border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
@@ -135,7 +136,7 @@
                     </div>
 
                     <div class="col-12">
-                        <button type="submit" class="btn btn-primary px-5">Enregistrer</button>
+                        <button type="submit" class="btn btn-sm btn-primary px-4"><i class="lni lni-save"></i>Enregistrer</button>
                     </div>
                 </form>
             </div>
