@@ -52,4 +52,9 @@ class QuizService
     {
         return $this->quizRepository->getQuestionsByQuizId($quizId);
     }
+
+    public function submitQuizAnswers($quizId, $stagiaireId, array $answers)
+    {
+        return $this->quizRepository->submitQuizAnswers($quizId, $stagiaireId, $answers);
+    }
 }

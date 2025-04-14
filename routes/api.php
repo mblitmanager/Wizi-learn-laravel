@@ -53,6 +53,9 @@ Route::middleware(['auth:api'])->group(function () {
 
     // New route for getting responses to a question
     Route::get('/questions/{questionId}/reponses', [ReponseController::class, 'getReponsesByQuestion']);
+
+    // New route for submitting a quiz
+    Route::post('/quizzes/{quizId}/submit', [QuizStagiaireController::class, 'submitQuiz']);
 });
 
 // Routes d'authentification
