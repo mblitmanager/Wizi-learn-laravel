@@ -147,6 +147,8 @@ class QuizeRepository implements QuizRepositoryInterface
 
     public function getQuestionsByQuizId($quizId): Collection
     {
-        return Questions::where('quiz_id', $quizId)->get();
+        return Questions::where('quiz_id', $quizId)
+            ->with('reponses')
+            ->get();
     }
 }
