@@ -12,6 +12,7 @@ use App\Http\Controllers\Stagiaire\ParrainageController;
 use App\Http\Controllers\QuizController;
 use App\Http\Controllers\Stagiaire\FormationController;
 use App\Http\Controllers\Stagiaire\ProfileController;
+use App\Http\Controllers\Admin\ReponseController;
 
 Route::post('login', [JWTAuthController::class, 'login']);
 
@@ -49,4 +50,10 @@ Route::middleware(['auth:api'])->group(function () {
         Route::get('/formations', [FormationStagiaireController::class, 'getFormations']);
         Route::get('/show', [ProfileController::class, 'show']);
     });
+
+    // New route for getting responses to a question
+    Route::get('/questions/{questionId}/reponses', [ReponseController::class, 'getReponsesByQuestion']);
 });
+
+// Routes d'authentification
+Route::post('refresh-token', [App\Http\Controllers\Auth\AuthController::class, 'refresh']);
