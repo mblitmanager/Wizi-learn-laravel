@@ -15,15 +15,28 @@ class ParrainageRepository implements ParrainageRepositoryInterface
      */
     public function getFilleuls(int $parrainId): array
     {
-        return Parainage::with('filleul')
+        return Parainage::with(['filleul.user', 'filleul.formations'])
             ->where('parrain_id', $parrainId)
             ->get()
+            ->filter(function ($parainage) {
+                return $parainage->filleul !== null;
+            })
             ->map(function ($parainage) {
                 return [
                     'id' => $parainage->filleul->id,
-                    'name' => $parainage->filleul->name,
-                    'email' => $parainage->filleul->email,
+                    'name' => $parainage->filleul->user->name,
+                    'email' => $parainage->filleul->user->email,
+                    'telephone' => $parainage->filleul->telephone,
+                    'ville' => $parainage->filleul->ville,
+                    'formations' => $parainage->filleul->formations->map(function ($formation) {
+                        return [
+                            'id' => $formation->id,
+                            'name' => $formation->name,
+                            'description' => $formation->description
+                        ];
+                    }),
                     'created_at' => $parainage->created_at,
+                    'accepted_at' => $parainage->accepted_at
                 ];
             })
             ->toArray();

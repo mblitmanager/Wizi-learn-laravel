@@ -20,6 +20,11 @@ class Parainage extends Model
     protected $fillable = [
         'parrain_id',
         'filleul_id',
+        'points',
+        'token',
+        'code',
+        'link',
+        'accepted_at',
     ];
 
     /**

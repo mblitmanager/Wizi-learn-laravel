@@ -2,14 +2,14 @@
 
 namespace App\Services;
 
-use App\Repositories\Interfaces\ParrainageRepositoryInterface;
+use App\Repositories\ParrainageRepository;
 use Illuminate\Support\Str;
 
 class ParrainageService
 {
     protected $parrainageRepository;
 
-    public function __construct(ParrainageRepositoryInterface $parrainageRepository)
+    public function __construct(ParrainageRepository $parrainageRepository)
     {
         $this->parrainageRepository = $parrainageRepository;
     }
@@ -38,8 +38,12 @@ class ParrainageService
     public function getParrainageStats($stagiaireId)
     {
         $filleuls = $this->getFilleuls($stagiaireId);
+        $rewards = collect($this->parrainageRepository->getRewards($stagiaireId));
+
         return [
             'total_filleuls' => count($filleuls),
+            'total_points' => $rewards->sum('points') ?? 0,
+            'total_rewards' => $rewards->count() ?? 0,
             'filleuls' => $filleuls
         ];
     }
@@ -110,7 +114,7 @@ class ParrainageService
      */
     public function getParrainageRewards($stagiaireId)
     {
-        $rewards = $this->parrainageRepository->getRewards($stagiaireId);
+        $rewards = collect($this->parrainageRepository->getRewards($stagiaireId));
 
         return [
             'total_points' => $rewards->sum('points'),
@@ -127,7 +131,7 @@ class ParrainageService
      */
     public function getParrainageHistory($stagiaireId)
     {
-        $history = $this->parrainageRepository->getHistory($stagiaireId);
+        $history = collect($this->parrainageRepository->getHistory($stagiaireId));
 
         return [
             'parrainages' => $history->map(function ($item) {

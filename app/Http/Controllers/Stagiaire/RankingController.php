@@ -86,10 +86,9 @@ class RankingController extends Controller
     public function getMyProgress()
     {
         try {
-
             $user = JWTAuth::parseToken()->authenticate();
-             // Charger la relation stagiaire si elle n'est pas déjà chargée
-             if (!isset($user->relations['stagiaire'])) {
+            // Charger la relation stagiaire si elle n'est pas déjà chargée
+            if (!isset($user->relations['stagiaire'])) {
                 $user->load('stagiaire');
             }
 
@@ -101,8 +100,16 @@ class RankingController extends Controller
                     return response()->json(['error' => 'non autorisé'], 403);
                 }
             }
+
             $progress = $this->rankingService->getStagiaireProgress($user->stagiaire->id);
-            return response()->json($progress);
+
+            // Charger les relations nécessaires pour le stagiaire
+            $user->stagiaire->load(['user', 'formations', 'formateur', 'commercial']);
+
+            return response()->json([
+                'stagiaire' => $user->stagiaire,
+                'progress' => $progress
+            ]);
         } catch (JWTException $e) {
             return response()->json(['error' => 'non autorisé'], 403);
         }

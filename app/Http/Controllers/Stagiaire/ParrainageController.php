@@ -76,6 +76,14 @@ class ParrainageController extends Controller
             }
 
             // Vérifier si l'utilisateur est bien le stagiaire demandé ou a les droits d'accès
+            if ($user->role != 'formateur' && $user->role != 'admin') {
+                // Vérifier si l'utilisateur est associé à ce stagiaire
+                $userStagiaire = $user->stagiaire;
+                if (!$userStagiaire) {
+                    return response()->json(['error' => 'non autorisé'], 403);
+                }
+            }
+
             $stats = $this->parrainageService->getParrainageStats($user->stagiaire->id);
             return response()->json($stats);
         } catch (JWTException $e) {

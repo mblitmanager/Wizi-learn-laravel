@@ -50,17 +50,17 @@ class RankingService
     private function calculateLevel($points)
     {
         // Configuration des niveaux
-        $basePoints = 100; // Points nécessaires pour chaque niveau
+        $basePoints = 10; // Points nécessaires pour chaque niveau
         $maxLevel = 100;    // Niveau maximum
         $levels = [];
 
         // Génération dynamique des niveaux
-        for ($level = 1; $level <= $maxLevel; $level++) {
+        for ($level = 0; $level <= $maxLevel; $level++) {
             $threshold = ($level - 1) * $basePoints;
             $levels[$threshold] = (string)$level;
         }
 
-        $level = '1';
+        $level = '0';
         foreach ($levels as $threshold => $name) {
             if ($points >= $threshold) {
                 $level = $name;
