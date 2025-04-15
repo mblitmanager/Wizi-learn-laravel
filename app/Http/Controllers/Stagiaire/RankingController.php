@@ -21,10 +21,23 @@ class RankingController extends Controller
     {
         try {
             $user = JWTAuth::parseToken()->authenticate();
+             // Charger la relation stagiaire si elle n'est pas déjà chargée
+             if (!isset($user->relations['stagiaire'])) {
+                $user->load('stagiaire');
+            }
+
+            // Vérifier si l'utilisateur est bien le stagiaire demandé ou a les droits d'accès
+            if ($user->role != 'formateur' && $user->role != 'admin') {
+                // Vérifier si l'utilisateur est associé à ce stagiaire
+                $userStagiaire = $user->stagiaire;
+                if (!$userStagiaire) {
+                    return response()->json(['error' => 'non autorisé'], 403);
+                }
+            }
             $ranking = $this->rankingService->getGlobalRanking();
             return response()->json($ranking);
         } catch (JWTException $e) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+            return response()->json(['error' => 'non autorisé'], 403);
         }
     }
 
@@ -32,32 +45,66 @@ class RankingController extends Controller
     {
         try {
             $user = JWTAuth::parseToken()->authenticate();
+            // Charger la relation stagiaire si elle n'est pas déjà chargée
+            if (!isset($user->relations['stagiaire'])) {
+                $user->load('stagiaire');
+            }
+
+            // Vérifier si l'utilisateur est bien le stagiaire demandé ou a les droits d'accès
             $ranking = $this->rankingService->getFormationRanking($formationId);
             return response()->json($ranking);
         } catch (JWTException $e) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+            return response()->json(['error' => 'non autorisé'], 403);
         }
     }
 
     public function getMyRewards()
     {
         try {
+
             $user = JWTAuth::parseToken()->authenticate();
-            $rewards = $this->rankingService->getStagiaireRewards($user->id);
+             // Charger la relation stagiaire si elle n'est pas déjà chargée
+             if (!isset($user->relations['stagiaire'])) {
+                $user->load('stagiaire');
+            }
+
+            // Vérifier si l'utilisateur est bien le stagiaire demandé ou a les droits d'accès
+            if ($user->role != 'formateur' && $user->role != 'admin') {
+                // Vérifier si l'utilisateur est associé à ce stagiaire
+                $userStagiaire = $user->stagiaire;
+                if (!$userStagiaire) {
+                    return response()->json(['error' => 'non autorisé'], 403);
+                }
+            }
+            $rewards = $this->rankingService->getStagiaireRewards($user->stagiaire->id);
             return response()->json($rewards);
         } catch (JWTException $e) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+            return response()->json(['error' => 'non autorisé'], 403);
         }
     }
 
     public function getMyProgress()
     {
         try {
+
             $user = JWTAuth::parseToken()->authenticate();
-            $progress = $this->rankingService->getStagiaireProgress($user->id);
+             // Charger la relation stagiaire si elle n'est pas déjà chargée
+             if (!isset($user->relations['stagiaire'])) {
+                $user->load('stagiaire');
+            }
+
+            // Vérifier si l'utilisateur est bien le stagiaire demandé ou a les droits d'accès
+            if ($user->role != 'formateur' && $user->role != 'admin') {
+                // Vérifier si l'utilisateur est associé à ce stagiaire
+                $userStagiaire = $user->stagiaire;
+                if (!$userStagiaire) {
+                    return response()->json(['error' => 'non autorisé'], 403);
+                }
+            }
+            $progress = $this->rankingService->getStagiaireProgress($user->stagiaire->id);
             return response()->json($progress);
         } catch (JWTException $e) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+            return response()->json(['error' => 'non autorisé'], 403);
         }
     }
-} 
+}

@@ -28,4 +28,20 @@ interface RankingRepositoryInterface
      * @return bool
      */
     public function updateUserProgress(int $userId, array $data): bool;
+
+    /**
+     * Get the ranking for a specific formation
+     *
+     * @param int $formationId
+     * @return array
+     */
+    public function getFormationRanking(int $formationId): array;
+
+    /**
+     * Get the rewards for a specific stagiaire
+     *
+     * @param int $stagiaireId
+     * @return array
+     */
+    public function getStagiaireRewards(int $stagiaireId): array;
 }

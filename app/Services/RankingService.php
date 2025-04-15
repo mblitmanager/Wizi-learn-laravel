@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Repositories\Interfaces\RankingRepositoryInterface;
-use App\Repositories\Interfaces\QuizRepositoryInterface;
+use App\Repositories\RankingRepository;
+use App\Repositories\QuizeRepository;
 
 class RankingService
 {
@@ -11,8 +11,8 @@ class RankingService
     protected $quizRepository;
 
     public function __construct(
-        RankingRepositoryInterface $rankingRepository,
-        QuizRepositoryInterface $quizRepository
+        RankingRepository $rankingRepository,
+        QuizeRepository $quizRepository
     ) {
         $this->rankingRepository = $rankingRepository;
         $this->quizRepository = $quizRepository;
@@ -49,16 +49,18 @@ class RankingService
 
     private function calculateLevel($points)
     {
-        // Logique de calcul du niveau basée sur les points
-        $levels = [
-            0 => 'Débutant',
-            100 => 'Intermédiaire',
-            300 => 'Avancé',
-            600 => 'Expert',
-            1000 => 'Maître'
-        ];
+        // Configuration des niveaux
+        $basePoints = 100; // Points nécessaires pour chaque niveau
+        $maxLevel = 100;    // Niveau maximum
+        $levels = [];
 
-        $level = 'Débutant';
+        // Génération dynamique des niveaux
+        for ($level = 1; $level <= $maxLevel; $level++) {
+            $threshold = ($level - 1) * $basePoints;
+            $levels[$threshold] = (string)$level;
+        }
+
+        $level = '1';
         foreach ($levels as $threshold => $name) {
             if ($points >= $threshold) {
                 $level = $name;
@@ -67,4 +69,4 @@ class RankingService
 
         return $level;
     }
-} 
+}
