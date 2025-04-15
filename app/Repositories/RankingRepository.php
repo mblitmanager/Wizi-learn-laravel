@@ -16,7 +16,7 @@ class RankingRepository implements RankingRepositoryInterface
      */
     public function getUserProgress(int $userId): array
     {
-        $progress = Progression::where('user_id', $userId)
+        $progress = Progression::where('stagiaire_id', $userId)
             ->select('points', 'completed_quizzes', 'completed_challenges')
             ->first();
 
@@ -43,7 +43,7 @@ class RankingRepository implements RankingRepositoryInterface
     public function getGlobalRanking(int $limit = 10): array
     {
         return DB::table('progressions')
-            ->join('users', 'progressions.user_id', '=', 'users.id')
+            ->join('users', 'progressions.stagiaire_id', '=', 'users.id')
             ->select('users.id', 'users.name', 'progressions.points')
             ->orderBy('progressions.points', 'desc')
             ->limit($limit)
@@ -61,7 +61,7 @@ class RankingRepository implements RankingRepositoryInterface
     public function updateUserProgress(int $userId, array $data): bool
     {
         return Progression::updateOrCreate(
-            ['user_id' => $userId],
+            ['stagiaire_id' => $userId],
             $data
         ) !== null;
     }
@@ -74,7 +74,7 @@ class RankingRepository implements RankingRepositoryInterface
      */
     private function calculateUserRank(int $userId): int
     {
-        $userPoints = Progression::where('user_id', $userId)
+        $userPoints = Progression::where('stagiaire_id', $userId)
             ->value('points') ?? 0;
 
         return DB::table('progressions')
