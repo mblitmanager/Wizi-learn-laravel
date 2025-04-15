@@ -66,4 +66,9 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->role === 'administrateur';
     }
+
+    public function stagiaire()
+    {
+        return $this->hasOne(Stagiaire::class, 'user_id');
+    }
 }

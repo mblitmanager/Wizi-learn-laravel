@@ -56,6 +56,16 @@ Route::middleware(['auth:api'])->group(function () {
 
     // New route for submitting a quiz
     Route::post('/quizzes/{quizId}/submit', [QuizStagiaireController::class, 'submitQuiz']);
+
+    // Routes de parrainage
+    Route::prefix('stagiaire/parrainage')->group(function () {
+        Route::get('stats', [ParrainageController::class, 'getParrainageStats']);
+        Route::get('filleuls', [ParrainageController::class, 'getFilleuls']);
+        Route::post('generate-link', [ParrainageController::class, 'generateParrainageLink']);
+        Route::post('accept', [ParrainageController::class, 'acceptParrainage']);
+        Route::get('rewards', [ParrainageController::class, 'getParrainageRewards']);
+        Route::get('history', [ParrainageController::class, 'getParrainageHistory']);
+    });
 });
 
 // Routes d'authentification

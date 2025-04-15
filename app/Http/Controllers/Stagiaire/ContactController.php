@@ -21,10 +21,25 @@ class ContactController extends Controller
     {
         try {
             $user = JWTAuth::parseToken()->authenticate();
-            $contacts = $this->contactService->getContactsByStagiaire($user->id);
+             // Charger la relation stagiaire si elle n'est pas déjà chargée
+             if (!isset($user->relations['stagiaire'])) {
+                $user->load('stagiaire');
+
+            }
+
+            // Vérifier si l'utilisateur est bien le stagiaire demandé ou a les droits d'accès
+            if ($user->role != 'formateur' && $user->role != 'admin') {
+                // Vérifier si l'utilisateur est associé à ce stagiaire
+                $userStagiaire = $user->stagiaire;
+                if (!$userStagiaire) {
+                    return response()->json(['error' => 'non autorisé'], 403);
+                }
+            }
+
+            $contacts = $this->contactService->getContactsByStagiaire($user->stagiaire->id);
             return response()->json($contacts);
         } catch (JWTException $e) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+            return response()->json(['error' => 'non autorisé'], 401);
         }
     }
 
@@ -32,10 +47,24 @@ class ContactController extends Controller
     {
         try {
             $user = JWTAuth::parseToken()->authenticate();
-            $formateurs = $this->contactService->getFormateurContacts($user->id);
+             // Charger la relation stagiaire si elle n'est pas déjà chargée
+             if (!isset($user->relations['stagiaire'])) {
+                $user->load('stagiaire');
+
+            }
+
+            // Vérifier si l'utilisateur est bien le stagiaire demandé ou a les droits d'accès
+            if ($user->role != 'formateur' && $user->role != 'admin') {
+                // Vérifier si l'utilisateur est associé à ce stagiaire
+                $userStagiaire = $user->stagiaire;
+                if (!$userStagiaire) {
+                    return response()->json(['error' => 'non autorisé'], 403);
+                }
+            }
+            $formateurs = $this->contactService->getFormateurContacts($user->stagiaire->id);
             return response()->json($formateurs);
         } catch (JWTException $e) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+            return response()->json(['error' => 'non autorisé'], 401);
         }
     }
 
@@ -43,7 +72,21 @@ class ContactController extends Controller
     {
         try {
             $user = JWTAuth::parseToken()->authenticate();
-            $commerciaux = $this->contactService->getCommercialContacts($user->id);
+             // Charger la relation stagiaire si elle n'est pas déjà chargée
+             if (!isset($user->relations['stagiaire'])) {
+                $user->load('stagiaire');
+
+            }
+
+            // Vérifier si l'utilisateur est bien le stagiaire demandé ou a les droits d'accès
+            if ($user->role != 'formateur' && $user->role != 'admin') {
+                // Vérifier si l'utilisateur est associé à ce stagiaire
+                $userStagiaire = $user->stagiaire;
+                if (!$userStagiaire) {
+                    return response()->json(['error' => 'non autorisé'], 403);
+                }
+            }
+            $commerciaux = $this->contactService->getCommercialContacts($user->stagiaire->id);
             return response()->json($commerciaux);
         } catch (JWTException $e) {
             return response()->json(['error' => 'Unauthorized'], 401);
@@ -54,10 +97,24 @@ class ContactController extends Controller
     {
         try {
             $user = JWTAuth::parseToken()->authenticate();
-            $poleRelation = $this->contactService->getPoleRelationContacts($user->id);
+             // Charger la relation stagiaire si elle n'est pas déjà chargée
+             if (!isset($user->relations['stagiaire'])) {
+                $user->load('stagiaire');
+
+            }
+
+            // Vérifier si l'utilisateur est bien le stagiaire demandé ou a les droits d'accès
+            if ($user->role != 'formateur' && $user->role != 'admin') {
+                // Vérifier si l'utilisateur est associé à ce stagiaire
+                $userStagiaire = $user->stagiaire;
+                if (!$userStagiaire) {
+                    return response()->json(['error' => 'non autorisé'], 403);
+                }
+            }
+            $poleRelation = $this->contactService->getPoleRelationContacts($user->stagiaire->id);
             return response()->json($poleRelation);
         } catch (JWTException $e) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+            return response()->json(['error' => 'non autorisé'], 401);
         }
     }
 
@@ -65,10 +122,24 @@ class ContactController extends Controller
     {
         try {
             $user = JWTAuth::parseToken()->authenticate();
-            $contact = $this->contactService->addContact($user->id, $request->all());
+             // Charger la relation stagiaire si elle n'est pas déjà chargée
+             if (!isset($user->relations['stagiaire'])) {
+                $user->load('stagiaire');
+
+            }
+
+            // Vérifier si l'utilisateur est bien le stagiaire demandé ou a les droits d'accès
+            if ($user->role != 'formateur' && $user->role != 'admin') {
+                // Vérifier si l'utilisateur est associé à ce stagiaire
+                $userStagiaire = $user->stagiaire;
+                if (!$userStagiaire) {
+                    return response()->json(['error' => 'non autorisé'], 403);
+                }
+            }
+            $contact = $this->contactService->addContact($user->stagiaire->id, $request->all());
             return response()->json($contact, 201);
         } catch (JWTException $e) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+            return response()->json(['error' => 'non autorisé'], 401);
         }
     }
-} 
+}

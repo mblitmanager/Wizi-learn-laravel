@@ -71,9 +71,9 @@ class FormationStagiaireController extends Controller
         $categories = $this->formationService->getUniqueCategories();
         return response()->json($categories);
     }
-    public function getFormationsByCategory($categoryId)
+    public function getFormationsByCategory($category)
     {
-        $formations = $this->formationService->getFormationsByCategory($categoryId);
+        $formations = $this->formationService->getFormationsByCategory($category);
         return response()->json($formations);
     }
 
@@ -81,13 +81,26 @@ class FormationStagiaireController extends Controller
     {
         try {
             $user = JWTAuth::parseToken()->authenticate();
-            $formations = $this->formationService->getFormationsByStagiaire($user->id);
-            
+             // Charger la relation stagiaire si elle n'est pas déjà chargée
+             if (!isset($user->relations['stagiaire'])) {
+                $user->load('stagiaire');
+            }
+
+            // Vérifier si l'utilisateur est bien le stagiaire demandé ou a les droits d'accès
+            if ($user->role != 'formateur' && $user->role != 'admin') {
+                // Vérifier si l'utilisateur est associé à ce stagiaire
+                $userStagiaire = $user->stagiaire;
+                if (!$userStagiaire ) {
+                    return response()->json(['error' => 'non autorisé'], 403);
+                }
+            }
+            $formations = $this->formationService->getFormationsByStagiaire($user->stagiaire->id);
+
             return response()->json([
                 'data' => $formations
             ]);
         } catch (JWTException $e) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+            return response()->json(['error' => 'Non autorisé'], 401);
         }
     }
 }

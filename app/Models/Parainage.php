@@ -27,7 +27,7 @@ class Parainage extends Model
      */
     public function parrain(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'parrain_id');
+        return $this->belongsTo(Stagiaire::class, 'parrain_id');
     }
 
     /**
@@ -35,6 +35,6 @@ class Parainage extends Model
      */
     public function filleul(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'filleul_id');
+        return $this->belongsTo(Stagiaire::class, 'filleul_id');
     }
 }

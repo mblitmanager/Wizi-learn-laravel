@@ -14,11 +14,11 @@ return new class extends Migration
         Schema::table('parainages', function (Blueprint $table) {
             if (!Schema::hasColumn('parainages', 'parrain_id')) {
                 $table->unsignedBigInteger('parrain_id')->after('id');
-                $table->foreign('parrain_id')->references('id')->on('users')->onDelete('cascade');
+                $table->foreign('parrain_id')->references('id')->on('stagiaires')->onDelete('cascade');
             }
             if (!Schema::hasColumn('parainages', 'filleul_id')) {
                 $table->unsignedBigInteger('filleul_id')->after('parrain_id');
-                $table->foreign('filleul_id')->references('id')->on('users')->onDelete('cascade');
+                $table->foreign('filleul_id')->references('id')->on('stagiaires')->onDelete('cascade');
             }
             if (!Schema::hasColumn('parainages', 'created_at')) {
                 $table->timestamp('created_at')->nullable();
