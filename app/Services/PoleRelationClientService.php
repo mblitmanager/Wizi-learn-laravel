@@ -1,15 +1,16 @@
 <?php
 namespace App\Services;
 
-use App\Repositories\Contracts\PoleRelationClientRepositoryInterface;
 use App\Models\PoleRelationClient;
 use App\Models\User;
+use App\Repositories\Interfaces\PRCInterface;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
 
-class PoleRelationClientService implements PoleRelationClientRepositoryInterface
+class PoleRelationClientService implements PRCInterface
 {
-    public function __construct(protected PoleRelationClientRepositoryInterface $repository)
+    protected $repository;
+    public function __construct(PRCInterface $repository)
     {
         $this->repository = $repository;
     }
