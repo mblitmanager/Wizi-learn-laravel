@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\FormateurStoreRequest;
 use App\Models\Formateur;
 use App\Models\Formation;
+use App\Models\Stagiaire;
 use App\Models\User;
 use App\Services\FormateurService;
 use Illuminate\Http\Request;
@@ -33,8 +34,8 @@ class FormateurController extends Controller
     public function create()
     {
         $formations = Formation::all();
-
-        return view('admin.formateur.create', compact('formations'));
+        $stagiaires = Stagiaire::all();
+        return view('admin.formateur.create', compact('formations', 'stagiaires'));
     }
 
     /**
@@ -64,7 +65,8 @@ class FormateurController extends Controller
     {
         $formateur = $this->formateurService->show($id);
         $formations = Formation::all();
-        return view('admin.formateur.edit', compact('formateur', 'formations'));
+        $stagiaires = Stagiaire::all();
+        return view('admin.formateur.edit', compact('formateur', 'formations', 'stagiaires'));
     }
 
     /**
@@ -138,7 +140,8 @@ class FormateurController extends Controller
                 $cell = $row->getCellIterator()->current();
                 $consultantsCell = trim($cell->getValue());
 
-                if (empty($consultantsCell)) continue;
+                if (empty($consultantsCell))
+                    continue;
 
                 $consultants = $this->splitConsultants($consultantsCell);
 

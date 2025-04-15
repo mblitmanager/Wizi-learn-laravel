@@ -13,7 +13,8 @@
         </div>
         <div class="ms-auto">
             <div class="btn-group">
-                <a href="{{ route('stagiaires.index') }}" type="button" class="btn btn-primary">Retour</a>
+                <a href="{{ route('stagiaires.index') }}" type="button" class="btn btn-sm btn-primary"><i
+                    class="fadeIn animated bx bx-chevron-left-circle"></i>Retour</a>
             </div>
         </div>
     </div>
@@ -143,7 +144,7 @@
                             <option value="">-- Choisir un formateur --</option>
                             @foreach($formateurs as $formateur)
                                 <option value="{{ $formateur->id }}" {{ old('formateur_id', $stagiaire->formateur_id) == $formateur->id ? 'selected' : '' }}>
-                                    {{ $formateur->nom }}
+                                    {{ $formateur->user->name }}
                                 </option>
                             @endforeach
                         </select>
@@ -157,7 +158,7 @@
                             <option value="">-- Choisir un commercial --</option>
                             @foreach($commercials as $commercial)
                                 <option value="{{ $commercial->id }}" {{ old('commercial_id', $stagiaire->commercial_id) == $commercial->id ? 'selected' : '' }}>
-                                    {{ $commercial->nom }}
+                                    {{ $commercial->user->name }}
                                 </option>
                             @endforeach
                         </select>
@@ -165,7 +166,7 @@
                     </div>
 
                     <div class="col-12">
-                        <button type="submit" class="btn btn-success px-5">Mettre à jour</button>
+                        <button type="submit" class="btn  btn-sm btn-success px-4"><i class="lni lni-save"></i>Mettre à jour</button>
                     </div>
                 </form>
             </div>

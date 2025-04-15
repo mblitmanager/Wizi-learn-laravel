@@ -14,6 +14,9 @@ return new class extends Migration {
             $table->id();
             $table->string('titre')->nullable();
             $table->string('description')->nullable();
+            $table->string('prerequis')->nullable();
+            $table->decimal('tarif', 8, 2)->nullable();
+            $table->string('certification')->nullable();
             $table->boolean('statut')->default(false);
             $table->string('duree')->nullable();
             $table->foreignId('formation_id')->constrained()->onDelete('cascade');

@@ -21,10 +21,7 @@ return new class extends Migration {
             $table->string('code_postal')->nullable();
             $table->string('role')->default('stagiaire');
             $table->boolean('statut')->default(true);
-            $table->foreignId('formation_id')->nullable()->constrained('formations')->onDelete('cascade');
-            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade')->null;
-            $table->foreignId('formateur_id')->nullable()->constrained('formateurs')->onDelete('cascade')->null;
-            $table->foreignId('commercial_id')->nullable()->constrained('commercials')->onDelete('cascade')->null;
+            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade');
             $table->timestamps();
         });
     }

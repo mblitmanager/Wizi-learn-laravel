@@ -37,6 +37,7 @@ class CommmercialStoreRequest extends FormRequest
             'role' => [
                 Rule::in(['commercial']),
             ],
+            'stagiaire_id' => 'required|exists:stagiaires,id',
         ];
     }
 }

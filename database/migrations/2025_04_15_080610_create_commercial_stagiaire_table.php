@@ -8,22 +8,22 @@ return new class extends Migration {
     /**
      * Run the migrations.
      */
-    public function up(): void
+    public function up()
     {
-        Schema::create('pole_relation_clients', function (Blueprint $table) {
+        Schema::create('commercial_stagiaire', function (Blueprint $table) {
             $table->id();
-            $table->string('prenom')->nullable();
-            $table->string('role')->default('pole_relation_client');
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('commercial_id')->constrained()->onDelete('cascade');
+            $table->foreignId('stagiaire_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }
+
 
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::dropIfExists('pole_relation_clients');
+        Schema::dropIfExists('commercial_stagiaire');
     }
 };

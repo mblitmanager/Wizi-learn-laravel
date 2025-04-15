@@ -16,7 +16,7 @@ class StagiaireRepository implements StagiaireRepositoryInterface
 
     public function find($id): ?Stagiaire
     {
-        return Stagiaire::with(['formations'])->find($id);
+        return Stagiaire::with('user', 'formations')->where('id', $id)->first();
     }
 
     public function create(array $data): Stagiaire

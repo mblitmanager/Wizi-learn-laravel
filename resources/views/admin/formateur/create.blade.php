@@ -93,6 +93,24 @@
                             @enderror
                         </div>
                     </div>
+
+                    
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="stagiaire_id">Stagiaire</label>
+                            <select name="stagiaire_id[]" id="stagiaire_id" class="form-select select2 @error('stagiaire_id') is-invalid @enderror" multiple>
+                                <option value="">Choisir un ou plusieurs stagiaires</option>
+                                @foreach ($stagiaires as $stagiaire)
+                                    <option value="{{ $stagiaire->id }}" {{ in_array($stagiaire->id, old('stagiaire_id', [])) ? 'selected' : '' }}>
+                                        {{ $stagiaire->user->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('stagiaire_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
                     <div class="col-md-12">
                         <div class="accordion mb-3" id="accordionExample">
                             <div class="accordion-item">
@@ -144,14 +162,14 @@
     </div>
 @endsection
 @section('scripts')
-    @section('scripts')
-        <script>
-            $(document).ready(function () {
-                $('.js-example-basic-multiple').select2({
-                    placeholder: "Choisir une ou plusieurs formations", // Placeholder
-                    allowClear: true
-                });
-            });
-        </script>
-    @endsection
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('.select2').select2({
+            placeholder: "Choisir des formations",
+            allowClear: true
+        });
+    });
+</script>
 @endsection

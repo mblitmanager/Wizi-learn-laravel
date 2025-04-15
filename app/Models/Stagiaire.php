@@ -23,10 +23,7 @@ class Stagiaire extends Model
         'code_postal',
         'role',
         'statut',
-        'formation_id',
         'user_id',
-        'formateur_id',
-        'commercial_id',
     ];
 
 
@@ -36,21 +33,22 @@ class Stagiaire extends Model
         return $this->belongsToMany(Formation::class, 'stagiaire_formations');
     }
 
-
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    public function formateur()
+    public function formateurs()
     {
-        return $this->belongsTo(Formateur::class);
+        return $this->belongsToMany(Formateur::class, 'formateur_stagiaire');
     }
 
-    public function commercial()
+
+    public function commercials()
     {
-        return $this->belongsTo(Commercial::class);
+        return $this->belongsToMany(Commercial::class, 'commercial_stagiaire');
     }
+
 
     public function agendas()
     {

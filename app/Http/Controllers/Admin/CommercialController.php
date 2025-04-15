@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CommmercialStoreRequest;
 use App\Models\Commercial;
+use App\Models\Stagiaire;
 use App\Models\User;
 use App\Services\CommercialService;
 use Illuminate\Http\Request;
@@ -33,7 +34,9 @@ class CommercialController extends Controller
      */
     public function create()
     {
-        return view('admin.commercial.create');
+        $stagiaires = Stagiaire::all();
+
+        return view('admin.commercial.create', compact('stagiaires'));
     }
 
     /**
@@ -52,7 +55,8 @@ class CommercialController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $commercial = $this->commercialsService->show($id);
+        return view('admin.commercial.show', compact('commercial'));
     }
 
     /**
@@ -61,7 +65,8 @@ class CommercialController extends Controller
     public function edit(string $id)
     {
         $commercial = $this->commercialsService->show($id);
-        return view('admin.commercial.edit', compact('commercial'));
+        $stagiaires = Stagiaire::all();
+        return view('admin.commercial.edit', compact('commercial', 'stagiaires'));
     }
 
     /**
@@ -135,7 +140,8 @@ class CommercialController extends Controller
                 $cell = $row->getCellIterator()->current();
                 $consultantsCell = trim($cell->getValue());
 
-                if (empty($consultantsCell)) continue;
+                if (empty($consultantsCell))
+                    continue;
 
                 $consultants = $this->splitConsultants($consultantsCell);
 
