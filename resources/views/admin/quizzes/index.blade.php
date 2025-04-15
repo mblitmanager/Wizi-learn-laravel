@@ -13,8 +13,56 @@
         </div>
         <div class="ms-auto">
             <div class="btn-group">
+                <button class="btn btn-sm text-white btn-info mx-2" data-bs-toggle="modal" data-bs-target="#importModal"><i
+                        class="lni lni-cloud-download"></i>importer quiz</button>
+
                 <a href="{{ route('quiz.create') }}" type="button" class="btn btn-sm btn-primary px-4"> <i
                         class="fadeIn animated bx bx-plus"></i> Nouveau quiz</a>
+            </div>
+        </div>
+    </div>
+
+    @if (session('success'))
+        <div class="alert alert-success border-0 bg-success alert-dismissible fade show">
+            <div class="text-white"> {{ session('success') }}</div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+    @if (session('error'))
+        <div class="alert alert-danger border-0 bg-danger alert-dismissible fade show">
+            <div class="text-white"> {{ session('error') }}</div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+    <div>
+        <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Importer stagiaires</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form action="{{ route('quiz.import') }}" method="POST" enctype="multipart/form-data">
+                            @csrf
+
+                            <div class="mb-3">
+                                <label for="file" class="form-label">Fichier Excel (.xlsx)</label>
+                                <input type="file" name="file" id="file" class="form-control" required accept=".xlsx,.xls">
+                            </div>
+
+                            <div class="progress mb-3 d-none" id="progressBarWrapper">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                                    style="width: 100%;" id="progressBar">
+                                    Importation en cours...
+                                </div>
+                            </div>
+
+
+                            <button type="submit" class="btn btn-primary">Importer</button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -55,6 +103,10 @@
                                             data-bs-toggle="tooltip" data-bs-placement="top" title=""
                                             data-bs-original-title="Modifier">
                                             <i class="fadeIn animated bx bx-message-square-edit"></i>
+                                        </a>
+                                        <a href="{{ route('quiz.show', $row->id) }}" class="" data-bs-toggle="tooltip"
+                                            data-bs-placement="top" title="" data-bs-original-title="Afficher">
+                                            <i class="btn btn-sm btn-info text-white fadeIn animated bx bx-show"></i>
                                         </a>
 
                                     </td>
@@ -131,5 +183,16 @@
             });
         });
 
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.querySelector('#importModal form');
+            const progressBarWrapper = document.getElementById('progressBarWrapper');
+
+            form.addEventListener('submit', function () {
+                progressBarWrapper.classList.remove('d-none');
+            });
+        });
     </script>
 @endsection

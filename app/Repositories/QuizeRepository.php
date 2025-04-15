@@ -15,7 +15,7 @@ class QuizeRepository implements QuizRepositoryInterface
 
     public function find(int $id): ?Quiz
     {
-        return Quiz::with('participations', 'questions')->find($id);
+        return Quiz::with('participations', 'questions')->where('id', $id)->first();
     }
 
     public function create(array $data): Quiz

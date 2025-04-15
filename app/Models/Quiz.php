@@ -21,7 +21,8 @@ class Quiz extends Model
         'duree',
         'niveau',
         'nb_points_total',
-        'formation_id'
+        'formation_id',
+        'question_id'
     ];
 
     public function participations()

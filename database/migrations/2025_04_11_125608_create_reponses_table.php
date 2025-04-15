@@ -12,7 +12,6 @@ return new class extends Migration {
     {
         Schema::create('reponses', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('question_id')->constrained('questions')->onDelete('cascade'); // Clé étrangère vers la table questions
             $table->text('text')->nullable(); // Texte de la réponse ou élément à associer
             $table->boolean('is_correct')->nullable(); // Pour multiplechoice, truefalse, etc.
             $table->integer('position')->nullable(); // Pour ordering

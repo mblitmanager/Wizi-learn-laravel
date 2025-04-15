@@ -9,7 +9,7 @@ use ApiPlatform\Metadata\Patch;
 
 #[ApiResource(
     paginationItemsPerPage: 10
-    )]
+)]
 #[ApiResource]
 class Formateur extends Model
 {
@@ -34,4 +34,10 @@ class Formateur extends Model
     {
         return $this->belongsToMany(Formation::class, 'formateur_formation');
     }
+
+    public function stagiaires()
+    {
+        return $this->belongsToMany(Stagiaire::class, 'formateur_stagiaire');
+    }
+
 }

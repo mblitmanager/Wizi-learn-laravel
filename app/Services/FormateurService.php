@@ -24,41 +24,64 @@ class FormateurService
     {
         return $this->formateurInterface->find($id);
     }
+
+
     public function create(array $data)
     {
+        // Créer l'utilisateur associé
         $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
-            'role' => 'formateur',
+            'role' => 'formateur', // Forcer le rôle à 'formateur'
         ]);
 
-        // 2. Associer l'utilisateur
+        // Associer l'utilisateur au formateur
         $data['user_id'] = $user->id;
 
-        // Créer le quiz
+        // Vérifier si les stagiaires et formations sont définis
+        $stagiaireIds = $data['stagiaire_id'] ?? [];
+        $formationIds = $data['formation_id'] ?? [];
+        unset($data['stagiaire_id'], $data['formation_id']);
+
+        // Créer le formateur
         $formateur = $this->formateurInterface->create($data);
-        $formateur->formations()->sync($data['formation_id']);
+
+        // Synchroniser les relations avec les stagiaires et formations
+        $formateur->stagiaires()->sync($stagiaireIds);
+        $formateur->formations()->sync($formationIds);
 
         return $formateur;
     }
 
     public function update(int $id, array $data)
     {
+        // Trouver le formateur
         $formateur = $this->formateurInterface->find($id);
 
         if (!$formateur) {
-            throw new \Exception("Quiz not found");
+            throw new \Exception("Formateur not found");
         }
+
+        // Mettre à jour l'utilisateur associé
         $formateur->user->update([
             'name' => $data['name'],
             'email' => $data['email'],
-            'password' => isset($data['password']) ? Hash::make($data['password']) : $formateur->user->password,
+            'password' => isset($data['password']) && $data['password'] !== null
+                ? Hash::make($data['password'])
+                : $formateur->user->password,
         ]);
 
-        unset($data['name'], $data['email'], $data['password']);
+        // Vérifier si les stagiaires et formations sont définis
+        $stagiaireIds = $data['stagiaire_id'] ?? [];
+        $formationIds = $data['formation_id'] ?? [];
+        unset($data['name'], $data['email'], $data['password'], $data['stagiaire_id'], $data['formation_id']);
 
-        // Mettre à jour le quiz
+        // Synchroniser les relations avec les stagiaires et formations
+        $formateur->stagiaires()->sync($stagiaireIds);
+        $formateur->formations()->sync($formationIds);
+
+        // Mettre à jour les autres données du formateur
         return $this->formateurInterface->update($id, $data);
     }
 
