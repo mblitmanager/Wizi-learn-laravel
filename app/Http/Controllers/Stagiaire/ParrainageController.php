@@ -113,7 +113,7 @@ class ParrainageController extends Controller
         } catch (JWTException $e) {
             return response()->json(['error' => 'Non autorisé'], 401);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Erreur lors de la génération du lien'], 500);
+            return response()->json(['error' => 'Erreur lors de la génération du lien', 'message' => $e->getMessage()], 500);
         }
     }
 }

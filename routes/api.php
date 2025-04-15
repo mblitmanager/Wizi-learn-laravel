@@ -42,6 +42,7 @@ Route::middleware(['auth:api'])->group(function () {
 
     // Parrainage routes
     Route::get('/stagiaire/parrainage/link', [ParrainageController::class, 'getParrainageLink']);
+    Route::post('/stagiaire/parrainage/generate-link', [ParrainageController::class, 'generateParrainageLink']);
     Route::get('/stagiaire/parrainage/filleuls', [ParrainageController::class, 'getFilleuls']);
     Route::get('/stagiaire/parrainage/stats', [ParrainageController::class, 'getParrainageStats']);
 
@@ -61,7 +62,6 @@ Route::middleware(['auth:api'])->group(function () {
     Route::prefix('stagiaire/parrainage')->group(function () {
         Route::get('stats', [ParrainageController::class, 'getParrainageStats']);
         Route::get('filleuls', [ParrainageController::class, 'getFilleuls']);
-        Route::post('generate-link', [ParrainageController::class, 'generateParrainageLink']);
         Route::post('accept', [ParrainageController::class, 'acceptParrainage']);
         Route::get('rewards', [ParrainageController::class, 'getParrainageRewards']);
         Route::get('history', [ParrainageController::class, 'getParrainageHistory']);

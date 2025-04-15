@@ -21,6 +21,7 @@ class ParrainageService
         if (!$parrainage) {
             $parrainage = $this->parrainageRepository->create([
                 'parrain_id' => $stagiaireId,
+                'filleul_id' => null,
                 'code' => Str::random(8),
                 'link' => config('app.url') . '/register?ref=' . Str::random(8)
             ]);
@@ -56,7 +57,8 @@ class ParrainageService
 
         // Sauvegarder le token dans la base de données
         $this->parrainageRepository->create([
-            'stagiaire_id' => $stagiaireId,
+            'parrain_id' => $stagiaireId,
+            'filleul_id' => null,
             'token' => $token,
             'created_at' => now()
         ]);
@@ -92,7 +94,7 @@ class ParrainageService
         ]);
 
         // Attribuer les récompenses
-        $this->attribuerRecompenses($parrainage->stagiaire_id, $stagiaireId);
+        $this->attribuerRecompenses($parrainage->parrain_id, $stagiaireId);
 
         return [
             'success' => true,
