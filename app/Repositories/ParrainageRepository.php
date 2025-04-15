@@ -67,4 +67,62 @@ class ParrainageRepository implements ParrainageRepositoryInterface
             'filleul_id' => $filleulId,
         ]) !== null;
     }
+
+    /**
+     * Find parrainage by stagiaire ID
+     *
+     * @param int $stagiaireId
+     * @return mixed
+     */
+    public function findByStagiaireId(int $stagiaireId)
+    {
+        return Parainage::where('parrain_id', $stagiaireId)->first();
+    }
+
+    /**
+     * Create a new parrainage
+     *
+     * @param array $data
+     * @return mixed
+     */
+    public function create(array $data)
+    {
+        return Parainage::create($data);
+    }
+
+    public function addPoints(int $stagiaireId, int $points): void
+    {
+        $parrainage = $this->findByStagiaireId($stagiaireId);
+        if ($parrainage) {
+            $parrainage->points += $points;
+            $parrainage->save();
+        }
+    }
+
+    public function findByToken(string $token)
+    {
+        return Parainage::where('token', $token)->first();
+    }
+
+    public function getHistory(int $stagiaireId): array
+    {
+        return Parainage::where('parrain_id', $stagiaireId)
+            ->with('filleul')
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->toArray();
+    }
+
+    public function getRewards(int $stagiaireId): array
+    {
+        return Parainage::where('parrain_id', $stagiaireId)
+            ->where('points', '>', 0)
+            ->get()
+            ->toArray();
+    }
+
+    public function update(int $id, array $data): bool
+    {
+        return Parainage::where('id', $id)->update($data) > 0;
+    }
 }
