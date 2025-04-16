@@ -18,6 +18,7 @@ return new class extends Migration {
             $table->string('match_pair')->nullable(); // Pour matching (clé à associer)
             $table->string('bank_group')->nullable(); // Pour wordbank ou fillblank (groupe ou tag)
             $table->text('flashcard_back')->nullable(); // Pour flashcards (le verso)
+            $table->foreignId('question_id')->constrained('questions')->onDelete('cascade'); // Clé étrangère vers la table questions
             $table->timestamps();
         });
     }

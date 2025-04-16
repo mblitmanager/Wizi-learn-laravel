@@ -19,6 +19,19 @@
             </div>
         </div>
     </div>
+
+    @if (session('success'))
+        <div class="alert alert-success border-0 bg-success alert-dismissible fade show">
+            <div class="text-white"> {{ session('success') }}</div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+    @if (session('error'))
+        <div class="alert alert-danger border-0 bg-danger alert-dismissible fade show">
+            <div class="text-white"> {{ session('error') }}</div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
     <div class="card-body">
         <h5 class="card-title">Ajouter Quiz</h5>
         <hr>
@@ -86,7 +99,8 @@
                                                 {{ old('quiz.niveau', $quiz->niveau) == 'intermédiaire' ? 'selected' : '' }}>
                                                 Intermédiaire</option>
                                             <option value="avancé"
-                                                {{ old('quiz.niveau', $quiz->niveau) == 'avancé' ? 'selected' : '' }}>Avancé
+                                                {{ old('quiz.niveau', $quiz->niveau) == 'avancé' ? 'selected' : '' }}>
+                                                Avancé
                                             </option>
                                         </select>
                                     </div>
@@ -309,7 +323,8 @@
                         </div>
                         {{-- SUBMIT --}}
                         <div class="text-center">
-                            <button type="submit" class="btn btn-primary px-5"> <i class="lni lni-save"></i>Mettre à jour</button>
+                            <button type="submit" class="btn btn-primary px-5"> <i class="lni lni-save"></i>Mettre à
+                                jour</button>
                         </div>
                     </form>
                 </div>
@@ -320,52 +335,30 @@
 @section('scripts')
     <script>
         document.getElementById('add-reponse-btn').addEventListener('click', function() {
-
             const container = document.getElementById('reponses-container');
-
-
             const firstForm = container.querySelector('.reponse-form');
+
             const newForm = firstForm.cloneNode(true);
 
-
+            // Réinitialise tous les champs et corrige les noms
             newForm.querySelectorAll('input, textarea, select').forEach(field => {
                 field.value = '';
+                field.name = field.name.replace(/\[\d+\]/g, '[]'); // Corrige les noms indexés
             });
 
-
-            if (!newForm.querySelector('.remove-reponse-btn')) {
-                const removeButton = document.createElement('button');
-                removeButton.type = 'button';
-                removeButton.className = 'btn btn-danger btn-sm remove-reponse-btn';
-                removeButton.textContent = 'Supprimer';
-
-
-                const textEndDiv = newForm.querySelector('.text-end');
-                if (!textEndDiv) {
-                    const newTextEndDiv = document.createElement('div');
-                    newTextEndDiv.className = 'text-end';
-                    newTextEndDiv.appendChild(removeButton);
-                    newForm.appendChild(newTextEndDiv);
-                } else {
-                    textEndDiv.appendChild(removeButton);
-                }
-            }
-
+            // Supprime le champ hidden de l’ID s’il existe (ne pas envoyer d’ID pour les nouveaux)
+            const hiddenId = newForm.querySelector('input[type="hidden"][name^="reponse[id]"]');
+            if (hiddenId) hiddenId.remove();
 
             container.appendChild(newForm);
         });
 
-        document.addEventListener('click', function(e) {
-            if (e.target.classList.contains('remove-reponse-btn')) {
-                const formToRemove = e.target.closest('.reponse-form');
-                formToRemove.remove();
-            }
-        });
-
+        // Suppression d'une réponse (mais en gardant au moins une)
         document.addEventListener('click', function(e) {
             if (e.target.classList.contains('remove-reponse-btn')) {
                 const container = document.getElementById('reponses-container');
                 const forms = container.querySelectorAll('.reponse-form');
+
                 if (forms.length > 1) {
                     const formToRemove = e.target.closest('.reponse-form');
                     formToRemove.remove();
@@ -375,6 +368,7 @@
             }
         });
     </script>
+
     <script>
         document.getElementById('media_file').addEventListener('change', function(event) {
             const file = event.target.files[0];
