@@ -13,7 +13,17 @@ class ContactRepository implements ContactRepositoryInterface
     {
         return Formateur::whereHas('formations.stagiaires', function($query) use ($stagiaireId) {
             $query->where('stagiaires.id', $stagiaireId);
-        })->with('user')->get();
+        })
+        ->with([
+            'user',
+            'formations' => function ($query) use ($stagiaireId) {
+                $query->whereHas('stagiaires', function($q) use ($stagiaireId) {
+                    $q->where('stagiaires.id', $stagiaireId);
+                });
+            }
+        ])
+        ->get();
+
     }
 
     public function getCommercialContacts($stagiaireId)
