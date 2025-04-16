@@ -22,6 +22,25 @@ body {
     box-shadow: 0 0 0 0.25rem rgb(255 230 0 / -6.75);
 }
 
+.text-wizi2 {
+    color: #2c9ad4 !important;
+}
+.page-item.active .page-link {
+    z-index: 3;
+    color: #fff !important;
+    background-color: #ffb923 !important;
+    border-color: #ffb923;
+}
+.page-link {
+    position: relative;
+    display: block;
+    color: #817e77 !important;
+    text-decoration: none;
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out,
+        border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
 .img-fluid {
     max-width: 50%;
     height: auto;

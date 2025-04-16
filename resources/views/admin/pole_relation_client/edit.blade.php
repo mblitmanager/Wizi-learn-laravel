@@ -6,21 +6,22 @@
         <div class="ps-3">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0 p-0">
-                    <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
+                    <li class="breadcrumb-item"><a href="{{ route('pole_relation_clients.index') }}"><i
+                                class="bx bx-home-alt"></i></a>
                     </li>
-                    <li class="breadcrumb-item active" aria-current="page">commercial</li>
+                    <li class="breadcrumb-item active" aria-current="page">Pôle relation client</li>
                 </ol>
             </nav>
         </div>
         <div class="ms-auto">
             <div class="btn-group">
                 <a href="{{ route('pole_relation_clients.index') }}" type="button" class="btn btn-sm btn-primary"><i
-                    class="fadeIn animated bx bx-chevron-left-circle"></i> Retour</a>
+                        class="fadeIn animated bx bx-chevron-left-circle"></i> Retour</a>
             </div>
         </div>
     </div>
     <div class="card-body">
-        <h5 class="card-title">Ajouter commercial</h5>
+        <h5 class="card-title">Modifier pôle relation client</h5>
         <hr>
         @if ($errors->any())
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
@@ -60,7 +61,7 @@
                     <div class="col-md-4">
                         <!-- Prénom -->
                         <div class="mb-3">
-                            <label for="prenom">Prenom</label>
+                            <label for="prenom">Prénom</label>
                             <input type="text" name="prenom" id="prenom"
                                 class="form-control @error('prenom') is-invalid @enderror"
                                 value="{{ old('prenom', $poleRelationClient->prenom ?? '') }}">
@@ -100,10 +101,11 @@
                         <!-- Stagiaire -->
                         <div class="mb-3">
                             <label for="stagiaire_id">Stagiaire</label>
-                            <select name="stagiaire_id[]" id="stagiaire_id" class="form-select select2 @error('stagiaire_id') is-invalid @enderror" multiple>
+                            <select name="stagiaire_id[]" id="stagiaire_id"
+                                class="form-select select2 @error('stagiaire_id') is-invalid @enderror" multiple>
                                 <option value="">Choisir un ou plusieurs stagiaires</option>
                                 @foreach ($stagiaires as $stagiaire)
-                                    <option value="{{ $stagiaire->id }}" 
+                                    <option value="{{ $stagiaire->id }}"
                                         {{ in_array($stagiaire->id, old('stagiaire_id', $poleRelationClient->stagiaires->pluck('id')->toArray())) ? 'selected' : '' }}>
                                         {{ $stagiaire->user->name }}
                                     </option>
@@ -116,7 +118,8 @@
                     </div>
 
                     <div class="col-12">
-                        <button type="submit" class="btn btn-sm btn-primary px-4"> <i class="lni lni-save"></i> Mettre à jour</button>
+                        <button type="submit" class="btn btn-sm btn-primary px-4"> <i class="lni lni-save"></i> Mettre à
+                            jour</button>
                     </div>
                 </form>
             </div>
@@ -127,7 +130,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
-        $(document).ready(function () {
+        $(document).ready(function() {
             $('.select2').select2({
                 placeholder: "Choisir des formations",
                 allowClear: true
@@ -135,4 +138,3 @@
         });
     </script>
 @endsection
-

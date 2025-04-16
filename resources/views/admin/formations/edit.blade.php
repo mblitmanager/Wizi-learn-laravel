@@ -5,7 +5,7 @@
         <div class="ps-3">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0 p-0">
-                    <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
+                    <li class="breadcrumb-item"><a href="{{ route('formations.index') }}"><i class="bx bx-home-alt"></i></a>
                     </li>
                     <li class="breadcrumb-item active" aria-current="page">formations</li>
                 </ol>
@@ -38,7 +38,6 @@
                     {{ session('success') }}
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
-
             @endif
             <div class="card-body p-4 border rounded">
                 <form class="row g-3" action="{{ route('formations.update', $formation->id) }}') }}" method="POST">
@@ -103,9 +102,11 @@
                         <div class="mb-3">
                             <label for="password">Statut</label>
                             <select name="statut" id="statut" class="form-control">
-                                <option value="1" {{ old('statut', $formations->statut ?? '') == 1 ? 'selected' : '' }}>Actif
+                                <option value="1"
+                                    {{ old('statut', $formations->statut ?? '') == 1 ? 'selected' : '' }}>Actif
                                 </option>
-                                <option value="0" {{ old('statut', $formations->statut ?? '') == 0 ? 'selected' : '' }}>
+                                <option value="0"
+                                    {{ old('statut', $formations->statut ?? '') == 0 ? 'selected' : '' }}>
                                     Inactif</option>
                             </select>
                             @error('password')
@@ -125,14 +126,14 @@
     </div>
 @endsection
 @section('scripts')
-    @section('scripts')
-        <script>
-            $(document).ready(function () {
-                $('.js-example-basic-multiple').select2({
-                    placeholder: "Choisir une ou plusieurs formations", // Placeholder
-                    allowClear: true
-                });
+@section('scripts')
+    <script>
+        $(document).ready(function() {
+            $('.js-example-basic-multiple').select2({
+                placeholder: "Choisir une ou plusieurs formations", // Placeholder
+                allowClear: true
             });
-        </script>
-    @endsection
+        });
+    </script>
+@endsection
 @endsection

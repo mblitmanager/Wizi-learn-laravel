@@ -20,7 +20,7 @@
         </div>
     </div>
     <div class="card-body">
-        <h5 class="card-title">Ajouter stagiaire</h5>
+        <h5 class="card-title">Ajouter commercial</h5>
         <hr>
         @if ($errors->any())
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
@@ -39,90 +39,91 @@
                     {{ session('success') }}
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
-
             @endif
             <div class="card-body p-4 border rounded">
-                <form class="row g-3" action="{{ route('commercials.store') }}" method="POST">
-                    @csrf
-                    <div class="col-md-4">
-                        <!-- Nom -->
-                        <div class="mb-3">
-                            <label for="name">Nom</label>
-                            <input type="text" name="name" id="name"
-                                class="form-control @error('name') is-invalid @enderror"
-                                value="{{ old('name', $stagiaire->user->name ?? '') }}">
-                            @error('name')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                <div class="px-4 py-3"
+                    style="box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;">
+                    <form class="row g-3" action="{{ route('commercials.store') }}" method="POST">
+                        @csrf
+
+                        <div class="col-md-4">
+                            <!-- Nom -->
+                            <div class="mb-3">
+                                <label for="name">Nom</label>
+                                <input type="text" name="name" id="name"
+                                    class="form-control @error('name') is-invalid @enderror"
+                                    value="{{ old('name', $stagiaire->user->name ?? '') }}">
+                                @error('name')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="col-md-4">
-                        <!-- Nom -->
-                        <div class="mb-3">
-                            <label for="name">Prenom</label>
-                            <input type="text" name="prenom" id="prenom"
-                                class="form-control @error('prenom') is-invalid @enderror"
-                                value="{{ old('name', $commercial->prenom ?? '') }}">
-                            @error('prenom')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                        <div class="col-md-4">
+                            <!-- Nom -->
+                            <div class="mb-3">
+                                <label for="name">Prénom</label>
+                                <input type="text" name="prenom" id="prenom"
+                                    class="form-control @error('prenom') is-invalid @enderror"
+                                    value="{{ old('name', $commercial->prenom ?? '') }}">
+                                @error('prenom')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="col-md-4">
-                        <!-- Email -->
-                        <div class="mb-3">
-                            <label for="email">Adresse e-mail</label>
-                            <input type="email" name="email" id="email"
-                                class="form-control @error('email') is-invalid @enderror"
-                                value="{{ old('email', $stagiaire->user->email ?? '') }}">
-                            @error('email')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                        <div class="col-md-4">
+                            <!-- Email -->
+                            <div class="mb-3">
+                                <label for="email">Adresse e-mail</label>
+                                <input type="email" name="email" id="email"
+                                    class="form-control @error('email') is-invalid @enderror"
+                                    value="{{ old('email', $stagiaire->user->email ?? '') }}">
+                                @error('email')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
                         </div>
-                    </div>
 
 
-                    <div class="col-md-4">
-                        <!-- Mot de passe -->
-                        <div class="mb-3">
-                            <label for="password">Mot de passe</label>
-                            <input type="password" name="password" id="password"
-                                class="form-control @error('password') is-invalid @enderror"
-                                value="{{ old('password', $stagiaire->user->password ?? '') }}">
-                            @error('password')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                        <div class="col-md-4">
+                            <!-- Mot de passe -->
+                            <div class="mb-3">
+                                <label for="password">Mot de passe</label>
+                                <input type="password" name="password" id="password"
+                                    class="form-control @error('password') is-invalid @enderror"
+                                    value="{{ old('password', $stagiaire->user->password ?? '') }}">
+                                @error('password')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            <label for="stagiaire_id">Stagiaire</label>
-                            <select name="stagiaire_id[]" id="stagiaire_id"
-                                class="form-select select2 @error('stagiaire_id') is-invalid @enderror" multiple>
-                                <option value="">Choisir un ou plusieurs stagiaires</option>
-                                @foreach ($stagiaires as $stagiaire)
-                                    <option value="{{ $stagiaire->id }}" {{ in_array($stagiaire->id, old('stagiaire_id', [])) ? 'selected' : '' }}>
-                                        {{ $stagiaire->user->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('stagiaire_id')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="stagiaire_id">Stagiaire</label>
+                                <select name="stagiaire_id[]" id="stagiaire_id"
+                                    class="form-select select2 @error('stagiaire_id') is-invalid @enderror" multiple>
+                                    <option value="">Choisir un ou plusieurs stagiaires</option>
+                                    @foreach ($stagiaires as $stagiaire)
+                                        <option value="{{ $stagiaire->id }}"
+                                            {{ in_array($stagiaire->id, old('stagiaire_id', [])) ? 'selected' : '' }}>
+                                            {{ $stagiaire->user->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('stagiaire_id')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
                         </div>
-                    </div>
 
-
-
-
-                    <div class="col-12">
-                        <button type="submit" class="btn btn-sm btn-primary px-4"><i
-                                class="lni lni-save"></i>Enregistrer</button>
-                    </div>
-                </form>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-sm btn-primary px-4"><i
+                                    class="lni lni-save"></i>Enregistrer</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
@@ -131,7 +132,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
-        $(document).ready(function () {
+        $(document).ready(function() {
             $('.select2').select2({
                 placeholder: "Choisir des formations",
                 allowClear: true

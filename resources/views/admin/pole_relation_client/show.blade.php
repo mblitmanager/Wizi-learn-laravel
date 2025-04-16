@@ -37,12 +37,14 @@
                                                 <input type="text" class="form-control"
                                                     value="{{ $poleRelationClient->user->name }}" readonly>
                                             </div>
-                                        </div><div class="row mb-3">
+                                        </div>
+                                        <div class="row mb-3">
                                             <div class="col-sm-3">
-                                                <h6 class="mb-0">Prenom</h6>
+                                                <h6 class="mb-0">Prénom</h6>
                                             </div>
                                             <div class="col-sm-9 text-secondary">
-                                                <input type="text" class="form-control" value="{{ $poleRelationClient->prenom }}" readonly>
+                                                <input type="text" class="form-control"
+                                                    value="{{ $poleRelationClient->prenom }}" readonly>
                                             </div>
                                         </div>
                                         <div class="row mb-3">
@@ -57,7 +59,7 @@
 
                                     </div>
                                 </div>
-                            
+
                             </div>
                             <hr>
 
@@ -70,31 +72,31 @@
                                                 <tr>
                                                     <th scope="col">#</th>
                                                     <th scope="col">Nom</th>
-                                                    <th scope="col">Prenom</th>
+                                                    <th scope="col">Prénom</th>
                                                     <th scope="col">Adresse</th>
                                                     <th scope="col">Téléphone</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                @foreach($poleRelationClient->stagiaires as $row)
-                                                <tr>
-                                                    <th scope="row">{{ $row->id }}</th>
-                                                    <td>{{ $row->user->name }}</td>
-                                                    <td>{{ $row->prenom }}</td>
-                                                    <td>{{ $row->adresse }}</td>
-                                                    <td>{{ $row->telephone }}</td>
-                                                </tr>
-                                            @endforeach
-                                              
-                                               
+                                                @foreach ($poleRelationClient->stagiaires as $row)
+                                                    <tr>
+                                                        <th scope="row">{{ $row->id }}</th>
+                                                        <td>{{ $row->user->name }}</td>
+                                                        <td>{{ $row->prenom }}</td>
+                                                        <td>{{ $row->adresse }}</td>
+                                                        <td>{{ $row->telephone }}</td>
+                                                    </tr>
+                                                @endforeach
+
+
                                             </tbody>
                                         </table>
-                                        
+
                                     </div>
 
                                 </div>
                             </div>
-                            
+
                         </div>
                     </div>
                 </div>

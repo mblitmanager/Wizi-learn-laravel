@@ -6,7 +6,7 @@
         <div class="ps-3">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0 p-0">
-                    <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
+                    <li class="breadcrumb-item"><a href="{{ route('stagiaires.index') }}"><i class="bx bx-home-alt"></i></a>
                     </li>
                     <li class="breadcrumb-item active" aria-current="page">Gestion stagiaire</li>
                 </ol>
@@ -27,8 +27,8 @@
                         <div class="row">
                             <div class="card-body">
                                 <div class="mb-3">
-                                    <h4 class="mb-2">{{$stagiaire->civilite}}.
-                                        {{$stagiaire->user->name}}-{{$stagiaire->prenom}}
+                                    <h4 class="mb-2">{{ $stagiaire->civilite }}.
+                                        {{ $stagiaire->user->name }}-{{ $stagiaire->prenom }}
                                     </h4>
                                     <ul class="list-group">
                                         <li class="list-group-item"><strong>Nom</strong> :
@@ -60,10 +60,11 @@
                                 <div class="card">
                                     <div class="card-body">
                                         <div class="row">
-                                            @foreach($stagiaire->formations as $index => $formation)
+                                            @foreach ($stagiaire->formations as $index => $formation)
                                                 <div class="col-md-3">
                                                     <div class="accordion-item">
-                                                        <h2 class="accordion-header" id="flush-heading-{{ $index }}">
+                                                        <h2 class="accordion-header"
+                                                            id="flush-heading-{{ $index }}">
                                                             <button class="accordion-button bg-success text-white collapsed"
                                                                 type="button" data-bs-toggle="collapse"
                                                                 data-bs-target="#flush-collapse-{{ $index }}"
@@ -82,11 +83,13 @@
                                                                         {{ $formation->categorie }}</li>
                                                                     <li class="list-group-item"><strong>Durée</strong> :
                                                                         {{ $formation->duree }}</li>
-                                                                    <li class="list-group-item"><strong>Description</strong> :
+                                                                    <li class="list-group-item"><strong>Description</strong>
+                                                                        :
                                                                         {{ $formation->description }}</li>
                                                                     <li class="list-group-item"><strong>Date de
                                                                             création</strong> :
-                                                                        {{ $formation->created_at->format('d/m/Y à H:i') }}</li>
+                                                                        {{ $formation->created_at->format('d/m/Y à H:i') }}
+                                                                    </li>
                                                                 </ul>
                                                             </div>
                                                         </div>
@@ -97,21 +100,23 @@
                                     </div>
                                 </div>
                                 <hr>
-                                <h5>Liste des formations</h5>
+                                <h5>Liste des formateurs</h5>
                                 <hr>
                                 <div class="card">
                                     <div class="card-body">
                                         <div class="row">
-                                            @foreach($stagiaire->formations as $index => $formation)
+                                            @dd($stagiaire->formateurs)
+                                            @foreach ($stagiaire->formateurs as $index => $formateur)
                                                 <div class="col-md-3">
                                                     <div class="accordion-item">
-                                                        <h2 class="accordion-header" id="flush-heading-{{ $index }}">
+                                                        <h2 class="accordion-header"
+                                                            id="flush-heading-{{ $index }}">
                                                             <button class="accordion-button bg-success text-white collapsed"
                                                                 type="button" data-bs-toggle="collapse"
                                                                 data-bs-target="#flush-collapse-{{ $index }}"
                                                                 aria-expanded="false"
                                                                 aria-controls="flush-collapse-{{ $index }}">
-                                                                {{ $formation->titre }}
+                                                                {{ $formateur->user->name }}
                                                             </button>
                                                         </h2>
                                                         <div id="flush-collapse-{{ $index }}"
@@ -120,15 +125,12 @@
                                                             data-bs-parent="#accordionFlushExample">
                                                             <div class="accordion-body">
                                                                 <ul class="list-group list-group-flush">
-                                                                    <li class="list-group-item"><strong>Categorie</strong> :
-                                                                        {{ $formation->categorie }}</li>
-                                                                    <li class="list-group-item"><strong>Durée</strong> :
-                                                                        {{ $formation->duree }}</li>
-                                                                    <li class="list-group-item"><strong>Description</strong> :
-                                                                        {{ $formation->description }}</li>
+                                                                    <li class="list-group-item"><strong>Nom</strong> :
+                                                                        {{ $formateur->prenom }}</li>
                                                                     <li class="list-group-item"><strong>Date de
                                                                             création</strong> :
-                                                                        {{ $formation->created_at->format('d/m/Y à H:i') }}</li>
+                                                                        {{ $formateur->created_at->format('d/m/Y à H:i') }}
+                                                                    </li>
                                                                 </ul>
                                                             </div>
                                                         </div>

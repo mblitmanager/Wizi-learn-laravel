@@ -57,73 +57,77 @@
     </div>
     @if (session('ignored'))
         <div class="alert alert-warning border-0 bg-warning alert-dismissible fade show">
-            <div class="text-white">  <ul>
-                @foreach (session('ignored') as $email)
-                    <li>{{ $email }}</li>
-                @endforeach
-            </ul></div>
+            <div class="text-white">
+                <ul>
+                    @foreach (session('ignored') as $email)
+                        <li>{{ $email }}</li>
+                    @endforeach
+                </ul>
+            </div>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
 
     @if (session('success'))
         <div class="alert alert-success border-0 bg-success alert-dismissible fade show">
-            <div class="text-white">  {{ session('success') }}</div>
+            <div class="text-white"> {{ session('success') }}</div>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
     @if (session('error'))
         <div class="alert alert-danger border-0 bg-danger alert-dismissible fade show">
-            <div class="text-white">  {{ session('error') }}</div>
+            <div class="text-white"> {{ session('error') }}</div>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
     <div class="card">
         <div class="card-body">
             <div class="col-md-12">
-                <div class="table-responsive">
-                    <table id="stagiairesTable" class="table table-bordered table-striped table-hover mb-0">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Nom</th>
-                                <th>Prenom</th>
-
-                                <th>Email</th>
-
-                                <th>Action</th>
-                            </tr>
-                            <tr>
-                                <th></th>
-                                <th><input type="text" placeholder="Filtrer" class="form-control form-control-sm" /></th>
-                                <th><input type="text" placeholder="Filtrer" class="form-control form-control-sm" /></th>
-                                <th><input type="text" placeholder="Filtrer" class="form-control form-control-sm" /></th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($formateurs as $row)
+                <div class="card">
+                    <div class="table-responsive px-4 py-4">
+                        <table id="stagiairesTable" class="table table-bordered table-striped table-hover mb-0">
+                            <thead>
                                 <tr>
-                                    <td>{{ $row->id }}</td>
-                                    <td>{{ $row->user->name }}</td>
-                                    <td>{{ $row->prenom }}</td>
-                                    <td>{{ $row->user->email }}</td>
-                                    <td>
-                                        <a href="{{ route('formateur.edit', $row->id) }}" data-bs-toggle="tooltip"
-                                            data-bs-placement="top" title="" data-bs-original-title="Modifier">
-                                            <i class="btn btn-sm btn-success fadeIn animated bx bx-message-square-edit"></i>
-                                        </a>
-                                        <a href="{{ route('formateur.show', $row->id) }}" class=""
-                                            data-bs-toggle="tooltip" data-bs-placement="top" title=""
-                                            data-bs-original-title="Afficher">
-                                            <i class="btn btn-sm btn-info text-white fadeIn animated bx bx-show"></i>
-                                        </a>
-
-                                    </td>
+                                    <th>#</th>
+                                    <th>Nom</th>
+                                    <th>Prenom</th>
+                                    <th>Email</th>
+                                    <th>Action</th>
                                 </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                                <tr>
+                                    <th></th>
+                                    <th><input type="text" placeholder="Filtrer" class="form-control form-control-sm" />
+                                    </th>
+                                    <th><input type="text" placeholder="Filtrer" class="form-control form-control-sm" />
+                                    </th>
+                                    <th><input type="text" placeholder="Filtrer" class="form-control form-control-sm" />
+                                    </th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($formateurs as $row)
+                                    <tr>
+                                        <td>{{ $row->id }}</td>
+                                        <td>{{ $row->user->name }}</td>
+                                        <td>{{ $row->prenom }}</td>
+                                        <td>{{ $row->user->email }}</td>
+                                        <td>
+                                            <a href="{{ route('formateur.edit', $row->id) }}"
+                                                class="btn btn-sm btn-success ">
+                                                Modifier
+                                            </a>
+                                            <a href="{{ route('formateur.show', $row->id) }}"
+                                                class="btn btn-sm btn-secondary">
+                                                Afficher
+                                            </a>
+
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>

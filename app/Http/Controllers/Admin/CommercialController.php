@@ -47,7 +47,7 @@ class CommercialController extends Controller
         $this->commercialsService->create($request->validated());
 
         return redirect()->route('commercials.index')
-            ->with('success', 'Le commercials a été créé avec succès.');
+            ->with('success', 'Le commercial a été créé avec succès.');
     }
 
     /**
@@ -77,7 +77,7 @@ class CommercialController extends Controller
         $this->commercialsService->update($id, $request->validated());
 
         return redirect()->route('commercials.index')
-            ->with('success', 'Le commercials a été mis à jour avec succès.');
+            ->with('success', 'Le commercial a été mis à jour avec succès.');
     }
 
     /**

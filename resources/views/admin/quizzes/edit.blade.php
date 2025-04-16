@@ -14,12 +14,11 @@
         </div>
         <div class="ms-auto">
             <div class="btn-group">
-                <a href="{{ route('quiz.index') }}" type="button" class="btn btn-primary px-4"> <i
+                <a href="{{ route('quiz.index') }}" type="button" class="btn btn-sm btn-primary px-4"> <i
                         class="fadeIn animated bx bx-chevron-left-circle"></i> Retour</a>
             </div>
         </div>
     </div>
-
     @if (session('success'))
         <div class="alert alert-success border-0 bg-success alert-dismissible fade show">
             <div class="text-white"> {{ session('success') }}</div>
@@ -33,301 +32,264 @@
         </div>
     @endif
     <div class="card-body">
-        <h5 class="card-title">Ajouter Quiz</h5>
+        <h5 class="card-title">Modifier Quiz</h5>
         <hr>
-        @if ($errors->any())
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-                <strong class="font-bold">Whoops!</strong>
-                <span class="block sm:inline">There were some problems with your input.</span>
-                <ul class="mt-2 list-disc list-inside">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
         <div class="card">
-            @if (session('success'))
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    {{ session('success') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
             <div class="card-body p-4 border rounded">
-                <div class="card">
-                    <form action="{{ route('quiz.update', $quiz->id) }}" method="POST" class="px-4 py-4"
-                        enctype="multipart/form-data">
-                        @csrf
-                        @method('PUT')
+                <form action="{{ route('quiz.update', $quiz->id) }}" method="POST" class="px-4 py-4"
+                    enctype="multipart/form-data">
+                    @csrf
+                    @method('PUT')
 
-                        {{-- QUIZ --}}
-                        <div class="card mb-4 px-4" id="quiz-form">
-                            <div class="card-body">
-                                <h5 class="text-wizi">Modifier un quiz</h5>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <label for="input1" class="form-label">Durée</label>
+                    {{-- QUIZ --}}
+                    <div class="card mb-4 px-4" id="quiz-form">
+                        <div class="card-body">
+                            <h5 class="text-wizi">Modifier un quiz</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label for="input1" class="form-label">Durée</label>
 
-                                        <input type="number" name="quiz[duree]" placeholder="Durée"
-                                            class="form-control mb-2" value="{{ old('quiz.duree', $quiz->duree) }}">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label for="input1" class="form-label">Description</label>
-
-                                        <input type="text" name="quiz[description]" placeholder="Description"
-                                            class="form-control mb-2"
-                                            value="{{ old('quiz.description', $quiz->description) }}">
-                                    </div>
+                                    <input type="number" name="quiz[duree]" placeholder="Durée" class="form-control mb-2"
+                                        value="{{ old('quiz.duree', $quiz->duree) }}">
                                 </div>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <label for="input1" class="form-label">Titre</label>
+                                <div class="col-md-6">
+                                    <label for="input1" class="form-label">Description</label>
 
-                                        <input type="text" name="quiz[titre]" placeholder="Titre"
-                                            class="form-control mb-2" value="{{ old('quiz.titre', $quiz->titre) }}"
-                                            required>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label for="input1" class="form-label">Niveau</label>
+                                    <input type="text" name="quiz[description]" placeholder="Description"
+                                        class="form-control mb-2" value="{{ old('quiz.description', $quiz->description) }}">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label for="input1" class="form-label">Titre</label>
 
-                                        <select name="quiz[niveau]" class="form-select mb-2">
-                                            <option value="">Niveau</option>
-                                            <option value="débutant"
-                                                {{ old('quiz.niveau', $quiz->niveau) == 'débutant' ? 'selected' : '' }}>
-                                                Débutant</option>
-                                            <option value="intermédiaire"
-                                                {{ old('quiz.niveau', $quiz->niveau) == 'intermédiaire' ? 'selected' : '' }}>
-                                                Intermédiaire</option>
-                                            <option value="avancé"
-                                                {{ old('quiz.niveau', $quiz->niveau) == 'avancé' ? 'selected' : '' }}>
-                                                Avancé
+                                    <input type="text" name="quiz[titre]" placeholder="Titre" class="form-control mb-2"
+                                        value="{{ old('quiz.titre', $quiz->titre) }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="input1" class="form-label">Niveau</label>
+
+                                    <select name="quiz[niveau]" class="form-select mb-2">
+                                        <option value="">Niveau</option>
+                                        <option value="débutant"
+                                            {{ old('quiz.niveau', $quiz->niveau) == 'débutant' ? 'selected' : '' }}>
+                                            Débutant</option>
+                                        <option value="intermédiaire"
+                                            {{ old('quiz.niveau', $quiz->niveau) == 'intermédiaire' ? 'selected' : '' }}>
+                                            Intermédiaire</option>
+                                        <option value="avancé"
+                                            {{ old('quiz.niveau', $quiz->niveau) == 'avancé' ? 'selected' : '' }}>
+                                            Avancé
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label for="input1" class="form-label">Formation</label>
+
+                                    <select name="quiz[formation_id]" class="form-select mb-2">
+                                        @foreach ($formations as $formation)
+                                            <option value="{{ $formation->id }}"
+                                                {{ old('quiz.formation_id', $quiz->formation_id) == $formation->id ? 'selected' : '' }}>
+                                                {{ $formation->titre }}
                                             </option>
-                                        </select>
-                                    </div>
+                                        @endforeach
+                                    </select>
                                 </div>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <label for="input1" class="form-label">Formation</label>
+                                <div class="col-md-6">
+                                    <label for="input1" class="form-label">Points total</label>
 
-                                        <select name="quiz[formation_id]" class="form-select mb-2">
-                                            @foreach ($formations as $formation)
-                                                <option value="{{ $formation->id }}"
-                                                    {{ old('quiz.formation_id', $quiz->formation_id) == $formation->id ? 'selected' : '' }}>
-                                                    {{ $formation->titre }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label for="input1" class="form-label">Points total</label>
-
-                                        <input type="number" name="quiz[nb_points_total]" placeholder="Points total"
-                                            class="form-control"
-                                            value="{{ old('quiz.nb_points_total', $quiz->nb_points_total) }}">
-                                    </div>
+                                    <input type="number" name="quiz[nb_points_total]" placeholder="Points total"
+                                        class="form-control"
+                                        value="{{ old('quiz.nb_points_total', $quiz->nb_points_total) }}">
                                 </div>
                             </div>
                         </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="text-wizi">Rechercher une question</h5>
 
-                        {{-- QUESTION --}}
-                        <div class="card mb-4 px-4" id="question-card">
-                            <div class="card-body">
-                                <div class="row d-flex align-items-center justify-content-between mb-3">
+                            <div class="col-md-12">
+                                <div class="row mx-auto">
                                     <div class="col-md-6">
-                                        <h5 class="text-wizi">Modifier une question</h5>
-
+                                        <input type="text" id="searchInput" name="search"
+                                            placeholder="Rechercher une question" class="form-control me-2" value="">
                                     </div>
-                                    <div class="col-md-6 d-flex align-items-end justify-content-end">
-                                        <div id="add-reponse-btn"
-                                            class="d-flex align-items-center theme-icons shadow-sm p-2 cursor-pointer rounded">
-                                            <div class="font-22 text-primary">
-                                                <i class="fadeIn animated bx bx-message-square-add"></i>
-                                            </div>
-                                            <div class="ms-2">plus de réponses</div>
+                                    <div class="col-md-6">
+                                        <div class="btn-group">
+                                            <button id="searchBtn" class="btn btn-primary me-2"><i
+                                                    class="lni lni-search-alt"></i>Rechercher</button>
                                         </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <label for="input1" class="form-label">Texte de la question</label>
-
-                                        <input type="text" name="question[text]" placeholder="Texte de la question"
-                                            class="form-control mb-2" value="{{ old('question.text', $question->text) }}"
-                                            required>
-                                    </div>
-                                    <div class="col-md-6">
-
-                                        <label for="media_file" class="form-label">Media URL</label>
-
-                                        <input type="file" name="question_media_file" id="media_file"
-                                            class="form-control mb-2"
-                                            accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx">
-                                        @if ($question->media_url)
-                                            <small>Fichier actuel :
-                                                <a href="{{ asset('storage/' . $question->media_url) }}" target="_blank">
-                                                    Voir le fichier
-                                                </a>
-                                            </small>
-                                        @endif
-                                        {{-- Aperçu dynamique ici --}}
-                                        <div id="preview-container" class="mt-2" style="display: none;">
-                                            <strong>Aperçu :</strong>
-                                            <img id="media-preview" src="#" alt="Aperçu de l'image"
-                                                class="img-fluid mt-2" style="max-height: 200px;">
-                                        </div>
-
-
-                                    </div>
-
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <label for="input1" class="form-label">Type</label>
-
-                                        <select name="question[type]" class="form-select mb-2" required>
-                                            <option value="">Type</option>
-                                            <option value="question audio"
-                                                {{ old('question.type', $question->type) == 'question audio' ? 'selected' : '' }}>
-                                                Question audio</option>
-                                            <option value="remplir le champ vide"
-                                                {{ old('question.type', $question->type) == 'remplir le champ vide' ? 'selected' : '' }}>
-                                                Remplir le champ vide</option>
-                                            <option value="carte flash"
-                                                {{ old('question.type', $question->type) == 'carte flash' ? 'selected' : '' }}>
-                                                Carte flash</option>
-                                            <option value="correspondance"
-                                                {{ old('question.type', $question->type) == 'correspondance' ? 'selected' : '' }}>
-                                                Correspondance</option>
-                                            <option value="choix multiples"
-                                                {{ old('question.type', $question->type) == 'choix multiples' ? 'selected' : '' }}>
-                                                Choix multiples</option>
-                                            <option value="commander"
-                                                {{ old('question.type', $question->type) == 'commander' ? 'selected' : '' }}>
-                                                Commander</option>
-                                            <option value="vrai faux"
-                                                {{ old('question.type', $question->type) == 'vrai faux' ? 'selected' : '' }}>
-                                                Vrai / Faux</option>
-                                            <option value="banque de mots"
-                                                {{ old('question.type', $question->type) == 'banque de mots' ? 'selected' : '' }}>
-                                                Banque de mots</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label for="input1" class="form-label">Réponse correcte</label>
-
-                                        <input type="text" name="question[reponse_correct]"
-                                            placeholder="Réponse correcte" class="form-control mb-2"
-                                            value="{{ old('question.reponse_correct', $question->reponse_correct) }}">
-                                    </div>
-                                    <div class="col-md-12">
-                                        <label for="input1" class="form-label">Explication</label>
-
-                                        <textarea type="text" name="question[explication]" placeholder="Explication" class="form-control mb-2">{{ old('question.explication', $question->explication) }}</textarea>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <label for="input1" class="form-label">Points</label>
-
-                                        <input type="number" name="question[points]" placeholder="Points"
-                                            class="form-control mb-2"
-                                            value="{{ old('question.points', $question->points) }}">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label for="input1" class="form-label">Astuce</label>
-
-                                        <input type="text" name="question[astuce]" placeholder="Astuce"
-                                            class="form-control mb-2"
-                                            value="{{ old('question.astuce', $question->astuce) }}">
+                                        <button id="resetBtn" class="btn btn-secondary"><i
+                                                class="lni lni-spinner-arrow"></i>Réinitialiser</button>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        {{-- RÉPONSE --}}
-                        <div class="card mb-4 px-4" id="reponse-card">
-                            <div class="card-body">
-                                <h5 class="text-wizi">Modifier les réponses</h5>
-                                <div id="reponses-container">
-                                    @foreach ($question->reponses as $index => $reponse)
-                                        <div class="reponse-form mb-4 mt-4">
-                                            <input type="hidden" name="reponse[id][{{ $index }}]"
-                                                value="{{ $reponse->id }}">
+                        </div>
+                    </div>
+                    {{-- QUESTIONS & REPONSES --}}
+                    <div class="accordion mb-4" id="accordionQuestions">
+                        @foreach ($questions as $qIndex => $question)
+                            <div class="accordion-item question-item">
+                                <h2 class="accordion-header" id="heading{{ $qIndex }}">
+                                    <button
+                                        class="accordion-button d-flex justify-content-between align-items-center {{ $qIndex > 0 ? 'collapsed' : '' }}"
+                                        type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#collapse{{ $qIndex }}"
+                                        aria-expanded="{{ $qIndex == 0 ? 'true' : 'false' }}"
+                                        aria-controls="collapse{{ $qIndex }}">
+                                        <span>
+                                            <strong>Question #{{ $qIndex + 1 }}</strong>
+                                        </span>
+                                        <span class="ms-auto text-end">
+                                            {{ $question->text }}
+                                        </span>
+                                    </button>
+                                </h2>
+                                <div id="collapse{{ $qIndex }}"
+                                    class="accordion-collapse collapse {{ $qIndex == 0 ? 'show' : '' }}"
+                                    aria-labelledby="heading{{ $qIndex }}" data-bs-parent="#accordionQuestions">
+                                    <div class="accordion-body">
+
+                                        <div class="px-3 py-3 mb-3"
+                                            style="box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px;">
+                                            <input type="hidden" name="questions[{{ $qIndex }}][id]"
+                                                value="{{ $question->id }}">
+
                                             <div class="row">
                                                 <div class="col-md-6">
-                                                    <label for="input1" class="form-label">Texte de la réponse</label>
-
-                                                    <input type="text" name="reponse[text][{{ $index }}]"
-                                                        placeholder="Texte de la réponse" class="form-control mb-2"
-                                                        value="{{ old("reponse.text.$index", $reponse->text) }}">
+                                                    <label class="form-label">Texte de la question</label>
+                                                    <input type="text" name="questions[{{ $qIndex }}][text]"
+                                                        class="form-control mb-2"
+                                                        value="{{ old("questions.$qIndex.text", $question->text) }}"
+                                                        required>
                                                 </div>
                                                 <div class="col-md-6">
-                                                    <label for="input1" class="form-label">Bonne réponse ?</label>
+                                                    <label class="form-label">Media URL</label>
+                                                    <input type="file"
+                                                        name="questions[{{ $qIndex }}][media_file]"
+                                                        class="form-control mb-2"
+                                                        accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx">
+                                                    @if ($question->media_url)
+                                                        <small>
+                                                            <a href="{{ asset('storage/' . $question->media_url) }}"
+                                                                target="_blank">Voir le fichier</a>
+                                                        </small>
+                                                    @endif
+                                                </div>
+                                            </div>
 
-                                                    <select name="reponse[is_correct][{{ $index }}]"
-                                                        class="form-select mb-2">
-                                                        <option value="">Bonne réponse ?</option>
-                                                        <option value="1"
-                                                            {{ old("reponse.is_correct.$index", $reponse->is_correct) == '1' ? 'selected' : '' }}>
-                                                            Oui</option>
-                                                        <option value="0"
-                                                            {{ old("reponse.is_correct.$index", $reponse->is_correct) == '0' ? 'selected' : '' }}>
-                                                            Non</option>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Type</label>
+                                                    <select name="questions[{{ $qIndex }}][type]"
+                                                        class="form-select mb-2" required>
+                                                        <option value="">Type</option>
+                                                        @foreach (['question audio', 'remplir le champ vide', 'carte flash', 'correspondance', 'choix multiples', 'commander', 'vrai faux', 'banque de mots'] as $type)
+                                                            <option value="{{ $type }}"
+                                                                {{ old("questions.$qIndex.type", $question->type) == $type ? 'selected' : '' }}>
+                                                                {{ ucfirst($type) }}
+                                                            </option>
+                                                        @endforeach
                                                     </select>
                                                 </div>
-                                            </div>
-
-                                            <div class="row">
                                                 <div class="col-md-6">
-                                                    <label for="input1" class="form-label">Position</label>
-
-                                                    <input type="number" name="reponse[position][{{ $index }}]"
-                                                        placeholder="Position" class="form-control mb-2"
-                                                        value="{{ old("reponse.position.$index", $reponse->position) }}">
+                                                    <label class="form-label">Réponse correcte</label>
+                                                    <input type="text"
+                                                        name="questions[{{ $qIndex }}][reponse_correct]"
+                                                        class="form-control mb-2"
+                                                        value="{{ old("questions.$qIndex.reponse_correct", $question->reponse_correct) }}">
                                                 </div>
-                                                <div class="col-md-6">
-                                                    <label for="input1" class="form-label">Pair correspondante</label>
-
-                                                    <input type="text" name="reponse[match_pair][{{ $index }}]"
-                                                        placeholder="Pair correspondante" class="form-control mb-2"
-                                                        value="{{ old("reponse.match_pair.$index", $reponse->match_pair) }}">
+                                                <div class="col-md-12">
+                                                    <label class="form-label">Explication</label>
+                                                    <textarea name="questions[{{ $qIndex }}][explication]" class="form-control mb-2">{{ old("questions.$qIndex.explication", $question->explication) }}</textarea>
                                                 </div>
                                             </div>
 
-                                            <div class="row">
-                                                <div class="col-md-6">
-                                                    <label for="input1" class="form-label">Groupe</label>
-
-                                                    <input type="text" name="reponse[bank_group][{{ $index }}]"
-                                                        placeholder="Groupe" class="form-control mb-2"
-                                                        value="{{ old("reponse.bank_group.$index", $reponse->bank_group) }}">
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <label for="input1" class="form-label">Verso de la flashcard</label>
-
-                                                    <textarea name="reponse[flashcard_back][{{ $index }}]" placeholder="Verso de la flashcard"
-                                                        class="form-control mb-2">{{ old("reponse.flashcard_back.$index", $reponse->flashcard_back) }}</textarea>
-                                                </div>
-                                            </div>
-
-                                            <div class="text-end">
-                                                <button type="button"
-                                                    class="btn btn-danger btn-sm remove-reponse-btn px-4"><i
-                                                        class="fadeIn animated bx bx-trash-alt"></i>Supprimer</button>
-                                            </div>
                                         </div>
-                                        <hr>
-                                    @endforeach
+                                        {{-- Réponses --}}
+                                        <h6 class="mt-4">Réponses</h6>
+                                        @foreach ($question->reponses as $rIndex => $reponse)
+                                            <div class="px-3 py-3 mb-3"
+                                                style="box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;">
+                                                <input type="hidden"
+                                                    name="questions[{{ $qIndex }}][reponses][{{ $rIndex }}][id]"
+                                                    value="{{ $reponse->id }}">
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">Texte de la réponse</label>
+                                                        <input type="text"
+                                                            name="questions[{{ $qIndex }}][reponses][{{ $rIndex }}][text]"
+                                                            class="form-control mb-2"
+                                                            value="{{ old("questions.$qIndex.reponses.$rIndex.text", $reponse->text) }}">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">Bonne réponse ?</label>
+                                                        <select
+                                                            name="questions[{{ $qIndex }}][reponses][{{ $rIndex }}][is_correct]"
+                                                            class="form-select mb-2">
+                                                            <option value="1"
+                                                                {{ $reponse->is_correct ? 'selected' : '' }}>Oui</option>
+                                                            <option value="0"
+                                                                {{ !$reponse->is_correct ? 'selected' : '' }}>Non</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-3">
+                                                    <div class="col-md-4">
+                                                        <label class="form-label">Position</label>
+                                                        <input type="number"
+                                                            name="questions[{{ $qIndex }}][reponses][{{ $rIndex }}][position]"
+                                                            class="form-control"
+                                                            value="{{ old("questions.$qIndex.reponses.$rIndex.position", $reponse->position) }}">
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <label class="form-label">Pair correspondante</label>
+                                                        <input type="text"
+                                                            name="questions[{{ $qIndex }}][reponses][{{ $rIndex }}][match_pair]"
+                                                            class="form-control"
+                                                            value="{{ old("questions.$qIndex.reponses.$rIndex.match_pair", $reponse->match_pair) }}">
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <label class="form-label">Groupe</label>
+                                                        <input type="text"
+                                                            name="questions[{{ $qIndex }}][reponses][{{ $rIndex }}][bank_group]"
+                                                            class="form-control"
+                                                            value="{{ old("questions.$qIndex.reponses.$rIndex.bank_group", $reponse->bank_group) }}">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <hr>
+                                        @endforeach
+                                    </div>
                                 </div>
                             </div>
+                        @endforeach
+                        <div id="noResults" class="alert alert-warning d-none mt-3">Aucun résultat trouvé.</div>
+                    </div>
+                    <div class="col-sm-12 col-md-6 ">
+                        <div class="dataTables_paginate paging_simple_numbers" id="example2_paginate">
+                            <ul class="pagination">
+                                <li class="paginate_button page-item previous disabled" id="prevPage">
+                                    <a href="#" class="page-link">Précédent</a>
+                                </li>
+                                <span class="d-flex" id="paginationNumbers"></span>
+                                <li class="paginate_button page-item next" id="nextPage">
+                                    <a href="#" class="page-link">Suivant</a>
+                                </li>
+                            </ul>
                         </div>
-                        {{-- SUBMIT --}}
-                        <div class="text-center">
-                            <button type="submit" class="btn btn-primary px-5"> <i class="lni lni-save"></i>Mettre à
-                                jour</button>
-                        </div>
-                    </form>
-                </div>
+                    </div>
+                    <hr>
+                    {{-- SUBMIT --}}
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-sm btn-primary px-5"> <i class="lni lni-save"></i>Mettre à
+                            jour</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -396,5 +358,182 @@
             }
         });
     </script>
+    <script>
+        // document.addEventListener("DOMContentLoaded", function() {
+        //     const itemsPerPage = 10;
+        //     const items = Array.from(document.querySelectorAll(".question-item"));
+        //     const totalItems = items.length;
+        //     const totalPages = Math.ceil(totalItems / itemsPerPage);
+        //     let currentPage = 1;
+        //     const maxVisiblePages = 5;
+
+        //     function showPage(page) {
+        //         const start = (page - 1) * itemsPerPage;
+        //         const end = page * itemsPerPage;
+
+        //         items.forEach((item, index) => {
+        //             item.style.display = (index >= start && index < end) ? "block" : "none";
+        //         });
+
+        //         updatePaginationButtons();
+        //     }
+
+        //     function updatePaginationButtons() {
+        //         const container = document.getElementById("paginationNumbers");
+        //         container.innerHTML = "";
+
+        //         let startPage = Math.floor((currentPage - 1) / maxVisiblePages) * maxVisiblePages + 1;
+        //         let endPage = Math.min(startPage + maxVisiblePages - 1, totalPages);
+
+        //         for (let i = startPage; i <= endPage; i++) {
+        //             const li = document.createElement("li");
+        //             li.className = `paginate_button page-item ${i === currentPage ? 'active' : ''}`;
+
+        //             const a = document.createElement("a");
+        //             a.href = "#";
+        //             a.className = "page-link";
+        //             a.innerText = i;
+        //             a.addEventListener("click", (e) => {
+        //                 e.preventDefault();
+        //                 currentPage = i;
+        //                 showPage(currentPage);
+        //             });
+
+        //             li.appendChild(a);
+        //             container.appendChild(li);
+        //         }
+
+        //         const prev = document.getElementById("prevPage");
+        //         const next = document.getElementById("nextPage");
+
+        //         prev.classList.toggle("disabled", currentPage === 1);
+        //         next.classList.toggle("disabled", currentPage === totalPages);
+        //     }
+
+        //     document.getElementById("prevPage").addEventListener("click", (e) => {
+        //         e.preventDefault();
+        //         if (currentPage > 1) {
+        //             currentPage--;
+        //             showPage(currentPage);
+        //         }
+        //     });
+
+        //     document.getElementById("nextPage").addEventListener("click", (e) => {
+        //         e.preventDefault();
+        //         if (currentPage < totalPages) {
+        //             currentPage++;
+        //             showPage(currentPage);
+        //         }
+        //     });
+
+        //     showPage(currentPage);
+        // });
+        document.addEventListener("DOMContentLoaded", function() {
+            const itemsPerPage = 10;
+            const items = Array.from(document.querySelectorAll(".question-item"));
+            const totalItems = items.length;
+            let filteredItems = [...items];
+            let currentPage = 1;
+            const maxVisiblePages = 5;
+
+            const searchInput = document.getElementById("searchInput");
+            const searchBtn = document.getElementById("searchBtn");
+            const resetBtn = document.getElementById("resetBtn");
+            const noResults = document.getElementById("noResults");
+
+            function showPage(page, itemsToShow = filteredItems) {
+                const start = (page - 1) * itemsPerPage;
+                const end = page * itemsPerPage;
+
+                items.forEach(item => item.style.display = "none");
+                itemsToShow.forEach((item, index) => {
+                    if (index >= start && index < end) {
+                        item.style.display = "block";
+                    }
+                });
+
+                noResults.classList.toggle("d-none", itemsToShow.length > 0);
+
+                updatePaginationButtons(itemsToShow.length);
+            }
+
+            function updatePaginationButtons(itemCount = filteredItems.length) {
+                const container = document.getElementById("paginationNumbers");
+                const totalPages = Math.ceil(itemCount / itemsPerPage);
+                container.innerHTML = "";
+
+                let startPage = Math.floor((currentPage - 1) / maxVisiblePages) * maxVisiblePages + 1;
+                let endPage = Math.min(startPage + maxVisiblePages - 1, totalPages);
+
+                for (let i = startPage; i <= endPage; i++) {
+                    const li = document.createElement("li");
+                    li.className = `paginate_button page-item ${i === currentPage ? 'active' : ''}`;
+
+                    const a = document.createElement("a");
+                    a.href = "#";
+                    a.className = "page-link";
+                    a.innerText = i;
+                    a.addEventListener("click", (e) => {
+                        e.preventDefault();
+                        currentPage = i;
+                        showPage(currentPage);
+                    });
+
+                    li.appendChild(a);
+                    container.appendChild(li);
+                }
+
+                const prev = document.getElementById("prevPage");
+                const next = document.getElementById("nextPage");
+
+                prev.classList.toggle("disabled", currentPage === 1);
+                next.classList.toggle("disabled", currentPage === totalPages);
+            }
+
+            document.getElementById("prevPage").addEventListener("click", (e) => {
+                e.preventDefault();
+                if (currentPage > 1) {
+                    currentPage--;
+                    showPage(currentPage);
+                }
+            });
+
+            document.getElementById("nextPage").addEventListener("click", (e) => {
+                e.preventDefault();
+                const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    showPage(currentPage);
+                }
+            });
+
+            searchBtn.addEventListener("click", (e) => {
+                e.preventDefault();
+                const query = searchInput.value.trim().toLowerCase();
+
+                filteredItems = items.filter(item => {
+                    const questionText = item.querySelector(".accordion-button").innerText
+                        .toLowerCase();
+                    return questionText.includes(query);
+                });
+
+                currentPage = 1;
+                showPage(currentPage);
+            });
+
+            resetBtn.addEventListener("click", (e) => {
+                e.preventDefault();
+                searchInput.value = "";
+                filteredItems = [...items];
+                currentPage = 1;
+                showPage(currentPage);
+            });
+
+            // Initial display
+            showPage(currentPage);
+        });
+    </script>
+
+
 
 @endsection
