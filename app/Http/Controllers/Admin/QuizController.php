@@ -70,10 +70,10 @@ class QuizController extends Controller
      */
     public function edit(string $id)
     {
-        $quiz = $this->quizeService->getById($id);
+        $quiz = $this->quizeService->show($id);
+       
         $formations = Formation::all();
-        $question = $quiz->questions->first();
-
+        $question = $quiz->questions;
         return view('admin.quizzes.edit', compact('quiz', 'formations', 'question'));
     }
 
@@ -198,7 +198,6 @@ class QuizController extends Controller
                 $path = $file->store('medias', 'public');
                 $questionData['media_url'] = $path; // On stocke juste le chemin dans la BDD
             }
-
             // 4. Création de la question
             $question = Questions::create($questionData);
 

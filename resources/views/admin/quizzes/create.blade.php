@@ -22,6 +22,19 @@
     <div class="card-body">
         <h5 class="card-title text-wizi">Ajouter Quiz</h5>
         <hr>
+
+        @if (session('success'))
+            <div class="alert alert-success border-0 bg-success alert-dismissible fade show">
+                <div class="text-white"> {{ session('success') }}</div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+        @if (session('error'))
+            <div class="alert alert-danger border-0 bg-danger alert-dismissible fade show">
+                <div class="text-white"> {{ session('error') }}</div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
         @if ($errors->any())
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
                 <strong class="font-bold">Whoops!</strong>
@@ -170,7 +183,8 @@
                             <div class="col-md-6 d-flex align-items-end justify-content-end">
                                 <div id="add-reponse-btn"
                                     class="d-flex align-items-center theme-icons p-2 cursor-pointer rounded">
-                                    <button type="button" class="btn btn-sm btn-primary px-5"><i class="bx bx-user mr-1"></i>Ajouter une reponse</button>
+                                    <button type="button" class="btn btn-sm btn-primary px-5"><i
+                                            class="bx bx-user mr-1"></i>Ajouter une reponse</button>
                                 </div>
                             </div>
                         </div>
@@ -222,7 +236,8 @@
                 </div>
                 {{-- SUBMIT --}}
                 <div class="text-center">
-                    <button type="submit" class="btn btn-primary btn-sm px-4"> <i class="lni lni-save"></i>Tout enregistrer</button>
+                    <button type="submit" class="btn btn-primary btn-sm px-4"> <i class="lni lni-save"></i>Tout
+                        enregistrer</button>
                 </div>
             </form>
         </div>
