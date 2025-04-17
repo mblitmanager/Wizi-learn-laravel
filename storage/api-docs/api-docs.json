@@ -11,7 +11,7 @@
                 "tags": [
                     "Authentication"
                 ],
-                "summary": "Register a new user",
+                "summary": "Enregistrer un utilisateur",
                 "operationId": "e7cd5d7d2bec3c090f99d9063600b50b",
                 "requestBody": {
                     "required": true,
@@ -49,7 +49,7 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "User registered successfully",
+                        "description": "Utilisateur enregistré avec succès",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -67,7 +67,7 @@
                         }
                     },
                     "400": {
-                        "description": "Validation errors"
+                        "description": "Erreur de validation"
                     }
                 }
             }
@@ -77,7 +77,7 @@
                 "tags": [
                     "Authentication"
                 ],
-                "summary": "Login a user",
+                "summary": "Connexion de l'utilisateur",
                 "operationId": "5901742bd641a8d1474bcf8bb2cb7982",
                 "requestBody": {
                     "required": true,
@@ -105,7 +105,7 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Login successful",
+                        "description": "Connexion réussie",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -120,7 +120,10 @@
                         }
                     },
                     "401": {
-                        "description": "Invalid credentials"
+                        "description": "Accès invalide"
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur"
                     }
                 }
             }
@@ -130,11 +133,11 @@
                 "tags": [
                     "Authentication"
                 ],
-                "summary": "Get authenticated user",
+                "summary": "Recuperer le profil de l'utilisateur",
                 "operationId": "43339fb897cbfd4a69106f346afd97c6",
                 "responses": {
                     "200": {
-                        "description": "Authenticated user details",
+                        "description": "Données de l'utilisateur récupérées avec succès",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -149,10 +152,10 @@
                         }
                     },
                     "404": {
-                        "description": "User not found"
+                        "description": "Utilisateur non trouvé"
                     },
                     "400": {
-                        "description": "Invalid token"
+                        "description": "Token invalide"
                     }
                 }
             }
@@ -162,18 +165,18 @@
                 "tags": [
                     "Authentication"
                 ],
-                "summary": "Logout the user",
+                "summary": "Déconnexion de l'utilisateur",
                 "operationId": "c426006f932e75b0e57a555970770d4f",
                 "responses": {
                     "200": {
-                        "description": "Logout successful",
+                        "description": "Déconnexion réussie",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Successfully logged out"
+                                            "example": "Deconnexion réussie"
                                         }
                                     },
                                     "type": "object"

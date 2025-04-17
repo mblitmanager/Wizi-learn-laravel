@@ -14,7 +14,8 @@
         </div>
         <div class="ms-auto">
             <div class="btn-group">
-                <a href="{{ route('commercials.index') }}" type="button" class="btn btn-primary">Retour</a>
+                <a href="{{ route('commercials.index') }}" type="button" class="btn btn-sm btn-primary"><i
+                        class="fadeIn animated bx bx-chevron-left-circle"></i>Retour</a>
             </div>
         </div>
     </div>
@@ -38,7 +39,6 @@
                     {{ session('success') }}
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
-
             @endif
             <div class="card-body p-4 border rounded">
                 <form class="row g-3" action="{{ route('commercials.update', $commercial->id) }}" method="POST">
@@ -62,7 +62,7 @@
                             <label for="prenom">Prenom</label>
                             <input type="text" name="prenom" id="prenom"
                                 class="form-control @error('prenom') is-invalid @enderror"
-                                value="{{ old('prenom', $commercial->user->prenom ?? '') }}">
+                                value="{{ old('prenom', $commercial->prenom ?? '') }}">
                             @error('prenom')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -93,8 +93,28 @@
                             @enderror
                         </div>
                     </div>
+
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="stagiaire_id">Stagiaire</label>
+                            <select name="stagiaire_id[]" id="stagiaire_id"
+                                class="form-select select2 @error('stagiaire_id') is-invalid @enderror" multiple>
+                                <option value="">Choisir un ou plusieurs stagiaires</option>
+                                @foreach ($stagiaires as $stagiaire)
+                                    <option value="{{ $stagiaire->id }}"
+                                        {{ in_array($stagiaire->id, old('stagiaire_id', $commercial->stagiaires->pluck('id')->toArray())) ? 'selected' : '' }}>
+                                        {{ $stagiaire->user->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('stagiaire_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
                     <div class="col-12">
-                        <button type="submit" class="btn btn-primary px-5">Enregistrer</button>
+                        <button type="submit" class="btn btn-sm btn-primary px-4"><i class="lni lni-save"></i>Mettre à
+                            jour</button>
                     </div>
                 </form>
             </div>
@@ -102,5 +122,14 @@
     </div>
 @endsection
 @section('scripts')
-
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('.select2').select2({
+                placeholder: "Choisir des formations",
+                allowClear: true
+            });
+        });
+    </script>
 @endsection

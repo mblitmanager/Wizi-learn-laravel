@@ -43,4 +43,18 @@ class QuizService
     {
         return $this->quizRepository->getQuizzesByStagiaire($stagiaireId);
     }
+
+    public function getCategories()
+    {
+        return $this->quizRepository->getUniqueCategories();
+    }
+    public function getQuestionsByQuizId($quizId)
+    {
+        return $this->quizRepository->getQuestionsByQuizId($quizId);
+    }
+
+    public function submitQuizAnswers($quizId, $stagiaireId, array $answers)
+    {
+        return $this->quizRepository->submitQuizAnswers($quizId, $stagiaireId, $answers);
+    }
 }

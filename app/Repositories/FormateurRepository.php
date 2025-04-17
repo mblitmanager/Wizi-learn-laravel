@@ -10,12 +10,12 @@ class FormateurRepository implements FormateurInterface
 {
     public function all(): Collection
     {
-        return Formateur::with('user', 'formations')->get();
+        return Formateur::with('user', 'formations','stagiaires')->get();
     }
 
     public function find(int $id): ?Formateur
     {
-        return Formateur::with('user', 'formations')->where('id', $id)->first();
+        return Formateur::with('user', 'formations', 'stagiaires')->where('id', $id)->first();
     }
 
     public function create(array $data): Formateur

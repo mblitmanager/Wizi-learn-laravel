@@ -14,7 +14,8 @@
         </div>
         <div class="ms-auto">
             <div class="btn-group">
-                <a href="{{ route('medias.index') }}" type="button" class="btn btn-primary">Retour</a>
+                <a href="{{ route('medias.index') }}" type="button" class="btn btn-sm btn-primary"><i
+                        class="fadeIn animated bx bx-chevron-left-circle"></i>Retour</a>
             </div>
         </div>
     </div>
@@ -37,10 +38,9 @@
                     {{ session('success') }}
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
-
             @endif
             <div class="card-body p-4 border rounded">
-                <form class="row g-3" action="{{ route('medias.store') }}" method="POST">
+                <form class="row g-3" action="{{ route('medias.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <div class="col-md-4">
                         <!-- Nom -->
@@ -69,8 +69,10 @@
                     <div class="col-md-4">
                         <!-- Nom -->
                         <div class="mb-3">
-                            <label for="url">Url</label>
-                            <input type="text" name="url" id="url" class="form-control @error('url') is-invalid @enderror"
+                            <label for="file">Fichier (image, vidéo ou PDF)</label>
+
+                            <input type="file" name="url" id="file"
+                                class="form-control @error('url') is-invalid @enderror"
                                 value="{{ old('url', $media->url ?? '') }}">
                             @error('url')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -81,15 +83,15 @@
                         <!-- Nom -->
                         <div class="mb-3">
                             <label for="type">Type</label>
-                           
+
                             <select name="type" id="type" class="form-select @error('type') is-invalid @enderror">
                                 <option value="" {{ old('type') == '' ? 'selected' : '' }}> Choisir un
                                     type </option>
-                                <option value="video" {{ old('type') == "video" ? 'selected' : '' }}>video</option>
-                                <option value="document" {{ old('type') == "document" ? 'selected' : '' }}>
+                                <option value="video" {{ old('type') == 'video' ? 'selected' : '' }}>video</option>
+                                <option value="document" {{ old('type') == 'document' ? 'selected' : '' }}>
                                     document
                                 </option>
-                                <option value="image" {{ old('type') == "image" ? 'selected' : '' }}>image</option>
+                                <option value="image" {{ old('type') == 'image' ? 'selected' : '' }}>image</option>
                             </select>
                             @error('type')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -104,8 +106,9 @@
                                 class="form-select @error('formation_id') is-invalid @enderror">
                                 <option value="" {{ old('formation_id') == '' ? 'selected' : '' }}> Choisir un
                                     formation </option>
-                                @foreach($formations as $formation)
-                                    <option value="{{ $formation->id }}" {{ old('formation_id', $formation->formation_id ?? '') == $formation->id ? 'selected' : '' }}>
+                                @foreach ($formations as $formation)
+                                    <option value="{{ $formation->id }}"
+                                        {{ old('formation_id', $formation->formation_id ?? '') == $formation->id ? 'selected' : '' }}>
                                         {{ $formation->titre }}
                                     </option>
                                 @endforeach
@@ -115,9 +118,10 @@
                             @enderror
                         </div>
                     </div>
-                   
+
                     <div class="col-12">
-                        <button type="submit" class="btn btn-primary px-5">Enregistrer</button>
+                        <button type="submit" class="btn btn-sm btn-primary px-4"><i
+                                class="lni lni-save"></i>Enregistrer</button>
                     </div>
                 </form>
             </div>

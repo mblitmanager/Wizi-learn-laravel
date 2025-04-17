@@ -2,20 +2,19 @@
 namespace App\Repositories;
 
 use App\Models\PoleRelationClient;
-use App\Repositories\Contracts\PoleRelationClientRepositoryInterface;
 use Illuminate\Support\Collection;
 
-class PoleRelationClientRepository implements PoleRelationClientRepositoryInterface
+class PoleRelationClientRepository implements \App\Repositories\Interfaces\PRCInterface
 {
 
     public function all(): Collection
     {
-        return PoleRelationClient::with('stagiaires','user')->get();
+        return PoleRelationClient::with('stagiaires', 'user')->get();
     }
 
     public function find(int $id): ?PoleRelationClient
     {
-        return PoleRelationClient::with('stagiaires','user')->where('id', $id)->first();
+        return PoleRelationClient::with('stagiaires', 'user')->where('id', $id)->first();
     }
 
     public function create(array $data): PoleRelationClient

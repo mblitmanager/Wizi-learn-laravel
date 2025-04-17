@@ -14,7 +14,8 @@
         </div>
         <div class="ms-auto">
             <div class="btn-group">
-                <a href="{{ route('quiz.index') }}" type="button" class="btn btn-primary">Retour</a>
+                <a href="{{ route('quiz.index') }}" type="button" class="btn btn-sm btn-primary"><i
+                        class="fadeIn animated bx bx-chevron-left-circle"></i>Retour</a>
             </div>
         </div>
     </div>
@@ -24,7 +25,6 @@
         @if ($errors->any())
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
                 <strong class="font-bold">Whoops!</strong>
-                <span class="block sm:inline">There were some problems with your input.</span>
                 <ul class="mt-2 list-disc list-inside">
                     @foreach ($errors->all() as $error)
                         <li>{{ $error }}</li>
@@ -42,7 +42,8 @@
             <div class="card-body p-4 border rounded">
                 <!-- filepath: c:\Users\DEV-MBL\Desktop\Projet\Wizi-learn-laravel\resources\views\admin\media\edit.blade.php -->
                 <div class="card-body p-4 border rounded">
-                    <form class="row g-3" action="{{ route('medias.update', $media->id) }}" method="POST">
+                    <form class="row g-3" action="{{ route('medias.update', $media->id) }}" method="POST"
+                        enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
                         <div class="col-md-4">
@@ -73,7 +74,7 @@
                             <!-- Url -->
                             <div class="mb-3">
                                 <label for="url">Url</label>
-                                <input type="text" name="url" id="url"
+                                <input type="file" name="url" id="url"
                                     class="form-control @error('url') is-invalid @enderror"
                                     value="{{ old('url', $media->url) }}">
                                 @error('url')
@@ -122,9 +123,10 @@
                                 @enderror
                             </div>
                         </div>
-                       
+
                         <div class="col-12">
-                            <button type="submit" class="btn btn-primary px-5">Mettre à jour</button>
+                            <button type="submit" class="btn btn-sm btn-primary px-4"><i class="lni lni-save"></i>Mettre à
+                                jour</button>
                         </div>
                     </form>
                 </div>

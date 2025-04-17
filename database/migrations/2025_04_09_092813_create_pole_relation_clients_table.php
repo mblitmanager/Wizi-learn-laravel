@@ -14,7 +14,6 @@ return new class extends Migration {
             $table->id();
             $table->string('prenom')->nullable();
             $table->string('role')->default('pole_relation_client');
-            $table->foreignId('stagiaire_id')->constrained('stagiaires')->onDelete('cascade');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->timestamps();
         });

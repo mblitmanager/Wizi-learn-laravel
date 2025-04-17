@@ -1,11 +1,10 @@
 <?php
 
-namespace App\Repositories\Contracts;
-
+namespace App\Repositories\Interfaces;
 use Illuminate\Support\Collection;
 use App\Models\PoleRelationClient;
 
-interface PoleRelationClientRepositoryInterface
+interface PRCInterface
 {
     public function all(): Collection;
     public function find(int $id): ?PoleRelationClient;

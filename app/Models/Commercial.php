@@ -9,7 +9,7 @@ use ApiPlatform\Metadata\Patch;
 
 #[ApiResource(
     paginationItemsPerPage: 10
-    )]
+)]
 class Commercial extends Model
 {
     use HasFactory;
@@ -28,7 +28,8 @@ class Commercial extends Model
     }
     public function stagiaires()
     {
-        return $this->hasMany(Stagiaire::class);
+        return $this->belongsToMany(Stagiaire::class, 'commercial_stagiaire');
     }
+
 
 }

@@ -37,25 +37,31 @@ class CommercialService
         // 2. Associer l'utilisateur
         $data['user_id'] = $user->id;
 
-        // Créer le quiz
-        return $this->commercialInterface->create($data);
+        $stagiaireId = $data['stagiaire_id'];
+        $commercial = $this->commercialInterface->create($data);
+        $commercial = $this->commercialInterface->create($data);
+
+        $commercial->stagiaires()->sync($stagiaireId);
+        return $commercial;
     }
 
     public function update(int $id, array $data)
     {
 
-        $formateur = $this->commercialInterface->find($id);
+        $commercial = $this->commercialInterface->find($id);
 
-        if (!$formateur) {
+        if (!$commercial) {
             throw new \Exception("Quiz not found");
         }
-        $formateur->user->update([
+        $commercial->user->update([
             'name' => $data['name'],
             'email' => $data['email'],
-            'password' => isset($data['password']) ? Hash::make($data['password']) : $formateur->user->password,
+            'password' => isset($data['password']) ? Hash::make($data['password']) : $commercial->user->password,
         ]);
+        $stagiaireIds = $data['stagiaire_id'] ?? [];
 
         unset($data['name'], $data['email'], $data['password']);
+        $commercial->stagiaires()->sync($stagiaireIds);
 
         // Mettre à jour le quiz
         return $this->commercialInterface->update($id, $data);

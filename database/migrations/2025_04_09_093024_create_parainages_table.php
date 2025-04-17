@@ -13,7 +13,7 @@ return new class extends Migration {
         Schema::create('parainages', function (Blueprint $table) {
             $table->id();
             $table->string('nombre_filleul')->nullable();
-            $table->foreignId('stagiaire_id')->constrained('stagiaires')->onDelete('cascade');
+            // $table->foreignId('stagiaire_id')->constrained('stagiaires')->onDelete('cascade');
             $table->string('lien')->nullable();
             $table->string('points')->nullable();
             $table->timestamps();

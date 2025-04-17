@@ -37,7 +37,6 @@
                     {{ session('success') }}
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
-
             @endif
             <div class="card-body p-4 border rounded">
                 <form class="row g-3" action="{{ route('formateur.update', $formateur->id) }}" method="POST">
@@ -61,7 +60,7 @@
                             <label for="prenom">Prenom</label>
                             <input type="text" name="prenom" id="prenom"
                                 class="form-control @error('prenom') is-invalid @enderror"
-                                value="{{ old('prenom', $formateur->user->prenom ?? '') }}">
+                                value="{{ old('prenom', $formateur->prenom ?? '') }}">
                             @error('prenom')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -86,9 +85,26 @@
                         <div class="mb-3">
                             <label for="password">Mot de passe</label>
                             <input type="password" name="password" id="password"
-                                class="form-control @error('password') is-invalid @enderror"
-                                value="">
+                                class="form-control @error('password') is-invalid @enderror" value="">
                             @error('password')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="stagiaire_id">Stagiaire</label>
+                            <select name="stagiaire_id[]" id="stagiaire_id"
+                                class="form-select select2 @error('stagiaire_id') is-invalid @enderror" multiple>
+                                <option value="">Choisir un ou plusieurs stagiaires</option>
+                                @foreach ($stagiaires as $stagiaire)
+                                    <option value="{{ $stagiaire->id }}"
+                                        {{ in_array($stagiaire->id, old('stagiaire_id', $formateur->stagiaires->pluck('id')->toArray())) ? 'selected' : '' }}>
+                                        {{ $stagiaire->user->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('stagiaire_id')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
@@ -99,32 +115,35 @@
                                 <h2 class="accordion-header" id="headingOne">
                                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                         data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
-                                        Selectionz les formations associées 
-                                        <span class="badge bg-primary float-end"> {{ count($formations) }}</span>
+                                        Selectionz les formations associées
+                                        <span class="badge bg-primary mx-4"> {{ count($formations) }}</span>
                                     </button>
                                 </h2>
                                 <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne"
                                     data-bs-parent="#accordionExample" style="">
                                     <div class="accordion-body">
                                         <div class="row row-cols-1 row-cols-md-3 row-cols-lg-3 row-cols-xl-3">
-                                        @foreach($formations as $formation)
-                                        <div class="col">
-                                            <div class="card">
-                                                <div class="card-body">
-                                                    <h5 class="card-title">{{ $formation->titre }}</h5>
-                                                    <p class="card-text">Description rapide de la formation.</p>
-                                                    <div class="form-check">
-                                                        <input class="form-check-input" type="checkbox" name="formation_id[]"
-                                                            id="formation_{{ $formation->id }}" value="{{ $formation->id }}"
-                                                            {{ in_array($formation->id, old('formation_id', $formateur->formations->pluck('id')->toArray())) ? 'checked' : '' }}>
-                                                        <label class="form-check-label" for="formation_{{ $formation->id }}">
-                                                            Sélectionner
-                                                        </label>
+                                            @foreach ($formations as $formation)
+                                                <div class="col">
+                                                    <div class="card border-warning border-bottom border-3 border-0">
+                                                        <div class="card-body">
+                                                            <h5 class="card-title">{{ $formation->titre }}</h5>
+                                                            <p class="card-text">Description rapide de la formation.</p>
+                                                            <div class="form-check">
+                                                                <input class="form-check-input" type="checkbox"
+                                                                    name="formation_id[]"
+                                                                    id="formation_{{ $formation->id }}"
+                                                                    value="{{ $formation->id }}"
+                                                                    {{ in_array($formation->id, old('formation_id', $formateur->formations->pluck('id')->toArray())) ? 'checked' : '' }}>
+                                                                <label class="form-check-label"
+                                                                    for="formation_{{ $formation->id }}">
+                                                                    Sélectionner
+                                                                </label>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </div>
-                                        @endforeach
+                                            @endforeach
                                         </div>
                                     </div>
                                 </div>
@@ -135,7 +154,8 @@
 
                     </div>
                     <div class="col-12">
-                        <button type="submit" class="btn btn-primary px-5">Enregistrer</button>
+                        <button type="submit" class="btn btn-sm btn-primary px-4"><i class="lni lni-save"></i>Mettre à
+                            jour</button>
                     </div>
                 </form>
             </div>
@@ -143,14 +163,14 @@
     </div>
 @endsection
 @section('scripts')
-    @section('scripts')
-        <script>
-            $(document).ready(function () {
-                $('.js-example-basic-multiple').select2({
-                    placeholder: "Choisir une ou plusieurs formations", // Placeholder
-                    allowClear: true
-                });
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('.select2').select2({
+                placeholder: "Choisir des formations",
+                allowClear: true
             });
-        </script>
-    @endsection
+        });
+    </script>
 @endsection

@@ -9,6 +9,7 @@ use App\Models\Participation;
 use App\Repositories\Interfaces\QuizRepositoryInterface;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use App\Models\Formation;
 
 class QuizeRepository implements QuizRepositoryInterface
 {
@@ -60,21 +61,21 @@ class QuizeRepository implements QuizRepositoryInterface
         try {
             $quiz = $this->find($quizId);
             $questions = $this->getQuizQuestions($quizId);
-            
+
             $score = 0;
             $totalQuestions = $questions->count();
-            
+
             foreach ($answers as $questionId => $reponseId) {
                 $question = $questions->firstWhere('id', $questionId);
                 $reponse = $question->reponses->firstWhere('id', $reponseId);
-                
+
                 if ($reponse && $reponse->isCorrect) {
                     $score++;
                 }
             }
-            
+
             $percentage = ($score / $totalQuestions) * 100;
-            
+
             // Enregistrer la participation
             $participation = Participation::create([
                 'quiz_id' => $quizId,
@@ -82,9 +83,9 @@ class QuizeRepository implements QuizRepositoryInterface
                 'score' => $percentage,
                 'completed' => true
             ]);
-            
+
             DB::commit();
-            
+
             return [
                 'score' => $percentage,
                 'total_questions' => $totalQuestions,
@@ -102,7 +103,7 @@ class QuizeRepository implements QuizRepositoryInterface
         $participation = Participation::where('quiz_id', $quizId)
             ->where('stagiaire_id', $stagiaireId)
             ->first();
-            
+
         if (!$participation) {
             return [
                 'completed' => false,
@@ -110,7 +111,7 @@ class QuizeRepository implements QuizRepositoryInterface
                 'attempts' => 0
             ];
         }
-        
+
         return [
             'completed' => $participation->completed,
             'score' => $participation->score,
@@ -122,7 +123,7 @@ class QuizeRepository implements QuizRepositoryInterface
     public function getQuizStats($quizId): array
     {
         $quiz = $this->find($quizId);
-        
+
         return [
             'total_participations' => $quiz->participations->count(),
             'average_score' => $quiz->participations->avg('score'),
@@ -137,5 +138,17 @@ class QuizeRepository implements QuizRepositoryInterface
         return Quiz::whereHas('formation', function($query) use ($categoryId) {
             $query->where('category_id', $categoryId);
         })->get();
+    }
+
+    public function getUniqueCategories(): Collection
+    {
+        return Formation::select('categorie')->distinct()->pluck('categorie');
+    }
+
+    public function getQuestionsByQuizId($quizId): Collection
+    {
+        return Questions::where('quiz_id', $quizId)
+            ->with('reponses')
+            ->get();
     }
 }

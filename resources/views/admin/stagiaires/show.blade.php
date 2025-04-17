@@ -6,7 +6,7 @@
         <div class="ps-3">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0 p-0">
-                    <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
+                    <li class="breadcrumb-item"><a href="{{ route('stagiaires.index') }}"><i class="bx bx-home-alt"></i></a>
                     </li>
                     <li class="breadcrumb-item active" aria-current="page">Gestion stagiaire</li>
                 </ol>
@@ -25,67 +25,119 @@
                 <div class="container">
                     <div class="main-body">
                         <div class="row">
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <h4 class="mb-2">{{ $stagiaire->civilite }}.
+                                        {{ $stagiaire->user->name }}-{{ $stagiaire->prenom }}
+                                    </h4>
+                                    <ul class="list-group">
+                                        <li class="list-group-item"><strong>Nom</strong> :
+                                            {{ $stagiaire->user->name }}
+                                        </li>
+                                        <li class="list-group-item"><strong> Prenom</strong> : {{ $stagiaire->prenom }}
+                                        </li>
+                                        <li class="list-group-item"><strong>Date de naissance</strong> :
+                                            {{ $stagiaire->date_naissance }}
+                                        </li>
 
-                            <div class="col-lg-8">
+                                        <li class="list-group-item"><strong>Telephone</strong> :
+                                            {{ $stagiaire->telephone }}
+                                        </li>
+                                        <li class="list-group-item"><strong>Code postal</strong> :
+                                            {{ $stagiaire->code_postal }}
+                                        </li>
+                                        <li class="list-group-item"><strong>Ville</strong> :
+                                            {{ $stagiaire->ville }}
+                                        </li>
+
+                                        <li class="list-group-item"><strong>Date de creation</strong> :
+                                            {{ $stagiaire->created_at->format('d/m/Y à H:i') }}
+                                        </li>
+                                    </ul>
+                                </div>
+                                <h5>Liste des formations</h5>
+                                <hr>
                                 <div class="card">
                                     <div class="card-body">
-                                        <div class="row mb-3">
-                                            <div class="col-sm-3">
-                                                <h6 class="mb-0">Nom</h6>
-                                            </div>
-                                            <div class="col-sm-9 text-secondary">
-                                                <input type="text" class="form-control"
-                                                    value="{{ $stagiaire->user->name }}" readonly>
-                                            </div>
-                                        </div>
-                                        <div class="row mb-3">
-                                            <div class="col-sm-3">
-                                                <h6 class="mb-0">Email</h6>
-                                            </div>
-                                            <div class="col-sm-9 text-secondary">
-                                                <input type="text" class="form-control"
-                                                    value="{{ $stagiaire->user->email }}" readonly>
-                                            </div>
-                                        </div>
-
-                                        <div class="row mb-3">
-                                            <div class="col-sm-3">
-                                                <h6 class="mb-0">Téléphone</h6>
-                                            </div>
-                                            <div class="col-sm-9 text-secondary">
-                                                <input type="text" class="form-control" value="{{ $stagiaire->telephone }}"
-                                                    readonly>
-                                            </div>
-                                        </div>
-                                        <div class="row mb-3">
-                                            <div class="col-sm-3">
-                                                <h6 class="mb-0">Address</h6>
-                                            </div>
-                                            <div class="col-sm-9 text-secondary">
-                                                <input type="text" class="form-control" value="{{ $stagiaire->adresse }}"
-                                                    readonly>
-                                            </div>
-                                        </div>
-
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-sm-12">
-                                        <h5 class="d-flex align-items-center mb-3">Formations</h5>
-                                        <div class="row row-cols-1 row-cols-md-3 row-cols-lg-3 row-cols-xl-3">
-                                            @foreach($stagiaire->formations as $formation)
-                                                <div class="col">
-                                                    <div class="card">
-                                                        <div class="card-body">
-                                                            <h5 class="card-title">{{ $formation->titre }}</h5>
-                                                            <p class="card-text">{{ $formation->description }}</p>
-                                                            <span> {{ $formation->duree }} min</span>
+                                        <div class="row">
+                                            @foreach ($stagiaire->formations as $index => $formation)
+                                                <div class="col-md-3">
+                                                    <div class="accordion-item">
+                                                        <h2 class="accordion-header"
+                                                            id="flush-heading-{{ $index }}">
+                                                            <button class="accordion-button bg-success text-white collapsed"
+                                                                type="button" data-bs-toggle="collapse"
+                                                                data-bs-target="#flush-collapse-{{ $index }}"
+                                                                aria-expanded="false"
+                                                                aria-controls="flush-collapse-{{ $index }}">
+                                                                {{ $formation->titre }}
+                                                            </button>
+                                                        </h2>
+                                                        <div id="flush-collapse-{{ $index }}"
+                                                            class="accordion-collapse collapse"
+                                                            aria-labelledby="flush-heading-{{ $index }}"
+                                                            data-bs-parent="#accordionFlushExample">
+                                                            <div class="accordion-body">
+                                                                <ul class="list-group list-group-flush">
+                                                                    <li class="list-group-item"><strong>Categorie</strong> :
+                                                                        {{ $formation->categorie }}</li>
+                                                                    <li class="list-group-item"><strong>Durée</strong> :
+                                                                        {{ $formation->duree }}</li>
+                                                                    <li class="list-group-item"><strong>Description</strong>
+                                                                        :
+                                                                        {{ $formation->description }}</li>
+                                                                    <li class="list-group-item"><strong>Date de
+                                                                            création</strong> :
+                                                                        {{ $formation->created_at->format('d/m/Y à H:i') }}
+                                                                    </li>
+                                                                </ul>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                             @endforeach
                                         </div>
-
+                                    </div>
+                                </div>
+                                <hr>
+                                <h5>Liste des formateurs</h5>
+                                <hr>
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="row">
+                                            @dd($stagiaire->formateurs)
+                                            @foreach ($stagiaire->formateurs as $index => $formateur)
+                                                <div class="col-md-3">
+                                                    <div class="accordion-item">
+                                                        <h2 class="accordion-header"
+                                                            id="flush-heading-{{ $index }}">
+                                                            <button class="accordion-button bg-success text-white collapsed"
+                                                                type="button" data-bs-toggle="collapse"
+                                                                data-bs-target="#flush-collapse-{{ $index }}"
+                                                                aria-expanded="false"
+                                                                aria-controls="flush-collapse-{{ $index }}">
+                                                                {{ $formateur->user->name }}
+                                                            </button>
+                                                        </h2>
+                                                        <div id="flush-collapse-{{ $index }}"
+                                                            class="accordion-collapse collapse"
+                                                            aria-labelledby="flush-heading-{{ $index }}"
+                                                            data-bs-parent="#accordionFlushExample">
+                                                            <div class="accordion-body">
+                                                                <ul class="list-group list-group-flush">
+                                                                    <li class="list-group-item"><strong>Nom</strong> :
+                                                                        {{ $formateur->prenom }}</li>
+                                                                    <li class="list-group-item"><strong>Date de
+                                                                            création</strong> :
+                                                                        {{ $formateur->created_at->format('d/m/Y à H:i') }}
+                                                                    </li>
+                                                                </ul>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -95,6 +147,7 @@
             </div>
         </div>
     </div>
+
 @endsection
 @section('scripts')
 @endsection

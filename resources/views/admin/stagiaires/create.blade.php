@@ -2,11 +2,10 @@
 @section('title', 'Ajouter un stagiaire')
 @section('content')
     <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
-        <div class="breadcrumb-title pe-3">Components</div>
         <div class="ps-3">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0 p-0">
-                    <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
+                    <li class="breadcrumb-item"><a href="{{ route('stagiaires.index') }}"><i class="bx bx-home-alt"></i></a>
                     </li>
                     <li class="breadcrumb-item active" aria-current="page">Stagiaire</li>
                 </ol>
@@ -14,30 +13,20 @@
         </div>
         <div class="ms-auto">
             <div class="btn-group">
-                <a href="{{ route('stagiaires.index') }}" type="button" class="btn btn-primary">Retour</a>
+                <a href="{{ route('stagiaires.index') }}" type="button" class="btn btn-sm btn-primary mx-4"><i
+                        class="fadeIn animated bx bx-chevron-left-circle"></i>Retour</a>
             </div>
         </div>
     </div>
     <div class="card-body">
-        <h5 class="card-title">Ajouter stagiaire</h5>
+        <h5 class="text-wizi2">Ajouter stagiaire</h5>
         <hr>
-        @if ($errors->any())
-            <div class="bg-danger  border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-                <strong class="font-bold">Whoops!</strong>
-                <ul class="mt-2 list-disc list-inside text-white">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
         <div class="card">
             @if (session('success'))
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
                     {{ session('success') }}
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
-
             @endif
             <div class="card-body p-4 border rounded">
                 <form class="row g-3" action="{{ route('stagiaires.store') }}" method="POST">
@@ -57,7 +46,7 @@
                     <div class="col-md-4">
                         <!-- Nom -->
                         <div class="mb-3">
-                            <label for="prenom">prenom</label>
+                            <label for="prenom">Prénom</label>
                             <input type="text" name="prenom" id="prenom"
                                 class="form-control @error('prenom') is-invalid @enderror"
                                 value="{{ old('prenom', $stagiaire->user->prenom ?? '') }}">
@@ -177,32 +166,34 @@
                                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                         data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
                                         Selectionz les formations
-                                        <span class="badge bg-primary float-end"> {{ count($formations) }}</span>
-
+                                        <span class="badge bg-primary mx-2"> {{ count($formations) }}</span>
                                     </button>
                                 </h2>
                                 <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne"
                                     data-bs-parent="#accordionExample" style="">
                                     <div class="accordion-body">
                                         <div class="row row-cols-1 row-cols-md-3 row-cols-lg-3 row-cols-xl-3">
-                                            @foreach($formations as $formation)
-                                            <div class="col">
-                                                <div class="card">
-                                                    <div class="card-body">
-                                                        <h5 class="card-title">{{ $formation->titre }}</h5>
-                                                        <p class="card-text">Description rapide de la formation.</p>
-                                                        <div class="form-check">
-                                                            <input class="form-check-input" type="checkbox" name="formation_id[]"
-                                                                id="formation_{{ $formation->id }}" value="{{ $formation->id }}"
-                                                                {{ in_array($formation->id, old('formation_id', [])) ? 'checked' : '' }}>
-                                                            <label class="form-check-label" for="formation_{{ $formation->id }}">
-                                                                Sélectionner
-                                                            </label>
+                                            @foreach ($formations as $formation)
+                                                <div class="col">
+                                                    <div class="card border-warning border-bottom border-3 border-0">
+                                                        <div class="card-body">
+                                                            <h5 class="card-title">{{ $formation->titre }}</h5>
+                                                            <p class="card-text">Description rapide de la formation.</p>
+                                                            <div class="form-check">
+                                                                <input class="form-check-input" type="checkbox"
+                                                                    name="formation_id[]"
+                                                                    id="formation_{{ $formation->id }}"
+                                                                    value="{{ $formation->id }}"
+                                                                    {{ in_array($formation->id, old('formation_id', [])) ? 'checked' : '' }}>
+                                                                <label class="form-check-label"
+                                                                    for="formation_{{ $formation->id }}">
+                                                                    Sélectionner
+                                                                </label>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        @endforeach
+                                            @endforeach
                                         </div>
                                     </div>
                                 </div>
@@ -213,62 +204,65 @@
 
                     </div>
 
-                  <div class="row">
-                    <div class="col-md-4">
-                        <!-- Formateur -->
-                        <div class="mb-3">
-                            <label for="formateur_id">Formateur (optionnel)</label>
-                            <select name="formateur_id" id="formateur_id"
-                                class="form-control @error('formateur_id') is-invalid @enderror">
-                                <option value="">-- Choisir un formateur --</option>
-                                @foreach($formateurs as $formateur)
-                                    <option value="{{ $formateur->id }}" {{ old('formateur_id', $stagiaire->formateur_id ?? '') == $formateur->id ? 'selected' : '' }}>
-                                        {{ $formateur->user->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('formateur_id')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                    <div class="row">
+                        <div class="col-md-4">
+                            <!-- Formateur -->
+                            <div class="mb-3">
+                                <label for="formateur_id">Formateur (optionnel)</label>
+                                <select name="formateur_id" id="formateur_id"
+                                    class="form-control @error('formateur_id') is-invalid @enderror">
+                                    <option value="">-- Choisir un formateur --</option>
+                                    @foreach ($formateurs as $formateur)
+                                        <option value="{{ $formateur->id }}"
+                                            {{ old('formateur_id', $stagiaire->formateur_id ?? '') == $formateur->id ? 'selected' : '' }}>
+                                            {{ $formateur->user->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('formateur_id')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
                         </div>
-                    </div>
 
-                    <!-- Commercial -->
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            <label for="commercial_id">Commercial (optionnel)</label>
-                            <select name="commercial_id" id="commercial_id"
-                                class="form-control @error('commercial_id') is-invalid @enderror">
-                                <option value="">-- Choisir un commercial --</option>
-                                @foreach($commercials as $commercial)
-                                    <option value="{{ $commercial->id }}" {{ old('commercial_id', $stagiaire->commercial_id ?? '') == $commercial->id ? 'selected' : '' }}>
-                                        {{ $commercial->user->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('commercial_id')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                        <!-- Commercial -->
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="commercial_id">Commercial (optionnel)</label>
+                                <select name="commercial_id" id="commercial_id"
+                                    class="form-control @error('commercial_id') is-invalid @enderror">
+                                    <option value="">-- Choisir un commercial --</option>
+                                    @foreach ($commercials as $commercial)
+                                        <option value="{{ $commercial->id }}"
+                                            {{ old('commercial_id', $stagiaire->commercial_id ?? '') == $commercial->id ? 'selected' : '' }}>
+                                            {{ $commercial->user->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('commercial_id')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
                         </div>
                     </div>
-                  </div>
-                        <div class="col-12">
-                            <button type="submit" class="btn btn-primary px-5">Enregistrer</button>
-                        </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-secondary btn-sm px-4"><i
+                                class="lni lni-save"></i>Enregistrer</button>
+                    </div>
                 </form>
             </div>
         </div>
     </div>
 @endsection
 @section('scripts')
-    @section('scripts')
-        <script>
-            $(document).ready(function () {
-                $('.js-example-basic-multiple').select2({
-                    placeholder: "Choisir une ou plusieurs formations", // Placeholder
-                    allowClear: true
-                });
+@section('scripts')
+    <script>
+        $(document).ready(function() {
+            $('.js-example-basic-multiple').select2({
+                placeholder: "Choisir une ou plusieurs formations", // Placeholder
+                allowClear: true
             });
-        </script>
-    @endsection
+        });
+    </script>
+@endsection
 @endsection

@@ -15,9 +15,7 @@
                 <div class="menu-title">Dashboard</div>
             </a>
             <ul>
-                <li> <a href="index.html"><i class="bx bx-right-arrow-alt"></i>Default</a>
-                </li>
-                <li> <a href="index2.html"><i class="bx bx-right-arrow-alt"></i>Alternate</a>
+                <li> <a href="{{ route('dashboard') }}"><i class="bx bx-right-arrow-alt"></i>Dashboard</a>
                 </li>
             </ul>
         </li>
@@ -53,9 +51,10 @@
             <ul>
                 <li> <a href="{{ route('formateur.index') }}"><i class="bx bx-right-arrow-alt"></i>Formateur</a>
                 </li>
-                <li> <a href="{{ route('pole_relation_clients.index') }}"><i class="bx bx-right-arrow-alt"></i>Pole relation client</a>
+                <li> <a href="{{ route('pole_relation_clients.index') }}"><i class="bx bx-right-arrow-alt"></i>Pole
+                        relation client</a>
                 </li>
-                <li> <a href="{{route('commercials.index')}}"><i class="bx bx-right-arrow-alt"></i>Commercial</a>
+                <li> <a href="{{ route('commercials.index') }}"><i class="bx bx-right-arrow-alt"></i>Commercial</a>
                 </li>
             </ul>
         </li>
@@ -72,7 +71,7 @@
         </li>
         <li>
             <a href="javascript:;" class="has-arrow">
-                <div class="parent-icon"><i class='fadeIn animated bx bx-list-ol'></i>
+                <div class="parent-icon"><i class="lni lni-library"></i>
                 </div>
                 <div class="menu-title">Formation</div>
             </a>
