@@ -6,9 +6,10 @@
         <div class="ps-3">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0 p-0">
-                    <li class="breadcrumb-item"><a href="{{ route('formations.index') }}"><i class="bx bx-home-alt"></i></a>
+                    <li class="breadcrumb-item"><a href="{{ route('pole_relation_clients.index') }}"><i
+                                class="bx bx-home-alt"></i></a>
                     </li>
-                    <li class="breadcrumb-item active" aria-current="page">Formation</li>
+                    <li class="breadcrumb-item active" aria-current="page">Pôle relation client</li>
                 </ol>
             </nav>
         </div>
@@ -25,7 +26,7 @@
             <h5>Details de la formations : <span class="text-success">{{ $formation->titre }}</span></h5>
             <hr>
             <ul class="list-group">
-                
+
                 <li class="list-group-item"><strong>Description</strong> : {{ $formation->description }}</li>
                 <li class="list-group-item"><strong>Categorie</strong> : {{ $formation->categorie }}</li>
                 <li class="list-group-item"><strong>Duree</strong> : {{ $formation->duree }}</li>

@@ -41,11 +41,23 @@ class MediaController extends Controller
      */
     public function store(MediaRequest $request)
     {
-        $this->mediaService->create($request->validated());
+        $validated = $request->validated();
+
+        if ($request->hasFile('file')) {
+            $file = $request->file('file');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $path = $file->storeAs('media', $filename, 'public');
+
+            $validated['file_path'] = $path;
+            $validated['file_type'] = $file->getClientMimeType(); // image/jpeg, video/mp4, application/pdf
+        }
+
+        $this->mediaService->create($validated);
 
         return redirect()->route('medias.index')
             ->with('success', 'Le media a été créé avec succès.');
     }
+
 
     /**
      * Display the specified resource.
@@ -70,11 +82,23 @@ class MediaController extends Controller
      */
     public function update(MediaRequest $request, string $id)
     {
-        $this->mediaService->update($id, $request->validated());
+        $validated = $request->validated();
+
+        if ($request->hasFile('file')) {
+            $file = $request->file('file');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $path = $file->storeAs('media', $filename, 'public');
+
+            $validated['file_path'] = $path;
+            $validated['file_type'] = $file->getClientMimeType();
+        }
+
+        $this->mediaService->update($id, $validated);
 
         return redirect()->route('medias.index')
             ->with('success', 'Le media a été mis à jour avec succès.');
     }
+
 
     /**
      * Remove the specified resource from storage.

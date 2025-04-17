@@ -35,16 +35,6 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         @endif
-        @if ($errors->any())
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-                <strong class="font-bold">Whoops!</strong>
-                <ul class="mt-2 list-disc list-inside">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
         <div class="card">
             <form action="{{ route('quiz.storeAll') }}" method="POST" class="px-4 py-4" enctype="multipart/form-data">
                 @csrf
@@ -140,7 +130,7 @@
 
                             </div>
                             <div class="col-md-6">
-                                <label for="input1" class="form-label">Reponse correcte</label>
+                                <label for="input1" class="form-label">Réponse correcte</label>
 
                                 <input type="text" name="question[reponse_correct]" placeholder="Réponse correcte"
                                     class="form-control mb-2">
@@ -184,7 +174,7 @@
                                 <div id="add-reponse-btn"
                                     class="d-flex align-items-center theme-icons p-2 cursor-pointer rounded">
                                     <button type="button" class="btn btn-sm btn-primary px-5"><i
-                                            class="bx bx-user mr-1"></i>Ajouter une reponse</button>
+                                            class="bx bx-user mr-1"></i>Ajouter une réponse</button>
                                 </div>
                             </div>
                         </div>

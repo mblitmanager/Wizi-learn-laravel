@@ -37,12 +37,14 @@
                                                 <input type="text" class="form-control"
                                                     value="{{ $formateur->user->name }}" readonly>
                                             </div>
-                                        </div><div class="row mb-3">
+                                        </div>
+                                        <div class="row mb-3">
                                             <div class="col-sm-3">
                                                 <h6 class="mb-0">Prenom</h6>
                                             </div>
                                             <div class="col-sm-9 text-secondary">
-                                                <input type="text" class="form-control" value="{{ $formateur->prenom }}" readonly>
+                                                <input type="text" class="form-control" value="{{ $formateur->prenom }}"
+                                                    readonly>
                                             </div>
                                         </div>
                                         <div class="row mb-3">
@@ -61,13 +63,13 @@
                                     <div class="col-sm-12">
                                         <h5 class="d-flex align-items-center mb-3">Formations associées</h5>
                                         <div class="row row-cols-1 row-cols-md-3 row-cols-lg-3 row-cols-xl-3">
-                                            @foreach($formateur->formations as $formation)
+                                            @foreach ($formateur->formations as $formation)
                                                 <div class="col">
                                                     <div class="card">
                                                         <div class="card-body">
                                                             <h5 class="card-title">{{ $formation->titre }}</h5>
                                                             <p class="card-text">{{ $formation->description }}</p>
-                                                            <span> {{ $formation->duree }} min</span>
+                                                            <span> {{ $formation->duree }} </span>
                                                         </div>
                                                     </div>
                                                 </div>
