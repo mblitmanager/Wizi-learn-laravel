@@ -24,7 +24,7 @@
     <link rel="stylesheet" href="{{ asset('assets/css/dark-theme.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/semi-dark.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/header-colors.css') }}" />
-
+    <link rel="stylesheet" href="{{ asset('assets/css/custom.css') }}" />
     <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
@@ -40,6 +40,35 @@
 <body>
     <!--wrapper-->
     <div class="wrapper">
+        <div id="globalLoader" class="hourglassOverlay d-none">
+            <div class="hourglassBackground">
+                <div class="hourglassContainer">
+                    <div class="hourglassCurves"></div>
+                    <div class="hourglassCapTop"></div>
+                    <div class="hourglassGlassTop"></div>
+                    <div class="hourglassSand"></div>
+                    <div class="hourglassSandStream"></div>
+                    <div class="hourglassCapBottom"></div>
+                    <div class="hourglassGlass"></div>
+                </div>
+            </div>
+        </div>
+
+        {{-- <div id="globalLoader" class="hourglassOverlay d-block">
+            <div class="hourglassBackground">
+                <div class="hourglassContainer">
+                    <div class="hourglassCurves"></div>
+                    <div class="hourglassCapTop"></div>
+                    <div class="hourglassGlassTop"></div>
+                    <div class="hourglassSand"></div>
+                    <div class="hourglassSandStream"></div>
+                    <div class="hourglassCapBottom"></div>
+                    <div class="hourglassGlass"></div>
+                </div>
+            </div>
+        </div> --}}
+
+
         <!--sidebar wrapper -->
         <div class="sidebar-wrapper" data-simplebar="true">
             @include('admin.partials.sidebar')

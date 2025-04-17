@@ -15,6 +15,7 @@ return new class extends Migration {
             $table->string('titre')->nullable();
             $table->string('description')->nullable();
             $table->string('prerequis')->nullable();
+            $table->string('image_url')->nullable();
             $table->decimal('tarif', 8, 2)->nullable();
             $table->string('certification')->nullable();
             $table->boolean('statut')->default(false);
@@ -23,7 +24,6 @@ return new class extends Migration {
             $table->timestamps();
         });
     }
-
     /**
      * Reverse the migrations.
      */

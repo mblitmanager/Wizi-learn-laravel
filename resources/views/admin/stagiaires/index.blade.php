@@ -89,11 +89,10 @@
                             <table id="stagiairesTable" class="table table-bordered table-striped table-hover mb-0">
                                 <thead>
                                     <tr>
-                                        <th>Civilité</th>
                                         <th>Nom</th>
+                                        <th>Prenom</th>
                                         <th>Téléphone</th>
                                         <th>Email</th>
-                                        <th>Adresse</th>
                                         <th>Action</th>
                                     </tr>
                                     <tr>
@@ -109,20 +108,17 @@
                                         <th><input type="text" placeholder="Filtrer"
                                                 class="form-control form-control-sm" />
                                         </th>
-                                        <th><input type="text" placeholder="Filtrer"
-                                                class="form-control form-control-sm" />
-                                        </th>
+
                                         <th></th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach ($stagiaires as $row)
                                         <tr>
-                                            <td>{{ $row->civilite }}</td>
                                             <td>{{ $row->user->name }}</td>
+                                            <td>{{ $row->prenom }}</td>
                                             <td>{{ $row->telephone }}</td>
                                             <td>{{ $row->user->email }}</td>
-                                            <td>{{ $row->adresse }}</td>
                                             <td>
                                                 <a href="{{ route('stagiaires.edit', $row->id) }}"
                                                     class="btn btn-sm btn-success">
@@ -162,43 +158,6 @@
             </div>
         </div>
     </div>
-    @if (session('success'))
-        <script>
-            $(document).ready(function() {
-                Toastify({
-                    text: '{{ session('success') }}',
-                    duration: 3000,
-                    close: true,
-                    gravity: "top",
-                    position: "right",
-                    stopOnFocus: true,
-                    style: {
-                        background: "linear-gradient(to right, #00b09b, #96c93d)",
-                    },
-                    onClick: function() {}
-                }).showToast();
-            });
-        </script>
-    @endif
-
-    @if (session('error'))
-        <script>
-            $(document).ready(function() {
-                Toastify({
-                    text: '{{ session('error') }}',
-                    duration: 3000,
-                    close: true,
-                    gravity: "top",
-                    position: "right",
-                    stopOnFocus: true,
-                    style: {
-                        background: "linear-gradient(to right, #ff5f6d, #ffc371)",
-                    },
-                    onClick: function() {}
-                }).showToast();
-            });
-        </script>
-    @endif
 @endsection
 @section('scripts')
     <script>
@@ -237,5 +196,4 @@
             });
         });
     </script>
-
 @endsection

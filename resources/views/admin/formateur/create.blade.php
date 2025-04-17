@@ -21,16 +21,7 @@
     <div class="card-body">
         <h5 class="text-wizi">Ajouter Formateur</h5>
         <hr>
-        @if ($errors->any())
-            <div class="bg-danger border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-                <strong class="font-bold">Whoops!</strong>
-                <ul class="mt-2 list-disc list-inside text-white">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
+
         <div class="card">
             @if (session('success'))
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -160,9 +151,10 @@
 
                         </div>
 
-                        <div class="col-12">
-                            <button type="submit" class="btn btn-sm btn-primary px-4"><i
-                                    class="lni lni-save"></i>Enregistrer</button>
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-sm px-4">
+                                <i class="lni lni-save"></i> Enregistrer
+                            </button>
                         </div>
                     </form>
                 </div>

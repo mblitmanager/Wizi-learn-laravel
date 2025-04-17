@@ -15,8 +15,23 @@
 <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
 <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
 <script>
-    $(function () {
+    $(function() {
         $('[data-bs-toggle="popover"]').popover();
         $('[data-bs-toggle="tooltip"]').tooltip();
     })
+</script>
+<script>
+    // Afficher le loader au chargement de la page
+    window.addEventListener('load', function() {
+        const loader = document.getElementById('globalLoader');
+        loader.classList.add('d-none'); // Masquer une fois la page chargée
+    });
+
+    // Afficher le loader à chaque clic sur un bouton ou élément .btn
+    document.querySelectorAll('.btn').forEach(el => {
+        el.addEventListener('click', function() {
+            const loader = document.getElementById('globalLoader');
+            loader.classList.remove('d-none'); // Affiche le loader
+        });
+    });
 </script>

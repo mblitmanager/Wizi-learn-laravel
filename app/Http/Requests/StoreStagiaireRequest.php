@@ -28,7 +28,9 @@ class StoreStagiaireRequest extends FormRequest
             'email' => [
                 'required',
                 'email',
-                Rule::unique('users', 'email')->ignore($userId),
+                $userId
+                    ? Rule::unique('users', 'email')->ignore($userId)
+                    : Rule::unique('users', 'email'),
             ],
             'password' => 'nullable|string|min:6',
             'civilite' => 'required|string',

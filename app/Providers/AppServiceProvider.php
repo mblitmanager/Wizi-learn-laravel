@@ -2,9 +2,11 @@
 
 namespace App\Providers;
 
+use App\Repositories\CatalogueFormationRepository;
 use App\Repositories\CommercialRepository;
 use App\Repositories\FormateurRepository;
 use App\Repositories\FormationRepository;
+use App\Repositories\Interfaces\CatalogueFormationInterface;
 use App\Repositories\Interfaces\CommercialInterface;
 use App\Repositories\Interfaces\FormateurInterface;
 use App\Repositories\Interfaces\FormationRepositoryInterface;
@@ -32,6 +34,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(FormationRepositoryInterface::class, FormationRepository::class);
         $this->app->bind(MediaInterface::class, MediaRepository::class);
         $this->app->bind(PRCInterface::class, PoleRelationClientRepository::class);
+        $this->app->bind(CatalogueFormationInterface::class, CatalogueFormationRepository::class);
     }
 
     /**

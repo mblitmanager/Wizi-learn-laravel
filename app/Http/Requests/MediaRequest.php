@@ -29,4 +29,26 @@ class MediaRequest extends FormRequest
             'formation_id' => 'required|exists:formations,id',
         ];
     }
+
+    public function messages()
+    {
+        return [
+            'titre.required' => 'Le titre est obligatoire.',
+            'titre.string' => 'Le titre doit être une chaîne de caractères.',
+            'titre.max' => 'Le titre ne doit pas dépasser 255 caractères.',
+
+            'description.string' => 'La description doit être une chaîne de caractères.',
+            'description.max' => 'La description ne doit pas dépasser 1000 caractères.',
+
+            'url.mimes' => 'Le fichier doit être au format jpg, jpeg, png, mp4 ou pdf.',
+            'url.max' => 'Le fichier ne doit pas dépasser 10 Mo.',
+
+            'type.required' => 'Le type est obligatoire.',
+            'type.string' => 'Le type doit être une chaîne de caractères.',
+            'type.in' => 'Le type doit être soit "video", "document" ou "image".',
+
+            'formation_id.required' => 'L\'ID de la formation est obligatoire.',
+            'formation_id.exists' => 'La formation sélectionnée n\'existe pas.',
+        ];
+    }
 }

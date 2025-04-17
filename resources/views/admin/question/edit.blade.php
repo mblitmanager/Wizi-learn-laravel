@@ -18,7 +18,7 @@
             </div>
         </div>
     </div>
-    
+
     @if (session('success'))
         <div class="alert alert-success border-0 bg-success alert-dismissible fade show">
             <div class="text-white"> {{ session('success') }}</div>
@@ -35,17 +35,20 @@
         <div class="card">
             <div class="card-body">
                 <div class="col-md-8 mx-auto">
-                    <form action="{{ route('question.update', $question->id) }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ route('question.update', $question->id) }}" method="POST"
+                        enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
                         <div>
                             <label>Texte de la question</label>
-                            <input class="form-control" type="text" name="text" value="{{ $question->text }}" required>
+                            <input class="form-control" type="text" name="text" value="{{ $question->text }}"
+                                required>
                         </div>
 
                         <div>
                             <label>Type</label>
-                            <input class="form-control" type="text" name="type" value="{{ $question->type }}" required>
+                            <input class="form-control" type="text" name="type" value="{{ $question->type }}"
+                                required>
                         </div>
 
                         <div>
@@ -69,40 +72,38 @@
                             <input class="form-control" type="file" name="media_url" value="{{ $question->media_url }}">
                         </div>
                         <hr>
-                       <div class="mt-2 py-2">
-                        <h3>Réponses</h3>
+                        <div class="mt-2 py-2">
+                            <h3>Réponses</h3>
 
-                            @foreach($question->reponses as $reponse)
-                            <div class="border p-3 mb-3 rounded bg-light">
-                                <div class="mb-3">
-                                    <label class="form-label">Réponse</label>
-                                    <input 
-                                        class="form-control" 
-                                        type="text" 
-                                        name="reponses[{{ $reponse->id }}][text]" 
-                                        value="{{ $reponse->text }}" 
-                                        required>
+                            @foreach ($question->reponses as $reponse)
+                                <div class="border p-3 mb-3 rounded bg-light">
+                                    <div class="mb-3">
+                                        <label class="form-label">Réponse</label>
+                                        <input class="form-control" type="text"
+                                            name="reponses[{{ $reponse->id }}][text]" value="{{ $reponse->text }}"
+                                            required>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label d-block">Correcte ?</label>
+
+                                        <!-- Trick pour forcer l'envoi de la case même si décochée -->
+                                        <input type="hidden" name="reponses[{{ $reponse->id }}][is_correct]"
+                                            value="0">
+
+                                        <input class="form-check-input" type="checkbox"
+                                            name="reponses[{{ $reponse->id }}][is_correct]" value="1"
+                                            {{ $reponse->is_correct ? 'checked' : '' }}>
+                                    </div>
                                 </div>
-
-                                <div class="mb-3">
-                                    <label class="form-label d-block">Correcte ?</label>
-                                    
-                                    <!-- Trick pour forcer l'envoi de la case même si décochée -->
-                                    <input type="hidden" name="reponses[{{ $reponse->id }}][is_correct]" value="0">
-
-                                    <input 
-                                        class="form-check-input" 
-                                        type="checkbox" 
-                                        name="reponses[{{ $reponse->id }}][is_correct]" 
-                                        value="1" 
-                                        {{ $reponse->is_correct ? 'checked' : '' }}>
-                                </div>
-                            </div>
-                        @endforeach
+                            @endforeach
 
 
-                       </div>
-                        <button class="btn btn-sm btn-primary" type="submit">Mettre à jour</button>
+                        </div>
+
+                        <div class="text-center">
+                            <button class="btn btn-sm btn-primary" type="submit">Mettre à jour</button>
+                        </div>
                     </form>
                 </div>
             </div>

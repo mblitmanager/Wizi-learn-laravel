@@ -18,7 +18,11 @@ class CatalogueFormation extends Model
         'titre',
         'description',
         'statut',
+        'certification',
+        'prerequis',
         'duree',
+        'image_url',
+        'tarif',
         'formation_id',
     ];
 

@@ -102,11 +102,10 @@
                             @enderror
                         </div>
                     </div>
-
-
-                    <div class="col-12">
-                        <button type="submit" class="btn btn-sm btn-primary px-4"><i
-                                class="lni lni-save"></i>Enregistrer</button>
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary btn-sm px-4">
+                            <i class="lni lni-save"></i> Enregistrer
+                        </button>
                     </div>
                 </form>
             </div>

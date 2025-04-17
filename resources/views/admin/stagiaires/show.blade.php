@@ -105,7 +105,6 @@
                                 <div class="card">
                                     <div class="card-body">
                                         <div class="row">
-                                            @dd($stagiaire->formateurs)
                                             @foreach ($stagiaire->formateurs as $index => $formateur)
                                                 <div class="col-md-3">
                                                     <div class="accordion-item">

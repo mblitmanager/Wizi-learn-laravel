@@ -76,7 +76,9 @@
                 <div class="menu-title">Formation</div>
             </a>
             <ul>
-                <li> <a href="{{ route('formations.index') }}"><i class="bx bx-right-arrow-alt"></i>Listes</a>
+                <li> <a href="{{ route('catalogue_formation.index') }}"><i class="bx bx-right-arrow-alt"></i>Catalogue formation</a>
+                </li>
+                <li> <a href="{{ route('formations.index') }}"><i class="bx bx-right-arrow-alt"></i>Formation</a>
                 </li>
             </ul>
         </li>

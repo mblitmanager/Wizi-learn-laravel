@@ -4316,7 +4316,7 @@ fieldset:disabled .btn {
     content: var(--bs-breadcrumb-divider, "/");
 }
 .breadcrumb-item.active {
-    color: #ffb923;
+    color: #06a0f8;
 }
 .pagination {
     display: flex;

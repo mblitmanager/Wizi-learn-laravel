@@ -31,7 +31,9 @@ class FormateurStoreRequest extends FormRequest
             'email' => [
                 'required',
                 'email',
-                Rule::unique('users', 'email')->ignore($userId),
+                $userId
+                    ? Rule::unique('users', 'email')->ignore($userId)
+                    : Rule::unique('users', 'email'),
             ],
             'password' => 'nullable|string|min:8',
             'role' => [
@@ -39,6 +41,21 @@ class FormateurStoreRequest extends FormRequest
             ],
             'formation_id' => 'required|exists:formations,id',
             'stagiaire_id' => 'required|exists:stagiaires,id',
+        ];
+    }
+
+    public function  messages(): array
+    {
+        return [
+            'name.required' => 'Le nom est obligatoire.',
+            'name.string' => 'Le nom doit être une chaîne de caractères.',
+            'prenom.string' => 'Le prenom doit être une chaîne de caractères.',
+            'name.max' => 'Le nom ne doit pas dépasser 255 caractères.',
+
+            'email.required' => 'L\'adresse e-mail est obligatoire.',
+            'email.email' => 'L\'adresse e-mail n\'est pas valide.',
+            'email.unique' => 'Cette adresse e-mail est déjà utilisée.',
+            'password.required' => 'Le mot de passe est obligatoire.',
         ];
     }
 }

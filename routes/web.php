@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\CatalogueFormationController;
 use App\Http\Controllers\Admin\CommercialController;
 use App\Http\Controllers\Admin\FormateurController;
 use App\Http\Controllers\Admin\FormationController;
@@ -46,4 +47,6 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
     Route::post('/import/quiz', [QuizController::class, 'import'])->name('quiz.import');
 
     Route::resource('question', QuestionController::class);
+
+    Route::resource('catalogue_formation', CatalogueFormationController::class);
 });
