@@ -35,4 +35,18 @@ class FormationRepository implements FormationRepositoryInterface
         $formation = Formation::find($id);
         return $formation ? $formation->delete() : false;
     }
+
+    public function getUniqueCategories(): \Illuminate\Support\Collection
+    {
+        return Formation::select('categorie')->distinct()->pluck('categorie');
+    }
+
+    public function getFormationsByStagiaire($stagiaireId): \Illuminate\Support\Collection
+    {
+        return Formation::with(['formateurs', 'stagiaires', 'quizzes'])
+            ->whereHas('stagiaires', function($query) use ($stagiaireId) {
+                $query->where('stagiaires.id', $stagiaireId);
+            })
+            ->get();
+    }
 }

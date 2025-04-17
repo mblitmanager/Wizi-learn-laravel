@@ -29,7 +29,7 @@ class QuizController extends Controller
      */
     public function index()
     {
-        $quiz = $this->quizeService->list();
+        $quiz = $this->quizeService->getAll();
         return view('admin.quizzes.index', compact('quiz'));
     }
 

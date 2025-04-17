@@ -7,42 +7,54 @@ use App\Repositories\Interfaces\QuizRepositoryInterface;
 
 class QuizService
 {
-    protected $quizRepositoryInterface;
+    protected $quizRepository;
 
-    public function __construct(QuizRepositoryInterface $quizRepositoryInterface)
+    public function __construct(QuizRepositoryInterface $quizRepository)
     {
-        $this->quizRepositoryInterface = $quizRepositoryInterface;
+        $this->quizRepository = $quizRepository;
     }
 
-    public function list()
+    public function getAll()
     {
-        return $this->quizRepositoryInterface->all();
+        return $this->quizRepository->all();
     }
 
-    public function show($id)
+    public function getById($id)
     {
-        return $this->quizRepositoryInterface->find($id);
+        return $this->quizRepository->find($id);
     }
+
     public function create(array $data)
     {
-        // Créer le quiz
-        return $this->quizRepositoryInterface->create($data);
+        return $this->quizRepository->create($data);
     }
 
-    public function update(int $id, array $data)
+    public function update($id, array $data)
     {
-        $quiz = $this->quizRepositoryInterface->find($id);
-
-        if (!$quiz) {
-            throw new \Exception("Quiz not found");
-        }
-
-        // Mettre à jour le quiz
-        return $this->quizRepositoryInterface->update($id, $data);
+        return $this->quizRepository->update($id, $data);
     }
 
     public function delete($id)
     {
-        return $this->quizRepositoryInterface->delete($id);
+        return $this->quizRepository->delete($id);
+    }
+
+    public function getQuizzesByStagiaire($stagiaireId)
+    {
+        return $this->quizRepository->getQuizzesByStagiaire($stagiaireId);
+    }
+
+    public function getCategories()
+    {
+        return $this->quizRepository->getUniqueCategories();
+    }
+    public function getQuestionsByQuizId($quizId)
+    {
+        return $this->quizRepository->getQuestionsByQuizId($quizId);
+    }
+
+    public function submitQuizAnswers($quizId, $stagiaireId, array $answers)
+    {
+        return $this->quizRepository->submitQuizAnswers($quizId, $stagiaireId, $answers);
     }
 }

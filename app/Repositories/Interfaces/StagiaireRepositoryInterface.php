@@ -13,4 +13,7 @@ interface StagiaireRepositoryInterface
     public function delete(int $id): bool;
     public function desactive(int $id): bool;
     public function active(int $id): bool;
+    public function getStagiaireStats($id);
+    public function getStagiaireRankings($id);
+    public function getStagiaireProgress($id);
 }

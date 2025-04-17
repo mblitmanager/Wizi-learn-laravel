@@ -39,4 +39,18 @@ class FormationService
     {
         return $this->formationRepository->delete($id);
     }
+
+    public function getUniqueCategories()
+    {
+        return $this->formationRepository->getUniqueCategories();
+    }
+    public function getFormationsByCategory($category)
+    {
+        return $this->formationRepository->all()->where('categorie', $category);
+    }
+
+    public function getFormationsByStagiaire($stagiaireId)
+    {
+        return $this->formationRepository->getFormationsByStagiaire($stagiaireId);
+    }
 }

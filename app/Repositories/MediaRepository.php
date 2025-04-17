@@ -2,21 +2,40 @@
 
 namespace App\Repositories;
 
-use App\Models\Formateur;
 use App\Models\Media;
-use App\Repositories\Interfaces\MediaInterface;
-use Illuminate\Support\Collection;
+use App\Repositories\Interfaces\MediaRepositoryInterface;
 
-class MediaRepository implements MediaInterface
+class MediaRepository implements MediaRepositoryInterface
 {
-    public function all(): Collection
+    public function getTutorials()
     {
-        return Media::with('formation')->get();
+        return Media::where('type', 'tutorial')
+            ->where('duration', '<=', 30) // 30 secondes max
+            ->orderBy('created_at', 'desc')
+            ->get();
     }
 
-    public function find(int $id): ?Media
+    public function getLanguageSessions()
     {
-        return Media::with('formation')->where('id', $id)->first();
+        return Media::where('type', 'language_session')
+            ->where('duration', '<=', 5) // 5 minutes max
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
+
+    public function getInteractiveContent($formationId)
+    {
+        return Media::where('type', 'interactive')
+            ->where('formation_id', $formationId)
+            ->orderBy('order', 'asc')
+            ->get();
+    }
+
+    public function getMediaByType($type)
+    {
+        return Media::where('type', $type)
+            ->orderBy('created_at', 'desc')
+            ->get();
     }
 
     public function create(array $data): Media
@@ -24,14 +43,15 @@ class MediaRepository implements MediaInterface
         return Media::create($data);
     }
 
-    public function update(int $id, array $data): bool
+    public function update($id, array $data): bool
     {
-        $media = Media::findOrFail($id);
-        return $media->update($data);
+        $media = Media::find($id);
+        return $media ? $media->update($data) : false;
     }
 
-    public function delete(int $id): bool
+    public function delete($id): bool
     {
-        return Media::destroy($id) > 0;
+        $media = Media::find($id);
+        return $media ? $media->delete() : false;
     }
 }

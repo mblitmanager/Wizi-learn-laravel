@@ -10,7 +10,7 @@ class FormateurRepository implements FormateurInterface
 {
     public function all(): Collection
     {
-        return Formateur::with('user', 'formations')->get();
+        return Formateur::with('user', 'formations','stagiaires')->get();
     }
 
     public function find(int $id): ?Formateur
