@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Repositories\Interfaces;
 
 use App\Models\Quiz;
@@ -14,4 +15,5 @@ interface QuizRepositoryInterface
     public function getQuestionsByQuizId($quizId): Collection;
     public function getQuizzesByStagiaire($stagiaireId): Collection;
     public function getUniqueCategories(): Collection;
+    public function submitQuizAnswers($quizId, $stagiaireId, array $answers): array;
 }
