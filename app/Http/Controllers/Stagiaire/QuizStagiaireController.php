@@ -72,4 +72,33 @@ class QuizStagiaireController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
+    public function getStagiaireQuizzes()
+{
+    try {
+        $user = JWTAuth::parseToken()->authenticate();
+
+        // Charger la relation stagiaire si elle n'est pas déjà chargée
+        if (!isset($user->relations['stagiaire'])) {
+            $user->load('stagiaire');
+        }
+
+        // Vérifier si l'utilisateur est bien le stagiaire demandé ou a les droits d'accès
+        if ($user->role != 'formateur' && $user->role != 'admin') {
+            $userStagiaire = $user->stagiaire;
+            if (!$userStagiaire) {
+                return response()->json(['error' => 'non autorisé'], 403);
+            }
+        }
+
+        // Récupérer les quiz du stagiaire avec leurs questions et réponses
+        $quizzes = $this->quizService->getQuizzesByStagiaire($user->stagiaire->id);
+
+        return response()->json([
+            'data' => $quizzes
+        ]);
+    } catch (JWTException $e) {
+        return response()->json(['error' => 'Non autorisé'], 401);
+    }
+}
 }

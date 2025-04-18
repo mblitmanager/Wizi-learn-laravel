@@ -28,7 +28,7 @@ Route::middleware(['auth:api'])->group(function () {
     Route::get('/formations/{stagiaireId}/quizzes', [QuizStagiaireController::class, 'getQuizzesByStagiaire']);
     Route::get('/quiz/categories', [QuizController::class, 'getCategories']);
     Route::get('/quiz/{quizId}/questions', [QuizStagiaireController::class, 'getQuestionsByQuizId']);
-
+    Route::get('/stagiaire/quizzes', [QuizStagiaireController::class, 'getStagiaireQuizzes']);
     // Contacts routes
     Route::get('/stagiaire/contacts', [ContactController::class, 'getContacts']);
     Route::get('/stagiaire/contacts/formateurs', [ContactController::class, 'getFormateurs']);
