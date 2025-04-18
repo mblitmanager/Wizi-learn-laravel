@@ -20,9 +20,9 @@ class CatalogueFormationController extends Controller
         return response()->json($catalogueFormations);
     }
 
-    public function getCategoryById($id)
+    public function getCatalogueFormationById($id)
     {
-        $category = $this->catalogueFormationService->getCategoryById($id);
+        $category = $this->catalogueFormationService->getCatalogueFormationById($id);
         return response()->json($category);
     }
     public function getFormationsAndCatalogues($stagiaireId)

@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\CommercialController;
 use App\Http\Controllers\Admin\FormateurController;
 use App\Http\Controllers\Admin\FormationController;
 use App\Http\Controllers\Admin\MediaController;
+use App\Http\Controllers\Admin\ParametreController;
 use App\Http\Controllers\Admin\PoleRelationClientController;
 use App\Http\Controllers\Admin\QuestionController;
 use App\Http\Controllers\Admin\QuizController;
@@ -49,4 +50,6 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
     Route::resource('question', QuestionController::class);
 
     Route::resource('catalogue_formation', CatalogueFormationController::class);
+
+    Route::get('parametre', [ParametreController::class, 'index'])->name('parametre.index');
 });
