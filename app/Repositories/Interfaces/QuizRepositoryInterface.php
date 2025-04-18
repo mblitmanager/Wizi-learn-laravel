@@ -15,5 +15,5 @@ interface QuizRepositoryInterface
     public function getQuestionsByQuizId($quizId): Collection;
     public function getQuizzesByStagiaire($stagiaireId): Collection;
     public function getUniqueCategories(): Collection;
-    public function submitQuizAnswers($quizId, $stagiaireId, array $answers): bool;
+    public function submitQuizAnswers($quizId, $stagiaireId, array $answers): array;
 }
