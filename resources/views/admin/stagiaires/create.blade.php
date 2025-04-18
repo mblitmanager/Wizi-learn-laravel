@@ -205,7 +205,7 @@
                     </div>
 
                     <div class="row">
-                        <div class="col-md-4">
+                        {{-- <div class="col-md-4">
                             <!-- Formateur -->
                             <div class="mb-3">
                                 <label for="formateur_id">Formateur (optionnel)</label>
@@ -223,10 +223,24 @@
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
-                        </div>
-
-                        <!-- Commercial -->
+                        </div> --}}
                         <div class="col-md-4">
+                            <label for="formateur_id">Formateur(optionnel)</label>
+                            <select name="formateur_id[]" id="formateur_id" multiple
+                                class="form-control select2 @error('formateur_id') is-invalid @enderror">
+                                @foreach ($formateurs as $formateur)
+                                    <option value="{{ $formateur->id }}"
+                                        {{ old('formateur_id', $stagiaire->formateur_id ?? '') == $formateur->id ? 'selected' : '' }}>
+                                        {{ $formateur->user->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('formateur_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <!-- Commercial -->
+                        {{-- <div class="col-md-4">
                             <div class="mb-3">
                                 <label for="commercial_id">Commercial (optionnel)</label>
                                 <select name="commercial_id" id="commercial_id"
@@ -243,6 +257,21 @@
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
+                        </div> --}}
+                        <div class="col-md-4">
+                            <label for="commercial_id">Commercial (optionnel)</label>
+                            <select name="commercial_id[]" id="commercial_id" multiple
+                                class="form-control select2 @error('commercial_id') is-invalid @enderror">
+                                @foreach ($commercials as $commercial)
+                                    <option value="{{ $commercial->id }}"
+                                        {{ old('commercial_id', $stagiaire->commercial_id ?? '') == $commercial->id ? 'selected' : '' }}>
+                                        {{ $commercial->user->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('commercial_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
                     </div>
 
@@ -257,14 +286,14 @@
     </div>
 @endsection
 @section('scripts')
-@section('scripts')
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
         $(document).ready(function() {
-            $('.js-example-basic-multiple').select2({
-                placeholder: "Choisir une ou plusieurs formations", // Placeholder
+            $('.select2').select2({
+                placeholder: "Choisir des formations",
                 allowClear: true
             });
         });
     </script>
-@endsection
 @endsection

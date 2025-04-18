@@ -40,7 +40,7 @@
 <body>
     <!--wrapper-->
     <div class="wrapper">
-        <div id="globalLoader" class="hourglassOverlay d-none">
+        {{-- <div id="globalLoader" class="hourglassOverlay d-none">
             <div class="hourglassBackground">
                 <div class="hourglassContainer">
                     <div class="hourglassCurves"></div>
@@ -52,7 +52,7 @@
                     <div class="hourglassGlass"></div>
                 </div>
             </div>
-        </div>
+        </div> --}}
 
         {{-- <div id="globalLoader" class="hourglassOverlay d-block">
             <div class="hourglassBackground">

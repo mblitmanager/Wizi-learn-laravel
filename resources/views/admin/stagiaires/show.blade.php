@@ -59,39 +59,37 @@
                                 <hr>
                                 <div class="card">
                                     <div class="card-body">
-                                        <div class="row">
+                                        <div class="accordion accordion-flush d-flex flex-wrap gap-3"
+                                            id="accordionFormation">
                                             @foreach ($stagiaire->formations as $index => $formation)
-                                                <div class="col-md-3">
-                                                    <div class="accordion-item">
-                                                        <h2 class="accordion-header"
-                                                            id="flush-heading-{{ $index }}">
-                                                            <button class="accordion-button bg-success text-white collapsed"
-                                                                type="button" data-bs-toggle="collapse"
-                                                                data-bs-target="#flush-collapse-{{ $index }}"
-                                                                aria-expanded="false"
-                                                                aria-controls="flush-collapse-{{ $index }}">
-                                                                {{ $formation->titre }}
-                                                            </button>
-                                                        </h2>
-                                                        <div id="flush-collapse-{{ $index }}"
-                                                            class="accordion-collapse collapse"
-                                                            aria-labelledby="flush-heading-{{ $index }}"
-                                                            data-bs-parent="#accordionFlushExample">
-                                                            <div class="accordion-body">
-                                                                <ul class="list-group list-group-flush">
-                                                                    <li class="list-group-item"><strong>Categorie</strong> :
-                                                                        {{ $formation->categorie }}</li>
-                                                                    <li class="list-group-item"><strong>Durée</strong> :
-                                                                        {{ $formation->duree }}</li>
-                                                                    <li class="list-group-item"><strong>Description</strong>
-                                                                        :
-                                                                        {{ $formation->description }}</li>
-                                                                    <li class="list-group-item"><strong>Date de
-                                                                            création</strong> :
-                                                                        {{ $formation->created_at->format('d/m/Y à H:i') }}
-                                                                    </li>
-                                                                </ul>
-                                                            </div>
+                                                <div class="accordion-item col-md-3 p-0">
+                                                    <h2 class="accordion-header"
+                                                        id="formation-heading-{{ $index }}">
+                                                        <button class="accordion-button bg-success text-white collapsed"
+                                                            type="button" data-bs-toggle="collapse"
+                                                            data-bs-target="#formation-collapse-{{ $index }}"
+                                                            aria-expanded="false"
+                                                            aria-controls="formation-collapse-{{ $index }}">
+                                                            {{ $formation->titre }}
+                                                        </button>
+                                                    </h2>
+                                                    <div id="formation-collapse-{{ $index }}"
+                                                        class="accordion-collapse collapse"
+                                                        aria-labelledby="formation-heading-{{ $index }}"
+                                                        data-bs-parent="#accordionFormation">
+                                                        <div class="accordion-body">
+                                                            <ul class="list-group list-group-flush">
+                                                                <li class="list-group-item"><strong>Categorie</strong> :
+                                                                    {{ $formation->categorie }}</li>
+                                                                <li class="list-group-item"><strong>Durée</strong> :
+                                                                    {{ $formation->duree }}</li>
+                                                                <li class="list-group-item"><strong>Description</strong> :
+                                                                    {{ $formation->description }}</li>
+                                                                <li class="list-group-item"><strong>Date de
+                                                                        création</strong> :
+                                                                    {{ $formation->created_at->format('d/m/Y à H:i') }}
+                                                                </li>
+                                                            </ul>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -99,39 +97,81 @@
                                         </div>
                                     </div>
                                 </div>
+
                                 <hr>
                                 <h5>Liste des formateurs</h5>
                                 <hr>
                                 <div class="card">
                                     <div class="card-body">
-                                        <div class="row">
+                                        {{-- Accordéon Formateurs --}}
+                                        <div class="accordion accordion-flush d-flex flex-wrap gap-3"
+                                            id="accordionFormateurs">
                                             @foreach ($stagiaire->formateurs as $index => $formateur)
-                                                <div class="col-md-3">
-                                                    <div class="accordion-item">
-                                                        <h2 class="accordion-header"
-                                                            id="flush-heading-{{ $index }}">
-                                                            <button class="accordion-button bg-success text-white collapsed"
-                                                                type="button" data-bs-toggle="collapse"
-                                                                data-bs-target="#flush-collapse-{{ $index }}"
-                                                                aria-expanded="false"
-                                                                aria-controls="flush-collapse-{{ $index }}">
-                                                                {{ $formateur->user->name }}
-                                                            </button>
-                                                        </h2>
-                                                        <div id="flush-collapse-{{ $index }}"
-                                                            class="accordion-collapse collapse"
-                                                            aria-labelledby="flush-heading-{{ $index }}"
-                                                            data-bs-parent="#accordionFlushExample">
-                                                            <div class="accordion-body">
-                                                                <ul class="list-group list-group-flush">
-                                                                    <li class="list-group-item"><strong>Nom</strong> :
-                                                                        {{ $formateur->prenom }}</li>
-                                                                    <li class="list-group-item"><strong>Date de
-                                                                            création</strong> :
-                                                                        {{ $formateur->created_at->format('d/m/Y à H:i') }}
-                                                                    </li>
-                                                                </ul>
-                                                            </div>
+                                                <div class="accordion-item col-md-3 p-0">
+                                                    <h2 class="accordion-header"
+                                                        id="formateur-heading-{{ $index }}">
+                                                        <button class="accordion-button bg-success text-white collapsed"
+                                                            type="button" data-bs-toggle="collapse"
+                                                            data-bs-target="#formateur-collapse-{{ $index }}"
+                                                            aria-expanded="false"
+                                                            aria-controls="formateur-collapse-{{ $index }}">
+                                                            {{ $formateur->user->name }}
+                                                        </button>
+                                                    </h2>
+                                                    <div id="formateur-collapse-{{ $index }}"
+                                                        class="accordion-collapse collapse"
+                                                        aria-labelledby="formateur-heading-{{ $index }}"
+                                                        data-bs-parent="#accordionFormateurs">
+                                                        <div class="accordion-body">
+                                                            <ul class="list-group list-group-flush">
+                                                                <li class="list-group-item"><strong>Nom</strong> :
+                                                                    {{ $formateur->prenom }}</li>
+                                                                <li class="list-group-item"><strong>Date de
+                                                                        création</strong> :
+                                                                    {{ $formateur->created_at->format('d/m/Y à H:i') }}
+                                                                </li>
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <hr>
+                                <h5>Liste des commerciaux</h5>
+                                <hr>
+                                <div class="card">
+                                    <div class="card-body">
+                                        {{-- Accordéon commercial --}}
+                                        <div class="accordion accordion-flush d-flex flex-wrap gap-3"
+                                            id="accordionCommercial">
+                                            @foreach ($stagiaire->commercials as $index => $cormecial)
+                                                <div class="accordion-item col-md-3 p-0">
+                                                    <h2 class="accordion-header"
+                                                        id="cormecial-heading-{{ $index }}">
+                                                        <button class="accordion-button bg-success text-white collapsed"
+                                                            type="button" data-bs-toggle="collapse"
+                                                            data-bs-target="#cormecial-collapse-{{ $index }}"
+                                                            aria-expanded="false"
+                                                            aria-controls="cormecial-collapse-{{ $index }}">
+                                                            {{ $cormecial->user->name }}
+                                                        </button>
+                                                    </h2>
+                                                    <div id="cormecial-collapse-{{ $index }}"
+                                                        class="accordion-collapse collapse"
+                                                        aria-labelledby="cormecial-heading-{{ $index }}"
+                                                        data-bs-parent="#accordionCommercial">
+                                                        <div class="accordion-body">
+                                                            <ul class="list-group list-group-flush">
+                                                                <li class="list-group-item"><strong>Nom</strong> :
+                                                                    {{ $cormecial->prenom }}</li>
+                                                                <li class="list-group-item"><strong>Date de
+                                                                        création</strong> :
+                                                                    {{ $cormecial->created_at->format('d/m/Y à H:i') }}
+                                                                </li>
+                                                            </ul>
                                                         </div>
                                                     </div>
                                                 </div>

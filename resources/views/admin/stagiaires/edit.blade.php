@@ -160,15 +160,15 @@
                         @enderror
                     </div>
 
-
                     <div class="col-md-4">
                         <label for="formateur_id">Formateur</label>
-                        <select name="formateur_id" id="formateur_id"
-                            class="form-control @error('formateur_id') is-invalid @enderror">
-                            <option value="">-- Choisir un formateur --</option>
+                        <select name="formateur_id[]" id="formateur_id" multiple
+                            class="form-control select2 @error('formateur_id') is-invalid @enderror">
                             @foreach ($formateurs as $formateur)
+                                {{-- <option value="{{ $formateur->id }}"
+                                    {{ old('formateur_id', $stagiaire->formateur_id) == $formateur->id ? 'selected' : '' }}> --}}
                                 <option value="{{ $formateur->id }}"
-                                    {{ old('formateur_id', $stagiaire->formateur_id) == $formateur->id ? 'selected' : '' }}>
+                                    {{ in_array($formateur->id, old('formateur_id', $stagiaire->formateurs->pluck('id')->toArray())) ? 'selected' : '' }}>
                                     {{ $formateur->user->name }}
                                 </option>
                             @endforeach
@@ -178,7 +178,7 @@
                         @enderror
                     </div>
 
-                    <div class="col-md-4">
+                    {{-- <div class="col-md-4">
                         <label for="commercial_id">Commercial</label>
                         <select name="commercial_id" id="commercial_id"
                             class="form-control @error('commercial_id') is-invalid @enderror">
@@ -186,6 +186,21 @@
                             @foreach ($commercials as $commercial)
                                 <option value="{{ $commercial->id }}"
                                     {{ old('commercial_id', $stagiaire->commercial_id) == $commercial->id ? 'selected' : '' }}>
+                                    {{ $commercial->user->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('commercial_id')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div> --}}
+                    <div class="col-md-4">
+                        <label for="commercial_id">Commercial</label>
+                        <select name="commercial_id[]" id="commercial_id" multiple
+                            class="form-control select2 @error('commercial_id') is-invalid @enderror">
+                            @foreach ($commercials as $commercial)
+                                <option value="{{ $commercial->id }}"
+                                    {{ in_array($commercial->id, old('commercial_id', $stagiaire->commercials->pluck('id')->toArray())) ? 'selected' : '' }}>
                                     {{ $commercial->user->name }}
                                 </option>
                             @endforeach
