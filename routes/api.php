@@ -13,6 +13,7 @@ use App\Http\Controllers\QuizController;
 use App\Http\Controllers\Stagiaire\FormationController;
 use App\Http\Controllers\Stagiaire\ProfileController;
 use App\Http\Controllers\Admin\ReponseController;
+use App\Http\Controllers\Stagiaire\CatalogueFormationController;
 
 Route::post('login', [JWTAuthController::class, 'login']);
 
@@ -65,6 +66,13 @@ Route::middleware(['auth:api'])->group(function () {
         Route::post('accept', [ParrainageController::class, 'acceptParrainage']);
         Route::get('rewards', [ParrainageController::class, 'getParrainageRewards']);
         Route::get('history', [ParrainageController::class, 'getParrainageHistory']);
+    });
+
+    // Routes de gestion des catalogue de formation
+
+    Route::prefix('catalogue_formations')->group(function () {
+        Route::get('formations', [CatalogueFormationController::class, 'getAllCatalogueFormations']);
+        Route::get('stagiaire/{id}', [CatalogueFormationController::class, 'getFormationsAndCatalogues']);
     });
 });
 

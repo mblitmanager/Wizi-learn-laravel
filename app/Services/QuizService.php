@@ -30,6 +30,11 @@ class QuizService
         return $this->quizRepository->create($data);
     }
 
+    public function show($id)
+    {
+        return $this->quizRepository->find($id);
+    }
+
     public function update($id, array $data)
     {
         return $this->quizRepository->update($id, $data);
