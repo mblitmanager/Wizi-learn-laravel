@@ -48,4 +48,9 @@ class Formation extends Model
     {
         return $this->hasMany(Quiz::class);
     }
+
+    public function catalogueFormation()
+    {
+        return $this->hasOne(CatalogueFormation::class, 'formation_id');
+    }
 }

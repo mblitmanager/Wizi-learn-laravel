@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 
@@ -27,6 +28,11 @@ class QuizService
     public function create(array $data)
     {
         return $this->quizRepository->create($data);
+    }
+
+    public function show($id)
+    {
+        return $this->quizRepository->find($id);
     }
 
     public function update($id, array $data)

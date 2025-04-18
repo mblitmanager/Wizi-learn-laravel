@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Stagiaire;
 use App\Repositories\Interfaces\CatalogueFormationInterface;
 
 
@@ -17,6 +18,11 @@ class CatalogueFormationService
     public function list()
     {
         return $this->catalogueFormationRepositoryInterface->all();
+    }
+
+    public function getCategoryById($id)
+    {
+        return $this->catalogueFormationRepositoryInterface->find($id);
     }
 
     public function show($id)
@@ -44,5 +50,29 @@ class CatalogueFormationService
     public function delete($id)
     {
         return $this->catalogueFormationRepositoryInterface->delete($id);
+    }
+
+    public function getFormationsAndCatalogues(int $stagiaireId)
+    {
+        // Récupérer le stagiaire avec ses relations
+        $stagiaire = Stagiaire::with(['formations', 'formations.catalogueFormation'])->find($stagiaireId);
+
+        if (!$stagiaire) {
+            throw new \Exception("Stagiaire not found");
+        }
+
+        // Récupérer les formations
+        $formations = $stagiaire->formations;
+
+        // Récupérer les catalogues de formation associés aux formations
+        $catalogues = $formations->map(function ($formation) {
+            return $formation->catalogueFormation;
+        })->filter(); // Filtrer les catalogues non nulls
+
+        return [
+            'stagiaire' => $stagiaire,
+            'formations' => $formations,
+            'catalogues' => $catalogues,
+        ];
     }
 }
