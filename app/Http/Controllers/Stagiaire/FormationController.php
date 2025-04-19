@@ -20,7 +20,7 @@ class FormationController extends Controller
     {
         try {
             $formations = $this->formationService->getFormationsByStagiaire($id);
-            
+
             return response()->json([
                 'data' => $formations
             ]);
@@ -28,4 +28,17 @@ class FormationController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
-} 
+
+    public function getAllFormations()
+    {
+        try {
+            $formations = $this->formationService->getAll();
+
+            return response()->json([
+                'data' => $formations
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+}
