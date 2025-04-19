@@ -112,43 +112,129 @@
                             <h5 class="text-wizi">Rechercher une question</h5>
 
                             <div class="col-md-12">
-                                <div class="row mx-auto">
-                                    <div class="col-md-6">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <!-- Input de recherche et boutons "Rechercher" et "Réinitialiser" -->
+                                    <div class="d-flex align-items-center">
                                         <input type="text" id="searchInput" name="search"
                                             placeholder="Rechercher une question" class="form-control me-2" value="">
+                                        <button id="searchBtn"
+                                            class="btn btn-sm btn-primary me-2 d-flex align-items-center">
+                                            <i class="lni lni-search-alt me-1"></i> Rechercher
+                                        </button>
+                                        <button id="resetBtn" class="btn btn-sm btn-secondary d-flex align-items-center">
+                                            <i class="lni lni-spinner-arrow me-1"></i> Réinitialiser
+                                        </button>
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="btn-group">
-                                            <button id="searchBtn" class="btn btn-primary me-2"><i
-                                                    class="lni lni-search-alt"></i>Rechercher</button>
-                                        </div>
-                                        <button id="resetBtn" class="btn btn-secondary"><i
-                                                class="lni lni-spinner-arrow"></i>Réinitialiser</button>
-                                    </div>
+
+                                    <!-- Bouton "Ajouter une question" aligné à droite -->
+                                    <button class="btn btn-sm btn-info text-white" type="button" id="addQuestionBtn">
+                                        <i class="lni lni-plus"></i> Ajouter une question
+                                    </button>
                                 </div>
                             </div>
-
                         </div>
                     </div>
+                    {{-- QUESTION --}}
+                    <template id="question-template">
+                        <div class="card mb-4 px-4 question-card">
+                            <div class="card-body">
+                                <h5 class="text-wizi">Ajouter une question</h5>
+
+                                <input type="hidden" name="questions[__INDEX__][id]" value="">
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Texte de la question</label>
+                                        <input type="text" name="questions[__INDEX__][text]" class="form-control mb-2"
+                                            placeholder="Texte de la question" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Media URL</label>
+                                        <input type="file" name="question_media_file[]" class="form-control mb-2">
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Type</label>
+                                        <select name="questions[__INDEX__][type]" class="form-select mb-2" required>
+                                            <option value="">Type</option>
+                                            <option value="question audio">Question audio</option>
+                                            <option value="remplir le champ vide">Remplir le champ vide</option>
+                                            <option value="carte flash">Carte flash</option>
+                                            <option value="correspondance">Correspondance</option>
+                                            <option value="choix multiples">Choix multiples</option>
+                                            <option value="commander">Commander</option>
+                                            <option value="vrai/faux">Vrai / Faux</option>
+                                            <option value="banque de mots">Banque de mots</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Réponse correcte</label>
+                                        <input type="text" name="questions[__INDEX__][reponse_correct]"
+                                            class="form-control mb-2" placeholder="Réponse correcte">
+                                    </div>
+                                    <div class="col-md-12">
+                                        <label class="form-label">Explication</label>
+                                        <textarea name="questions[__INDEX__][explication]" class="form-control mb-2" placeholder="Explication"></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Points</label>
+                                        <input type="number" name="questions[__INDEX__][points]"
+                                            class="form-control mb-2" placeholder="Points">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Astuce</label>
+                                        <input type="text" name="questions[__INDEX__][astuce]"
+                                            class="form-control mb-2" placeholder="Astuce">
+                                    </div>
+                                </div>
+
+                                <div class="text-end mt-3">
+                                    <button type="button" class="btn btn-sm btn-danger remove-question-btn">
+                                        <i class="lni lni-trash-can"></i> Supprimer cette question
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+
+                    <div id="questions-container"></div>
+
+
                     {{-- QUESTIONS & REPONSES --}}
                     <div class="accordion mb-4" id="accordionQuestions">
                         @foreach ($questions as $qIndex => $question)
                             <div class="accordion-item question-item">
-                                <h2 class="accordion-header" id="heading{{ $qIndex }}">
-                                    <button
-                                        class="accordion-button d-flex justify-content-between align-items-center {{ $qIndex > 0 ? 'collapsed' : '' }}"
-                                        type="button" data-bs-toggle="collapse"
-                                        data-bs-target="#collapse{{ $qIndex }}"
-                                        aria-expanded="{{ $qIndex == 0 ? 'true' : 'false' }}"
-                                        aria-controls="collapse{{ $qIndex }}">
-                                        <span>
-                                            <strong>Question #{{ $qIndex + 1 }}</strong>
-                                        </span>
-                                        <span class="ms-auto text-end">
-                                            {{ $question->text }}
-                                        </span>
-                                    </button>
-                                </h2>
+                                <input type="hidden" name="questions[{{ $qIndex }}][_delete]" value="0"
+                                    class="delete-flag">
+
+                                <div class="accordion-header" id="heading{{ $qIndex }}">
+                                    <h2 class="accordion-header d-flex align-items-center justify-content-between px-3 py-2 bg-light"
+                                        id="heading{{ $qIndex }}" style="border-bottom: 1px solid #ddd;">
+                                        <button class="accordion-button flex-grow-1 {{ $qIndex > 0 ? 'collapsed' : '' }}"
+                                            type="button" data-bs-toggle="collapse"
+                                            data-bs-target="#collapse{{ $qIndex }}"
+                                            aria-expanded="{{ $qIndex == 0 ? 'true' : 'false' }}"
+                                            aria-controls="collapse{{ $qIndex }}"
+                                            style="box-shadow: none; background: none;">
+                                            <div class="d-flex flex-column flex-md-row justify-content-between w-100">
+                                                <span><strong>Question #{{ $question->id }}</strong></span>
+                                                <span class="text-muted mx-2">{{ $question->text }}</span>
+                                            </div>
+                                        </button>
+                                        <button type="button"
+                                            class="btn btn-outline-danger btn-sm ms-2 remove-question-btn"
+                                            title="Supprimer cette question">
+                                            <i class="lni lni-trash"></i>
+                                        </button>
+                                    </h2>
+
+
+                                </div>
                                 <div id="collapse{{ $qIndex }}"
                                     class="accordion-collapse collapse {{ $qIndex == 0 ? 'show' : '' }}"
                                     aria-labelledby="heading{{ $qIndex }}" data-bs-parent="#accordionQuestions">
@@ -188,7 +274,7 @@
                                                     <select name="questions[{{ $qIndex }}][type]"
                                                         class="form-select mb-2" required>
                                                         <option value="">Type</option>
-                                                        @foreach (['question audio', 'remplir le champ vide', 'carte flash', 'correspondance', 'choix multiples', 'commander', 'vrai faux', 'banque de mots'] as $type)
+                                                        @foreach (['question audio', 'remplir le champ vide', 'carte flash', 'correspondance', 'choix multiples', 'commander', 'vrai/faux', 'banque de mots'] as $type)
                                                             <option value="{{ $type }}"
                                                                 {{ old("questions.$qIndex.type", $question->type) == $type ? 'selected' : '' }}>
                                                                 {{ ucfirst($type) }}
@@ -210,31 +296,97 @@
                                             </div>
 
                                         </div>
+
+
                                         {{-- Réponses --}}
                                         <h6 class="mt-4">Réponses</h6>
-                                        @foreach ($question->reponses as $rIndex => $reponse)
-                                            <div class="px-3 py-3 mb-3"
+                                        <div id="reponses-container-{{ $qIndex }}">
+                                            @foreach ($question->reponses as $rIndex => $reponse)
+                                                <div class="px-3 py-3 mb-3 reponse-form"
+                                                    style="box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;">
+                                                    <input type="hidden"
+                                                        name="questions[{{ $qIndex }}][reponses][{{ $rIndex }}][id]"
+                                                        value="{{ $reponse->id }}">
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <label class="form-label">Texte de la réponse</label>
+                                                            <input type="text"
+                                                                name="questions[{{ $qIndex }}][reponses][{{ $rIndex }}][text]"
+                                                                class="form-control mb-2"
+                                                                value="{{ old("questions.$qIndex.reponses.$rIndex.text", $reponse->text) }}">
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <label class="form-label">Bonne réponse ?</label>
+                                                            <select
+                                                                name="questions[{{ $qIndex }}][reponses][{{ $rIndex }}][is_correct]"
+                                                                class="form-select mb-2">
+                                                                <option value="1"
+                                                                    {{ $reponse->is_correct ? 'selected' : '' }}>Oui
+                                                                </option>
+                                                                <option value="0"
+                                                                    {{ !$reponse->is_correct ? 'selected' : '' }}>Non
+                                                                </option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row mb-3">
+                                                        <div class="col-md-4">
+                                                            <label class="form-label">Position</label>
+                                                            <input type="number"
+                                                                name="questions[{{ $qIndex }}][reponses][{{ $rIndex }}][position]"
+                                                                class="form-control"
+                                                                value="{{ old("questions.$qIndex.reponses.$rIndex.position", $reponse->position) }}">
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <label class="form-label">Pair correspondante</label>
+                                                            <input type="text"
+                                                                name="questions[{{ $qIndex }}][reponses][{{ $rIndex }}][match_pair]"
+                                                                class="form-control"
+                                                                value="{{ old("questions.$qIndex.reponses.$rIndex.match_pair", $reponse->match_pair) }}">
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <label class="form-label">Groupe</label>
+                                                            <input type="text"
+                                                                name="questions[{{ $qIndex }}][reponses][{{ $rIndex }}][bank_group]"
+                                                                class="form-control"
+                                                                value="{{ old("questions.$qIndex.reponses.$rIndex.bank_group", $reponse->bank_group) }}">
+                                                        </div>
+                                                    </div>
+                                                    <div class="text-end">
+                                                        <button type="button"
+                                                            class="btn btn-danger btn-sm remove-reponse-btn">Supprimer
+                                                            cette
+                                                            réponse</button>
+                                                    </div>
+                                                </div>
+                                                <hr>
+                                            @endforeach
+                                            <div class="text-center">
+                                                <button type="button" class="btn btn-primary btn-sm add-reponse-btn"
+                                                    data-question-index="{{ $qIndex }}">Ajouter une
+                                                    réponse</button>
+                                            </div>
+                                        </div>
+
+                                        {{-- templte cacher --}}
+
+                                        <template id="reponse-template-{{ $qIndex }}">
+                                            <div class="px-3 py-3 mb-3 reponse-form"
                                                 style="box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;">
-                                                <input type="hidden"
-                                                    name="questions[{{ $qIndex }}][reponses][{{ $rIndex }}][id]"
-                                                    value="{{ $reponse->id }}">
                                                 <div class="row">
                                                     <div class="col-md-6">
                                                         <label class="form-label">Texte de la réponse</label>
                                                         <input type="text"
-                                                            name="questions[{{ $qIndex }}][reponses][{{ $rIndex }}][text]"
-                                                            class="form-control mb-2"
-                                                            value="{{ old("questions.$qIndex.reponses.$rIndex.text", $reponse->text) }}">
+                                                            name="questions[{{ $qIndex }}][reponses][__RINDEX__][text]"
+                                                            class="form-control mb-2" value="">
                                                     </div>
                                                     <div class="col-md-6">
                                                         <label class="form-label">Bonne réponse ?</label>
                                                         <select
-                                                            name="questions[{{ $qIndex }}][reponses][{{ $rIndex }}][is_correct]"
+                                                            name="questions[{{ $qIndex }}][reponses][__RINDEX__][is_correct]"
                                                             class="form-select mb-2">
-                                                            <option value="1"
-                                                                {{ $reponse->is_correct ? 'selected' : '' }}>Oui</option>
-                                                            <option value="0"
-                                                                {{ !$reponse->is_correct ? 'selected' : '' }}>Non</option>
+                                                            <option value="1">Oui</option>
+                                                            <option value="0">Non</option>
                                                         </select>
                                                     </div>
                                                 </div>
@@ -242,28 +394,31 @@
                                                     <div class="col-md-4">
                                                         <label class="form-label">Position</label>
                                                         <input type="number"
-                                                            name="questions[{{ $qIndex }}][reponses][{{ $rIndex }}][position]"
-                                                            class="form-control"
-                                                            value="{{ old("questions.$qIndex.reponses.$rIndex.position", $reponse->position) }}">
+                                                            name="questions[{{ $qIndex }}][reponses][__RINDEX__][position]"
+                                                            class="form-control" value="">
                                                     </div>
                                                     <div class="col-md-4">
                                                         <label class="form-label">Pair correspondante</label>
                                                         <input type="text"
-                                                            name="questions[{{ $qIndex }}][reponses][{{ $rIndex }}][match_pair]"
-                                                            class="form-control"
-                                                            value="{{ old("questions.$qIndex.reponses.$rIndex.match_pair", $reponse->match_pair) }}">
+                                                            name="questions[{{ $qIndex }}][reponses][__RINDEX__][match_pair]"
+                                                            class="form-control" value="">
                                                     </div>
                                                     <div class="col-md-4">
                                                         <label class="form-label">Groupe</label>
                                                         <input type="text"
-                                                            name="questions[{{ $qIndex }}][reponses][{{ $rIndex }}][bank_group]"
-                                                            class="form-control"
-                                                            value="{{ old("questions.$qIndex.reponses.$rIndex.bank_group", $reponse->bank_group) }}">
+                                                            name="questions[{{ $qIndex }}][reponses][__RINDEX__][bank_group]"
+                                                            class="form-control" value="">
                                                     </div>
                                                 </div>
+                                                <div class="text-end">
+                                                    <button type="button"
+                                                        class="btn btn-danger btn-sm remove-reponse-btn">Supprimer cette
+                                                        réponse</button>
+                                                </div>
+                                                <hr>
                                             </div>
-                                            <hr>
-                                        @endforeach
+                                        </template>
+
                                     </div>
                                 </div>
                             </div>
@@ -296,41 +451,59 @@
 @endsection
 @section('scripts')
     <script>
-        document.getElementById('add-reponse-btn').addEventListener('click', function() {
-            const container = document.getElementById('reponses-container');
-            const firstForm = container.querySelector('.reponse-form');
+        document.addEventListener('DOMContentLoaded', function() {
+            // Ajouter une réponse
+            document.querySelectorAll('.add-reponse-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const qIndex = this.dataset.questionIndex;
+                    const container = document.getElementById(`reponses-container-${qIndex}`);
+                    const forms = container.querySelectorAll('.reponse-form');
+                    let newForm;
 
-            const newForm = firstForm.cloneNode(true);
+                    if (forms.length > 0) {
+                        const lastForm = forms[forms.length - 1];
+                        newForm = lastForm.cloneNode(true);
+                    } else {
+                        const template = document.getElementById(`reponse-template-${qIndex}`);
+                        if (!template) {
+                            alert("Aucun template de réponse trouvé pour cette question.");
+                            return;
+                        }
+                        newForm = template.content.cloneNode(true).firstElementChild;
+                    }
 
-            // Réinitialise tous les champs et corrige les noms
-            newForm.querySelectorAll('input, textarea, select').forEach(field => {
-                field.value = '';
-                field.name = field.name.replace(/\[\d+\]/g, '[]'); // Corrige les noms indexés
+                    // Trouver le bon rIndex
+                    const rIndex = forms.length;
+
+                    newForm.querySelectorAll('[name]').forEach(field => {
+                        field.name = field.name.replace(/__RINDEX__/g, rIndex);
+                        if (field.type !== 'hidden') field.value =
+                        ''; // Réinitialiser sauf hidden
+                    });
+
+                    container.insertBefore(newForm, this.closest(
+                    '.text-center')); // insère avant le bouton "Ajouter"
+                });
             });
 
-            // Supprime le champ hidden de l’ID s’il existe (ne pas envoyer d’ID pour les nouveaux)
-            const hiddenId = newForm.querySelector('input[type="hidden"][name^="reponse[id]"]');
-            if (hiddenId) hiddenId.remove();
-
-            container.appendChild(newForm);
-        });
-
-        // Suppression d'une réponse (mais en gardant au moins une)
-        document.addEventListener('click', function(e) {
-            if (e.target.classList.contains('remove-reponse-btn')) {
-                const container = document.getElementById('reponses-container');
-                const forms = container.querySelectorAll('.reponse-form');
-
-                if (forms.length > 1) {
+            // Supprimer une réponse
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('remove-reponse-btn')) {
                     const formToRemove = e.target.closest('.reponse-form');
-                    formToRemove.remove();
-                } else {
-                    alert('Vous devez avoir au moins une réponse.');
+                    const container = formToRemove.parentElement;
+                    const allForms = container.querySelectorAll('.reponse-form');
+
+                    if (allForms.length > 1) {
+                        formToRemove.remove();
+                    } else {
+                        alert('Vous devez avoir au moins une réponse.');
+                    }
                 }
-            }
+            });
         });
     </script>
 
+    {{-- Media appercu --}}
     <script>
         document.getElementById('media_file').addEventListener('change', function(event) {
             const file = event.target.files[0];
@@ -358,76 +531,8 @@
             }
         });
     </script>
+    {{-- Pagination Question --}}
     <script>
-        // document.addEventListener("DOMContentLoaded", function() {
-        //     const itemsPerPage = 10;
-        //     const items = Array.from(document.querySelectorAll(".question-item"));
-        //     const totalItems = items.length;
-        //     const totalPages = Math.ceil(totalItems / itemsPerPage);
-        //     let currentPage = 1;
-        //     const maxVisiblePages = 5;
-
-        //     function showPage(page) {
-        //         const start = (page - 1) * itemsPerPage;
-        //         const end = page * itemsPerPage;
-
-        //         items.forEach((item, index) => {
-        //             item.style.display = (index >= start && index < end) ? "block" : "none";
-        //         });
-
-        //         updatePaginationButtons();
-        //     }
-
-        //     function updatePaginationButtons() {
-        //         const container = document.getElementById("paginationNumbers");
-        //         container.innerHTML = "";
-
-        //         let startPage = Math.floor((currentPage - 1) / maxVisiblePages) * maxVisiblePages + 1;
-        //         let endPage = Math.min(startPage + maxVisiblePages - 1, totalPages);
-
-        //         for (let i = startPage; i <= endPage; i++) {
-        //             const li = document.createElement("li");
-        //             li.className = `paginate_button page-item ${i === currentPage ? 'active' : ''}`;
-
-        //             const a = document.createElement("a");
-        //             a.href = "#";
-        //             a.className = "page-link";
-        //             a.innerText = i;
-        //             a.addEventListener("click", (e) => {
-        //                 e.preventDefault();
-        //                 currentPage = i;
-        //                 showPage(currentPage);
-        //             });
-
-        //             li.appendChild(a);
-        //             container.appendChild(li);
-        //         }
-
-        //         const prev = document.getElementById("prevPage");
-        //         const next = document.getElementById("nextPage");
-
-        //         prev.classList.toggle("disabled", currentPage === 1);
-        //         next.classList.toggle("disabled", currentPage === totalPages);
-        //     }
-
-        //     document.getElementById("prevPage").addEventListener("click", (e) => {
-        //         e.preventDefault();
-        //         if (currentPage > 1) {
-        //             currentPage--;
-        //             showPage(currentPage);
-        //         }
-        //     });
-
-        //     document.getElementById("nextPage").addEventListener("click", (e) => {
-        //         e.preventDefault();
-        //         if (currentPage < totalPages) {
-        //             currentPage++;
-        //             showPage(currentPage);
-        //         }
-        //     });
-
-        //     showPage(currentPage);
-        // });
         document.addEventListener("DOMContentLoaded", function() {
             const itemsPerPage = 10;
             const items = Array.from(document.querySelectorAll(".question-item"));
@@ -533,6 +638,51 @@
             showPage(currentPage);
         });
     </script>
+    <script>
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.remove-question-btn')) {
+                const questionItem = e.target.closest('.question-item');
+                const deleteInput = questionItem.querySelector('input.delete-flag');
+
+                if (deleteInput) {
+                    deleteInput.value = '1';
+                    questionItem.style.display = 'none';
+                }
+            }
+        });
+    </script>
+    {{-- Ajouter Question --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const addBtn = document.getElementById('addQuestionBtn');
+            const template = document.getElementById('question-template');
+            const container = document.getElementById('questions-container');
+            let questionIndex = 0;
+
+            addBtn.addEventListener('click', function() {
+                const clone = template.content.cloneNode(true);
+                const html = clone.querySelector('.question-card');
+
+                // Remplace __INDEX__ dans tous les noms
+                html.querySelectorAll('[name]').forEach(el => {
+                    el.name = el.name.replace(/__INDEX__/g, questionIndex);
+                });
+
+                container.appendChild(clone);
+                questionIndex++;
+            });
+
+            // Suppression dynamique
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('remove-question-btn') || e.target.closest(
+                        '.remove-question-btn')) {
+                    const card = e.target.closest('.question-card');
+                    if (card) card.remove();
+                }
+            });
+        });
+    </script>
+
 
 
 
