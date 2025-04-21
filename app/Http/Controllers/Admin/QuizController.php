@@ -87,55 +87,70 @@ class QuizController extends Controller
             // Mise à jour du quiz
             $quiz->update($request->input('quiz'));
 
-            // Récupérer les questions liées
-            $questions = $quiz->questions;
             $questionData = $request->input('questions', []);
 
-            // Gestion fichier pour chaque question (si besoin)
+            // Gestion des fichiers média par question
             if ($request->hasFile('question_media_file')) {
-                $file = $request->file('question_media_file');
+                foreach ($request->file('question_media_file') as $index => $file) {
+                    $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'doc', 'docx', 'xls', 'xlsx'];
+                    $extension = $file->getClientOriginalExtension();
 
-                $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'doc', 'docx', 'xls', 'xlsx'];
-                $extension = $file->getClientOriginalExtension();
-
-                if (!in_array($extension, $allowedExtensions)) {
-                    return redirect()->back()->with('error', 'Le type de fichier "' . $extension . '" n’est pas autorisé.');
-                }
-
-                foreach ($questions as $index => $question) {
-                    // Supprimer l’ancien fichier s’il existe
-                    if ($question->media_url && Storage::disk('public')->exists($question->media_url)) {
-                        Storage::disk('public')->delete($question->media_url);
+                    if (!in_array($extension, $allowedExtensions)) {
+                        return redirect()->back()->with('error', 'Le type de fichier "' . $extension . '" n’est pas autorisé.');
                     }
 
-                    // Enregistrer le nouveau
                     $path = $file->store('medias', 'public');
 
-                    // ⚠️ Assure que l'index existe avant d'y ajouter un champ
                     if (isset($questionData[$index])) {
                         $questionData[$index]['media_url'] = $path;
                     }
                 }
             }
 
-            foreach ($questions as $i => $question) {
-                // 🔒 Sécurité : vérifier que les données pour cette question existent
-                if (!isset($questionData[$i])) {
-                    Log::warning("Données manquantes pour la question index $i");
+            foreach ($questionData as $questionInput) {
+                // Supprimer si marqué
+                if (!empty($questionInput['id']) && !empty($questionInput['_delete'])) {
+                    $question = $quiz->questions()->find($questionInput['id']);
+                    if ($question) {
+                        $question->reponses()->delete(); // Supprime les réponses associées
+                        $question->delete(); // Supprime la question
+                    }
+                    continue; // Passer à la question suivante
+                }
+
+                // Update ou création
+                if (!empty($questionInput['id'])) {
+                    $question = $quiz->questions()->find($questionInput['id']);
+
+                    if ($question) {
+                        // Supprimer l’ancien fichier si un nouveau est fourni
+                        if (!empty($questionInput['media_url']) && $question->media_url && Storage::disk('public')->exists($question->media_url)) {
+                            Storage::disk('public')->delete($question->media_url);
+                        }
+
+                        $question->update($questionInput);
+                    } else {
+                        continue;
+                    }
+                } else {
+                    $question = $quiz->questions()->create($questionInput);
+                }
+
+                if (!$question) {
                     continue;
                 }
 
-                // Mise à jour de la question
-                $question->update($questionData[$i]);
+                // Réponses
+                $reponses = $questionInput['reponses'] ?? [];
 
-                $reponses = $questionData[$i]['reponses'] ?? [];
-
-                // Supprimer les anciennes réponses supprimées du formulaire
-                $submittedIds = collect($reponses)->pluck('id')->filter()->toArray();
-                $question->reponses()->whereNotIn('id', $submittedIds)->delete();
+                if (!empty($questionInput['id'])) {
+                    // Supprimer les réponses absentes dans le formulaire
+                    $submittedIds = collect($reponses)->pluck('id')->filter()->toArray();
+                    $question->reponses()->whereNotIn('id', $submittedIds)->delete();
+                }
 
                 foreach ($reponses as $reponseData) {
-                    if (isset($reponseData['id'])) {
+                    if (!empty($reponseData['id'])) {
                         $reponse = $question->reponses()->find($reponseData['id']);
                         if ($reponse) {
                             $reponse->update([
@@ -159,7 +174,7 @@ class QuizController extends Controller
                     }
                 }
 
-                // Mise à jour de la bonne réponse automatiquement
+                // Mise à jour de la bonne réponse
                 $reponseCorrecte = $question->reponses()->where('is_correct', true)->first();
                 if ($reponseCorrecte) {
                     $question->update([
@@ -176,6 +191,8 @@ class QuizController extends Controller
             return redirect()->back()->with('error', 'Erreur : ' . $e->getMessage());
         }
     }
+
+
 
 
 

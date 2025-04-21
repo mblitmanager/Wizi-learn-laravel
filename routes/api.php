@@ -75,6 +75,11 @@ Route::middleware(['auth:api'])->group(function () {
         Route::get('stagiaire/{id}', [CatalogueFormationController::class, 'getFormationsAndCatalogues']);
         Route::get('/formations/{id}', [CatalogueFormationController::class, 'getCatalogueFormationById']);
     });
+
+    Route::prefix('formation')->group(function () {
+        Route::get('listFormation', [FormationController::class, 'getAllFormations']);
+    })
+    ;
 });
 
 // Routes d'authentification

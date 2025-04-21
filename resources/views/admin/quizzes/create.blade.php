@@ -124,7 +124,7 @@
                                     <option value="correspondance">Correspondance</option>
                                     <option value="choix multiples">Choix multiples</option>
                                     <option value="commander">Commander</option>
-                                    <option value="vrai faux">Vrai / Faux</option>
+                                    <option value="vrai/faux">Vrai / Faux</option>
                                     <option value="banque de mots">Banque de mots</option>
                                 </select>
 
