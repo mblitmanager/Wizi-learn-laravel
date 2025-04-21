@@ -142,7 +142,20 @@ class QuizeRepository implements QuizRepositoryInterface
 
     public function getUniqueCategories(): Collection
     {
-        return Formation::select('categorie')->distinct()->pluck('categorie');
+        return Formation::select('categorie as name', 'slug', 'icon', 'description')
+            ->distinct()
+            ->get()
+            ->map(function ($category) {
+                $formations = Formation::where('categorie', $category->name)->get();
+                return [
+                    'id' => $category->slug,
+                    'name' => $category->name,
+                    'slug' => $category->slug,
+                    'icon' => $category->icon ?? 'file-text',
+                    'description' => $category->description ?? '',
+                    'formations' => $formations
+                ];
+            });
     }
 
     public function getQuestionsByQuizId($quizId): Collection
