@@ -56,8 +56,17 @@ class QuizStagiaireController extends Controller
     }
     public function getQuestionsByQuizId($quizId)
     {
-        $questions = $this->quizService->getQuestionsByQuizId($quizId);
-        return response()->json($questions);
+        try {
+            $user = JWTAuth::parseToken()->authenticate();
+            $questions = $this->quizService->getQuestionsByQuizId($quizId);
+            return response()->json([
+                'data' => $questions
+            ]);
+        } catch (JWTException $e) {
+            return response()->json(['error' => 'non autorisé'], 401);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     public function submitQuiz(Request $request, $quizId)
