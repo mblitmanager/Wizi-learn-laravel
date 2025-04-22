@@ -16,8 +16,10 @@ class Formation extends Model
      */
     protected $fillable = [
         'titre',
+        'slug',
         'description',
         'categorie',
+        'icon',
         'image',
         'statut',
         'duree',
