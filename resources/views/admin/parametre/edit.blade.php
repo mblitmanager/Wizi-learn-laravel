@@ -55,3 +55,17 @@
         </div>
     </div>
 @endsection
+@section('scripts')
+    <script>
+        function toggleRoleFields() {
+            const role = document.getElementById('role').value;
+            document.getElementById('stagiaire-fields').style.display = role === 'stagiaire' ? '' : 'none';
+            document.getElementById('other-role-fields').style.display = ['formateur', 'commercial', 'pole relation client'].includes(role) ? '' : 'none';
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            toggleRoleFields(); // exécuter au chargement
+        });
+    </script>
+
+@endsection
