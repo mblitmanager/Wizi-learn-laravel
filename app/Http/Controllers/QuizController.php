@@ -409,15 +409,16 @@ class QuizController extends Controller
             $user = Auth::user();
             $quiz = Quiz::with(['formation', 'questions.reponses'])->findOrFail($id);
 
-            // Log de débogage
+            // Log de débogage détaillé
             Log::info('Requête de soumission de quiz', [
                 'request_data' => $request->all(),
+                'request_answers' => $request->answers,
                 'quiz_id' => $id,
                 'user_id' => $user->id
             ]);
 
             // Validation des données
-            $request->validate([
+            $validated = $request->validate([
                 'answers' => 'required|array',
                 'timeSpent' => 'required|integer|min:0'
             ]);
@@ -436,7 +437,8 @@ class QuizController extends Controller
                 Log::info('Traitement de la question', [
                     'question_id' => $question->id,
                     'selected_answers' => $selectedAnswerIds,
-                    'request_answers' => $request->answers
+                    'request_answers' => $request->answers,
+                    'question_data' => $question->toArray()
                 ]);
 
                 $correctAnswerIds = $question->reponses->where('is_correct', true)->pluck('id')->toArray();
@@ -495,7 +497,8 @@ class QuizController extends Controller
                 'user_id' => $user?->id,
                 'quiz_id' => $id,
                 'formation_id' => $quiz->formation->id ?? null,
-                'request_data' => $request->all()
+                'request_data' => $request->all(),
+                'validation_errors' => $e instanceof \Illuminate\Validation\ValidationException ? $e->errors() : null
             ]);
 
             return response()->json([
