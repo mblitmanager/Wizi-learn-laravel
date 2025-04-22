@@ -40,11 +40,11 @@ class QuizController extends Controller
             $formattedQuizzes = $quizzes->map(function($quiz) {
                 return [
                     'id' => (string)$quiz->id,
-                    'title' => $quiz->titre,
+                    'titre' => $quiz->titre,
                     'description' => $quiz->description,
-                    'category' => $quiz->formation->categorie ?? 'Non catégorisé',
-                    'categoryId' => $quiz->formation->categorie ?? 'non-categorise',
-                    'level' => $quiz->niveau ?? 'débutant',
+                    'categorie' => $quiz->formation->categorie ?? 'Non catégorisé',
+                    'categorieId' => $quiz->formation->categorie ?? 'non-categorise',
+                    'niveau' => $quiz->niveau ?? 'débutant',
                     'questions' => $quiz->questions->map(function($question) {
                         $questionData = [
                             'id' => (string)$question->id,
@@ -308,11 +308,11 @@ class QuizController extends Controller
 
             return response()->json([
                 'id' => (string)$quiz->id,
-                'title' => $quiz->titre,
+                'titre' => $quiz->titre,
                 'description' => $quiz->description,
-                'category' => $quiz->formation->categorie ?? 'Non catégorisé',
-                'categoryId' => $quiz->formation->categorie ?? 'non-categorise',
-                'level' => $quiz->niveau ?? 'débutant',
+                'categorie' => $quiz->formation->categorie ?? 'Non catégorisé',
+                'categorieId' => $quiz->formation->categorie ?? 'non-categorise',
+                'niveau' => $quiz->niveau ?? 'débutant',
                 'questions' => $quiz->questions->map(function($question) {
                     $questionData = [
                         'id' => (string)$question->id,
