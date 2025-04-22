@@ -168,7 +168,7 @@
                                             <option value="carte flash">Carte flash</option>
                                             <option value="correspondance">Correspondance</option>
                                             <option value="choix multiples">Choix multiples</option>
-                                            <option value="commander">Commander</option>
+                                            <option value="rearrangement">Rearrangement</option>
                                             <option value="vrai/faux">Vrai / Faux</option>
                                             <option value="banque de mots">Banque de mots</option>
                                         </select>
@@ -278,7 +278,7 @@
                                                     <select name="questions[{{ $qIndex }}][type]"
                                                         class="form-select mb-2" required>
                                                         <option value="">Type</option>
-                                                        @foreach (['question audio', 'remplir le champ vide', 'carte flash', 'correspondance', 'choix multiples', 'commander', 'vrai/faux', 'banque de mots'] as $type)
+                                                        @foreach (['question audio', 'remplir le champ vide', 'carte flash', 'correspondance', 'choix multiples', 'rearrangement', 'vrai/faux', 'banque de mots'] as $type)
                                                             <option value="{{ $type }}"
                                                                 {{ old("questions.$qIndex.type", $question->type) == $type ? 'selected' : '' }}>
                                                                 {{ ucfirst($type) }}

@@ -191,10 +191,6 @@ class QuizController extends Controller
         }
     }
 
-
-
-
-
     /**
      * Remove the specified resource from storage.
      */
@@ -202,7 +198,6 @@ class QuizController extends Controller
     {
         //
     }
-
     public function storeAll(Request $request)
     {
         DB::beginTransaction();
