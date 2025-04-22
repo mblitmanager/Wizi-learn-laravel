@@ -84,6 +84,7 @@ class ParametreAdminController extends Controller
     /**
      * Met à jour un utilisateur.
      */
+
     public function update(Request $request, $id)
     {
         $data = $request->only(['name', 'email', 'password', 'role']);
@@ -94,6 +95,15 @@ class ParametreAdminController extends Controller
             'password' => 'nullable|string|min:6',
             'role' => 'required|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+
+            // Champs supplémentaires partagés
+            'prenom' => 'nullable|string|max:255',
+            'civilite' => 'nullable|string|max:50',
+            'telephone' => 'nullable|string|max:20',
+            'adresse' => 'nullable|string|max:255',
+            'date_naissance' => 'nullable|date',
+            'ville' => 'nullable|string|max:255',
+            'code_postal' => 'nullable|string|max:10',
         ]);
 
         if ($validator->fails()) {
@@ -105,13 +115,53 @@ class ParametreAdminController extends Controller
         } else {
             unset($data['password']);
         }
+
         if ($request->hasFile('image')) {
             $imageName = time() . '.' . $request->image->extension();
             $request->image->move(public_path('uploads/users'), $imageName);
             $data['image'] = 'uploads/users/' . $imageName;
         }
 
-        $this->parametreService->update($id, $data);
+        // Update user
+        $user = $this->parametreService->update($id, $data);
+
+        // Selon le rôle sélectionné, créer ou mettre à jour le bon modèle
+        switch ($request->role) {
+            case 'stagiaire':
+                $stagiaireData = $request->only([
+                    'civilite', 'prenom', 'telephone', 'adresse',
+                    'date_naissance', 'ville', 'code_postal'
+                ]);
+                $stagiaireData['user_id'] = $user->id;
+                $stagiaireData['statut'] = 'actif';
+                \App\Models\Stagiaire::updateOrCreate(['user_id' => $user->id], $stagiaireData);
+                break;
+
+            case 'formateur':
+                \App\Models\Formateur::updateOrCreate(
+                    ['user_id' => $user->id],
+                    ['prenom' => $request->prenom, 'role' => 'formateur']
+                );
+                break;
+
+            case 'commercial':
+                \App\Models\Commercial::updateOrCreate(
+                    ['user_id' => $user->id],
+                    ['prenom' => $request->prenom, 'role' => 'commercial']
+                );
+                break;
+
+            case 'pole_relation_client':
+                \App\Models\PoleRelationClient::updateOrCreate(
+                    ['user_id' => $user->id],
+                    ['prenom' => $request->prenom, 'role' => 'pole_relation_client']
+                );
+                break;
+
+            default:
+                // Optionnel : gérer les autres cas
+                break;
+        }
 
         return redirect()->route('parametre.index')->with('success', 'Utilisateur mis à jour avec succès');
     }
