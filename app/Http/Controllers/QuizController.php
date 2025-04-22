@@ -149,26 +149,45 @@ class QuizController extends Controller
     public function getCategories()
     {
         try {
-            // Récupérer les catégories uniques depuis les formations associées aux quizzes
+            // Récupérer l'utilisateur authentifié
+            $user = Auth::user();
+            
+            // Récupérer le stagiaire associé à l'utilisateur
+            $stagiaire = Stagiaire::where('user_id', $user->id)->first();
+            
+            if (!$stagiaire) {
+                return response()->json([
+                    'error' => 'Aucun stagiaire associé à cet utilisateur',
+                ], 404);
+            }
+            
+            // Récupérer les catégories uniques depuis les formations associées aux quizzes du stagiaire
             $categories = Quiz::with('formation')
+                ->whereHas('formation.stagiaires', function($query) use ($stagiaire) {
+                    $query->where('stagiaires.id', $stagiaire->id);
+                })
                 ->select('formation_id')
                 ->distinct()
                 ->get()
-                ->map(function($quiz) {
+                ->map(function($quiz) use ($stagiaire) {
                     return [
                         'id' => $quiz->formation->categorie ?? 'non-categorise',
                         'name' => $quiz->formation->categorie ?? 'Non catégorisé',
                         'color' => $this->getCategoryColor($quiz->formation->categorie ?? 'Non catégorisé'),
                         'icon' => $this->getCategoryIcon($quiz->formation->categorie ?? 'Non catégorisé'),
                         'description' => $this->getCategoryDescription($quiz->formation->categorie ?? 'Non catégorisé'),
-                        'quizCount' => Quiz::where('formation_id', $quiz->formation_id)->count(),
+                        'quizCount' => Quiz::where('formation_id', $quiz->formation_id)
+                            ->whereHas('formation.stagiaires', function($query) use ($stagiaire) {
+                                $query->where('stagiaires.id', $stagiaire->id);
+                            })
+                            ->count(),
                         'colorClass' => 'category-' . strtolower(str_replace(' ', '-', $quiz->formation->categorie ?? 'non-categorise'))
                     ];
                 })
                 ->unique('id')
                 ->values();
 
-        return response()->json($categories);
+            return response()->json($categories);
         } catch (\Exception $e) {
             Log::error('Erreur dans getCategories', [
                 'error' => $e->getMessage(),
@@ -503,6 +522,67 @@ class QuizController extends Controller
 
             return response()->json([
                 'error' => 'Erreur lors de la sauvegarde du résultat',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getStagiaireQuizzes()
+    {
+        try {
+            // Récupérer l'utilisateur authentifié
+            $user = Auth::user();
+            
+            // Récupérer le stagiaire associé à l'utilisateur
+            $stagiaire = Stagiaire::where('user_id', $user->id)->first();
+            
+            if (!$stagiaire) {
+                return response()->json([
+                    'error' => 'Aucun stagiaire associé à cet utilisateur',
+                ], 404);
+            }
+            
+            // Récupérer les quizzes associés aux formations du stagiaire
+            $quizzes = Quiz::with(['formation', 'questions'])
+                ->whereHas('formation.stagiaires', function($query) use ($stagiaire) {
+                    $query->where('stagiaires.id', $stagiaire->id);
+                })
+                ->get()
+                ->map(function($quiz) {
+                    return [
+                        'id' => (string)$quiz->id,
+                        'titre' => $quiz->titre,
+                        'description' => $quiz->description,
+                        'categorie' => $quiz->formation->categorie ?? 'Non catégorisé',
+                        'categorieId' => $quiz->formation->categorie ?? 'non-categorise',
+                        'niveau' => $quiz->niveau ?? 'débutant',
+                        'questions' => $quiz->questions->map(function($question) {
+                            return [
+                                'id' => (string)$question->id,
+                                'text' => $question->text,
+                                'type' => $question->type ?? 'multiplechoice',
+                                'answers' => $question->reponses->map(function($reponse) {
+                                    return [
+                                        'id' => (string)$reponse->id,
+                                        'text' => $reponse->text,
+                                        'isCorrect' => (bool)$reponse->is_correct
+                                    ];
+                                })->toArray()
+                            ];
+                        })->toArray(),
+                        'points' => (int)($quiz->nb_points_total ?? 0)
+                    ];
+                });
+
+            return response()->json($quizzes);
+        } catch (\Exception $e) {
+            Log::error('Erreur dans getStagiaireQuizzes', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'error' => 'Une erreur est survenue lors de la récupération des quizzes',
                 'message' => $e->getMessage()
             ], 500);
         }
