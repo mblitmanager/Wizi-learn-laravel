@@ -15,7 +15,7 @@
                     </li>
                     <li class="nav-item dropdown dropdown-large" style="display: none">
                         <a class="nav-link dropdown-toggle dropdown-toggle-nocaret" href="#" role="button"
-                            data-bs-toggle="dropdown" aria-expanded="false"> <i class='bx bx-category'></i>
+                           data-bs-toggle="dropdown" aria-expanded="false"> <i class='bx bx-category'></i>
                         </a>
                         <div class="dropdown-menu dropdown-menu-end">
                             <div class="row row-cols-3 g-3 p-3">
@@ -59,7 +59,7 @@
                     </li>
                     <li class="nav-item dropdown dropdown-large" style="display: none">
                         <a class="nav-link dropdown-toggle dropdown-toggle-nocaret position-relative" href="#"
-                            role="button" data-bs-toggle="dropdown" aria-expanded="false"> <span
+                           role="button" data-bs-toggle="dropdown" aria-expanded="false"> <span
                                 class="alert-count">7</span>
                             <i class='bx bx-bell'></i>
                         </a>
@@ -80,7 +80,7 @@
                     </li>
                     <li class="nav-item dropdown dropdown-large" style="display: none">
                         <a class="nav-link dropdown-toggle dropdown-toggle-nocaret position-relative" href="#"
-                            role="button" data-bs-toggle="dropdown" aria-expanded="false"> <span
+                           role="button" data-bs-toggle="dropdown" aria-expanded="false"> <span
                                 class="alert-count">8</span>
                             <i class='bx bx-comment'></i>
                         </a>
@@ -228,34 +228,55 @@
             </div>
             <div class="user-box dropdown">
                 <a class="d-flex align-items-center nav-link dropdown-toggle dropdown-toggle-nocaret" href="#"
-                    role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                   role="button" data-bs-toggle="dropdown" aria-expanded="false">
+
+                    {{-- Image de l'utilisateur --}}
+                    @php
+                        $user = Auth::user();
+                        $image = $user->image ?? null; // Assure-toi que 'image' est bien le nom de la colonne
+                    @endphp
+                    <div class="user-img">
+
+                        <img
+                            src="{{ $image ? asset($image) : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=0D8ABC&color=fff&size=128' }}"
+
+                            alt="user avatar"
+                            class="rounded-circle" width="40" height="40">
+                    </div>
+
                     <div class="user-info ps-3">
-                        <p class="user-name mb-0">{{Auth::user()->name}}</p>
-                        <p class="designattion mb-0">{{Auth::user()->role}}</p>
+                        <p class="user-name mb-0">{{ $user->name }}</p>
+                        <p class="designattion mb-0">{{ $user->role }}</p>
                     </div>
                 </a>
+
                 <ul class="dropdown-menu dropdown-menu-end">
-                    <li><a class="dropdown-item" href="javascript:;"><i class="bx bx-user"></i><span>Profile</span></a>
+                    <li>
+                        <a class="dropdown-item" href="{{ route('parametre.show', $user->id) }}">
+                            <i class="bx bx-user"></i><span>Profile</span>
+                        </a>
                     </li>
-                    <li><a class="dropdown-item" href="javascript:;"><i class="bx bx-cog"></i><span>Settings</span></a>
+                    <li>
+                        <a class="dropdown-item" href="{{ route('parametre.index') }}">
+                            <i class="bx bx-cog"></i><span>Settings</span>
+                        </a>
                     </li>
-                    <li><a class="dropdown-item" href="javascript:;"><i
-                                class='bx bx-home-circle'></i><span>Dashboard</span></a>
-                    </li>
-                    <li><a class="dropdown-item" href="javascript:;"><i
-                                class='bx bx-dollar-circle'></i><span>Earnings</span></a>
-                    </li>
-                    <li><a class="dropdown-item" href="javascript:;"><i
-                                class='bx bx-download'></i><span>Downloads</span></a>
+                    <li>
+                        <a class="dropdown-item" href="{{ route('dashboard') }}">
+                            <i class='bx bx-home-circle'></i><span>Dashboard</span>
+                        </a>
                     </li>
                     <li>
                         <div class="dropdown-divider mb-0"></div>
                     </li>
-                    <li><a class="dropdown-item" href="{{ route('logout') }}"><i
-                                class='bx bx-log-out-circle'></i><span>Déconnexion</span></a>
+                    <li>
+                        <a class="dropdown-item" href="{{ route('logout') }}">
+                            <i class='bx bx-log-out-circle'></i><span>Déconnexion</span>
+                        </a>
                     </li>
                 </ul>
             </div>
+
         </nav>
     </div>
 </header>
