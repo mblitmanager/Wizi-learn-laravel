@@ -6,7 +6,7 @@ use App\Http\Controllers\Admin\CommercialController;
 use App\Http\Controllers\Admin\FormateurController;
 use App\Http\Controllers\Admin\FormationController;
 use App\Http\Controllers\Admin\MediaController;
-use App\Http\Controllers\Admin\ParametreController;
+use App\Http\Controllers\Admin\ParametreAdminController;
 use App\Http\Controllers\Admin\PoleRelationClientController;
 use App\Http\Controllers\Admin\QuestionController;
 use App\Http\Controllers\Admin\QuizController;
@@ -41,6 +41,7 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
     Route::resource('pole_relation_clients', PoleRelationClientController::class);
 
     Route::post('/quiz/create-all', [QuizController::class, 'storeAll'])->name('quiz.storeAll');
+    Route::post('/quiz/question-import', [QuizController::class, 'importQuestionReponseForQuiz'])->name('quiz_question.import');
 
     Route::post('/import/stagiaires', [StagiaireController::class, 'import'])->name('stagiaires.import');
     Route::post('/import/commercials', [CommercialController::class, 'import'])->name('commercials.import');
@@ -51,5 +52,7 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
 
     Route::resource('catalogue_formation', CatalogueFormationController::class);
 
-    Route::get('parametre', [ParametreController::class, 'index'])->name('parametre.index');
+    Route::resource('parametre', ParametreAdminController::class);
+    Route::put('/parametre/{id}/update-image', [ParametreAdminController::class, 'updateImage'])->name('parametre.updateImage');
+
 });

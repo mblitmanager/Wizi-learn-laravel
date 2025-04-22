@@ -14,6 +14,8 @@
         </div>
         <div class="ms-auto">
             <div class="btn-group">
+                <button class="btn btn-sm text-white btn-info mx-2" data-bs-toggle="modal" data-bs-target="#importModal"><i
+                        class="lni lni-cloud-download"></i>importer quiz</button>
                 <a href="{{ route('quiz.index') }}" type="button" class="btn btn-sm btn-primary px-4"> <i
                         class="fadeIn animated bx bx-chevron-left-circle"></i> Retour</a>
             </div>
@@ -126,14 +128,16 @@
                                         </button>
                                     </div>
 
-                                    <!-- Bouton "Ajouter une question" aligné à droite -->
-                                    <button class="btn btn-sm btn-info text-white" type="button" id="addQuestionBtn">
-                                        <i class="lni lni-plus"></i> Ajouter une question
-                                    </button>
+                                    <div><!-- Bouton "Ajouter une question" aligné à droite -->
+                                        <button class="btn btn-sm btn-info text-white" type="button" id="addQuestionBtn">
+                                            <i class="lni lni-plus"></i> Ajouter une question
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+
                     {{-- QUESTION --}}
                     <template id="question-template">
                         <div class="card mb-4 px-4 question-card">
@@ -445,63 +449,74 @@
                             jour</button>
                     </div>
                 </form>
+                <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalLabel">Importer stagiaires</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form action="{{ route('quiz_question.import') }}" method="POST" enctype="multipart/form-data">
+                                    @csrf
+                                    <input type="hidden" name="quiz_id" value="{{ $quiz->id }}">
+                                    <div class="mb-3">
+                                        <label for="file" class="form-label">Fichier Excel (.xlsx)</label>
+                                        <input type="file" name="file" id="file" class="form-control" required
+                                               accept=".xlsx,.xls">
+                                    </div>
+
+                                    <div class="progress mb-3 d-none" id="progressBarWrapper">
+                                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                                             style="width: 100%;" id="progressBar">
+                                            Importation en cours...
+                                        </div>
+                                    </div>
+
+
+                                    <button type="submit" class="btn btn-primary">Importer</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
 @endsection
 @section('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Ajouter une réponse
-            document.querySelectorAll('.add-reponse-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const qIndex = this.dataset.questionIndex;
-                    const container = document.getElementById(`reponses-container-${qIndex}`);
-                    const forms = container.querySelectorAll('.reponse-form');
-                    let newForm;
+        document.querySelectorAll('.add-reponse-btn').forEach(button => {
+            button.addEventListener('click', function () {
+                const qIndex = this.dataset.questionIndex;
+                const container = document.getElementById(`reponses-container-${qIndex}`);
+                const template = document.getElementById(`reponse-template-${qIndex}`).innerHTML;
 
-                    if (forms.length > 0) {
-                        const lastForm = forms[forms.length - 1];
-                        newForm = lastForm.cloneNode(true);
-                    } else {
-                        const template = document.getElementById(`reponse-template-${qIndex}`);
-                        if (!template) {
-                            alert("Aucun template de réponse trouvé pour cette question.");
-                            return;
-                        }
-                        newForm = template.content.cloneNode(true).firstElementChild;
-                    }
-
-                    // Trouver le bon rIndex
-                    const rIndex = forms.length;
-
-                    newForm.querySelectorAll('[name]').forEach(field => {
-                        field.name = field.name.replace(/__RINDEX__/g, rIndex);
-                        if (field.type !== 'hidden') field.value =
-                        ''; // Réinitialiser sauf hidden
+                // Trouver les index déjà utilisés
+                const indexes = Array.from(container.querySelectorAll('.reponse-form input[name^="questions["]'))
+                    .map(input => {
+                        const match = input.name.match(/questions\[\d+]\[reponses]\[(\d+)]/);
+                        return match ? parseInt(match[1]) : -1;
                     });
 
-                    container.insertBefore(newForm, this.closest(
-                    '.text-center')); // insère avant le bouton "Ajouter"
-                });
-            });
+                const maxIndex = indexes.length ? Math.max(...indexes) : -1;
+                const newIndex = maxIndex + 1;
 
-            // Supprimer une réponse
-            document.addEventListener('click', function(e) {
-                if (e.target.classList.contains('remove-reponse-btn')) {
-                    const formToRemove = e.target.closest('.reponse-form');
-                    const container = formToRemove.parentElement;
-                    const allForms = container.querySelectorAll('.reponse-form');
-
-                    if (allForms.length > 1) {
-                        formToRemove.remove();
-                    } else {
-                        alert('Vous devez avoir au moins une réponse.');
-                    }
-                }
+                // Remplacer __RINDEX__ par le nouvel index
+                const newContent = template.replace(/__RINDEX__/g, newIndex);
+                container.insertAdjacentHTML('beforeend', newContent);
             });
         });
+
+        // Gérer la suppression de réponse dynamique
+        document.addEventListener('click', function (e) {
+            if (e.target.classList.contains('remove-reponse-btn')) {
+                e.target.closest('.reponse-form').remove();
+            }
+        });
     </script>
+
 
     {{-- Media appercu --}}
     <script>

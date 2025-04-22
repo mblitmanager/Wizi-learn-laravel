@@ -175,7 +175,7 @@ class JWTAuthController extends Controller
 
             // Récupérer les informations du stagiaire associé
             $stagiaire = \App\Models\Stagiaire::where('user_id', $user->id)->first();
-            
+
             return response()->json([
                 'user' => $user,
                 'stagiaire' => $stagiaire
