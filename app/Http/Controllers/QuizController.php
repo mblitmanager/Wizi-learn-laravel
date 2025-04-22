@@ -13,6 +13,7 @@ use App\Models\Reponse;
 use App\Models\Progression;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use App\Models\Stagiaire;
 
 class QuizController extends Controller
 {
@@ -398,6 +399,109 @@ class QuizController extends Controller
                 'error' => 'Quiz non trouvé',
                 'message' => $e->getMessage()
             ], 404);
+        }
+    }
+
+    public function submitQuizResult(Request $request, $id)
+    {
+        $user = null;
+        try {
+            $user = Auth::user();
+            $quiz = Quiz::with(['formation', 'questions.reponses'])->findOrFail($id);
+
+            // Log de débogage
+            Log::info('Requête de soumission de quiz', [
+                'request_data' => $request->all(),
+                'quiz_id' => $id,
+                'user_id' => $user->id
+            ]);
+
+            // Validation des données
+            $request->validate([
+                'answers' => 'required|array',
+                'timeSpent' => 'required|integer|min:0'
+            ]);
+
+            // Récupérer le stagiaire associé à l'utilisateur
+            $stagiaire = Stagiaire::where('user_id', $user->id)->firstOrFail();
+
+            // Préparer les détails des questions et réponses
+            $questionsDetails = $quiz->questions->map(function($question) use ($request) {
+                // S'assurer que les réponses sont dans un tableau
+                $selectedAnswerIds = is_array($request->answers[$question->id] ?? null)
+                    ? $request->answers[$question->id]
+                    : [];
+
+                // Log de débogage pour chaque question
+                Log::info('Traitement de la question', [
+                    'question_id' => $question->id,
+                    'selected_answers' => $selectedAnswerIds,
+                    'request_answers' => $request->answers
+                ]);
+
+                $correctAnswerIds = $question->reponses->where('is_correct', true)->pluck('id')->toArray();
+
+                return [
+                    'id' => $question->id,
+                    'text' => $question->text,
+                    'type' => $question->type,
+                    'selectedAnswers' => $selectedAnswerIds,
+                    'correctAnswers' => $correctAnswerIds,
+                    'answers' => $question->reponses->map(function($reponse) {
+                        return [
+                            'id' => $reponse->id,
+                            'text' => $reponse->text,
+                            'isCorrect' => $reponse->is_correct
+                        ];
+                    })->toArray(),
+                    'isCorrect' => empty(array_diff($selectedAnswerIds, $correctAnswerIds)) &&
+                                 empty(array_diff($correctAnswerIds, $selectedAnswerIds))
+                ];
+            });
+
+            // Calculer le score et le nombre de réponses correctes
+            $correctAnswers = $questionsDetails->where('isCorrect', true)->count();
+            $totalQuestions = $questionsDetails->count();
+            $score = $totalQuestions > 0 ? round(($correctAnswers / $totalQuestions) * 100) : 0;
+
+            $result = Progression::create([
+                'stagiaire_id' => $stagiaire->id,
+                'quiz_id' => $quiz->id,
+                'formation_id' => $quiz->formation->id,
+                'score' => $score,
+                'correct_answers' => $correctAnswers,
+                'total_questions' => $totalQuestions,
+                'time_spent' => $request->timeSpent,
+                'completion_time' => now()
+            ]);
+
+            return response()->json([
+                'id' => $result->id,
+                'quizId' => $result->quiz_id,
+                'stagiaireId' => $result->stagiaire_id,
+                'formationId' => $result->formation_id,
+                'score' => $result->score,
+                'correctAnswers' => $result->correct_answers,
+                'totalQuestions' => $result->total_questions,
+                'completedAt' => $result->completion_time->toISOString(),
+                'timeSpent' => $result->time_spent,
+                'questions' => $questionsDetails
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur dans submitQuizResult', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'user_id' => $user?->id,
+                'quiz_id' => $id,
+                'formation_id' => $quiz->formation->id ?? null,
+                'request_data' => $request->all()
+            ]);
+
+            return response()->json([
+                'error' => 'Erreur lors de la sauvegarde du résultat',
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 }

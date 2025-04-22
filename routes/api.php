@@ -17,7 +17,7 @@ use App\Http\Controllers\Stagiaire\CatalogueFormationController;
 
 Route::post('login', [JWTAuthController::class, 'login']);
 
-Route::middleware(['auth:api'])->group(function () {    
+Route::middleware(['auth:api'])->group(function () {
     Route::post('logout', [JWTAuthController::class, 'logout']);
     Route::get('user', [JWTAuthController::class, 'getUser']);
     Route::get('me', [JWTAuthController::class, 'getMe']);
