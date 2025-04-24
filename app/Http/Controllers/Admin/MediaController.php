@@ -5,15 +5,13 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\MediaRequest;
 use App\Models\Formation;
-use App\Models\Media;
-use App\Services\MediaService;
-use Illuminate\Http\Request;
+use App\Services\MediaAdminService;
 
 class MediaController extends Controller
 {
     protected $mediaService;
 
-    public function __construct(MediaService $mediaService)
+    public function __construct(MediaAdminService $mediaService)
     {
         $this->mediaService = $mediaService;
     }

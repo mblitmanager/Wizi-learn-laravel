@@ -15,6 +15,7 @@ use App\Repositories\Interfaces\ParametreRepositoryInterface;
 use App\Repositories\Interfaces\PRCInterface;
 use App\Repositories\Interfaces\QuizRepositoryInterface;
 use App\Repositories\Interfaces\StagiaireRepositoryInterface;
+use App\Repositories\MediaAdminRepository;
 use App\Repositories\MediaRepository;
 use App\Repositories\ParametreRepository;
 use App\Repositories\PoleRelationClientRepository;
@@ -34,11 +35,10 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(FormateurInterface::class, FormateurRepository::class);
         $this->app->bind(CommercialInterface::class, CommercialRepository::class);
         $this->app->bind(FormationRepositoryInterface::class, FormationRepository::class);
-        $this->app->bind(MediaInterface::class, MediaRepository::class);
+        $this->app->bind(MediaInterface::class, MediaAdminRepository::class);
         $this->app->bind(PRCInterface::class, PoleRelationClientRepository::class);
         $this->app->bind(CatalogueFormationInterface::class, CatalogueFormationRepository::class);
         $this->app->bind(ParametreRepositoryInterface::class, ParametreRepository::class);
-
     }
 
     /**
