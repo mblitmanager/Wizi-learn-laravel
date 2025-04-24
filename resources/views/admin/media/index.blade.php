@@ -56,6 +56,9 @@
                                             <a href="{{ route('medias.edit', $row->id) }}" class="btn btn-sm btn-success ">
                                                 Modifier
                                             </a>
+                                            <a href="{{ route('medias.show', $row->id) }}" class="btn btn-sm btn-primary ">
+                                                Afficher
+                                            </a>
 
                                         </td>
                                     </tr>

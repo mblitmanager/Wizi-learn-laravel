@@ -70,14 +70,13 @@
                         <!-- Nom -->
                         <div class="mb-3">
                             <label for="file">Fichier (image, vidéo ou PDF)</label>
-
                             <input type="file" name="url" id="file"
-                                class="form-control @error('url') is-invalid @enderror"
-                                value="{{ old('url', $media->url ?? '') }}">
+                                class="form-control @error('url') is-invalid @enderror">
                             @error('url')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
+
                     </div>
                     <div class="col-md-4">
                         <!-- Nom -->

@@ -23,3 +23,5 @@ yarn-error.log
 .env
 routes.txt
 /public/uploads/users/*
+/public/uploads/medias/*
+

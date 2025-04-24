@@ -18,7 +18,6 @@ class Formation extends Model
         'titre',
         'description',
         'categorie',
-        'image',
         'statut',
         'duree',
     ];
