@@ -1,5 +1,7 @@
 <?php
+
 namespace App\Http\Controllers\Admin;
+
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\ParametreService;
@@ -45,6 +47,16 @@ class ParametreAdminController extends Controller
             'password' => 'required|string|min:6',
             'role' => 'required|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ], [
+            'name.required' => 'Le nom est obligatoire.',
+            'name.string' => 'Le nom doit être une chaîne de caractères.',
+            'name.max' => 'Le nom ne doit pas dépasser 255 caractères.',
+            'email.required' => 'L\'adresse e-mail est obligatoire.',
+            'email.email' => 'L\'adresse e-mail n\'est pas valide.',
+            'email.unique' => 'Cette adresse e-mail est deja utilisée.',
+            'password.required' => 'Le mot de passe est obligatoire.',
+            'password.min' => 'Le mot de passe doit avoir au moins 6 caractères.',
+            'role.required' => 'Le role est obligatoire.',
         ]);
 
         if ($validator->fails()) {
@@ -104,6 +116,15 @@ class ParametreAdminController extends Controller
             'date_naissance' => 'nullable|date',
             'ville' => 'nullable|string|max:255',
             'code_postal' => 'nullable|string|max:10',
+        ], [
+            'name.required' => 'Le nom est obligatoire.',
+            'name.string' => 'Le nom doit être une chaîne de caractères.',
+            'name.max' => 'Le nom ne doit pas dépasser 255 caractères.',
+            'email.required' => 'L\'adresse e-mail est obligatoire.',
+            'email.email' => 'L\'adresse e-mail n\'est pas valide.',
+            'email.unique' => 'Cette adresse e-mail est deja utilisée.',
+            'password.min' => 'Le mot de passe doit avoir au moins 6 caractères.',
+            'role.required' => 'Le role est obligatoire.',
         ]);
 
         if ($validator->fails()) {
@@ -129,8 +150,13 @@ class ParametreAdminController extends Controller
         switch ($request->role) {
             case 'stagiaire':
                 $stagiaireData = $request->only([
-                    'civilite', 'prenom', 'telephone', 'adresse',
-                    'date_naissance', 'ville', 'code_postal'
+                    'civilite',
+                    'prenom',
+                    'telephone',
+                    'adresse',
+                    'date_naissance',
+                    'ville',
+                    'code_postal'
                 ]);
                 $stagiaireData['user_id'] = $user->id;
                 $stagiaireData['statut'] = 'actif';
@@ -196,5 +222,4 @@ class ParametreAdminController extends Controller
 
         return redirect()->back()->with('success', 'Image mise à jour avec succès.');
     }
-
 }
