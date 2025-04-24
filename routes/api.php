@@ -17,7 +17,7 @@ use App\Http\Controllers\Stagiaire\CatalogueFormationController;
 
 Route::post('login', [JWTAuthController::class, 'login']);
 
-Route::middleware(['auth:api'])->group(function () {
+Route::middleware(['auth:api'])->group(function () {    
     Route::post('logout', [JWTAuthController::class, 'logout']);
     Route::get('user', [JWTAuthController::class, 'getUser']);
     Route::get('me', [JWTAuthController::class, 'getMe']);
@@ -28,7 +28,7 @@ Route::middleware(['auth:api'])->group(function () {
     Route::get('/formations/{stagiaireId}/quizzes', [QuizStagiaireController::class, 'getQuizzesByStagiaire']);
     Route::get('/quiz/categories', [QuizController::class, 'getCategories']);
     Route::get('/quiz/{quizId}/questions', [QuizStagiaireController::class, 'getQuestionsByQuizId']);
-
+    Route::get('/stagiaire/quizzes', [QuizStagiaireController::class, 'getStagiaireQuizzes']);
     // Contacts routes
     Route::get('/stagiaire/contacts', [ContactController::class, 'getContacts']);
     Route::get('/stagiaire/contacts/formateurs', [ContactController::class, 'getFormateurs']);
@@ -69,11 +69,35 @@ Route::middleware(['auth:api'])->group(function () {
     });
 
     // Routes de gestion des catalogue de formation
-
-    Route::prefix('catalogue_formations')->group(function () {
+    Route::prefix('catalogueFormations')->group(function () {
         Route::get('formations', [CatalogueFormationController::class, 'getAllCatalogueFormations']);
         Route::get('stagiaire/{id}', [CatalogueFormationController::class, 'getFormationsAndCatalogues']);
+        Route::get('/formations/{id}', [CatalogueFormationController::class, 'getCatalogueFormationById']);
     });
+
+    Route::prefix('formation')->group(function () {
+        Route::get('listFormation', [FormationController::class, 'getAllFormations']);
+    });
+
+    // Quiz routes
+    Route::prefix('quiz')->group(function () {
+        Route::get('/categories', [QuizController::class, 'getCategories']);
+        Route::get('/category/{categoryId}', [QuizController::class, 'getQuizzesByCategory']);
+        Route::get('/{quizId}/questions', [QuizStagiaireController::class, 'getQuestionsByQuizId']);
+        Route::post('/{quizId}/submit', [QuizStagiaireController::class, 'submitQuiz']);
+        Route::get('/history', [QuizController::class, 'getQuizHistory']);
+        Route::get('/stats', [QuizController::class, 'getQuizStats']);
+    });
+
+    // Questions routes
+    Route::prefix('questions')->group(function () {
+        Route::get('/{questionId}/reponses', [ReponseController::class, 'getReponsesByQuestion']);
+    });
+
+    // Quiz routes
+    Route::get('/quiz/category/{category}', [QuizController::class, 'getQuizzesByCategory']);
+    Route::get('/quiz/{id}', [QuizController::class, 'getQuizById']);
+    Route::post('/quiz/{id}/result', [QuizController::class, 'submitQuizResult']);
 });
 
 // Routes d'authentification

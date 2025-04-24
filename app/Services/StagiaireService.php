@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 use App\Models\User;
@@ -40,24 +41,32 @@ class StagiaireService
 
         // 3. Récupérer et retirer les formations du tableau avant création du stagiaire
         $formationIds = $data['formation_id']; // Tableau d'IDs
+        $formateurIds = $data['formateur_id'] ?? [];
+        $commercialIds = $data['commercial_id'] ?? [];
         unset($data['formation_id']);
+        unset($data['formateur_id']);
+        unset($data['commercial_id']);
 
         // 4. Créer le stagiaire
         $stagiaire = $this->stagiaireRepository->create($data);
 
         // 5. Associer les formations via la table pivot
         $stagiaire->formations()->sync($formationIds);
+        // 6. Associer les formateurs via la table pivot
+        $stagiaire->formateurs()->sync($formateurIds);
+        // 7. Associer les commerciaux via la table pivot
+        $stagiaire->commercials()->sync($commercialIds);
 
         return $stagiaire;
     }
     public function update(int $id, array $data)
     {
         $stagiaire = $this->stagiaireRepository->find($id);
-    
+
         if (!$stagiaire) {
             throw new \Exception("Stagiaire not found");
         }
-    
+
         // 1. Mise à jour de l'utilisateur lié
         $stagiaire->user->update([
             'name' => $data['name'],
@@ -66,20 +75,28 @@ class StagiaireService
                 ? Hash::make($data['password'])
                 : $stagiaire->user->password,
         ]);
-    
-        // 2. Extraire les formations s’il y en a
+
+
         $formationIds = $data['formation_id'] ?? [];
+        $formateurIds = $data['formateur_id'] ?? [];
+        $commercialIds = $data['commercial_id'] ?? [];
+
         unset($data['name'], $data['email'], $data['password'], $data['formation_id']);
-    
+
         // 3. Mise à jour des champs du stagiaire
         $this->stagiaireRepository->update($id, $data);
-    
+
         // 4. Synchronisation des formations
         $stagiaire->formations()->sync($formationIds);
-    
+
+        // 5. Synchronisation des formateurs
+        $stagiaire->formateurs()->sync($formateurIds);
+        // 6. Synchronisation des commerciaux
+        $stagiaire->commercials()->sync($commercialIds);
+
         return true;
     }
-    
+
 
     public function delete($id)
     {

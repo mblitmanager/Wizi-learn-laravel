@@ -20,7 +20,7 @@ class CatalogueFormationService
         return $this->catalogueFormationRepositoryInterface->all();
     }
 
-    public function getCategoryById($id)
+    public function getCatalogueFormationById($id)
     {
         return $this->catalogueFormationRepositoryInterface->find($id);
     }
