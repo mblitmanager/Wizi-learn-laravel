@@ -53,6 +53,6 @@ class Formation extends Model
 
     public function catalogueFormation()
     {
-        return $this->hasOne(CatalogueFormation::class, 'formation_id');
+        return $this->hasMany(CatalogueFormation::class, 'formation_id');
     }
 }
