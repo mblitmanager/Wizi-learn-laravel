@@ -54,5 +54,5 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
 
     Route::resource('parametre', ParametreAdminController::class);
     Route::put('/parametre/{id}/update-image', [ParametreAdminController::class, 'updateImage'])->name('parametre.updateImage');
-
+    Route::post('/import/prc', [PoleRelationClientController::class, 'import'])->name('prc.import');
 });

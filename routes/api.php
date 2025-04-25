@@ -17,7 +17,7 @@ use App\Http\Controllers\Stagiaire\CatalogueFormationController;
 
 Route::post('login', [JWTAuthController::class, 'login']);
 
-Route::middleware(['auth:api'])->group(function () {    
+Route::middleware(['auth:api'])->group(function () {
     Route::post('logout', [JWTAuthController::class, 'logout']);
     Route::get('user', [JWTAuthController::class, 'getUser']);
     Route::get('me', [JWTAuthController::class, 'getMe']);
@@ -78,7 +78,6 @@ Route::middleware(['auth:api'])->group(function () {
     Route::prefix('formation')->group(function () {
         Route::get('listFormation', [FormationController::class, 'getAllFormations']);
     });
-
     // Quiz routes
     Route::prefix('quiz')->group(function () {
         Route::get('/categories', [QuizController::class, 'getCategories']);
@@ -88,12 +87,10 @@ Route::middleware(['auth:api'])->group(function () {
         Route::get('/history', [QuizController::class, 'getQuizHistory']);
         Route::get('/stats', [QuizController::class, 'getQuizStats']);
     });
-
     // Questions routes
     Route::prefix('questions')->group(function () {
         Route::get('/{questionId}/reponses', [ReponseController::class, 'getReponsesByQuestion']);
     });
-
     // Quiz routes
     Route::get('/quiz/category/{category}', [QuizController::class, 'getQuizzesByCategory']);
     Route::get('/quiz/{id}', [QuizController::class, 'getQuizById']);

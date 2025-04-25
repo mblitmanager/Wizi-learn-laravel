@@ -67,7 +67,7 @@
                                     <tr>
                                         <td>{{ $row->id }}</td>
                                         <td>{{ $row->titre }}</td>
-                                        <td>{{ $row->description }}</td>
+                                        <td>{!! $row->description !!}</td>
                                         <td>{{ $row->duree }}</td>
                                         <td>{{ $row->prerequis }}</td>
                                         <td>
@@ -90,7 +90,6 @@
             </div>
         </div>
     </div>
-
 @endsection
 @section('scripts')
     <script>
