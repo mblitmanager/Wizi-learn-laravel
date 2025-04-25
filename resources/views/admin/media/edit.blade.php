@@ -8,30 +8,21 @@
                 <ol class="breadcrumb mb-0 p-0">
                     <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
                     </li>
-                    <li class="breadcrumb-item active" aria-current="page">Quiz</li>
+                    <li class="breadcrumb-item active" aria-current="page">Media</li>
                 </ol>
             </nav>
         </div>
         <div class="ms-auto">
             <div class="btn-group">
-                <a href="{{ route('quiz.index') }}" type="button" class="btn btn-sm btn-primary"><i
+                <a href="{{ route('medias.index') }}" type="button" class="btn btn-sm btn-primary"><i
                         class="fadeIn animated bx bx-chevron-left-circle"></i>Retour</a>
             </div>
         </div>
     </div>
     <div class="card-body">
-        <h5 class="card-title">Ajouter Quiz</h5>
+        <h5 class="card-title">Ajouter Media</h5>
         <hr>
-        @if ($errors->any())
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-                <strong class="font-bold">Whoops!</strong>
-                <ul class="mt-2 list-disc list-inside">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
+
         <div class="card">
             @if (session('success'))
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -73,14 +64,21 @@
                         <div class="col-md-4">
                             <!-- Url -->
                             <div class="mb-3">
-                                <label for="url">Url</label>
-                                <input type="file" name="url" id="url"
-                                    class="form-control @error('url') is-invalid @enderror"
-                                    value="{{ old('url', $media->url) }}">
+                                <label for="file">Fichier (image, vidéo ou PDF)</label>
+                                <input type="file" name="url" id="file"
+                                    class="form-control @error('url') is-invalid @enderror" accept="image/*, video/*">
                                 @error('url')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
+
+                                @if (!empty($media->url))
+                                    <small class="form-text text-muted">
+                                        Fichier actuel :
+                                        <a href="{{ asset($media->url) }}" target="_blank">Voir le fichier</a>
+                                    </small>
+                                @endif
                             </div>
+
                         </div>
                         <div class="col-md-4">
                             <!-- Type -->

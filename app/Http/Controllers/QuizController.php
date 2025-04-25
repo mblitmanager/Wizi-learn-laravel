@@ -13,6 +13,7 @@ use App\Models\Reponse;
 use App\Models\Progression;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use App\Models\Stagiaire;
 
 class QuizController extends Controller
 {
@@ -148,26 +149,45 @@ class QuizController extends Controller
     public function getCategories()
     {
         try {
-            // Récupérer les catégories uniques depuis les formations associées aux quizzes
+            // Récupérer l'utilisateur authentifié
+            $user = Auth::user();
+            
+            // Récupérer le stagiaire associé à l'utilisateur
+            $stagiaire = Stagiaire::where('user_id', $user->id)->first();
+            
+            if (!$stagiaire) {
+                return response()->json([
+                    'error' => 'Aucun stagiaire associé à cet utilisateur',
+                ], 404);
+            }
+            
+            // Récupérer les catégories uniques depuis les formations associées aux quizzes du stagiaire
             $categories = Quiz::with('formation')
+                ->whereHas('formation.stagiaires', function($query) use ($stagiaire) {
+                    $query->where('stagiaires.id', $stagiaire->id);
+                })
                 ->select('formation_id')
                 ->distinct()
                 ->get()
-                ->map(function($quiz) {
+                ->map(function($quiz) use ($stagiaire) {
                     return [
                         'id' => $quiz->formation->categorie ?? 'non-categorise',
                         'name' => $quiz->formation->categorie ?? 'Non catégorisé',
                         'color' => $this->getCategoryColor($quiz->formation->categorie ?? 'Non catégorisé'),
                         'icon' => $this->getCategoryIcon($quiz->formation->categorie ?? 'Non catégorisé'),
                         'description' => $this->getCategoryDescription($quiz->formation->categorie ?? 'Non catégorisé'),
-                        'quizCount' => Quiz::where('formation_id', $quiz->formation_id)->count(),
+                        'quizCount' => Quiz::where('formation_id', $quiz->formation_id)
+                            ->whereHas('formation.stagiaires', function($query) use ($stagiaire) {
+                                $query->where('stagiaires.id', $stagiaire->id);
+                            })
+                            ->count(),
                         'colorClass' => 'category-' . strtolower(str_replace(' ', '-', $quiz->formation->categorie ?? 'non-categorise'))
                     ];
                 })
                 ->unique('id')
                 ->values();
 
-        return response()->json($categories);
+            return response()->json($categories);
         } catch (\Exception $e) {
             Log::error('Erreur dans getCategories', [
                 'error' => $e->getMessage(),
@@ -398,6 +418,173 @@ class QuizController extends Controller
                 'error' => 'Quiz non trouvé',
                 'message' => $e->getMessage()
             ], 404);
+        }
+    }
+
+    public function submitQuizResult(Request $request, $id)
+    {
+        $user = null;
+        try {
+            $user = Auth::user();
+            $quiz = Quiz::with(['formation', 'questions.reponses'])->findOrFail($id);
+
+            // Log de débogage détaillé
+            Log::info('Requête de soumission de quiz', [
+                'request_data' => $request->all(),
+                'request_answers' => $request->answers,
+                'quiz_id' => $id,
+                'user_id' => $user->id
+            ]);
+
+            // Validation des données
+            $validated = $request->validate([
+                'answers' => 'required|array',
+                'timeSpent' => 'required|integer|min:0'
+            ]);
+
+            // Récupérer le stagiaire associé à l'utilisateur
+            $stagiaire = Stagiaire::where('user_id', $user->id)->firstOrFail();
+
+            // Préparer les détails des questions et réponses
+            $questionsDetails = $quiz->questions->map(function($question) use ($request) {
+                // S'assurer que les réponses sont dans un tableau
+                $selectedAnswerIds = is_array($request->answers[$question->id] ?? null)
+                    ? $request->answers[$question->id]
+                    : [];
+
+                // Log de débogage pour chaque question
+                Log::info('Traitement de la question', [
+                    'question_id' => $question->id,
+                    'selected_answers' => $selectedAnswerIds,
+                    'request_answers' => $request->answers,
+                    'question_data' => $question->toArray()
+                ]);
+
+                $correctAnswerIds = $question->reponses->where('is_correct', true)->pluck('id')->toArray();
+
+                return [
+                    'id' => $question->id,
+                    'text' => $question->text,
+                    'type' => $question->type,
+                    'selectedAnswers' => $selectedAnswerIds,
+                    'correctAnswers' => $correctAnswerIds,
+                    'answers' => $question->reponses->map(function($reponse) {
+                        return [
+                            'id' => $reponse->id,
+                            'text' => $reponse->text,
+                            'isCorrect' => $reponse->is_correct
+                        ];
+                    })->toArray(),
+                    'isCorrect' => empty(array_diff($selectedAnswerIds, $correctAnswerIds)) &&
+                                 empty(array_diff($correctAnswerIds, $selectedAnswerIds))
+                ];
+            });
+
+            // Calculer le score et le nombre de réponses correctes
+            $correctAnswers = $questionsDetails->where('isCorrect', true)->count();
+            $totalQuestions = $questionsDetails->count();
+            $score = $totalQuestions > 0 ? round(($correctAnswers / $totalQuestions) * 100) : 0;
+
+            $result = Progression::create([
+                'stagiaire_id' => $stagiaire->id,
+                'quiz_id' => $quiz->id,
+                'formation_id' => $quiz->formation->id,
+                'score' => $score,
+                'correct_answers' => $correctAnswers,
+                'total_questions' => $totalQuestions,
+                'time_spent' => $request->timeSpent,
+                'completion_time' => now()
+            ]);
+
+            return response()->json([
+                'id' => $result->id,
+                'quizId' => $result->quiz_id,
+                'stagiaireId' => $result->stagiaire_id,
+                'formationId' => $result->formation_id,
+                'score' => $result->score,
+                'correctAnswers' => $result->correct_answers,
+                'totalQuestions' => $result->total_questions,
+                'completedAt' => $result->completion_time->toISOString(),
+                'timeSpent' => $result->time_spent,
+                'questions' => $questionsDetails
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur dans submitQuizResult', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'user_id' => $user?->id,
+                'quiz_id' => $id,
+                'formation_id' => $quiz->formation->id ?? null,
+                'request_data' => $request->all(),
+                'validation_errors' => $e instanceof \Illuminate\Validation\ValidationException ? $e->errors() : null
+            ]);
+
+            return response()->json([
+                'error' => 'Erreur lors de la sauvegarde du résultat',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getStagiaireQuizzes()
+    {
+        try {
+            // Récupérer l'utilisateur authentifié
+            $user = Auth::user();
+            
+            // Récupérer le stagiaire associé à l'utilisateur
+            $stagiaire = Stagiaire::where('user_id', $user->id)->first();
+            
+            if (!$stagiaire) {
+                return response()->json([
+                    'error' => 'Aucun stagiaire associé à cet utilisateur',
+                ], 404);
+            }
+            
+            // Récupérer les quizzes associés aux formations du stagiaire
+            $quizzes = Quiz::with(['formation', 'questions'])
+                ->whereHas('formation.stagiaires', function($query) use ($stagiaire) {
+                    $query->where('stagiaires.id', $stagiaire->id);
+                })
+                ->get()
+                ->map(function($quiz) {
+                    return [
+                        'id' => (string)$quiz->id,
+                        'titre' => $quiz->titre,
+                        'description' => $quiz->description,
+                        'categorie' => $quiz->formation->categorie ?? 'Non catégorisé',
+                        'categorieId' => $quiz->formation->categorie ?? 'non-categorise',
+                        'niveau' => $quiz->niveau ?? 'débutant',
+                        'questions' => $quiz->questions->map(function($question) {
+                            return [
+                                'id' => (string)$question->id,
+                                'text' => $question->text,
+                                'type' => $question->type ?? 'multiplechoice',
+                                'answers' => $question->reponses->map(function($reponse) {
+                                    return [
+                                        'id' => (string)$reponse->id,
+                                        'text' => $reponse->text,
+                                        'isCorrect' => (bool)$reponse->is_correct
+                                    ];
+                                })->toArray()
+                            ];
+                        })->toArray(),
+                        'points' => (int)($quiz->nb_points_total ?? 0)
+                    ];
+                });
+
+            return response()->json($quizzes);
+        } catch (\Exception $e) {
+            Log::error('Erreur dans getStagiaireQuizzes', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'error' => 'Une erreur est survenue lors de la récupération des quizzes',
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 }
