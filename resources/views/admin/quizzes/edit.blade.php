@@ -58,7 +58,8 @@
                                     <label for="input1" class="form-label">Description</label>
 
                                     <input type="text" name="quiz[description]" placeholder="Description"
-                                        class="form-control mb-2" value="{{ old('quiz.description', $quiz->description) }}">
+                                        id="description" class="form-control mb-2"
+                                        value="{{ old('quiz.description', $quiz->description) }}">
                                 </div>
                             </div>
                             <div class="row">
@@ -118,7 +119,8 @@
                                     <!-- Input de recherche et boutons "Rechercher" et "Réinitialiser" -->
                                     <div class="d-flex align-items-center">
                                         <input type="text" id="searchInput" name="search"
-                                            placeholder="Rechercher une question" class="form-control me-2" value="">
+                                            placeholder="Rechercher une question" class="form-control me-2"
+                                            value="">
                                         <button id="searchBtn"
                                             class="btn btn-sm btn-primary me-2 d-flex align-items-center">
                                             <i class="lni lni-search-alt me-1"></i> Rechercher
@@ -129,7 +131,8 @@
                                     </div>
 
                                     <div><!-- Bouton "Ajouter une question" aligné à droite -->
-                                        <button class="btn btn-sm btn-info text-white" type="button" id="addQuestionBtn">
+                                        <button class="btn btn-sm btn-info text-white" type="button"
+                                            id="addQuestionBtn">
                                             <i class="lni lni-plus"></i> Ajouter une question
                                         </button>
                                     </div>
@@ -449,26 +452,29 @@
                             jour</button>
                     </div>
                 </form>
-                <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                    aria-hidden="true">
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <div class="modal-header">
                                 <h5 class="modal-title" id="exampleModalLabel">Importer stagiaires</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                <form action="{{ route('quiz_question.import') }}" method="POST" enctype="multipart/form-data">
+                                <form action="{{ route('quiz_question.import') }}" method="POST"
+                                    enctype="multipart/form-data">
                                     @csrf
                                     <input type="hidden" name="quiz_id" value="{{ $quiz->id }}">
                                     <div class="mb-3">
                                         <label for="file" class="form-label">Fichier Excel (.xlsx)</label>
-                                        <input type="file" name="file" id="file" class="form-control" required
-                                               accept=".xlsx,.xls">
+                                        <input type="file" name="file" id="file" class="form-control"
+                                            required accept=".xlsx,.xls">
                                     </div>
 
                                     <div class="progress mb-3 d-none" id="progressBarWrapper">
-                                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
-                                             style="width: 100%;" id="progressBar">
+                                        <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                            role="progressbar" style="width: 100%;" id="progressBar">
                                             Importation en cours...
                                         </div>
                                     </div>
@@ -488,13 +494,14 @@
 @section('scripts')
     <script>
         document.querySelectorAll('.add-reponse-btn').forEach(button => {
-            button.addEventListener('click', function () {
+            button.addEventListener('click', function() {
                 const qIndex = this.dataset.questionIndex;
                 const container = document.getElementById(`reponses-container-${qIndex}`);
                 const template = document.getElementById(`reponse-template-${qIndex}`).innerHTML;
 
                 // Trouver les index déjà utilisés
-                const indexes = Array.from(container.querySelectorAll('.reponse-form input[name^="questions["]'))
+                const indexes = Array.from(container.querySelectorAll(
+                        '.reponse-form input[name^="questions["]'))
                     .map(input => {
                         const match = input.name.match(/questions\[\d+]\[reponses]\[(\d+)]/);
                         return match ? parseInt(match[1]) : -1;
@@ -510,7 +517,7 @@
         });
 
         // Gérer la suppression de réponse dynamique
-        document.addEventListener('click', function (e) {
+        document.addEventListener('click', function(e) {
             if (e.target.classList.contains('remove-reponse-btn')) {
                 e.target.closest('.reponse-form').remove();
             }

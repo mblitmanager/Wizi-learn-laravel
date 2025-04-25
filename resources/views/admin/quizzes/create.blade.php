@@ -52,7 +52,7 @@
                             </div>
                             <div class="col-md-6">
                                 <label for="input1" class="form-label">Description</label>
-                                <input type="text" name="quiz[description]" placeholder="Description"
+                                <input type="text" name="quiz[description]" placeholder="Description" id="description"
                                     class="form-control mb-2">
                             </div>
                         </div>

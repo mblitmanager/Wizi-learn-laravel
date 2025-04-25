@@ -48,7 +48,7 @@
                     </div>
                     <div class="col-md-6">
                         <p><strong><i class="bx bx-detail"></i> Description :</strong></p>
-                        <p>{{ $catalogueFormations->description ?? 'Aucune description fournie.' }}</p>
+                        <p>{!! $catalogueFormations->description ?? 'Aucune description fournie.' !!}</p>
 
                         @if ($catalogueFormations->image_url)
                             <div class="text-center mt-3">

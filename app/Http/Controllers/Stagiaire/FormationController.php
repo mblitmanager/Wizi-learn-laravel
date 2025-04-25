@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Stagiaire;
 
+use App\Helpers\PaginationHelper;
 use App\Http\Controllers\Controller;
 use App\Services\FormationService;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -33,9 +34,9 @@ class FormationController extends Controller
     {
         try {
             $formations = $this->formationService->getAll();
-
+            $pagianted = PaginationHelper::paginate($formations, 10);
             return response()->json([
-                'data' => $formations
+                'data' => $pagianted
             ]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);

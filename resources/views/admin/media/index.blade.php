@@ -49,7 +49,7 @@
                                 @foreach ($media as $row)
                                     <tr>
                                         <td>{{ $row->titre }}</td>
-                                        <td>{{ $row->description }}</td>
+                                        <td>{!! $row->description !!}</td>
                                         <td>{{ $row->type }}</td>
                                         <td>{{ $row->url }}</td>
                                         <td>
