@@ -20,7 +20,7 @@
         $('[data-bs-toggle="tooltip"]').tooltip();
     })
 </script>
-<script>
+{{-- <script>
     // Afficher le loader au chargement de la page
     window.addEventListener('load', function() {
         const loader = document.getElementById('globalLoader');
@@ -34,7 +34,7 @@
             loader.classList.remove('d-none'); // Affiche le loader
         });
     });
-</script>
+</script> --}}
 <script>
     ClassicEditor
         .create(document.querySelector('#description'), {

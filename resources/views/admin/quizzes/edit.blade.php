@@ -145,67 +145,137 @@
                     <template id="question-template">
                         <div class="card mb-4 px-4 question-card">
                             <div class="card-body">
-                                <h5 class="text-wizi">Ajouter une question</h5>
+                                <h5 class="text-wizi2">Nouvelle question</h5>
+                                <hr>
+                                <div class="px-4 py-4" style="box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;">
+                                    <!-- Index dynamique pour les questions -->
+                                    <input type="hidden" name="questions[__INDEX__][id]" value="">
 
-                                <input type="hidden" name="questions[__INDEX__][id]" value="">
+                                    <!-- Texte de la question -->
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Texte de la question</label>
+                                            <input type="text" name="questions[__INDEX__][text]"
+                                                class="form-control mb-2" placeholder="Texte de la question" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Media URL</label>
+                                            <input type="file" name="questions[__INDEX__][media_file]"
+                                                class="form-control mb-2">
+                                        </div>
+                                    </div>
 
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <label class="form-label">Texte de la question</label>
-                                        <input type="text" name="questions[__INDEX__][text]" class="form-control mb-2"
-                                            placeholder="Texte de la question" required>
+                                    <!-- Type de la question et réponse correcte -->
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Type</label>
+                                            <select name="questions[__INDEX__][type]" class="form-select mb-2" required>
+                                                <option value="">Type</option>
+                                                <option value="question audio">Question audio</option>
+                                                <option value="remplir le champ vide">Remplir le champ vide</option>
+                                                <option value="carte flash">Carte flash</option>
+                                                <option value="correspondance">Correspondance</option>
+                                                <option value="choix multiples">Choix multiples</option>
+                                                <option value="rearrangement">Rearrangement</option>
+                                                <option value="vrai/faux">Vrai / Faux</option>
+                                                <option value="banque de mots">Banque de mots</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Réponse correcte</label>
+                                            <input type="text" name="questions[__INDEX__][reponse_correct]"
+                                                class="form-control mb-2" placeholder="Réponse correcte">
+                                        </div>
+                                        <div class="col-md-12">
+                                            <label class="form-label">Explication</label>
+                                            <textarea name="questions[__INDEX__][explication]" class="form-control mb-2" placeholder="Explication"></textarea>
+                                        </div>
                                     </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">Media URL</label>
-                                        <input type="file" name="question_media_file[]" class="form-control mb-2">
-                                    </div>
-                                </div>
 
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <label class="form-label">Type</label>
-                                        <select name="questions[__INDEX__][type]" class="form-select mb-2" required>
-                                            <option value="">Type</option>
-                                            <option value="question audio">Question audio</option>
-                                            <option value="remplir le champ vide">Remplir le champ vide</option>
-                                            <option value="carte flash">Carte flash</option>
-                                            <option value="correspondance">Correspondance</option>
-                                            <option value="choix multiples">Choix multiples</option>
-                                            <option value="rearrangement">Rearrangement</option>
-                                            <option value="vrai/faux">Vrai / Faux</option>
-                                            <option value="banque de mots">Banque de mots</option>
-                                        </select>
+                                    <!-- Points et Astuce -->
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Points</label>
+                                            <input type="number" name="questions[__INDEX__][points]"
+                                                class="form-control mb-2" placeholder="Points">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Astuce</label>
+                                            <input type="text" name="questions[__INDEX__][astuce]"
+                                                class="form-control mb-2" placeholder="Astuce">
+                                        </div>
                                     </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">Réponse correcte</label>
-                                        <input type="text" name="questions[__INDEX__][reponse_correct]"
-                                            class="form-control mb-2" placeholder="Réponse correcte">
-                                    </div>
-                                    <div class="col-md-12">
-                                        <label class="form-label">Explication</label>
-                                        <textarea name="questions[__INDEX__][explication]" class="form-control mb-2" placeholder="Explication"></textarea>
-                                    </div>
-                                </div>
 
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <label class="form-label">Points</label>
-                                        <input type="number" name="questions[__INDEX__][points]"
-                                            class="form-control mb-2" placeholder="Points">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">Astuce</label>
-                                        <input type="text" name="questions[__INDEX__][astuce]"
-                                            class="form-control mb-2" placeholder="Astuce">
-                                    </div>
-                                </div>
+                                    <hr>
 
-                                <div class="text-end mt-3">
-                                    <button type="button" class="btn btn-sm btn-danger remove-question-btn">
-                                        <i class="lni lni-trash-can"></i> Supprimer cette question
-                                    </button>
+                                    <!-- Section des réponses -->
+                                    <h6>Réponses</h6>
+                                    <div class="px-3 py-3 mb-3 reponse-form"
+                                        style="box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;">
+                                        <!-- Index dynamique pour les réponses -->
+                                        <input type="hidden" name="questions[__INDEX__][reponses][__RINDEX__][id]"
+                                            value="">
+
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <label class="form-label">Texte de la réponse</label>
+                                                <input type="text"
+                                                    name="questions[__INDEX__][reponses][__RINDEX__][text]"
+                                                    class="form-control mb-2" placeholder="Texte de la réponse">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Bonne réponse ?</label>
+                                                <select name="questions[__INDEX__][reponses][__RINDEX__][is_correct]"
+                                                    class="form-select mb-2">
+                                                    <option value="1">Oui</option>
+                                                    <option value="0">Non</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div class="row mb-3">
+                                            <div class="col-md-4">
+                                                <label class="form-label">Position</label>
+                                                <input type="number"
+                                                    name="questions[__INDEX__][reponses][__RINDEX__][position]"
+                                                    class="form-control" placeholder="Position">
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">Pair correspondante</label>
+                                                <input type="text"
+                                                    name="questions[__INDEX__][reponses][__RINDEX__][match_pair]"
+                                                    class="form-control" placeholder="Pair correspondante">
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">Groupe</label>
+                                                <input type="text"
+                                                    name="questions[__INDEX__][reponses][__RINDEX__][bank_group]"
+                                                    class="form-control" placeholder="Groupe">
+                                            </div>
+                                        </div>
+                                        <div class="text-end">
+                                            <button type="button"
+                                                class="btn btn-danger btn-sm remove-reponse-btn">Supprimer cette
+                                                réponse</button>
+                                        </div>
+                                    </div>
+
+                                    <div class="text-center">
+                                        <button type="button" class="btn btn-primary btn-sm add-reponse-btn"
+                                            data-question-index="__INDEX__">Ajouter une réponse</button>
+                                    </div>
+
+                                    <hr>
+
+                                    <!-- Suppression de la question -->
+                                    <div class="text-end mt-3">
+                                        <button type="button" class="btn btn-sm btn-danger remove-question-btn">
+                                            <i class="lni lni-trash-can"></i> Supprimer cette question
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
+                            <hr>
                         </div>
                     </template>
 
@@ -526,7 +596,7 @@
 
 
     {{-- Media appercu --}}
-    <script>
+    {{-- <script>
         document.getElementById('media_file').addEventListener('change', function(event) {
             const file = event.target.files[0];
             const previewContainer = document.getElementById('preview-container');
@@ -552,7 +622,7 @@
                 }
             }
         });
-    </script>
+    </script> --}}
     {{-- Pagination Question --}}
     <script>
         document.addEventListener("DOMContentLoaded", function() {
@@ -681,6 +751,12 @@
             const container = document.getElementById('questions-container');
             let questionIndex = 0;
 
+            // Vérification si les éléments existent
+            if (!addBtn || !template || !container) {
+                console.error("Un ou plusieurs éléments n'ont pas été trouvés");
+                return; // Empêche l'exécution si un élément est manquant
+            }
+
             addBtn.addEventListener('click', function() {
                 const clone = template.content.cloneNode(true);
                 const html = clone.querySelector('.question-card');
@@ -704,6 +780,7 @@
             });
         });
     </script>
+
 
 
 

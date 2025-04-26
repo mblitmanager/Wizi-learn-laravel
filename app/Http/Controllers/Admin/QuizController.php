@@ -11,6 +11,7 @@ use App\Models\Reponse;
 use App\Services\QuizService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
@@ -83,97 +84,93 @@ class QuizController extends Controller
         try {
             $quiz = Quiz::findOrFail($id);
 
-            // Mise à jour du quiz
+            // Mise à jour simple du quiz
             $quiz->update($request->input('quiz'));
 
             $questionData = $request->input('questions', []);
 
-            // Gestion des fichiers média par question
-            if ($request->hasFile('question_media_file')) {
-                foreach ($request->file('question_media_file') as $index => $file) {
+            // Gestion des fichiers médias (sécurisée)
+            $mediaFiles = $request->file('question_media_file', []);
+
+            foreach ($questionData as $index => &$questionInput) {
+                // Ajoute le quiz_id si absent
+                $questionInput['quiz_id'] = $questionInput['quiz_id'] ?? $quiz->id;
+
+                // Si un fichier média est fourni pour cette question
+                if (isset($mediaFiles[$index])) {
+                    $file = $mediaFiles[$index];
                     $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'doc', 'docx', 'xls', 'xlsx'];
-                    $extension = $file->getClientOriginalExtension();
+                    $extension = strtolower($file->getClientOriginalExtension());
 
                     if (!in_array($extension, $allowedExtensions)) {
-                        return redirect()->back()->with('error', 'Le type de fichier "' . $extension . '" n’est pas autorisé.');
+                        return redirect()->back()->with('error', "Le type de fichier '$extension' n’est pas autorisé.");
                     }
 
                     $path = $file->store('medias', 'public');
-
-                    if (isset($questionData[$index])) {
-                        $questionData[$index]['media_url'] = $path;
-                    }
+                    $questionInput['media_url'] = $path;
                 }
             }
+            unset($questionInput); // important pour éviter des bugs après foreach par référence
 
             foreach ($questionData as $questionInput) {
-                // Supprimer si marqué
+                // Suppression de la question si demandée
                 if (!empty($questionInput['id']) && !empty($questionInput['_delete'])) {
                     $question = $quiz->questions()->find($questionInput['id']);
                     if ($question) {
-                        $question->reponses()->delete(); // Supprime les réponses associées
-                        $question->delete(); // Supprime la question
+                        $question->reponses()->delete();
+                        $question->delete();
                     }
-                    continue; // Passer à la question suivante
+                    continue;
                 }
 
-                // Update ou création
+                // Mise à jour ou création de la question
                 if (!empty($questionInput['id'])) {
                     $question = $quiz->questions()->find($questionInput['id']);
-
                     if ($question) {
-                        // Supprimer l’ancien fichier si un nouveau est fourni
+                        // Supprimer l'ancien fichier si un nouveau est uploadé
                         if (!empty($questionInput['media_url']) && $question->media_url && Storage::disk('public')->exists($question->media_url)) {
                             Storage::disk('public')->delete($question->media_url);
                         }
-
                         $question->update($questionInput);
-                    } else {
-                        continue;
                     }
                 } else {
                     $question = $quiz->questions()->create($questionInput);
                 }
 
                 if (!$question) {
-                    continue;
+                    continue; // sécurisation
                 }
 
-                // Réponses
+                // Traitement des réponses
                 $reponses = $questionInput['reponses'] ?? [];
-
-                if (!empty($questionInput['id'])) {
-                    // Supprimer les réponses absentes dans le formulaire
-                    $submittedIds = collect($reponses)->pluck('id')->filter()->toArray();
-                    $question->reponses()->whereNotIn('id', $submittedIds)->delete();
-                }
-
-                foreach ($reponses as $reponseData) {
-                    if (!empty($reponseData['id'])) {
-                        $reponse = $question->reponses()->find($reponseData['id']);
+                foreach ($reponses as $reponseInput) {
+                    if (!empty($reponseInput['id'])) {
+                        $reponse = $question->reponses()->find($reponseInput['id']);
                         if ($reponse) {
                             $reponse->update([
-                                'text' => $reponseData['text'] ?? null,
-                                'is_correct' => $reponseData['is_correct'] ?? null,
-                                'position' => $reponseData['position'] ?? null,
-                                'match_pair' => $reponseData['match_pair'] ?? null,
-                                'bank_group' => $reponseData['bank_group'] ?? null,
-                                'flashcard_back' => $reponseData['flashcard_back'] ?? null,
+                                'text' => $reponseInput['text'] ?? '',
+                                'is_correct' => $reponseInput['is_correct'] ?? 0,
+                                'position' => $reponseInput['position'] ?? null,
+                                'match_pair' => $reponseInput['match_pair'] ?? null,
+                                'bank_group' => $reponseInput['bank_group'] ?? null,
+                                'flashcard_back' => $reponseInput['flashcard_back'] ?? null,
                             ]);
                         }
                     } else {
-                        $question->reponses()->create([
-                            'text' => $reponseData['text'] ?? null,
-                            'is_correct' => $reponseData['is_correct'] ?? null,
-                            'position' => $reponseData['position'] ?? null,
-                            'match_pair' => $reponseData['match_pair'] ?? null,
-                            'bank_group' => $reponseData['bank_group'] ?? null,
-                            'flashcard_back' => $reponseData['flashcard_back'] ?? null,
-                        ]);
+                        if (!empty($reponseInput['text'])) {
+                            $question->reponses()->create([
+                                'text' => $reponseInput['text'],
+                                'is_correct' => $reponseInput['is_correct'] ?? 0,
+                                'position' => $reponseInput['position'] ?? null,
+                                'match_pair' => $reponseInput['match_pair'] ?? null,
+                                'bank_group' => $reponseInput['bank_group'] ?? null,
+                                'flashcard_back' => $reponseInput['flashcard_back'] ?? null,
+                            ]);
+                        }
                     }
                 }
 
-                // Mise à jour de la bonne réponse
+                // Mise à jour de la bonne réponse (texte)
                 $reponseCorrecte = $question->reponses()->where('is_correct', true)->first();
                 if ($reponseCorrecte) {
                     $question->update([
@@ -190,6 +187,7 @@ class QuizController extends Controller
             return redirect()->back()->with('error', 'Erreur : ' . $e->getMessage());
         }
     }
+
 
     /**
      * Remove the specified resource from storage.
@@ -435,9 +433,8 @@ class QuizController extends Controller
             }
 
             return back()->with('success', 'Questions et réponses importées avec succès.');
-
         } catch (\Exception $e) {
-            \Log::error('Erreur lors de l\'importation des questions', [
+            Log::error('Erreur lors de l\'importation des questions', [
                 'message' => $e->getMessage(),
                 'line' => $e->getLine(),
                 'file' => $e->getFile(),

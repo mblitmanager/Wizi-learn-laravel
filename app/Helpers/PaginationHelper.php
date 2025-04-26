@@ -23,17 +23,18 @@ class PaginationHelper
         if ($items instanceof \Illuminate\Database\Eloquent\Builder || $items instanceof \Illuminate\Database\Query\Builder) {
             return $items->paginate($perPage, ['*'], 'page', $page)->appends(request()->query());
         }
-
         if ($items instanceof Collection) {
+            $total = $items->count(); // ← comptage AVANT le découpage
             $items = $items->forPage($page, $perPage);
             return new LengthAwarePaginator(
                 $items,
-                count($items),
+                $total, // ← ici on met bien le total
                 $perPage,
                 $page,
                 array_merge(['path' => request()->url(), 'query' => request()->query()], $options)
             );
         }
+
 
         throw new \InvalidArgumentException("Items must be a Collection or Eloquent Query Builder.");
     }
