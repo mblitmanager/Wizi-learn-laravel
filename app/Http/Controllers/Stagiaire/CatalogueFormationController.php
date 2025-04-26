@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Stagiaire;
 
+use App\Helpers\PaginationHelper;
 use App\Http\Controllers\Controller;
 use App\Models\CatalogueFormation;
 use App\Services\CatalogueFormationService;
@@ -18,8 +19,9 @@ class CatalogueFormationController extends Controller
     public function getAllCatalogueFormations()
     {
         $catalogueFormations = $this->catalogueFormationService->list();
+        $paginated = PaginationHelper::paginate($catalogueFormations, 10);
 
-        return response()->json($catalogueFormations);
+        return response()->json($paginated);
     }
 
     public function getCatalogueFormationById($id)

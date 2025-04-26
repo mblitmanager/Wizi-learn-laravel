@@ -132,19 +132,25 @@ class ParrainageService
     public function getParrainageHistory($stagiaireId)
     {
         $history = collect($this->parrainageRepository->getHistory($stagiaireId));
-
+        if ($history->isEmpty()) {
+            return [
+                'parrainages' => [],
+                'message' => 'Aucun parrainage trouvé'
+            ];
+        }
         return [
             'parrainages' => $history->map(function ($item) {
                 return [
-                    'id' => $item->id,
-                    'filleul' => [
-                        'id' => $item->filleul->id,
-                        'name' => $item->filleul->user->name,
-                        'email' => $item->filleul->user->email
-                    ],
-                    'points' => $item->points,
-                    'created_at' => $item->created_at,
-                    'accepted_at' => $item->accepted_at
+                    'id' => $item['id'] ?? null,
+                    'parrain_id' => $item['parrain_id'] ?? null,
+                    'filleul_id' => $item['filleul_id'] ?? null,
+                    'token' => $item['token'] ?? null,
+                    'nombre_filleul' => $item['nombre_filleul'] ?? null,
+                    'lien' => $item['lien'] ?? null,
+                    'points' => $item['points'] ?? null,
+                    'created_at' => $item['created_at'] ?? null,
+                    'updated_at' => $item['updated_at'] ?? null,
+                    'filleul' => $item['filleul'] ?? null,
                 ];
             })
         ];

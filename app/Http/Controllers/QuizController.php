@@ -151,16 +151,16 @@ class QuizController extends Controller
         try {
             // Récupérer l'utilisateur authentifié
             $user = Auth::user();
-            
+
             // Récupérer le stagiaire associé à l'utilisateur
             $stagiaire = Stagiaire::where('user_id', $user->id)->first();
-            
+
             if (!$stagiaire) {
                 return response()->json([
                     'error' => 'Aucun stagiaire associé à cet utilisateur',
                 ], 404);
             }
-            
+
             // Récupérer les catégories uniques depuis les formations associées aux quizzes du stagiaire
             $categories = Quiz::with('formation')
                 ->whereHas('formation.stagiaires', function($query) use ($stagiaire) {
@@ -532,16 +532,16 @@ class QuizController extends Controller
         try {
             // Récupérer l'utilisateur authentifié
             $user = Auth::user();
-            
+
             // Récupérer le stagiaire associé à l'utilisateur
             $stagiaire = Stagiaire::where('user_id', $user->id)->first();
-            
+
             if (!$stagiaire) {
                 return response()->json([
                     'error' => 'Aucun stagiaire associé à cet utilisateur',
                 ], 404);
             }
-            
+
             // Récupérer les quizzes associés aux formations du stagiaire
             $quizzes = Quiz::with(['formation', 'questions'])
                 ->whereHas('formation.stagiaires', function($query) use ($stagiaire) {

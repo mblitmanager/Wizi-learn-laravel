@@ -8,18 +8,79 @@
                 <ol class="breadcrumb mb-0 p-0">
                     <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
                     </li>
-                    <li class="breadcrumb-item active" aria-current="page">Gestion pôle relation client</li>
+                    <li class="breadcrumb-item active" aria-current="page">Gestion pôle relation client(PRC)</li>
                 </ol>
             </nav>
         </div>
         <div class="ms-auto">
             <div class="btn-group">
+                <button class="btn btn-sm text-white btn-info mx-2" data-bs-toggle="modal" data-bs-target="#importModal"><i
+                        class="lni lni-cloud-download"></i>importer PRC</button>
                 <a href="{{ route('pole_relation_clients.create') }}" type="button" class="btn btn-sm btn-primary px-4"> <i
-                        class="fadeIn animated bx bx-plus"></i> Nouveau pôle relation client</a>
+                        class="fadeIn animated bx bx-plus"></i> Nouveau PRC</a>
             </div>
         </div>
     </div>
+    <div>
+        <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Importer pôle relation client</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form action="{{ route('prc.import') }}" method="POST" enctype="multipart/form-data">
+                            @csrf
 
+                            <div class="mb-3">
+                                <label for="file" class="form-label">Fichier Excel (.xlsx)</label>
+                                <input type="file" name="file" id="file" class="form-control" required
+                                    accept=".xlsx,.xls">
+                            </div>
+
+                            <div class="progress mb-3 d-none" id="progressBarWrapper">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                                    style="width: 100%;" id="progressBar">
+                                    Importation en cours...
+                                </div>
+                            </div>
+
+
+                            <button type="submit" class="btn btn-primary">Importer</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @if (session('ignoredEmails'))
+        <div class="alert alert-danger border-0 bg-danger alert-dismissible fade show">
+            <div class="text-white">
+                <h5> Le pôle Relation Client a déjà été ajouté</h2>
+                    <hr>
+                    <ul>
+                        @foreach (session('ignoredEmails') as $email)
+                            <li>{{ $email }}</li>
+                        @endforeach
+                    </ul>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    @if (session('success'))
+        <div class="alert alert-success border-0 bg-success alert-dismissible fade show">
+            <div class="text-white"> {{ session('success') }}</div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+    @if (session('error'))
+        <div class="alert alert-danger border-0 bg-danger alert-dismissible fade show">
+            <div class="text-white"> {{ session('error') }}</div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
     <div class="card">
         <div class="card-body">
             <div class="col-md-12">

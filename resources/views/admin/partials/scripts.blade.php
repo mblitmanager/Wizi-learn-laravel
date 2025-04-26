@@ -35,3 +35,14 @@
         });
     });
 </script>
+<script>
+    ClassicEditor
+        .create(document.querySelector('#description'), {
+            toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote',
+                'undo', 'redo', 'fontColor'
+            ],
+        })
+        .catch(error => {
+            console.error(error);
+        });
+</script>

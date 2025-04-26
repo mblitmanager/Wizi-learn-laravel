@@ -28,7 +28,7 @@ class CatalogueFormationRequest extends FormRequest
             'formation_id' => 'required|exists:formations,id',
             'certification' => 'nullable|string|max:255',
             'prerequis' => 'nullable|string|max:255',
-            'image_url' => 'nullable|file|mimes:jpeg,png,jpg,gif|max:2048',
+            'image_url' => 'nullable|file|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'tarif' => 'required|numeric|min:0',
             'statut' => 'required|in:1,0',
 
