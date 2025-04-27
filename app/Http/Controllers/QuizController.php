@@ -794,4 +794,148 @@ class QuizController extends Controller
             ], 500);
         }
     }
+
+    public function startParticipation($quizId, Request $request = null)
+    {
+        try {
+            $user = Auth::user();
+            $stagiaire = Stagiaire::where('user_id', $user->id)->first();
+
+            if (!$stagiaire) {
+                return response()->json([
+                    'error' => 'Aucun stagiaire associé à cet utilisateur',
+                ], 404);
+            }
+
+            // Vérifier si une participation existe déjà
+            $existingParticipation = Progression::where('stagiaire_id', $stagiaire->id)
+                ->where('quiz_id', $quizId)
+                ->where('termine', false)
+                ->first();
+
+            if ($existingParticipation) {
+                return response()->json([
+                    'data' => $existingParticipation
+                ]);
+            }
+
+            // Créer une nouvelle participation
+            $participation = Progression::create([
+                'stagiaire_id' => $stagiaire->id,
+                'quiz_id' => $quizId,
+                'termine' => false,
+                'completion_time' => now(),
+                'score' => 0,
+                'correct_answers' => 0,
+                'total_questions' => Quiz::find($quizId)->questions->count(),
+                'time_spent' => 0
+            ]);
+
+            return response()->json([
+                'data' => $participation
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Erreur dans startParticipation', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'error' => 'Une erreur est survenue lors de la création de la participation',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getCurrentParticipation($quizId)
+    {
+        try {
+            $user = Auth::user();
+            $stagiaire = Stagiaire::where('user_id', $user->id)->first();
+
+            if (!$stagiaire) {
+                return response()->json([
+                    'error' => 'Aucun stagiaire associé à cet utilisateur',
+                ], 404);
+            }
+
+            $participation = Progression::where('stagiaire_id', $stagiaire->id)
+                ->where('quiz_id', $quizId)
+                ->where('termine', false)
+                ->first();
+
+            if (!$participation) {
+                return response()->json([
+                    'error' => 'Aucune participation en cours pour ce quiz',
+                ], 404);
+            }
+
+            return response()->json([
+                'data' => $participation
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Erreur dans getCurrentParticipation', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'error' => 'Une erreur est survenue lors de la récupération de la participation',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function completeParticipation(Request $request, $quizId)
+    {
+        try {
+            $user = Auth::user();
+            $stagiaire = Stagiaire::where('user_id', $user->id)->first();
+
+            if (!$stagiaire) {
+                return response()->json([
+                    'error' => 'Aucun stagiaire associé à cet utilisateur',
+                ], 404);
+            }
+
+            $participation = Progression::where('stagiaire_id', $stagiaire->id)
+                ->where('quiz_id', $quizId)
+                ->where('termine', false)
+                ->first();
+
+            if (!$participation) {
+                return response()->json([
+                    'error' => 'Aucune participation en cours pour ce quiz',
+                ], 404);
+            }
+
+            $validated = $request->validate([
+                'score' => 'required|integer|min:0',
+                'correct_answers' => 'required|integer|min:0',
+                'time_spent' => 'required|integer|min:0'
+            ]);
+
+            $participation->update([
+                'termine' => true,
+                'score' => $validated['score'],
+                'correct_answers' => $validated['correct_answers'],
+                'time_spent' => $validated['time_spent'],
+                'completion_time' => now()
+            ]);
+
+            return response()->json([
+                'data' => $participation
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Erreur dans completeParticipation', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'error' => 'Une erreur est survenue lors de la mise à jour de la participation',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

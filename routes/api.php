@@ -81,9 +81,17 @@ Route::middleware(['auth:api'])->group(function () {
     });
     // Quiz routes
     Route::prefix('quiz')->group(function () {
+        // Routes de base
         Route::get('/categories', [QuizController::class, 'getCategories']);
         Route::get('/category/{categoryId}', [QuizController::class, 'getQuizzesByCategory']);
         Route::get('/{quizId}/questions', [QuizStagiaireController::class, 'getQuestionsByQuizId']);
+        
+        // Routes de participation
+        Route::get('/{quizId}/participation', [QuizController::class, 'getCurrentParticipation']);
+        Route::post('/{quizId}/participation', [QuizController::class, 'startParticipation']);
+        Route::post('/{quizId}/complete', [QuizController::class, 'completeParticipation']);
+        
+        // Routes de statistiques
         Route::get('/history', [QuizController::class, 'getQuizHistory']);
         Route::get('/stats', [QuizController::class, 'getQuizStats']);
         Route::get('/{quizId}/statistics', [QuizController::class, 'getQuizStatistics']);
@@ -103,6 +111,8 @@ Route::middleware(['auth:api'])->group(function () {
     Route::get('/quiz/category/{category}', [QuizController::class, 'getQuizzesByCategory']);
     Route::get('/quiz/{id}', [QuizController::class, 'getQuizById']);
     Route::post('/quiz/{id}/result', [QuizController::class, 'submitQuizResult']);
+    Route::get('/quiz/{id}/participation', [QuizController::class, 'getCurrentParticipation']);
+    Route::post('/quiz/{id}/complete', [QuizController::class, 'completeParticipation']);
 });
 
 // Routes d'authentification
