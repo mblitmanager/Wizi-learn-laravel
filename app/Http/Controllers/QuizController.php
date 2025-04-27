@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Log;
 use App\Models\Stagiaire;
 use App\Models\Classement;
 use App\Models\QuizParticipation;
+use App\Models\QuizParticipationAnswer;
 use Illuminate\Support\Facades\DB;
 
 class QuizController extends Controller
@@ -523,21 +524,10 @@ class QuizController extends Controller
 
             // Préparer les détails des questions et réponses
             $questionsDetails = $quiz->questions->map(function($question) use ($request) {
-                // S'assurer que les réponses sont dans un tableau
                 $selectedAnswerIds = is_array($request->answers[$question->id] ?? null)
                     ? $request->answers[$question->id]
                     : [];
-
-                // Log de débogage pour chaque question
-                Log::info('Traitement de la question', [
-                    'question_id' => $question->id,
-                    'selected_answers' => $selectedAnswerIds,
-                    'request_answers' => $request->answers,
-                    'question_data' => $question->toArray()
-                ]);
-
                 $correctAnswerIds = $question->reponses->where('is_correct', true)->pluck('id')->toArray();
-
                 return [
                     'id' => $question->id,
                     'text' => $question->text,
@@ -556,7 +546,6 @@ class QuizController extends Controller
                 ];
             });
 
-            // Calculer le score et le nombre de réponses correctes
             $correctAnswers = $questionsDetails->where('isCorrect', true)->count();
             $totalQuestions = $questionsDetails->count();
             $score = $totalQuestions > 0 ? round(($correctAnswers / $totalQuestions) * 100) : 0;
@@ -571,6 +560,15 @@ class QuizController extends Controller
                 'time_spent' => $request->timeSpent,
                 'completion_time' => now()
             ]);
+
+            // Enregistrer les réponses utilisateur
+            foreach ($request->answers as $questionId => $answerIds) {
+                QuizParticipationAnswer::create([
+                    'participation_id' => $result->id,
+                    'question_id' => $questionId,
+                    'answer_ids' => is_array($answerIds) ? $answerIds : [$answerIds],
+                ]);
+            }
 
             // Mettre à jour le classement
             $this->updateClassement($quiz->id, $stagiaire->id, $score);
@@ -949,5 +947,41 @@ class QuizController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    // API pour consulter le résumé d'une participation
+    public function getParticipationResume($participationId)
+    {
+        $participation = QuizParticipation::with(['quiz.questions.reponses'])->findOrFail($participationId);
+        $answers = QuizParticipationAnswer::where('participation_id', $participationId)->get()->keyBy('question_id');
+
+        $resume = $participation->quiz->questions->map(function($question) use ($answers) {
+            $userAnswerIds = $answers[$question->id]->answer_ids ?? [];
+            $correctAnswers = $question->reponses->where('is_correct', true)->pluck('id')->toArray();
+
+            return [
+                'question' => $question->text,
+                'question_id' => $question->id,
+                'correctAnswers' => $correctAnswers,
+                'userAnswers' => $userAnswerIds,
+                'answers' => $question->reponses->map(function($r) {
+                    return [
+                        'id' => $r->id,
+                        'text' => $r->text,
+                        'isCorrect' => $r->is_correct
+                    ];
+                })
+            ];
+        });
+
+        return response()->json([
+            'quiz' => [
+                'id' => $participation->quiz->id,
+                'titre' => $participation->quiz->titre,
+            ],
+            'questions' => $resume,
+            'score' => $participation->score,
+            'totalQuestions' => $participation->quiz->questions->count(),
+        ]);
     }
 }

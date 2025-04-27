@@ -113,6 +113,7 @@ Route::middleware(['auth:api'])->group(function () {
     Route::post('/quiz/{id}/result', [QuizController::class, 'submitQuizResult']);
     Route::get('/quiz/{id}/participation', [QuizController::class, 'getCurrentParticipation']);
     Route::post('/quiz/{id}/complete', [QuizController::class, 'completeParticipation']);
+    Route::get('/quiz-participations/{participation}/resume', [App\Http\Controllers\QuizController::class, 'getParticipationResume']);
 });
 
 // Routes d'authentification
