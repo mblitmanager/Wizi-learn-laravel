@@ -37,13 +37,6 @@ class MediaRepository implements MediaRepositoryInterface
             ->get();
     }
 
-    public function getInteractiveContent($formationId)
-    {
-        return Media::where('formation_id', $formationId)
-            ->orderBy('ordre', 'asc')
-            ->get();
-    }
-
     public function getMediaByType($type)
     {
         return Media::where('type', $type)

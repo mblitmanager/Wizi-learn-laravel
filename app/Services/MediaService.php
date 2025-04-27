@@ -17,14 +17,24 @@ class MediaService
         $this->formationRepository = $formationRepository;
     }
 
-    public function getTutorials()
+    public function getTutoriels()
     {
-        return $this->mediaRepository->getTutorials();
+        return $this->mediaRepository->getTutoriels();
     }
 
-    public function getLanguageSessions()
+    public function getAstuces()
     {
-        return $this->mediaRepository->getLanguageSessions();
+        return $this->mediaRepository->getAstuces();
+    }
+
+    public function getTutorielsByFormation($formationId)
+    {
+        return $this->mediaRepository->getTutorielsByFormation($formationId);
+    }
+
+    public function getAstucesByFormation($formationId)
+    {
+        return $this->mediaRepository->getAstucesByFormation($formationId);
     }
 
     public function getInteractiveFormations()
@@ -36,7 +46,8 @@ class MediaService
                 'title' => $formation->title,
                 'description' => $formation->description,
                 'duration' => $formation->duration,
-                'interactive_content' => $this->mediaRepository->getInteractiveContent($formation->id)
+                'tutoriels' => $this->mediaRepository->getTutorielsByFormation($formation->id),
+                'astuces' => $this->mediaRepository->getAstucesByFormation($formation->id)
             ];
         });
     }

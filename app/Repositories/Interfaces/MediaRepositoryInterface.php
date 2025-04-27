@@ -10,7 +10,6 @@ interface MediaRepositoryInterface
     public function getAstuces();
     public function getTutorielsByFormation($formationId);
     public function getAstucesByFormation($formationId);
-    public function getInteractiveContent($formationId);
     public function getMediaByType($type);
     public function create(array $data): Media;
     public function update($id, array $data): bool;

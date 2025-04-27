@@ -14,6 +14,7 @@ use App\Http\Controllers\Stagiaire\FormationController;
 use App\Http\Controllers\Stagiaire\ProfileController;
 use App\Http\Controllers\Admin\ReponseController;
 use App\Http\Controllers\Stagiaire\CatalogueFormationController;
+use App\Http\Controllers\Stagiaire\MediaController;
 
 Route::post('login', [JWTAuthController::class, 'login']);
 
@@ -87,6 +88,12 @@ Route::middleware(['auth:api'])->group(function () {
         Route::get('/stats', [QuizController::class, 'getQuizStats']);
         Route::get('/classement/global', [QuizController::class, 'getGlobalClassement']);
     });
+    // Routes pour les tutoriels et astuces
+    Route::get('tutoriels', [MediaController::class, 'getTutoriels']);
+    Route::get('astuces', [MediaController::class, 'getAstuces']);
+    Route::get('formations/{formationId}/tutoriels', [MediaController::class, 'getTutorielsByFormation']);
+    Route::get('formations/{formationId}/astuces', [MediaController::class, 'getAstucesByFormation']);
+    Route::get('formations/interactives', [MediaController::class, 'getInteractiveFormations']);
     // Questions routes
     Route::prefix('questions')->group(function () {
         Route::get('/{questionId}/reponses', [ReponseController::class, 'getReponsesByQuestion']);
