@@ -7,34 +7,47 @@ use App\Repositories\Interfaces\MediaRepositoryInterface;
 
 class MediaRepository implements MediaRepositoryInterface
 {
-    public function getTutorials()
+    public function getTutoriels()
     {
-        return Media::where('type', 'tutorial')
-            ->where('duration', '<=', 30) // 30 secondes max
-            ->orderBy('created_at', 'desc')
+        return Media::where('categorie', 'tutoriel')
+            ->orderBy('ordre', 'asc')
             ->get();
     }
 
-    public function getLanguageSessions()
+    public function getAstuces()
     {
-        return Media::where('type', 'language_session')
-            ->where('duration', '<=', 5) // 5 minutes max
-            ->orderBy('created_at', 'desc')
+        return Media::where('categorie', 'astuce')
+            ->orderBy('ordre', 'asc')
+            ->get();
+    }
+
+    public function getTutorielsByFormation($formationId)
+    {
+        return Media::where('categorie', 'tutoriel')
+            ->where('formation_id', $formationId)
+            ->orderBy('ordre', 'asc')
+            ->get();
+    }
+
+    public function getAstucesByFormation($formationId)
+    {
+        return Media::where('categorie', 'astuce')
+            ->where('formation_id', $formationId)
+            ->orderBy('ordre', 'asc')
             ->get();
     }
 
     public function getInteractiveContent($formationId)
     {
-        return Media::where('type', 'interactive')
-            ->where('formation_id', $formationId)
-            ->orderBy('order', 'asc')
+        return Media::where('formation_id', $formationId)
+            ->orderBy('ordre', 'asc')
             ->get();
     }
 
     public function getMediaByType($type)
     {
         return Media::where('type', $type)
-            ->orderBy('created_at', 'desc')
+            ->orderBy('ordre', 'asc')
             ->get();
     }
 

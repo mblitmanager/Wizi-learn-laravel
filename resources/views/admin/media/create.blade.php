@@ -98,6 +98,41 @@
                         </div>
                     </div>
                     <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="categorie">Catégorie</label>
+                            <select name="categorie" id="categorie" class="form-select @error('categorie') is-invalid @enderror">
+                                <option value="" {{ old('categorie') == '' ? 'selected' : '' }}>Choisir une catégorie</option>
+                                <option value="tutoriel" {{ old('categorie') == 'tutoriel' ? 'selected' : '' }}>Tutoriel</option>
+                                <option value="astuce" {{ old('categorie') == 'astuce' ? 'selected' : '' }}>Astuce</option>
+                            </select>
+                            @error('categorie')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="duree">Durée (en secondes)</label>
+                            <input type="number" name="duree" id="duree" min="1"
+                                class="form-control @error('duree') is-invalid @enderror"
+                                value="{{ old('duree', $media->duree ?? '') }}">
+                            @error('duree')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="ordre">Ordre d'affichage</label>
+                            <input type="number" name="ordre" id="ordre" min="0"
+                                class="form-control @error('ordre') is-invalid @enderror"
+                                value="{{ old('ordre', $media->ordre ?? '') }}">
+                            @error('ordre')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="col-md-4">
                         <!-- Nom -->
                         <div class="mb-3">
                             <label for="formation_id">Formation</label>

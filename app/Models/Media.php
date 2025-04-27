@@ -16,9 +16,12 @@ class Media extends Model
     protected $fillable = [
         'url',
         'type',
+        'categorie',
         'titre',
         'description',
         'formation_id',
+        'duree',
+        'ordre',
     ];
 
     public function formation()

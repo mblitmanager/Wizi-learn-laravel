@@ -6,8 +6,10 @@ use App\Models\Media;
 
 interface MediaRepositoryInterface
 {
-    public function getTutorials();
-    public function getLanguageSessions();
+    public function getTutoriels();
+    public function getAstuces();
+    public function getTutorielsByFormation($formationId);
+    public function getAstucesByFormation($formationId);
     public function getInteractiveContent($formationId);
     public function getMediaByType($type);
     public function create(array $data): Media;
