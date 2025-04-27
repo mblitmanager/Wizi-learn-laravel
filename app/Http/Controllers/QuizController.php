@@ -522,6 +522,25 @@ class QuizController extends Controller
             // Récupérer le stagiaire associé à l'utilisateur
             $stagiaire = Stagiaire::where('user_id', $user->id)->firstOrFail();
 
+            // Récupérer la participation en cours pour l'utilisateur et le quiz
+            $participation = QuizParticipation::where('user_id', $user->id)
+                ->where('quiz_id', $quiz->id)
+                ->where('status', 'in_progress')
+                ->first();
+
+            if (!$participation) {
+                // Si aucune participation en cours, on peut en créer une ou retourner une erreur
+                $participation = QuizParticipation::create([
+                    'user_id' => $user->id,
+                    'quiz_id' => $quiz->id,
+                    'status' => 'in_progress',
+                    'started_at' => now(),
+                    'score' => 0,
+                    'correct_answers' => 0,
+                    'time_spent' => 0
+                ]);
+            }
+
             // Préparer les détails des questions et réponses
             $questionsDetails = $quiz->questions->map(function($question) use ($request) {
                 $selectedAnswerIds = is_array($request->answers[$question->id] ?? null)
@@ -561,14 +580,23 @@ class QuizController extends Controller
                 'completion_time' => now()
             ]);
 
-            // Enregistrer les réponses utilisateur
+            // Enregistrer les réponses utilisateur avec la bonne participation_id
             foreach ($request->answers as $questionId => $answerIds) {
                 QuizParticipationAnswer::create([
-                    'participation_id' => $result->id,
+                    'participation_id' => $participation->id,
                     'question_id' => $questionId,
                     'answer_ids' => is_array($answerIds) ? $answerIds : [$answerIds],
                 ]);
             }
+
+            // Marquer la participation comme terminée
+            $participation->update([
+                'status' => 'completed',
+                'score' => $score,
+                'correct_answers' => $correctAnswers,
+                'time_spent' => $request->timeSpent,
+                'completed_at' => now(),
+            ]);
 
             // Mettre à jour le classement
             $this->updateClassement($quiz->id, $stagiaire->id, $score);
