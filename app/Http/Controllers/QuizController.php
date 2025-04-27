@@ -14,6 +14,7 @@ use App\Models\Progression;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use App\Models\Stagiaire;
+use App\Models\Classement;
 
 class QuizController extends Controller
 {
@@ -238,11 +239,16 @@ class QuizController extends Controller
     public function getQuizHistory()
     {
         $user = Auth::user();
+        $stagiaire = Stagiaire::where('user_id', $user->id)->first();
+
+        if (!$stagiaire) {
+            return response()->json([], 200);
+        }
 
         $history = Progression::with(['quiz' => function($query) {
-            $query->with(['questions.answers']);
+            $query->with(['questions.reponses']);
         }])
-        ->where('user_id', $user->id)
+        ->where('stagiaire_id', $stagiaire->id)
         ->orderBy('created_at', 'desc')
         ->get()
         ->map(function($progression) {
@@ -250,9 +256,9 @@ class QuizController extends Controller
                 'id' => (string)$progression->id,
                 'quiz' => [
                     'id' => (string)$progression->quiz->id,
-                    'title' => $progression->quiz->title,
-                    'category' => $progression->quiz->category,
-                    'level' => $progression->quiz->level
+                    'title' => $progression->quiz->titre,
+                    'category' => $progression->quiz->formation->categorie ?? 'Non catégorisé',
+                    'level' => $progression->quiz->niveau ?? 'débutant'
                 ],
                 'score' => $progression->score,
                 'completedAt' => $progression->created_at->toISOString(),
@@ -266,40 +272,53 @@ class QuizController extends Controller
     public function getQuizStats()
     {
         $user = Auth::user();
+        $stagiaire = Stagiaire::where('user_id', $user->id)->first();
+
+        if (!$stagiaire) {
+            return response()->json([
+                'totalQuizzes' => 0,
+                'averageScore' => 0,
+                'totalPoints' => 0,
+                'categoryStats' => [],
+                'levelProgress' => []
+            ]);
+        }
 
         $stats = [
-            'totalQuizzes' => Progression::where('user_id', $user->id)->count(),
-            'averageScore' => Progression::where('user_id', $user->id)->avg('score'),
-            'totalPoints' => Progression::where('user_id', $user->id)->sum('score'),
-            'categoryStats' => $this->getCategoryStats($user->id),
-            'levelProgress' => $this->getLevelProgress($user->id)
+            'totalQuizzes' => Progression::where('stagiaire_id', $stagiaire->id)->count(),
+            'averageScore' => Progression::where('stagiaire_id', $stagiaire->id)->avg('score'),
+            'totalPoints' => Progression::where('stagiaire_id', $stagiaire->id)->sum('score'),
+            'categoryStats' => $this->getCategoryStats($stagiaire->id),
+            'levelProgress' => $this->getLevelProgress($stagiaire->id)
         ];
 
         return response()->json($stats);
     }
 
-    private function getCategoryStats($userId)
+    private function getCategoryStats($stagiaireId)
     {
-        return Quiz::select('category', 'category_id')
-            ->withCount(['progressions' => function($query) use ($userId) {
-                $query->where('user_id', $userId);
-            }])
-            ->with(['progressions' => function($query) use ($userId) {
-                $query->where('user_id', $userId);
-            }])
-            ->get()
-            ->map(function($quiz) {
-                return [
-                    'category' => $quiz->category,
-                    'quizCount' => $quiz->progressions_count,
-                    'averageScore' => $quiz->progressions->avg('score')
-                ];
-            });
+        // Récupérer toutes les progressions du stagiaire
+        $progressions = Progression::where('stagiaire_id', $stagiaireId)
+            ->with('quiz.formation')
+            ->get();
+
+        // Grouper les progressions par catégorie
+        $categoryStats = $progressions->groupBy(function($progression) {
+            return $progression->quiz->formation->categorie ?? 'Non catégorisé';
+        })->map(function($group) {
+            return [
+                'category' => $group->first()->quiz->formation->categorie ?? 'Non catégorisé',
+                'quizCount' => $group->count(),
+                'averageScore' => $group->avg('score')
+            ];
+        })->values();
+
+        return $categoryStats;
     }
 
-    private function getLevelProgress($userId)
+    private function getLevelProgress($stagiaireId)
     {
-        $progressions = Progression::where('user_id', $userId)
+        $progressions = Progression::where('stagiaire_id', $stagiaireId)
             ->with('quiz')
             ->get();
 
@@ -308,7 +327,7 @@ class QuizController extends Controller
 
         foreach ($levels as $level) {
             $levelQuizzes = $progressions->filter(function($progression) use ($level) {
-                return $progression->quiz->level === $level;
+                return $progression->quiz->niveau === $level;
             });
 
             $levelStats[$level] = [
@@ -496,6 +515,9 @@ class QuizController extends Controller
                 'completion_time' => now()
             ]);
 
+            // Mettre à jour le classement
+            $this->updateClassement($quiz->id, $stagiaire->id, $score);
+
             return response()->json([
                 'id' => $result->id,
                 'quizId' => $result->quiz_id,
@@ -527,6 +549,55 @@ class QuizController extends Controller
         }
     }
 
+    private function updateClassement($quizId, $stagiaireId, $score)
+    {
+        try {
+            // Vérifier si le stagiaire a déjà un classement pour ce quiz
+            $classement = Classement::where('quiz_id', $quizId)
+                ->where('stagiaire_id', $stagiaireId)
+                ->first();
+
+            if ($classement) {
+                // Mettre à jour le score si le nouveau score est meilleur
+                if ($score > $classement->points) {
+                    $classement->update(['points' => $score]);
+                }
+            } else {
+                // Créer un nouveau classement
+                $classement = Classement::create([
+                    'quiz_id' => $quizId,
+                    'stagiaire_id' => $stagiaireId,
+                    'points' => $score
+                ]);
+            }
+
+            // Mettre à jour les rangs pour ce quiz
+            $this->updateRanks($quizId);
+
+            return $classement;
+        } catch (\Exception $e) {
+            Log::error('Erreur dans updateClassement', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw $e;
+        }
+    }
+
+    private function updateRanks($quizId)
+    {
+        // Récupérer tous les classements pour ce quiz, triés par points décroissants
+        $classements = Classement::where('quiz_id', $quizId)
+            ->orderBy('points', 'desc')
+            ->get();
+
+        // Mettre à jour les rangs
+        $rank = 1;
+        foreach ($classements as $classement) {
+            $classement->update(['rang' => $rank++]);
+        }
+    }
+
     public function getStagiaireQuizzes()
     {
         try {
@@ -543,10 +614,11 @@ class QuizController extends Controller
             }
 
             // Récupérer les quizzes associés aux formations du stagiaire
-            $quizzes = Quiz::with(['formation', 'questions'])
-                ->whereHas('formation.stagiaires', function($query) use ($stagiaire) {
-                    $query->where('stagiaires.id', $stagiaire->id);
-                })
+            $quizzes = Quiz::select('quizzes.*')
+                ->join('formations', 'quizzes.formation_id', '=', 'formations.id')
+                ->join('stagiaire_formations', 'formations.id', '=', 'stagiaire_formations.formation_id')
+                ->where('stagiaire_formations.stagiaire_id', $stagiaire->id)
+                ->with(['formation', 'questions.reponses'])
                 ->get()
                 ->map(function($quiz) {
                     return [
@@ -583,6 +655,86 @@ class QuizController extends Controller
 
             return response()->json([
                 'error' => 'Une erreur est survenue lors de la récupération des quizzes',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getClassement($quizId)
+    {
+        try {
+            $classement = Classement::with(['stagiaire.user', 'quiz'])
+                ->where('quiz_id', $quizId)
+                ->orderBy('rang')
+                ->get()
+                ->map(function($item) {
+                    return [
+                        'id' => (string)$item->id,
+                        'rang' => $item->rang,
+                        'points' => $item->points,
+                        'stagiaire' => [
+                            'id' => (string)$item->stagiaire->id,
+                            'prenom' => $item->stagiaire->prenom,
+                            'image' => $item->stagiaire->user->image ?? null
+                        ],
+                        'quiz' => [
+                            'id' => (string)$item->quiz->id,
+                            'titre' => $item->quiz->titre
+                        ]
+                    ];
+                });
+
+            return response()->json($classement);
+        } catch (\Exception $e) {
+            Log::error('Erreur dans getClassement', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'error' => 'Une erreur est survenue lors de la récupération du classement',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getGlobalClassement()
+    {
+        try {
+            // Récupérer tous les classements avec leurs relations
+            $classements = Classement::with(['stagiaire.user', 'quiz'])
+                ->get()
+                ->groupBy('stagiaire_id')
+                ->map(function($group) {
+                    return [
+                        'stagiaire' => [
+                            'id' => (string)$group->first()->stagiaire->id,
+                            'prenom' => $group->first()->stagiaire->prenom,
+                            'image' => $group->first()->stagiaire->user->image ?? null
+                        ],
+                        'totalPoints' => $group->sum('points'),
+                        'quizCount' => $group->count(),
+                        'averageScore' => $group->avg('points')
+                    ];
+                })
+                ->sortByDesc('totalPoints')
+                ->values()
+                ->map(function($item, $index) {
+                    return [
+                        ...$item,
+                        'rang' => $index + 1
+                    ];
+                });
+
+            return response()->json($classements);
+        } catch (\Exception $e) {
+            Log::error('Erreur dans getGlobalClassement', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'error' => 'Une erreur est survenue lors de la récupération du classement global',
                 'message' => $e->getMessage()
             ], 500);
         }

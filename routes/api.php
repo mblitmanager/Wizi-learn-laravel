@@ -85,6 +85,7 @@ Route::middleware(['auth:api'])->group(function () {
         Route::get('/{quizId}/questions', [QuizStagiaireController::class, 'getQuestionsByQuizId']);
         Route::get('/history', [QuizController::class, 'getQuizHistory']);
         Route::get('/stats', [QuizController::class, 'getQuizStats']);
+        Route::get('/classement/global', [QuizController::class, 'getGlobalClassement']);
     });
     // Questions routes
     Route::prefix('questions')->group(function () {

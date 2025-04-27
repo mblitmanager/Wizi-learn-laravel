@@ -65,12 +65,6 @@ class Stagiaire extends Model
         return $this->belongsToMany(PoleRelationClient::class, 'pole_relation_client_stagiaire');
     }
 
-
-    public function stagiaires()
-    {
-        return $this->belongsToMany(Stagiaire::class, 'stagiaire_formations');
-    }
-
     public function commercial()
     {
         return $this->belongsToMany(Commercial::class, 'commercial_stagiaire');
