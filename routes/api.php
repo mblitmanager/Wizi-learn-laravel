@@ -86,6 +86,7 @@ Route::middleware(['auth:api'])->group(function () {
         Route::get('/{quizId}/questions', [QuizStagiaireController::class, 'getQuestionsByQuizId']);
         Route::get('/history', [QuizController::class, 'getQuizHistory']);
         Route::get('/stats', [QuizController::class, 'getQuizStats']);
+        Route::get('/{quizId}/statistics', [QuizController::class, 'getQuizStatistics']);
         Route::get('/classement/global', [QuizController::class, 'getGlobalClassement']);
     });
     // Routes pour les tutoriels et astuces

@@ -295,6 +295,61 @@ class QuizController extends Controller
         return response()->json($stats);
     }
 
+    public function getQuizStatistics($quizId)
+    {
+        try {
+            // Récupérer l'utilisateur authentifié
+            $user = Auth::user();
+            $stagiaire = Stagiaire::where('user_id', $user->id)->first();
+
+            if (!$stagiaire) {
+                return response()->json([
+                    'error' => 'Aucun stagiaire associé à cet utilisateur',
+                ], 404);
+            }
+
+            // Récupérer les statistiques du quiz
+            $quiz = Quiz::findOrFail($quizId);
+            $progressions = Progression::where('quiz_id', $quizId)
+                ->where('stagiaire_id', $stagiaire->id)
+                ->get();
+
+            $totalAttempts = $progressions->count();
+            $averageScore = $totalAttempts > 0 ? $progressions->avg('score') : 0;
+            $bestScore = $totalAttempts > 0 ? $progressions->max('score') : 0;
+            $lastAttempt = $totalAttempts > 0 ? $progressions->last() : null;
+
+            $statistics = [
+                'total_attempts' => $totalAttempts,
+                'average_score' => round($averageScore, 2),
+                'best_score' => $bestScore,
+                'last_attempt' => $lastAttempt ? [
+                    'score' => $lastAttempt->score,
+                    'date' => $lastAttempt->created_at->format('Y-m-d H:i:s'),
+                    'time_spent' => $lastAttempt->time_spent
+                ] : null,
+                'quiz' => [
+                    'id' => $quiz->id,
+                    'title' => $quiz->titre,
+                    'total_questions' => $quiz->questions->count(),
+                    'total_points' => $quiz->nb_points_total
+                ]
+            ];
+
+            return response()->json($statistics);
+        } catch (\Exception $e) {
+            Log::error('Erreur dans getQuizStatistics', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'error' => 'Une erreur est survenue lors de la récupération des statistiques du quiz',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     private function getCategoryStats($stagiaireId)
     {
         // Récupérer toutes les progressions du stagiaire
