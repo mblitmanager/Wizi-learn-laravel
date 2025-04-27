@@ -131,152 +131,121 @@
                                     </div>
 
                                     <div><!-- Bouton "Ajouter une question" aligné à droite -->
-                                        <button class="btn btn-sm btn-info text-white" type="button"
-                                            id="addQuestionBtn">
-                                            <i class="lni lni-plus"></i> Ajouter une question
-                                        </button>
+{{--                                        <button class="btn btn-sm btn-info text-white" type="button"--}}
+{{--                                            id="addQuestionBtn">--}}
+{{--                                            <i class="lni lni-plus"></i> Ajouter une question--}}
+{{--                                        </button>--}}
+                                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleLargeModal">Large Modal</button>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+                    <div class="modal fade" id="exampleLargeModal" tabindex="-1" style="display: none;" aria-hidden="true">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Modal title</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="card mb-4 px-4 question-card">
+                                        {{-- CARD pour AJOUTER une NOUVELLE QUESTION --}}
+                                        <div class="card mb-4 px-4" id="new-question-card">
+                                            <div class="card-body">
+                                                <h5 class="text-wizi">Ajouter une nouvelle question</h5>
+
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">Texte de la question</label>
+                                                        <input type="text" name="new_question[text]" class="form-control mb-2" placeholder="Texte de la question" required>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">Média</label>
+                                                        <input type="file" name="new_question[media_url]" class="form-control mb-2">
+                                                    </div>
+                                                </div>
+
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">Type</label>
+                                                        <select name="new_question[type]" class="form-select mb-2" required>
+                                                            <option value="">Type</option>
+                                                            <option value="question audio">Question audio</option>
+                                                            <option value="remplir le champ vide">Remplir le champ vide</option>
+                                                            <option value="carte flash">Carte flash</option>
+                                                            <option value="correspondance">Correspondance</option>
+                                                            <option value="choix multiples">Choix multiples</option>
+                                                            <option value="rearrangement">Rearrangement</option>
+                                                            <option value="vrai/faux">Vrai / Faux</option>
+                                                            <option value="banque de mots">Banque de mots</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">Réponse correcte</label>
+                                                        <input type="text" name="new_question[reponse_correct]" class="form-control mb-2" placeholder="Réponse correcte">
+                                                    </div>
+                                                </div>
+
+                                                <div class="row">
+                                                    <div class="col-md-12">
+                                                        <label class="form-label">Explication</label>
+                                                        <textarea name="new_question[explication]" class="form-control mb-2" placeholder="Explication"></textarea>
+                                                    </div>
+                                                </div>
+
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">Points</label>
+                                                        <input type="number" name="new_question[points]" class="form-control mb-2" placeholder="Points">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">Astuce</label>
+                                                        <input type="text" name="new_question[astuce]" class="form-control mb-2" placeholder="Astuce">
+                                                    </div>
+                                                </div>
+
+                                                <hr>
+
+                                                {{-- Réponses dynamiques --}}
+                                                <h6 class="text-wizi">Réponses</h6>
+                                                <div id="reponses-container">
+                                                    <div class="row mb-2 reponse-item">
+                                                        <div class="col-md-8">
+                                                            <input type="text" name="new_question[reponses][0][text]" class="form-control" placeholder="Texte de la réponse" required>
+                                                        </div>
+                                                        <div class="col-md-2">
+                                                            <select name="new_question[reponses][0][is_correct]" class="form-select">
+                                                                <option value="0">Faux</option>
+                                                                <option value="1">Vrai</option>
+                                                            </select>
+                                                        </div>
+                                                        <div class="col-md-2">
+                                                            <button type="button" class="btn btn-danger btn-sm" onclick="removeReponse(this)">Supprimer</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <button type="button" class="btn btn-primary btn-sm" onclick="addReponse()">Ajouter une réponse</button>
+                                            </div>
+                                        </div>
+
+
+
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-primary">Save changes</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
 
                     {{-- QUESTION --}}
                     <template id="question-template">
-                        <div class="card mb-4 px-4 question-card">
-                            <div class="card-body">
-                                <h5 class="text-wizi2">Nouvelle question</h5>
-                                <hr>
-                                <div class="px-4 py-4" style="box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;">
-                                    <!-- Index dynamique pour les questions -->
-                                    <input type="hidden" name="questions[__INDEX__][id]" value="">
 
-                                    <!-- Texte de la question -->
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <label class="form-label">Texte de la question</label>
-                                            <input type="text" name="questions[__INDEX__][text]"
-                                                class="form-control mb-2" placeholder="Texte de la question" required>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label">Media URL</label>
-                                            <input type="file" name="questions[__INDEX__][media_file]"
-                                                class="form-control mb-2">
-                                        </div>
-                                    </div>
-
-                                    <!-- Type de la question et réponse correcte -->
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <label class="form-label">Type</label>
-                                            <select name="questions[__INDEX__][type]" class="form-select mb-2" required>
-                                                <option value="">Type</option>
-                                                <option value="question audio">Question audio</option>
-                                                <option value="remplir le champ vide">Remplir le champ vide</option>
-                                                <option value="carte flash">Carte flash</option>
-                                                <option value="correspondance">Correspondance</option>
-                                                <option value="choix multiples">Choix multiples</option>
-                                                <option value="rearrangement">Rearrangement</option>
-                                                <option value="vrai/faux">Vrai / Faux</option>
-                                                <option value="banque de mots">Banque de mots</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label">Réponse correcte</label>
-                                            <input type="text" name="questions[__INDEX__][reponse_correct]"
-                                                class="form-control mb-2" placeholder="Réponse correcte">
-                                        </div>
-                                        <div class="col-md-12">
-                                            <label class="form-label">Explication</label>
-                                            <textarea name="questions[__INDEX__][explication]" class="form-control mb-2" placeholder="Explication"></textarea>
-                                        </div>
-                                    </div>
-
-                                    <!-- Points et Astuce -->
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <label class="form-label">Points</label>
-                                            <input type="number" name="questions[__INDEX__][points]"
-                                                class="form-control mb-2" placeholder="Points">
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label">Astuce</label>
-                                            <input type="text" name="questions[__INDEX__][astuce]"
-                                                class="form-control mb-2" placeholder="Astuce">
-                                        </div>
-                                    </div>
-
-                                    <hr>
-
-                                    <!-- Section des réponses -->
-                                    <h6>Réponses</h6>
-                                    <div class="px-3 py-3 mb-3 reponse-form"
-                                        style="box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;">
-                                        <!-- Index dynamique pour les réponses -->
-                                        <input type="hidden" name="questions[__INDEX__][reponses][__RINDEX__][id]"
-                                            value="">
-
-                                        <div class="row">
-                                            <div class="col-md-6">
-                                                <label class="form-label">Texte de la réponse</label>
-                                                <input type="text"
-                                                    name="questions[__INDEX__][reponses][__RINDEX__][text]"
-                                                    class="form-control mb-2" placeholder="Texte de la réponse">
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label class="form-label">Bonne réponse ?</label>
-                                                <select name="questions[__INDEX__][reponses][__RINDEX__][is_correct]"
-                                                    class="form-select mb-2">
-                                                    <option value="1">Oui</option>
-                                                    <option value="0">Non</option>
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        <div class="row mb-3">
-                                            <div class="col-md-4">
-                                                <label class="form-label">Position</label>
-                                                <input type="number"
-                                                    name="questions[__INDEX__][reponses][__RINDEX__][position]"
-                                                    class="form-control" placeholder="Position">
-                                            </div>
-                                            <div class="col-md-4">
-                                                <label class="form-label">Pair correspondante</label>
-                                                <input type="text"
-                                                    name="questions[__INDEX__][reponses][__RINDEX__][match_pair]"
-                                                    class="form-control" placeholder="Pair correspondante">
-                                            </div>
-                                            <div class="col-md-4">
-                                                <label class="form-label">Groupe</label>
-                                                <input type="text"
-                                                    name="questions[__INDEX__][reponses][__RINDEX__][bank_group]"
-                                                    class="form-control" placeholder="Groupe">
-                                            </div>
-                                        </div>
-                                        <div class="text-end">
-                                            <button type="button"
-                                                class="btn btn-danger btn-sm remove-reponse-btn">Supprimer cette
-                                                réponse</button>
-                                        </div>
-                                    </div>
-
-                                    <div class="text-center">
-                                        <button type="button" class="btn btn-primary btn-sm add-reponse-btn"
-                                            data-question-index="__INDEX__">Ajouter une réponse</button>
-                                    </div>
-
-                                    <hr>
-
-                                    <!-- Suppression de la question -->
-                                    <div class="text-end mt-3">
-                                        <button type="button" class="btn btn-sm btn-danger remove-question-btn">
-                                            <i class="lni lni-trash-can"></i> Supprimer cette question
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            <hr>
-                        </div>
                     </template>
 
                     <div id="questions-container"></div>
@@ -744,41 +713,71 @@
         });
     </script>
     {{-- Ajouter Question --}}
+{{--    <script>--}}
+{{--        document.addEventListener('DOMContentLoaded', function() {--}}
+{{--            const addBtn = document.getElementById('addQuestionBtn');--}}
+{{--            const template = document.getElementById('question-template');--}}
+{{--            const container = document.getElementById('questions-container');--}}
+{{--            let questionIndex = 0;--}}
+
+{{--            // Vérification si les éléments existent--}}
+{{--            if (!addBtn || !template || !container) {--}}
+{{--                console.error("Un ou plusieurs éléments n'ont pas été trouvés");--}}
+{{--                return; // Empêche l'exécution si un élément est manquant--}}
+{{--            }--}}
+
+{{--            addBtn.addEventListener('click', function() {--}}
+{{--                const clone = template.content.cloneNode(true);--}}
+{{--                const html = clone.querySelector('.question-card');--}}
+
+{{--                // Remplace __INDEX__ dans tous les noms--}}
+{{--                html.querySelectorAll('[name]').forEach(el => {--}}
+{{--                    el.name = el.name.replace(/__INDEX__/g, questionIndex);--}}
+{{--                });--}}
+
+{{--                container.appendChild(clone);--}}
+{{--                questionIndex++;--}}
+{{--            });--}}
+
+{{--            // Suppression dynamique--}}
+{{--            document.addEventListener('click', function(e) {--}}
+{{--                if (e.target.classList.contains('remove-question-btn') || e.target.closest(--}}
+{{--                        '.remove-question-btn')) {--}}
+{{--                    const card = e.target.closest('.question-card');--}}
+{{--                    if (card) card.remove();--}}
+{{--                }--}}
+{{--            });--}}
+{{--        });--}}
+{{--    </script>--}}
+
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const addBtn = document.getElementById('addQuestionBtn');
-            const template = document.getElementById('question-template');
-            const container = document.getElementById('questions-container');
-            let questionIndex = 0;
+        let reponseIndex = 1;
 
-            // Vérification si les éléments existent
-            if (!addBtn || !template || !container) {
-                console.error("Un ou plusieurs éléments n'ont pas été trouvés");
-                return; // Empêche l'exécution si un élément est manquant
-            }
+        function addReponse() {
+            const container = document.getElementById('reponses-container');
+            const newReponse = document.createElement('div');
+            newReponse.classList.add('row', 'mb-2', 'reponse-item');
+            newReponse.innerHTML = `
+            <div class="col-md-8">
+                <input type="text" name="new_question[reponses][${reponseIndex}][text]" class="form-control" placeholder="Texte de la réponse" required>
+            </div>
+            <div class="col-md-2">
+                <select name="new_question[reponses][${reponseIndex}][is_correct]" class="form-select">
+                    <option value="0">Faux</option>
+                    <option value="1">Vrai</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="button" class="btn btn-danger btn-sm" onclick="removeReponse(this)">Supprimer</button>
+            </div>
+        `;
+            container.appendChild(newReponse);
+            reponseIndex++;
+        }
 
-            addBtn.addEventListener('click', function() {
-                const clone = template.content.cloneNode(true);
-                const html = clone.querySelector('.question-card');
-
-                // Remplace __INDEX__ dans tous les noms
-                html.querySelectorAll('[name]').forEach(el => {
-                    el.name = el.name.replace(/__INDEX__/g, questionIndex);
-                });
-
-                container.appendChild(clone);
-                questionIndex++;
-            });
-
-            // Suppression dynamique
-            document.addEventListener('click', function(e) {
-                if (e.target.classList.contains('remove-question-btn') || e.target.closest(
-                        '.remove-question-btn')) {
-                    const card = e.target.closest('.question-card');
-                    if (card) card.remove();
-                }
-            });
-        });
+        function removeReponse(button) {
+            button.closest('.reponse-item').remove();
+        }
     </script>
 
 

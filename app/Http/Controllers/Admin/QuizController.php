@@ -179,6 +179,57 @@ class QuizController extends Controller
                 }
             }
 
+            // --- AJOUT d'une nouvelle question (si fournie) ---
+            $newQuestionInput = $request->input('new_question');
+
+            if (!empty($newQuestionInput)) {
+                // Associer le quiz_id
+                $newQuestionInput['quiz_id'] = $quiz->id;
+
+                // Gestion du fichier média pour la nouvelle question
+                if ($request->hasFile('new_question_media_file')) {
+                    $file = $request->file('new_question_media_file');
+                    $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'doc', 'docx', 'xls', 'xlsx'];
+                    $extension = strtolower($file->getClientOriginalExtension());
+
+                    if (!in_array($extension, $allowedExtensions)) {
+                        return redirect()->back()->with('error', "Le type de fichier '$extension' pour la nouvelle question n’est pas autorisé.");
+                    }
+
+                    $path = $file->store('medias', 'public');
+                    $newQuestionInput['media_url'] = $path;
+                }
+
+                // Création de la nouvelle question
+                $newQuestion = $quiz->questions()->create($newQuestionInput);
+
+                if ($newQuestion) {
+                    // Ajout des réponses pour la nouvelle question
+                    $reponses = $newQuestionInput['reponses'] ?? [];
+
+                    foreach ($reponses as $reponseInput) {
+                        if (!empty($reponseInput['text'])) {
+                            $newQuestion->reponses()->create([
+                                'text' => $reponseInput['text'],
+                                'is_correct' => $reponseInput['is_correct'] ?? 0,
+                                'position' => $reponseInput['position'] ?? null,
+                                'match_pair' => $reponseInput['match_pair'] ?? null,
+                                'bank_group' => $reponseInput['bank_group'] ?? null,
+                                'flashcard_back' => $reponseInput['flashcard_back'] ?? null,
+                            ]);
+                        }
+                    }
+
+                    // Mise à jour de la bonne réponse de la nouvelle question
+                    $reponseCorrecte = $newQuestion->reponses()->where('is_correct', true)->first();
+                    if ($reponseCorrecte) {
+                        $newQuestion->update([
+                            'reponse_correct' => $reponseCorrecte->text
+                        ]);
+                    }
+                }
+            }
+
             DB::commit();
 
             return redirect()->route('quiz.index')->with('success', 'Quiz, questions et réponses mis à jour avec succès.');
