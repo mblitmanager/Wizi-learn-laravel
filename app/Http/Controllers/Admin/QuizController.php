@@ -110,7 +110,8 @@ class QuizController extends Controller
                     $questionInput['media_url'] = $path;
                 }
             }
-            unset($questionInput); // important pour éviter des bugs après foreach par référence
+            // important pour éviter des bugs après foreach par référence
+            unset($questionInput);
 
             foreach ($questionData as $questionInput) {
                 // Suppression de la question si demandée
@@ -179,56 +180,6 @@ class QuizController extends Controller
                 }
             }
 
-            // --- AJOUT d'une nouvelle question (si fournie) ---
-            $newQuestionInput = $request->input('new_question');
-
-            if (!empty($newQuestionInput)) {
-                // Associer le quiz_id
-                $newQuestionInput['quiz_id'] = $quiz->id;
-
-                // Gestion du fichier média pour la nouvelle question
-                if ($request->hasFile('new_question_media_file')) {
-                    $file = $request->file('new_question_media_file');
-                    $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'doc', 'docx', 'xls', 'xlsx'];
-                    $extension = strtolower($file->getClientOriginalExtension());
-
-                    if (!in_array($extension, $allowedExtensions)) {
-                        return redirect()->back()->with('error', "Le type de fichier '$extension' pour la nouvelle question n’est pas autorisé.");
-                    }
-
-                    $path = $file->store('medias', 'public');
-                    $newQuestionInput['media_url'] = $path;
-                }
-
-                // Création de la nouvelle question
-                $newQuestion = $quiz->questions()->create($newQuestionInput);
-
-                if ($newQuestion) {
-                    // Ajout des réponses pour la nouvelle question
-                    $reponses = $newQuestionInput['reponses'] ?? [];
-
-                    foreach ($reponses as $reponseInput) {
-                        if (!empty($reponseInput['text'])) {
-                            $newQuestion->reponses()->create([
-                                'text' => $reponseInput['text'],
-                                'is_correct' => $reponseInput['is_correct'] ?? 0,
-                                'position' => $reponseInput['position'] ?? null,
-                                'match_pair' => $reponseInput['match_pair'] ?? null,
-                                'bank_group' => $reponseInput['bank_group'] ?? null,
-                                'flashcard_back' => $reponseInput['flashcard_back'] ?? null,
-                            ]);
-                        }
-                    }
-
-                    // Mise à jour de la bonne réponse de la nouvelle question
-                    $reponseCorrecte = $newQuestion->reponses()->where('is_correct', true)->first();
-                    if ($reponseCorrecte) {
-                        $newQuestion->update([
-                            'reponse_correct' => $reponseCorrecte->text
-                        ]);
-                    }
-                }
-            }
 
             DB::commit();
 
@@ -236,6 +187,61 @@ class QuizController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->with('error', 'Erreur : ' . $e->getMessage());
+        }
+    }
+
+    public function storeNewQuestion(Request $request)
+    {
+        $request->validate([
+            'quiz_id' => 'required|exists:quizzes,id',
+            'text' => 'required|string',
+            'question.type' => 'required|string', // attention ici
+            'points' => 'required|integer|min:1',
+            'reponses' => 'required|array|min:1',
+            'reponses.*.text' => 'required|string',
+        ]);
+
+        try {
+            $quiz = Quiz::findOrFail($request->input('quiz_id'));
+
+            $questionInput = [
+                'quiz_id' => $quiz->id,
+                'text' => $request->input('text'),
+                'type' => $request->input('question')['type'], // <- ici aussi, bien récupérer
+                'explication' => $request->input('explication'),
+                'astuce' => $request->input('astuce'),
+                'points' => $request->input('points') ?? 1,
+            ];
+
+            if ($request->hasFile('media_file')) {
+                $file = $request->file('media_file');
+                $path = $file->store('medias', 'public');
+                $questionInput['media_url'] = $path;
+            }
+
+            $question = $quiz->questions()->create($questionInput);
+
+            foreach ($request->input('reponses', []) as $reponseInput) {
+                $question->reponses()->create([
+                    'text' => $reponseInput['text'],
+                    'is_correct' => $reponseInput['is_correct'] ?? 0,
+                    'position' => $reponseInput['position'] ?? null,
+                    'match_pair' => $reponseInput['match_pair'] ?? null,
+                    'bank_group' => $reponseInput['bank_group'] ?? null,
+                    'flashcard_back' => $reponseInput['flashcard_back'] ?? null,
+                ]);
+            }
+
+            $reponseCorrecte = $question->reponses()->where('is_correct', true)->first();
+            if ($reponseCorrecte) {
+                $question->update([
+                    'reponse_correct' => $reponseCorrecte->text
+                ]);
+            }
+
+            return redirect()->route('quiz.edit',$quiz)->with('success', 'Nouvelle question créée avec succès.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Erreur lors de la création de la question : ' . $e->getMessage());
         }
     }
 

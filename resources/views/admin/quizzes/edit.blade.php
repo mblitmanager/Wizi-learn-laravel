@@ -14,8 +14,10 @@
         </div>
         <div class="ms-auto">
             <div class="btn-group">
-                <button class="btn btn-sm text-white btn-info mx-2" data-bs-toggle="modal" data-bs-target="#importModal"><i
-                        class="lni lni-cloud-download"></i>importer quiz</button>
+                <button class="btn btn-sm text-white btn-info mx-2" data-bs-toggle="modal"
+                        data-bs-target="#importModal"><i
+                        class="lni lni-cloud-download"></i>importer quiz
+                </button>
                 <a href="{{ route('quiz.index') }}" type="button" class="btn btn-sm btn-primary px-4"> <i
                         class="fadeIn animated bx bx-chevron-left-circle"></i> Retour</a>
             </div>
@@ -39,7 +41,7 @@
         <div class="card">
             <div class="card-body p-4 border rounded">
                 <form action="{{ route('quiz.update', $quiz->id) }}" method="POST" class="px-4 py-4"
-                    enctype="multipart/form-data">
+                      enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
 
@@ -51,15 +53,16 @@
                                 <div class="col-md-6">
                                     <label for="input1" class="form-label">Durée</label>
 
-                                    <input type="number" name="quiz[duree]" placeholder="Durée" class="form-control mb-2"
-                                        value="{{ old('quiz.duree', $quiz->duree) }}">
+                                    <input type="number" name="quiz[duree]" placeholder="Durée"
+                                           class="form-control mb-2"
+                                           value="{{ old('quiz.duree', $quiz->duree) }}">
                                 </div>
                                 <div class="col-md-6">
                                     <label for="input1" class="form-label">Description</label>
 
                                     <input type="text" name="quiz[description]" placeholder="Description"
-                                        id="description" class="form-control mb-2"
-                                        value="{{ old('quiz.description', $quiz->description) }}">
+                                           id="description" class="form-control mb-2"
+                                           value="{{ old('quiz.description', $quiz->description) }}">
                                 </div>
                             </div>
                             <div class="row">
@@ -67,7 +70,7 @@
                                     <label for="input1" class="form-label">Titre</label>
 
                                     <input type="text" name="quiz[titre]" placeholder="Titre" class="form-control mb-2"
-                                        value="{{ old('quiz.titre', $quiz->titre) }}" required>
+                                           value="{{ old('quiz.titre', $quiz->titre) }}" required>
                                 </div>
                                 <div class="col-md-6">
                                     <label for="input1" class="form-label">Niveau</label>
@@ -76,10 +79,12 @@
                                         <option value="">Niveau</option>
                                         <option value="débutant"
                                             {{ old('quiz.niveau', $quiz->niveau) == 'débutant' ? 'selected' : '' }}>
-                                            Débutant</option>
+                                            Débutant
+                                        </option>
                                         <option value="intermédiaire"
                                             {{ old('quiz.niveau', $quiz->niveau) == 'intermédiaire' ? 'selected' : '' }}>
-                                            Intermédiaire</option>
+                                            Intermédiaire
+                                        </option>
                                         <option value="avancé"
                                             {{ old('quiz.niveau', $quiz->niveau) == 'avancé' ? 'selected' : '' }}>
                                             Avancé
@@ -104,8 +109,8 @@
                                     <label for="input1" class="form-label">Points total</label>
 
                                     <input type="number" name="quiz[nb_points_total]" placeholder="Points total"
-                                        class="form-control"
-                                        value="{{ old('quiz.nb_points_total', $quiz->nb_points_total) }}">
+                                           class="form-control"
+                                           value="{{ old('quiz.nb_points_total', $quiz->nb_points_total) }}">
                                 </div>
                             </div>
                         </div>
@@ -119,149 +124,41 @@
                                     <!-- Input de recherche et boutons "Rechercher" et "Réinitialiser" -->
                                     <div class="d-flex align-items-center">
                                         <input type="text" id="searchInput" name="search"
-                                            placeholder="Rechercher une question" class="form-control me-2"
-                                            value="">
+                                               placeholder="Rechercher une question" class="form-control me-2"
+                                               value="">
                                         <button id="searchBtn"
-                                            class="btn btn-sm btn-primary me-2 d-flex align-items-center">
+                                                class="btn btn-sm btn-primary me-2 d-flex align-items-center">
                                             <i class="lni lni-search-alt me-1"></i> Rechercher
                                         </button>
-                                        <button id="resetBtn" class="btn btn-sm btn-secondary d-flex align-items-center">
+                                        <button id="resetBtn"
+                                                class="btn btn-sm btn-secondary d-flex align-items-center">
                                             <i class="lni lni-spinner-arrow me-1"></i> Réinitialiser
                                         </button>
                                     </div>
 
-                                    <div><!-- Bouton "Ajouter une question" aligné à droite -->
-{{--                                        <button class="btn btn-sm btn-info text-white" type="button"--}}
-{{--                                            id="addQuestionBtn">--}}
-{{--                                            <i class="lni lni-plus"></i> Ajouter une question--}}
-{{--                                        </button>--}}
-                                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleLargeModal">Large Modal</button>
+                                    <div>
+                                        <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                                                data-bs-target="#NewQuestionModal"><i class="lni lni-plus"></i>Nouveau
+                                            questions
+                                        </button>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="modal fade" id="exampleLargeModal" tabindex="-1" style="display: none;" aria-hidden="true">
-                        <div class="modal-dialog modal-lg">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title">Modal title</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <div class="card mb-4 px-4 question-card">
-                                        {{-- CARD pour AJOUTER une NOUVELLE QUESTION --}}
-                                        <div class="card mb-4 px-4" id="new-question-card">
-                                            <div class="card-body">
-                                                <h5 class="text-wizi">Ajouter une nouvelle question</h5>
-
-                                                <div class="row">
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Texte de la question</label>
-                                                        <input type="text" name="new_question[text]" class="form-control mb-2" placeholder="Texte de la question" required>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Média</label>
-                                                        <input type="file" name="new_question[media_url]" class="form-control mb-2">
-                                                    </div>
-                                                </div>
-
-                                                <div class="row">
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Type</label>
-                                                        <select name="new_question[type]" class="form-select mb-2" required>
-                                                            <option value="">Type</option>
-                                                            <option value="question audio">Question audio</option>
-                                                            <option value="remplir le champ vide">Remplir le champ vide</option>
-                                                            <option value="carte flash">Carte flash</option>
-                                                            <option value="correspondance">Correspondance</option>
-                                                            <option value="choix multiples">Choix multiples</option>
-                                                            <option value="rearrangement">Rearrangement</option>
-                                                            <option value="vrai/faux">Vrai / Faux</option>
-                                                            <option value="banque de mots">Banque de mots</option>
-                                                        </select>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Réponse correcte</label>
-                                                        <input type="text" name="new_question[reponse_correct]" class="form-control mb-2" placeholder="Réponse correcte">
-                                                    </div>
-                                                </div>
-
-                                                <div class="row">
-                                                    <div class="col-md-12">
-                                                        <label class="form-label">Explication</label>
-                                                        <textarea name="new_question[explication]" class="form-control mb-2" placeholder="Explication"></textarea>
-                                                    </div>
-                                                </div>
-
-                                                <div class="row">
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Points</label>
-                                                        <input type="number" name="new_question[points]" class="form-control mb-2" placeholder="Points">
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Astuce</label>
-                                                        <input type="text" name="new_question[astuce]" class="form-control mb-2" placeholder="Astuce">
-                                                    </div>
-                                                </div>
-
-                                                <hr>
-
-                                                {{-- Réponses dynamiques --}}
-                                                <h6 class="text-wizi">Réponses</h6>
-                                                <div id="reponses-container">
-                                                    <div class="row mb-2 reponse-item">
-                                                        <div class="col-md-8">
-                                                            <input type="text" name="new_question[reponses][0][text]" class="form-control" placeholder="Texte de la réponse" required>
-                                                        </div>
-                                                        <div class="col-md-2">
-                                                            <select name="new_question[reponses][0][is_correct]" class="form-select">
-                                                                <option value="0">Faux</option>
-                                                                <option value="1">Vrai</option>
-                                                            </select>
-                                                        </div>
-                                                        <div class="col-md-2">
-                                                            <button type="button" class="btn btn-danger btn-sm" onclick="removeReponse(this)">Supprimer</button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <button type="button" class="btn btn-primary btn-sm" onclick="addReponse()">Ajouter une réponse</button>
-                                            </div>
-                                        </div>
-
-
-
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                    <button type="button" class="btn btn-primary">Save changes</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-
-                    {{-- QUESTION --}}
-                    <template id="question-template">
-
-                    </template>
-
-                    <div id="questions-container"></div>
-
 
                     {{-- QUESTIONS & REPONSES --}}
                     <div class="accordion mb-4" id="accordionQuestions">
                         @foreach ($questions as $qIndex => $question)
                             <div class="accordion-item question-item">
                                 <input type="hidden" name="questions[{{ $qIndex }}][_delete]" value="0"
-                                    class="delete-flag">
+                                       class="delete-flag">
 
                                 <div class="accordion-header" id="heading{{ $qIndex }}">
                                     <h2 class="accordion-header d-flex align-items-center justify-content-between px-3 py-2 bg-light"
                                         id="heading{{ $qIndex }}" style="border-bottom: 1px solid #ddd;">
-                                        <button class="accordion-button flex-grow-1 {{ $qIndex > 0 ? 'collapsed' : '' }}"
+                                        <button
+                                            class="accordion-button flex-grow-1 {{ $qIndex > 0 ? 'collapsed' : '' }}"
                                             type="button" data-bs-toggle="collapse"
                                             data-bs-target="#collapse{{ $qIndex }}"
                                             aria-expanded="{{ $qIndex == 0 ? 'true' : 'false' }}"
@@ -273,8 +170,8 @@
                                             </div>
                                         </button>
                                         <button type="button"
-                                            class="btn btn-outline-danger btn-sm ms-2 remove-question-btn"
-                                            title="Supprimer cette question">
+                                                class="btn btn-outline-danger btn-sm ms-2 remove-question-btn"
+                                                title="Supprimer cette question">
                                             <i class="lni lni-trash"></i>
                                         </button>
                                     </h2>
@@ -282,33 +179,33 @@
 
                                 </div>
                                 <div id="collapse{{ $qIndex }}"
-                                    class="accordion-collapse collapse {{ $qIndex == 0 ? 'show' : '' }}"
-                                    aria-labelledby="heading{{ $qIndex }}" data-bs-parent="#accordionQuestions">
+                                     class="accordion-collapse collapse {{ $qIndex == 0 ? 'show' : '' }}"
+                                     aria-labelledby="heading{{ $qIndex }}" data-bs-parent="#accordionQuestions">
                                     <div class="accordion-body">
 
                                         <div class="px-3 py-3 mb-3"
-                                            style="box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px;">
+                                             style="box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px;">
                                             <input type="hidden" name="questions[{{ $qIndex }}][id]"
-                                                value="{{ $question->id }}">
+                                                   value="{{ $question->id }}">
 
                                             <div class="row">
                                                 <div class="col-md-6">
                                                     <label class="form-label">Texte de la question</label>
                                                     <input type="text" name="questions[{{ $qIndex }}][text]"
-                                                        class="form-control mb-2"
-                                                        value="{{ old("questions.$qIndex.text", $question->text) }}"
-                                                        required>
+                                                           class="form-control mb-2"
+                                                           value="{{ old("questions.$qIndex.text", $question->text) }}"
+                                                           required>
                                                 </div>
                                                 <div class="col-md-6">
                                                     <label class="form-label">Media URL</label>
                                                     <input type="file"
-                                                        name="questions[{{ $qIndex }}][media_file]"
-                                                        class="form-control mb-2"
-                                                        accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx">
+                                                           name="questions[{{ $qIndex }}][media_file]"
+                                                           class="form-control mb-2"
+                                                           accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx">
                                                     @if ($question->media_url)
                                                         <small>
                                                             <a href="{{ asset('storage/' . $question->media_url) }}"
-                                                                target="_blank">Voir le fichier</a>
+                                                               target="_blank">Voir le fichier</a>
                                                         </small>
                                                     @endif
                                                 </div>
@@ -318,7 +215,7 @@
                                                 <div class="col-md-6">
                                                     <label class="form-label">Type</label>
                                                     <select name="questions[{{ $qIndex }}][type]"
-                                                        class="form-select mb-2" required>
+                                                            class="form-select mb-2" required>
                                                         <option value="">Type</option>
                                                         @foreach (['question audio', 'remplir le champ vide', 'carte flash', 'correspondance', 'choix multiples', 'rearrangement', 'vrai/faux', 'banque de mots'] as $type)
                                                             <option value="{{ $type }}"
@@ -331,13 +228,14 @@
                                                 <div class="col-md-6">
                                                     <label class="form-label">Réponse correcte</label>
                                                     <input type="text"
-                                                        name="questions[{{ $qIndex }}][reponse_correct]"
-                                                        class="form-control mb-2"
-                                                        value="{{ old("questions.$qIndex.reponse_correct", $question->reponse_correct) }}">
+                                                           name="questions[{{ $qIndex }}][reponse_correct]"
+                                                           class="form-control mb-2"
+                                                           value="{{ old("questions.$qIndex.reponse_correct", $question->reponse_correct) }}">
                                                 </div>
                                                 <div class="col-md-12">
                                                     <label class="form-label">Explication</label>
-                                                    <textarea name="questions[{{ $qIndex }}][explication]" class="form-control mb-2">{{ old("questions.$qIndex.explication", $question->explication) }}</textarea>
+                                                    <textarea name="questions[{{ $qIndex }}][explication]"
+                                                              class="form-control mb-2">{{ old("questions.$qIndex.explication", $question->explication) }}</textarea>
                                                 </div>
                                             </div>
 
@@ -349,17 +247,17 @@
                                         <div id="reponses-container-{{ $qIndex }}">
                                             @foreach ($question->reponses as $rIndex => $reponse)
                                                 <div class="px-3 py-3 mb-3 reponse-form"
-                                                    style="box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;">
+                                                     style="box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;">
                                                     <input type="hidden"
-                                                        name="questions[{{ $qIndex }}][reponses][{{ $rIndex }}][id]"
-                                                        value="{{ $reponse->id }}">
+                                                           name="questions[{{ $qIndex }}][reponses][{{ $rIndex }}][id]"
+                                                           value="{{ $reponse->id }}">
                                                     <div class="row">
                                                         <div class="col-md-6">
                                                             <label class="form-label">Texte de la réponse</label>
                                                             <input type="text"
-                                                                name="questions[{{ $qIndex }}][reponses][{{ $rIndex }}][text]"
-                                                                class="form-control mb-2"
-                                                                value="{{ old("questions.$qIndex.reponses.$rIndex.text", $reponse->text) }}">
+                                                                   name="questions[{{ $qIndex }}][reponses][{{ $rIndex }}][text]"
+                                                                   class="form-control mb-2"
+                                                                   value="{{ old("questions.$qIndex.reponses.$rIndex.text", $reponse->text) }}">
                                                         </div>
                                                         <div class="col-md-6">
                                                             <label class="form-label">Bonne réponse ?</label>
@@ -379,38 +277,41 @@
                                                         <div class="col-md-4">
                                                             <label class="form-label">Position</label>
                                                             <input type="number"
-                                                                name="questions[{{ $qIndex }}][reponses][{{ $rIndex }}][position]"
-                                                                class="form-control"
-                                                                value="{{ old("questions.$qIndex.reponses.$rIndex.position", $reponse->position) }}">
+                                                                   name="questions[{{ $qIndex }}][reponses][{{ $rIndex }}][position]"
+                                                                   class="form-control"
+                                                                   value="{{ old("questions.$qIndex.reponses.$rIndex.position", $reponse->position) }}">
                                                         </div>
                                                         <div class="col-md-4">
                                                             <label class="form-label">Pair correspondante</label>
                                                             <input type="text"
-                                                                name="questions[{{ $qIndex }}][reponses][{{ $rIndex }}][match_pair]"
-                                                                class="form-control"
-                                                                value="{{ old("questions.$qIndex.reponses.$rIndex.match_pair", $reponse->match_pair) }}">
+                                                                   name="questions[{{ $qIndex }}][reponses][{{ $rIndex }}][match_pair]"
+                                                                   class="form-control"
+                                                                   value="{{ old("questions.$qIndex.reponses.$rIndex.match_pair", $reponse->match_pair) }}">
                                                         </div>
                                                         <div class="col-md-4">
                                                             <label class="form-label">Groupe</label>
                                                             <input type="text"
-                                                                name="questions[{{ $qIndex }}][reponses][{{ $rIndex }}][bank_group]"
-                                                                class="form-control"
-                                                                value="{{ old("questions.$qIndex.reponses.$rIndex.bank_group", $reponse->bank_group) }}">
+                                                                   name="questions[{{ $qIndex }}][reponses][{{ $rIndex }}][bank_group]"
+                                                                   class="form-control"
+                                                                   value="{{ old("questions.$qIndex.reponses.$rIndex.bank_group", $reponse->bank_group) }}">
                                                         </div>
                                                     </div>
                                                     <div class="text-end">
                                                         <button type="button"
-                                                            class="btn btn-danger btn-sm remove-reponse-btn">Supprimer
+                                                                class="btn btn-danger btn-sm remove-reponse-btn">
+                                                            Supprimer
                                                             cette
-                                                            réponse</button>
+                                                            réponse
+                                                        </button>
                                                     </div>
                                                 </div>
                                                 <hr>
                                             @endforeach
                                             <div class="text-center">
                                                 <button type="button" class="btn btn-primary btn-sm add-reponse-btn"
-                                                    data-question-index="{{ $qIndex }}">Ajouter une
-                                                    réponse</button>
+                                                        data-question-index="{{ $qIndex }}">Ajouter une
+                                                    réponse
+                                                </button>
                                             </div>
                                         </div>
 
@@ -418,13 +319,13 @@
 
                                         <template id="reponse-template-{{ $qIndex }}">
                                             <div class="px-3 py-3 mb-3 reponse-form"
-                                                style="box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;">
+                                                 style="box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;">
                                                 <div class="row">
                                                     <div class="col-md-6">
                                                         <label class="form-label">Texte de la réponse</label>
                                                         <input type="text"
-                                                            name="questions[{{ $qIndex }}][reponses][__RINDEX__][text]"
-                                                            class="form-control mb-2" value="">
+                                                               name="questions[{{ $qIndex }}][reponses][__RINDEX__][text]"
+                                                               class="form-control mb-2" value="">
                                                     </div>
                                                     <div class="col-md-6">
                                                         <label class="form-label">Bonne réponse ?</label>
@@ -440,26 +341,28 @@
                                                     <div class="col-md-4">
                                                         <label class="form-label">Position</label>
                                                         <input type="number"
-                                                            name="questions[{{ $qIndex }}][reponses][__RINDEX__][position]"
-                                                            class="form-control" value="">
+                                                               name="questions[{{ $qIndex }}][reponses][__RINDEX__][position]"
+                                                               class="form-control" value="">
                                                     </div>
                                                     <div class="col-md-4">
                                                         <label class="form-label">Pair correspondante</label>
                                                         <input type="text"
-                                                            name="questions[{{ $qIndex }}][reponses][__RINDEX__][match_pair]"
-                                                            class="form-control" value="">
+                                                               name="questions[{{ $qIndex }}][reponses][__RINDEX__][match_pair]"
+                                                               class="form-control" value="">
                                                     </div>
                                                     <div class="col-md-4">
                                                         <label class="form-label">Groupe</label>
                                                         <input type="text"
-                                                            name="questions[{{ $qIndex }}][reponses][__RINDEX__][bank_group]"
-                                                            class="form-control" value="">
+                                                               name="questions[{{ $qIndex }}][reponses][__RINDEX__][bank_group]"
+                                                               class="form-control" value="">
                                                     </div>
                                                 </div>
                                                 <div class="text-end">
                                                     <button type="button"
-                                                        class="btn btn-danger btn-sm remove-reponse-btn">Supprimer cette
-                                                        réponse</button>
+                                                            class="btn btn-danger btn-sm remove-reponse-btn">Supprimer
+                                                        cette
+                                                        réponse
+                                                    </button>
                                                 </div>
                                                 <hr>
                                             </div>
@@ -487,33 +390,34 @@
                     <hr>
                     {{-- SUBMIT --}}
                     <div class="text-center">
-                        <button type="submit" class="btn btn-sm btn-primary px-5"> <i class="lni lni-save"></i>Mettre à
-                            jour</button>
+                        <button type="submit" class="btn btn-sm btn-primary px-5"><i class="lni lni-save"></i>Mettre à
+                            jour
+                        </button>
                     </div>
                 </form>
                 <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="exampleModalLabel"
-                    aria-hidden="true">
+                     aria-hidden="true">
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <div class="modal-header">
                                 <h5 class="modal-title" id="exampleModalLabel">Importer stagiaires</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                    aria-label="Close"></button>
+                                        aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
                                 <form action="{{ route('quiz_question.import') }}" method="POST"
-                                    enctype="multipart/form-data">
+                                      enctype="multipart/form-data">
                                     @csrf
                                     <input type="hidden" name="quiz_id" value="{{ $quiz->id }}">
                                     <div class="mb-3">
                                         <label for="file" class="form-label">Fichier Excel (.xlsx)</label>
                                         <input type="file" name="file" id="file" class="form-control"
-                                            required accept=".xlsx,.xls">
+                                               required accept=".xlsx,.xls">
                                     </div>
 
                                     <div class="progress mb-3 d-none" id="progressBarWrapper">
                                         <div class="progress-bar progress-bar-striped progress-bar-animated"
-                                            role="progressbar" style="width: 100%;" id="progressBar">
+                                             role="progressbar" style="width: 100%;" id="progressBar">
                                             Importation en cours...
                                         </div>
                                     </div>
@@ -525,7 +429,128 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+    {{--    MODAL NEW QUESTION FOR ONE QUIZ--}}
+    <div class="modal fade" id="NewQuestionModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form method="POST" action="{{ route('quiz_question.new') }}"
+                      enctype="multipart/form-data">
+                    @csrf
+                    <div class="modal-header">
+                        <h5 class="modal-title">Ajouter une Nouvelle Question</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                    </div>
 
+                    <div class="modal-body">
+                        <input type="hidden" name="quiz_id" value="{{ $quiz->id }}">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Texte de la question</label>
+                                <input type="text" name="text" class="form-control"
+                                       placeholder="Entrez votre question..." required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Type de question</label>
+                                <select name="question[type]" class="form-select" required>
+                                    <option value="">Type</option>
+                                    <option value="question audio">Question audio</option>
+                                    <option value="remplir le champ vide">Remplir le champ vide</option>
+                                    <option value="carte flash">Carte flash</option>
+                                    <option value="correspondance">Correspondance</option>
+                                    <option value="choix multiples">Choix multiples</option>
+                                    <option value="rearrangement">Rearrangement</option>
+                                    <option value="vrai/faux">Vrai / Faux</option>
+                                    <option value="banque de mots">Banque de mots</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Explication (optionnel)</label>
+                                <textarea name="explication" class="form-control" rows="3"></textarea>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Astuce (optionnel)</label>
+                                <textarea name="astuce" class="form-control" rows="2"></textarea>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Points</label>
+                                <input type="number" name="points" class="form-control" value="1"
+                                       min="1" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Média (optionnel)</label>
+                                <input type="file" name="media_file" class="form-control">
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <h5 class="text-primary mb-3 py-2">Ajouter des réponses</h5>
+
+                        <div id="reponses-container">
+                            <div class="reponse-item mb-4">
+                                <div class="row g-3 reponse-item mb-3 py-3"
+                                     style="box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px;">
+
+                                    <div class="col-md-6">
+                                        <input type="text" name="reponses[0][text]" class="form-control"
+                                               placeholder="Texte de la réponse" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <select name="reponses[0][is_correct]" class="form-select"
+                                                required>
+                                            <option value="0">Faux</option>
+                                            <option value="1">Vrai</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="number" name="reponses[0][position]"
+                                               class="form-control" placeholder="Position">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="text" name="reponses[0][match_pair]"
+                                               class="form-control" placeholder="Match pair">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="text" name="reponses[0][bank_group]"
+                                               class="form-control" placeholder="Groupe banque">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="text" name="reponses[0][flashcard_back]"
+                                               class="form-control" placeholder="Dos de la flashcard">
+                                    </div>
+                                    <div class="col-12">
+                                        <button type="button" class="btn btn-danger btn-sm w-100 mt-2"
+                                                onclick="removeReponse(this)">Supprimer
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="text-end">
+                            <button type="button" class="btn btn-outline-primary btn-sm"
+                                    onclick="addReponse()">Ajouter une réponse
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            Annuler
+                        </button>
+                        <button type="submit" class="btn btn-primary">Enregistrer la Question</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -533,14 +558,14 @@
 @section('scripts')
     <script>
         document.querySelectorAll('.add-reponse-btn').forEach(button => {
-            button.addEventListener('click', function() {
+            button.addEventListener('click', function () {
                 const qIndex = this.dataset.questionIndex;
                 const container = document.getElementById(`reponses-container-${qIndex}`);
                 const template = document.getElementById(`reponse-template-${qIndex}`).innerHTML;
 
                 // Trouver les index déjà utilisés
                 const indexes = Array.from(container.querySelectorAll(
-                        '.reponse-form input[name^="questions["]'))
+                    '.reponse-form input[name^="questions["]'))
                     .map(input => {
                         const match = input.name.match(/questions\[\d+]\[reponses]\[(\d+)]/);
                         return match ? parseInt(match[1]) : -1;
@@ -556,16 +581,14 @@
         });
 
         // Gérer la suppression de réponse dynamique
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', function (e) {
             if (e.target.classList.contains('remove-reponse-btn')) {
                 e.target.closest('.reponse-form').remove();
             }
         });
     </script>
-
-
     {{-- Media appercu --}}
-    {{-- <script>
+     <script>
         document.getElementById('media_file').addEventListener('change', function(event) {
             const file = event.target.files[0];
             const previewContainer = document.getElementById('preview-container');
@@ -591,10 +614,10 @@
                 }
             }
         });
-    </script> --}}
+    </script>
     {{-- Pagination Question --}}
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             const itemsPerPage = 10;
             const items = Array.from(document.querySelectorAll(".question-item"));
             const totalItems = items.length;
@@ -700,7 +723,7 @@
         });
     </script>
     <script>
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', function (e) {
             if (e.target.closest('.remove-question-btn')) {
                 const questionItem = e.target.closest('.question-item');
                 const deleteInput = questionItem.querySelector('input.delete-flag');
@@ -712,66 +735,47 @@
             }
         });
     </script>
-    {{-- Ajouter Question --}}
-{{--    <script>--}}
-{{--        document.addEventListener('DOMContentLoaded', function() {--}}
-{{--            const addBtn = document.getElementById('addQuestionBtn');--}}
-{{--            const template = document.getElementById('question-template');--}}
-{{--            const container = document.getElementById('questions-container');--}}
-{{--            let questionIndex = 0;--}}
-
-{{--            // Vérification si les éléments existent--}}
-{{--            if (!addBtn || !template || !container) {--}}
-{{--                console.error("Un ou plusieurs éléments n'ont pas été trouvés");--}}
-{{--                return; // Empêche l'exécution si un élément est manquant--}}
-{{--            }--}}
-
-{{--            addBtn.addEventListener('click', function() {--}}
-{{--                const clone = template.content.cloneNode(true);--}}
-{{--                const html = clone.querySelector('.question-card');--}}
-
-{{--                // Remplace __INDEX__ dans tous les noms--}}
-{{--                html.querySelectorAll('[name]').forEach(el => {--}}
-{{--                    el.name = el.name.replace(/__INDEX__/g, questionIndex);--}}
-{{--                });--}}
-
-{{--                container.appendChild(clone);--}}
-{{--                questionIndex++;--}}
-{{--            });--}}
-
-{{--            // Suppression dynamique--}}
-{{--            document.addEventListener('click', function(e) {--}}
-{{--                if (e.target.classList.contains('remove-question-btn') || e.target.closest(--}}
-{{--                        '.remove-question-btn')) {--}}
-{{--                    const card = e.target.closest('.question-card');--}}
-{{--                    if (card) card.remove();--}}
-{{--                }--}}
-{{--            });--}}
-{{--        });--}}
-{{--    </script>--}}
-
     <script>
         let reponseIndex = 1;
 
         function addReponse() {
             const container = document.getElementById('reponses-container');
-            const newReponse = document.createElement('div');
-            newReponse.classList.add('row', 'mb-2', 'reponse-item');
-            newReponse.innerHTML = `
-            <div class="col-md-8">
-                <input type="text" name="new_question[reponses][${reponseIndex}][text]" class="form-control" placeholder="Texte de la réponse" required>
+            const html = `
+                   <div class="row g-3 reponse-item mb-3 py-3" style="box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px;">
+                <div class="col-md-6">
+                    <input type="text" name="reponses[${reponseIndex}][text]" class="form-control" placeholder="Texte de la réponse" required>
+                </div>
+
+                <div class="col-md-6">
+                    <select name="reponses[${reponseIndex}][is_correct]" class="form-select" required>
+                        <option value="0">Faux</option>
+                        <option value="1">Vrai</option>
+                    </select>
+                </div>
+
+                <div class="col-md-6">
+                    <input type="number" name="reponses[${reponseIndex}][position]" class="form-control" placeholder="Position">
+                </div>
+
+                <div class="col-md-6">
+                    <input type="text" name="reponses[${reponseIndex}][match_pair]" class="form-control" placeholder="Match pair">
+                </div>
+
+                <div class="col-md-6">
+                    <input type="text" name="reponses[${reponseIndex}][bank_group]" class="form-control" placeholder="Groupe banque">
+                </div>
+
+                <div class="col-md-6">
+                    <input type="text" name="reponses[${reponseIndex}][flashcard_back]" class="form-control" placeholder="Dos de la flashcard">
+                </div>
+
+                <div class="col-md-12">
+                    <button type="button" class="btn btn-danger btn-sm w-100" onclick="removeReponse(this)">Supprimer</button>
+                </div>
             </div>
-            <div class="col-md-2">
-                <select name="new_question[reponses][${reponseIndex}][is_correct]" class="form-select">
-                    <option value="0">Faux</option>
-                    <option value="1">Vrai</option>
-                </select>
-            </div>
-            <div class="col-md-2">
-                <button type="button" class="btn btn-danger btn-sm" onclick="removeReponse(this)">Supprimer</button>
-            </div>
+
         `;
-            container.appendChild(newReponse);
+            container.insertAdjacentHTML('beforeend', html);
             reponseIndex++;
         }
 
@@ -779,9 +783,4 @@
             button.closest('.reponse-item').remove();
         }
     </script>
-
-
-
-
-
 @endsection
