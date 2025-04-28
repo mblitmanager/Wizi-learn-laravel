@@ -1,25 +1,27 @@
 @extends('admin.layout')
 @section('content')
-    <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
-        <div class="breadcrumb-title pe-3"></div>
-        <div class="ps-3">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-0 p-0">
-                    <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
-                    </li>
-                    <li class="breadcrumb-item active" aria-current="page">Parametres</li>
-                </ol>
-            </nav>
-        </div>
-         <div class="ms-auto">
-            <div class="btn-group">
+<div class="container">
+    <div class="shadow-lg border-0 px-2 py-2 mb-3">
+        <div class="page-breadcrumb d-none d-sm-flex align-items-center">
+            <div class="breadcrumb-title pe-3"></div>
+            <div class="ps-3">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0 p-0">
+                        <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">Gestion des paramétrages</li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="ms-auto">
+                <div class="btn-group">
 
-                <a href="{{ route('parametre.create') }}" type="button" class="btn btn-sm btn-primary px-4"> <i
-                        class="fadeIn animated bx bx-plus"></i> Nouveau utilisateur</a>
+                    <a href="{{ route('parametre.create') }}" type="button" class="btn btn-sm btn-primary px-4"> <i
+                            class="fadeIn animated bx bx-plus"></i> Nouveau utilisateur</a>
+                </div>
             </div>
         </div>
     </div>
-
     @if (session('success'))
         <div class="alert alert-success border-0 bg-success alert-dismissible fade show">
             <div class="text-white"> {{ session('success') }}</div>
@@ -33,8 +35,9 @@
         </div>
     @endif
 
-    <div class="card">
-        <div class="card-body">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
                 <div class="col-md-12">
                     <div class="card">
                         <div class="table-responsive px-4 py-4">
@@ -70,7 +73,7 @@
                                                    class="btn btn-sm btn-info text-white">
                                                     Afficher
                                                 </a>
-                                               </td>
+                                            </td>
                                         </tr>
                                     @endforeach
                                     </tbody>
@@ -79,8 +82,10 @@
                         </div>
                     </div>
                 </div>
+            </div>
         </div>
     </div>
+</div>
 @endsection
 @section('scripts')
     <script>

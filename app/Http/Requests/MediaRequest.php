@@ -24,8 +24,8 @@ class MediaRequest extends FormRequest
         return [
             'titre' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
-            'url' => 'nullable|file|mimes:jpg,jpeg,png,gif,mp4,avi,mov,pdf|max:51200',
-            'type' => 'required|string|in:video,document,image',
+            'url' => 'nullable|file|mimes:jpg,jpeg,png,gif,mp4,avi,mov,pdf,mp3|max:102400',
+            'type' => 'required|string|in:video,document,image,audio',
             'formation_id' => 'required|exists:formations,id',
         ];
     }

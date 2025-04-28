@@ -159,7 +159,7 @@ class ParametreAdminController extends Controller
                     'code_postal'
                 ]);
                 $stagiaireData['user_id'] = $user->id;
-                $stagiaireData['statut'] = 'actif';
+                $stagiaireData['statut'] = '1';
                 \App\Models\Stagiaire::updateOrCreate(['user_id' => $user->id], $stagiaireData);
                 break;
 

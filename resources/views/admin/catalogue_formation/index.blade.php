@@ -1,6 +1,8 @@
 @extends('admin.layout')
 @section('content')
-    <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
+<div class="container">
+    <div class="shadow-lg border-0 px-2 py-2 mb-3">
+    <div class="page-breadcrumb d-none d-sm-flex align-items-center ">
         <div class="breadcrumb-title pe-3"></div>
         <div class="ps-3">
             <nav aria-label="breadcrumb">
@@ -13,15 +15,13 @@
         </div>
         <div class="ms-auto">
             <div class="btn-group">
-                {{-- <button class="btn btn-sm text-white btn-info mx-2" data-bs-toggle="modal" data-bs-target="#importModal"><i
-                        class="lni lni-cloud-download"></i>importer quiz</button> --}}
 
                 <a href="{{ route('catalogue_formation.create') }}" type="button" class="btn btn-sm btn-primary px-4"> <i
                         class="fadeIn animated bx bx-plus"></i> Nouveau catalogue formation</a>
             </div>
         </div>
     </div>
-
+    </div>
     @if (session('success'))
         <div class="alert alert-success border-0 bg-success alert-dismissible fade show">
             <div class="text-white"> {{ session('success') }}</div>
@@ -41,48 +41,44 @@
                     <div class="table-responsive px-4 py-4">
                         <table id="stagiairesTable" class="table table-bordered table-striped table-hover mb-0">
                             <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Titre</th>
-                                    <th>Description</th>
-                                    <th>Duree</th>
-                                    <th>Prerequis</th>
-                                    <th>Action</th>
-                                </tr>
-                                <tr>
-                                    <th></th>
-                                    <th><input type="text" placeholder="Filtrer" class="form-control form-control-sm" />
-                                    </th>
-                                    <th><input type="text" placeholder="Filtrer" class="form-control form-control-sm" />
-                                    </th>
-                                    <th><input type="text" placeholder="Filtrer" class="form-control form-control-sm" />
-                                    </th>
-                                    <th><input type="text" placeholder="Filtrer" class="form-control form-control-sm" />
-                                    </th>
-                                    <th></th>
-                                </tr>
+                            <tr>
+                                <th>#</th>
+                                <th>Titre</th>
+                                <th>Description</th>
+                                <th>Duree</th>
+                                <th>Action</th>
+                            </tr>
+                            <tr>
+                                <th></th>
+                                <th><input type="text" placeholder="Filtrer" class="form-control form-control-sm" />
+                                </th>
+                                <th><input type="text" placeholder="Filtrer" class="form-control form-control-sm" />
+                                </th>
+                                <th><input type="text" placeholder="Filtrer" class="form-control form-control-sm" />
+                                </th>
+                                <th></th>
+                            </tr>
                             </thead>
                             <tbody>
-                                @foreach ($catalogueFormations as $row)
-                                    <tr>
-                                        <td>{{ $row->id }}</td>
-                                        <td>{{ $row->titre }}</td>
-                                        <td>{!! $row->description !!}</td>
-                                        <td>{{ $row->duree }}</td>
-                                        <td>{{ $row->prerequis }}</td>
-                                        <td>
-                                            <a href="{{ route('catalogue_formation.edit', $row->id) }}"
-                                                class="btn btn-sm btn-success ">
-                                                Modifier
-                                            </a>
-                                            <a href="{{ route('catalogue_formation.show', $row->id) }}"
-                                                class="btn btn-sm btn-secondary">
-                                                Afficher
-                                            </a>
+                            @foreach ($catalogueFormations as $row)
+                                <tr>
+                                    <td>{{ $row->id }}</td>
+                                    <td>{{ $row->titre }}</td>
+                                    <td>{!! $row->description !!}</td>
+                                    <td>{{ $row->duree }}</td>
+                                    <td>
+                                        <a href="{{ route('catalogue_formation.edit', $row->id) }}"
+                                           class="btn btn-sm btn-success ">
+                                            Modifier
+                                        </a>
+                                        <a href="{{ route('catalogue_formation.show', $row->id) }}"
+                                           class="btn btn-sm btn-secondary">
+                                            Afficher
+                                        </a>
 
-                                        </td>
-                                    </tr>
-                                @endforeach
+                                    </td>
+                                </tr>
+                            @endforeach
                             </tbody>
                         </table>
                     </div>
@@ -90,6 +86,7 @@
             </div>
         </div>
     </div>
+</div>
 @endsection
 @section('scripts')
     <script>

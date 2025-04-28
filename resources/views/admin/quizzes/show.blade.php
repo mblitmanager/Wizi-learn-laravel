@@ -20,6 +20,38 @@
         </div>
     </div>
     <div class="col-md-12">
+        <div class="card shadow-lg rounded-4 border-0">
+            <div class="card-header bg-gradient-primary text-white text-center rounded-top-4">
+                <h3 class="mb-0">
+                    <i class="bx bx-clipboard"></i> {{ $quiz->titre }}
+                </h3>
+                <p class="mb-0 small">Niveau : <span class="badge bg-light text-primary">{{ ucfirst($quiz->niveau) }}</span></p>
+            </div>
+
+            <div class="card-body p-4">
+                <div class="row mb-4">
+                    <div class="col-md-6 mb-3">
+                        <div class="p-3 bg-light rounded shadow-sm h-100">
+                            <h5><i class="bx bx-detail me-2"></i> Description</h5>
+                            <p class="text-muted">{{ $quiz->description ?? 'Aucune description disponible.' }}</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <div class="p-3 bg-light rounded shadow-sm h-100">
+                            <h5><i class="bx bx-time me-2"></i> Durée</h5>
+                            <p class="text-muted">{{ $quiz->duree ?? '-' }} minutes</p>
+
+                            <h5 class="mt-4"><i class="bx bx-target-lock me-2"></i> Points Totals</h5>
+                            <p class="text-muted">{{ $quiz->nb_points_total ?? 'Non défini' }} points</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+
         <div class="card">
             <div class="card-body">
                 <div class="main-body">

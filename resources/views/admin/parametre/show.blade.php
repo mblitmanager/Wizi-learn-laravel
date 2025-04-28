@@ -2,8 +2,8 @@
 
 @section('content')
     <div class="container py-4">
-
-        <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-4">
+        <div class="shadow-lg border-0 px-2 py-2 mb-3">
+        <div class="page-breadcrumb d-none d-sm-flex align-items-center">
             <div class="ps-3">
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb mb-0 p-0">
@@ -20,7 +20,7 @@
                 </a>
             </div>
         </div>
-
+        </div>
         <div class="row justify-content-center">
             <div class="col-md-12">
                 <div class="card shadow-lg border-0">

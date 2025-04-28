@@ -26,76 +26,81 @@
                     <div class="main-body">
                         <div class="row">
 
-                            <div class="col-lg-8">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <div class="row mb-3">
-                                            <div class="col-sm-3">
-                                                <h6 class="mb-0">Nom</h6>
-                                            </div>
-                                            <div class="col-sm-9 text-secondary">
-                                                <input type="text" class="form-control"
-                                                    value="{{ $commercial->user->name }}" readonly>
-                                            </div>
-                                        </div>
-                                        <div class="row mb-3">
-                                            <div class="col-sm-3">
-                                                <h6 class="mb-0">Prenom</h6>
-                                            </div>
-                                            <div class="col-sm-9 text-secondary">
-                                                <input type="text" class="form-control"
-                                                    value="{{ $commercial->prenom }}" readonly>
-                                            </div>
-                                        </div>
-                                        <div class="row mb-3">
-                                            <div class="col-sm-3">
-                                                <h6 class="mb-0">Email</h6>
-                                            </div>
-                                            <div class="col-sm-9 text-secondary">
-                                                <input type="text" class="form-control"
-                                                    value="{{ $commercial->user->email }}" readonly>
-                                            </div>
-                                        </div>
-
-                                    </div>
-                                </div>
-
+                            <div class="text-center mb-4">
+                                <!-- Profile Image Section -->
+                                <img src="{{ $commercial->user->image ? asset($commercial->user->image) : 'https://ui-avatars.com/api/?name=' . urlencode($commercial->user->name) . '&background=0D8ABC&color=fff&size=128' }}"
+                                     class="rounded-circle shadow" width="200" height="200" alt="Avatar" style="object-fit: cover">
+                                <h3 class="mt-3 mb-1">{{ $commercial->user->name }}</h3>
+                                <span class="badge bg-info text-dark px-3 py-1">{{ ucfirst($commercial->user->role) }}</span>
                             </div>
+
+                            <h2 class="text-center">@if($commercial->stagiaire){{$commercial->stagiaire->civilite}}@endif
+                                . {{$commercial->user->name}} @if($commercial->stagiaire){{$commercial->stagiaire->prenom}}@endif</h2>
+
+                            <hr>
+
+                            <!-- Commercial Details -->
+                            <div class="row mb-3">
+                                <label class="col-sm-4 fw-bold">Nom :</label>
+                                <div class="col-sm-8">{{ $commercial->user->name }}</div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <label class="col-sm-4 fw-bold">Prénom :</label>
+                                <div class="col-sm-8">{{ $commercial->prenom }}</div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <label class="col-sm-4 fw-bold">Email :</label>
+                                <div class="col-sm-8">
+                                    <a href="mailto:{{ $commercial->user->email }}">{{ $commercial->user->email }}</a>
+                                </div>
+                            </div>
+
                             <hr>
 
                             <div class="row">
                                 <div class="col-sm-12">
-                                    <h5 class="d-flex align-items-center mb-3">Stagiaire associées</h5>
-                                    <div class="row row-cols-1 row-cols-md-3 row-cols-lg-3 row-cols-xl-3">
-                                        <table class="table mb-0 table-hover align-middle">
-                                            <thead>
-                                                <tr>
-                                                    <th scope="col">#</th>
-                                                    <th scope="col">Nom</th>
-                                                    <th scope="col">Prenom</th>
-                                                    <th scope="col">Adresse</th>
-                                                    <th scope="col">Téléphone</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @foreach($commercial->stagiaires as $row)
-                                                    <tr>
-                                                        <th scope="row">{{ $row->id }}</th>
-                                                        <td>{{ $row->user->name }}</td>
-                                                        <td>{{ $row->prenom }}</td>
-                                                        <td>{{ $row->adresse }}</td>
-                                                        <td>{{ $row->telephone }}</td>
-                                                    </tr>
-                                                @endforeach
+                                    <h5 class="d-flex align-items-center mb-3">
+                                        <i class="bx bx-group me-2"></i> Stagiaires associés
+                                    </h5>
 
-
-                                            </tbody>
-                                        </table>
-
+                                    <!-- Accordion for Stagiaires -->
+                                    <div class="accordion" id="stagiairesAccordion">
+                                        @foreach ($commercial->stagiaires as $key => $row)
+                                            <div class="accordion-item">
+                                                <h2 class="accordion-header" id="heading{{ $key }}">
+                                                    <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                                                            data-bs-target="#collapse{{ $key }}" aria-expanded="true"
+                                                            aria-controls="collapse{{ $key }}">
+                                                        <i class="bx bx-user me-2"></i>{{ $row->user->name }} {{ $row->prenom }}
+                                                    </button>
+                                                </h2>
+                                                <div id="collapse{{ $key }}" class="accordion-collapse collapse @if($key == 0) show @endif"
+                                                     aria-labelledby="heading{{ $key }}" data-bs-parent="#stagiairesAccordion">
+                                                    <div class="accordion-body">
+                                                        <strong>Adresse:</strong> {{ $row->adresse }} <br>
+                                                        <strong>Téléphone:</strong> {{ $row->telephone }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endforeach
                                     </div>
 
+                                    <div class="text-end mt-4">
+                                        <a href="{{ route('commercials.edit', $commercial->id) }}" class="btn btn-outline-warning me-2">
+                                            <i class="bx bx-edit-alt"></i> Modifier
+                                        </a>
+                                        <form action="{{ route('commercials.destroy', $commercial->id) }}" method="POST" class="d-inline"
+                                              onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce commercial ?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button class="btn btn-outline-danger"><i class="bx bx-trash"></i> Supprimer</button>
+                                        </form>
+                                    </div>
                                 </div>
                             </div>
+
 
                         </div>
                     </div>
