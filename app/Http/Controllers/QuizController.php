@@ -1012,4 +1012,49 @@ class QuizController extends Controller
             'totalQuestions' => $participation->quiz->questions->count(),
         ]);
     }
+
+    public function getUserParticipations($quizId)
+    {
+        try {
+            // Récupérer l'utilisateur authentifié
+            $user = Auth::user();
+
+            // Vérifier si le quiz existe
+            $quiz = Quiz::findOrFail($quizId);
+
+            // Récupérer les participations de l'utilisateur pour ce quiz
+            $participations = QuizParticipation::where('user_id', $user->id)
+                ->where('quiz_id', $quizId)
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->map(function ($participation) {
+                    return [
+                        'id' => $participation->id,
+                        'score' => $participation->score,
+                        'correct_answers' => $participation->correct_answers,
+                        'time_spent' => $participation->time_spent,
+                        'status' => $participation->status,
+                        'completed_at' => $participation->completed_at ? $participation->completed_at->toISOString() : null,
+                    ];
+                });
+
+            return response()->json([
+                'quiz' => [
+                    'id' => $quiz->id,
+                    'title' => $quiz->titre,
+                ],
+                'participations' => $participations,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Erreur dans getUserParticipations', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'error' => 'Une erreur est survenue lors de la récupération des participations',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }
