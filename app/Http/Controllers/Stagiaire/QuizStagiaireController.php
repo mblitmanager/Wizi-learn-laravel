@@ -73,7 +73,15 @@ class QuizStagiaireController extends Controller
     {
         try {
             $user = JWTAuth::parseToken()->authenticate();
-            $result = $this->quizService->submitQuizAnswers($quizId, $user->id, $request->all());
+            $stagiaireId = $user->id;
+
+            // Transformer les données reçues dans le format attendu
+            $answers = [];
+            foreach ($request->all() as $answer) {
+                $answers[$answer['questionId']] = $answer['reponseId'];
+            }
+
+            $result = $this->quizService->submitQuizAnswers($quizId, $stagiaireId, $answers);
             return response()->json($result);
         } catch (JWTException $e) {
             return response()->json(['error' => 'non autorisé'], 401);

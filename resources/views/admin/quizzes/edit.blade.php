@@ -576,7 +576,7 @@
 @section('scripts')
     <script>
         document.querySelectorAll('.add-reponse-btn').forEach(button => {
-            button.addEventListener('click', function () {
+            button.addEventListener('click', function() {
                 const qIndex = this.dataset.questionIndex;
                 const container = document.getElementById(`reponses-container-${qIndex}`);
                 const template = document.getElementById(`reponse-template-${qIndex}`).innerHTML;
@@ -604,7 +604,7 @@
         });
 
         // Gérer la suppression de réponse dynamique
-        document.addEventListener('click', function (e) {
+        document.addEventListener('click', function(e) {
             if (e.target.classList.contains('remove-reponse-btn')) {
                 e.target.closest('.reponse-form').remove();
             }

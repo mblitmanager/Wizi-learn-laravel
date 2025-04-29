@@ -119,6 +119,7 @@ class ParrainageRepository implements ParrainageRepositoryInterface
 
     public function getHistory(int $stagiaireId): array
     {
+
         return Parainage::where('parrain_id', $stagiaireId)
             ->with('filleul')
             ->orderBy('created_at', 'desc')

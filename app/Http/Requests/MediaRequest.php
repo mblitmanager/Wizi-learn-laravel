@@ -26,7 +26,10 @@ class MediaRequest extends FormRequest
             'description' => 'nullable|string|max:1000',
             'url' => 'nullable|file|mimes:jpg,jpeg,png,gif,mp4,avi,mov,pdf,mp3|max:102400',
             'type' => 'required|string|in:video,document,image,audio',
-            'formation_id' => 'required|exists:formations,id',
+			'categorie' => 'required|string|in:tutoriel,astuce',
+ 			'duree' => 'nullable|integer|min:1',
+            'ordre' => 'nullable|integer|min:0',
+        	'formation_id' => 'required|exists:formations,id',
         ];
     }
 
@@ -46,6 +49,16 @@ class MediaRequest extends FormRequest
             'type.required' => 'Le type est obligatoire.',
             'type.string' => 'Le type doit être une chaîne de caractères.',
             'type.in' => 'Le type doit être soit "video", "document" ou "image".',
+
+            
+            'categorie.string' => 'La catégorie doit être une chaîne de caractères.',
+            'categorie.in' => 'La catégorie doit être soit "tutoriel" ou "astuce".',
+
+            'duree.integer' => 'La durée doit être un nombre entier.',
+            'duree.min' => 'La durée doit être supérieure à 0.',
+
+            'ordre.integer' => 'L\'ordre doit être un nombre entier.',
+            'ordre.min' => 'L\'ordre doit être supérieur ou égal à 0.',
 
             'formation_id.required' => 'L\'ID de la formation est obligatoire.',
             'formation_id.exists' => 'La formation sélectionnée n\'existe pas.',
