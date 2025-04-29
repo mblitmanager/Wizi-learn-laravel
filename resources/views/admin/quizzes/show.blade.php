@@ -25,7 +25,8 @@
                 <h3 class="mb-0">
                     <i class="bx bx-clipboard"></i> {{ $quiz->titre }}
                 </h3>
-                <p class="mb-0 small">Niveau : <span class="badge bg-light text-primary">{{ ucfirst($quiz->niveau) }}</span></p>
+                <p class="mb-0 small">Niveau : <span class="badge bg-light text-primary">{{ ucfirst($quiz->niveau) }}</span>
+                </p>
             </div>
 
             <div class="card-body p-4">
@@ -86,13 +87,13 @@
                                                         <tr>
                                                             <td>{{ $row->text }}</td>
                                                             <td>{{ $row->type }}</td>
-                                                            <td>
+                                                            <td class="text-center">
                                                                 <a href="{{ route('question.edit', $row->id) }}"
                                                                     class="btn btn-sm btn-success ">
                                                                     Modifier
                                                                 </a>
                                                                 <a href="{{ route('question.show', $row->id) }}"
-                                                                    class="btn btn-sm btn-secondary">
+                                                                    class="btn btn-sm btn-info">
                                                                     Afficher
                                                                 </a>
 

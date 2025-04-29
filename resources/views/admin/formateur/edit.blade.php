@@ -15,7 +15,8 @@
                 </div>
                 <div class="ms-auto">
                     <div class="btn-group">
-                        <a href="{{ route('formateur.index') }}" type="button" class="btn btn-primary">Retour</a>
+                        <a href="{{ route('formateur.index') }}" type="button" class="btn btn-sm btn-primary"><i
+                                class="fadeIn animated bx bx-chevron-left-circle"></i>Retour</a>
                     </div>
                 </div>
             </div>

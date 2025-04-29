@@ -76,7 +76,7 @@
                                                     Modifier
                                                 </a>
                                                 <a href="{{ route('catalogue_formation.show', $row->id) }}"
-                                                    class="btn btn-sm btn-secondary">
+                                                    class="btn btn-sm btn-info">
                                                     Afficher
                                                 </a>
 

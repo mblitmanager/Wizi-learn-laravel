@@ -92,14 +92,14 @@
                                 <table id="stagiairesTable" class="table table-bordered table-striped table-hover mb-0">
                                     <thead>
                                         <tr>
-                                            <th>#</th>
+
                                             <th>Nom</th>
                                             <th>Prenom</th>
                                             <th>Email</th>
                                             <th>Action</th>
                                         </tr>
                                         <tr>
-                                            <th></th>
+
                                             <th><input type="text" placeholder="Filtrer"
                                                     class="form-control form-control-sm" />
                                             </th>
@@ -115,17 +115,17 @@
                                     <tbody>
                                         @foreach ($formateurs as $row)
                                             <tr>
-                                                <td>{{ $row->id }}</td>
+
                                                 <td>{{ $row->user->name }}</td>
                                                 <td>{{ $row->prenom }}</td>
                                                 <td>{{ $row->user->email }}</td>
-                                                <td>
+                                                <td class="text-center">
                                                     <a href="{{ route('formateur.edit', $row->id) }}"
                                                         class="btn btn-sm btn-success ">
                                                         Modifier
                                                     </a>
                                                     <a href="{{ route('formateur.show', $row->id) }}"
-                                                        class="btn btn-sm btn-secondary">
+                                                        class="btn btn-sm btn-info">
                                                         Afficher
                                                     </a>
 

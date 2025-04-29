@@ -85,52 +85,56 @@
         <div class="col-md-12">
             <div class="card">
                 <div class="card-body">
-                    <div class="table-responsive px-4 py-4">
-                        <table id="stagiairesTable" class="table table-bordered table-striped table-hover mb-0">
+                    <div class="card">
+                        <div class="table-responsive px-4 py-4">
+                            <table id="stagiairesTable" class="table table-bordered table-striped table-hover mb-0">
 
-                            <thead>
-                                <tr>
-
-                                    <th>Nom</th>
-                                    <th>Prenom</th>
-                                    <th>Email</th>
-                                    <th>Action</th>
-                                </tr>
-                                <tr>
-
-                                    <th><input type="text" placeholder="Filtrer" class="form-control form-control-sm" />
-                                    </th>
-                                    <th><input type="text" placeholder="Filtrer" class="form-control form-control-sm" />
-                                    </th>
-                                    <th><input type="text" placeholder="Filtrer" class="form-control form-control-sm" />
-                                    </th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($commercial as $row)
+                                <thead>
                                     <tr>
 
-                                        <td>{{ $row->user->name }}</td>
-                                        <td>{{ $row->prenom }}</td>
-                                        <td>{{ $row->user->email }}</td>
-                                        <td class="text-center">
-                                            <a href="{{ route('commercials.edit', $row->id) }}"
-                                                class="btn btn-sm btn-success">
-                                                Modifier
-                                            </a>
-                                            <a href="{{ route('commercials.show', $row->id) }}"
-                                                class="btn btn-sm btn-secondary">
-                                                Afficher
-                                            </a>
-
-                                        </td>
+                                        <th>Nom</th>
+                                        <th>Prenom</th>
+                                        <th>Email</th>
+                                        <th>Action</th>
                                     </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
+                                    <tr>
 
+                                        <th><input type="text" placeholder="Filtrer"
+                                                class="form-control form-control-sm" />
+                                        </th>
+                                        <th><input type="text" placeholder="Filtrer"
+                                                class="form-control form-control-sm" />
+                                        </th>
+                                        <th><input type="text" placeholder="Filtrer"
+                                                class="form-control form-control-sm" />
+                                        </th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($commercial as $row)
+                                        <tr>
+
+                                            <td>{{ $row->user->name }}</td>
+                                            <td>{{ $row->prenom }}</td>
+                                            <td>{{ $row->user->email }}</td>
+                                            <td class="text-center">
+                                                <a href="{{ route('commercials.edit', $row->id) }}"
+                                                    class="btn btn-sm btn-success">
+                                                    Modifier
+                                                </a>
+                                                <a href="{{ route('commercials.show', $row->id) }}"
+                                                    class="btn btn-sm btn-info">
+                                                    Afficher
+                                                </a>
+
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

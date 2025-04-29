@@ -28,16 +28,21 @@
                     <div class="card-body p-5">
                         <div class="text-center mb-4">
                             <!-- Profile Image Section -->
-                            <img
-                                src="{{ $formateur->user->image ? asset($formateur->user->image) : 'https://ui-avatars.com/api/?name=' . urlencode($formateur->user->name) . '&background=0D8ABC&color=fff&size=128' }}"
+                            <img src="{{ $formateur->user->image ? asset($formateur->user->image) : 'https://ui-avatars.com/api/?name=' . urlencode($formateur->user->name) . '&background=0D8ABC&color=fff&size=128' }}"
                                 class="rounded-circle shadow" width="200" height="200" alt="Avatar"
                                 style="object-fit: cover">
                             <h3 class="mt-3 mb-1">{{ $formateur->user->name }}</h3>
                             <span class="badge bg-info text-dark px-3 py-1">{{ ucfirst($formateur->user->role) }}</span>
                         </div>
 
-                        <h2 class="text-center">@if($formateur->stagiaire){{$formateur->stagiaire->civilite}}@endif
-                            . {{$formateur->user->name}} @if($formateur->stagiaire){{$formateur->stagiaire->prenom}}@endif</h2>
+                        <h2 class="text-center">
+                            @if ($formateur->stagiaire)
+                                {{ $formateur->stagiaire->civilite }}
+                            @endif
+                            . {{ $formateur->user->name }} @if ($formateur->stagiaire)
+                                {{ $formateur->stagiaire->prenom }}
+                            @endif
+                        </h2>
 
                         <hr>
 
@@ -65,14 +70,14 @@
                                 <div class="accordion-item">
                                     <h2 class="accordion-header" id="heading{{ $key }}">
                                         <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                                                data-bs-target="#collapse{{ $key }}" aria-expanded="true"
-                                                aria-controls="collapse{{ $key }}">
+                                            data-bs-target="#collapse{{ $key }}" aria-expanded="true"
+                                            aria-controls="collapse{{ $key }}">
                                             <i class="bx bx-book-open me-2"></i>{{ $formation->titre }}
                                         </button>
                                     </h2>
                                     <div id="collapse{{ $key }}"
-                                         class="accordion-collapse collapse @if($key == 0) show @endif"
-                                         aria-labelledby="heading{{ $key }}" data-bs-parent="#formationsAccordion">
+                                        class="accordion-collapse collapse @if ($key == 0) show @endif"
+                                        aria-labelledby="heading{{ $key }}" data-bs-parent="#formationsAccordion">
                                         <div class="accordion-body">
                                             <strong>Description:</strong> {{ $formation->description }} <br>
                                             <strong>Durée:</strong> {{ $formation->duree }}
@@ -85,15 +90,14 @@
                         <!-- Actions Section -->
                         <div class="text-end mt-4">
                             <a href="{{ route('formateur.edit', $formateur->id) }}"
-                               class="btn btn-outline-warning me-2">
+                                class="btn btn-sm btn-outline-warning me-2">
                                 <i class="bx bx-edit-alt"></i> Modifier
                             </a>
-                            <form action="{{ route('formateur.destroy', $formateur->id) }}" method="POST"
-                                  class="d-inline"
-                                  onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce formateur ?');">
+                            <form action="{{ route('formateur.destroy', $formateur->id) }}" method="POST" class="d-inline"
+                                onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce formateur ?');">
                                 @csrf
                                 @method('DELETE')
-                                <button class="btn btn-outline-danger"><i class="bx bx-trash"></i> Supprimer</button>
+                                <button class="btn btn-sm btn-outline-danger"><i class="bx bx-trash"></i> Supprimer</button>
                             </form>
                         </div>
                     </div>

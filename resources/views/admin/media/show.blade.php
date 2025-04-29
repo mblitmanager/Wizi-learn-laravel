@@ -70,6 +70,8 @@
                                     <li class="list-group-item"><strong>Type :</strong> {{ $media->type }}</li>
                                     <li class="list-group-item"><strong>Formation liée :</strong>
                                         {{ $media->formation->titre ?? 'Aucune' }}</li>
+                                    <li class="list-group-item"><strong>Catégorie :</strong>
+                                        {{ $media->categorie ?? 'Aucune' }}</li>
                                 </ul>
                                 <div class="text-end">
                                     <a href="{{ route('medias.edit', $media->id) }}" class="btn btn-warning">

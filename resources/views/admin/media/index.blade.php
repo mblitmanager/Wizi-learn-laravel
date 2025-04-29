@@ -24,49 +24,57 @@
         <div class="col-md-12">
             <div class="card">
                 <div class="card-body">
-                    <div class="table-responsive px-3 py-3">
-                        <table id="stagiairesTable" class="table table-bordered table-striped table-hover mb-0">
+                    <div class="card">
+                        <div class="table-responsive px-3 py-3">
+                            <table id="stagiairesTable" class="table table-bordered table-striped table-hover mb-0">
 
-                            <thead>
-                            <tr>
-                                <th>Titre</th>
-                                <th>Description</th>
-                                <th>Type</th>
-                                <th>url</th>
-                                <th>Action</th>
-                            </tr>
-                            <tr>
-                                <th><input type="text" placeholder="Filtrer" class="form-control form-control-sm" />
-                                </th>
-                                <th><input type="text" placeholder="Filtrer" class="form-control form-control-sm" />
-                                </th>
-                                <th><input type="text" placeholder="Filtrer" class="form-control form-control-sm" />
-                                </th>
-                                <th><input type="text" placeholder="Filtrer" class="form-control form-control-sm" />
-                                </th>
-                                <th></th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            @foreach ($media as $row)
-                                <tr>
-                                    <td>{{ $row->titre }}</td>
-                                    <td>{!! $row->description !!}</td>
-                                    <td>{{ $row->type }}</td>
-                                    <td>{{ $row->url }}</td>
-                                    <td>
-                                        <a href="{{ route('medias.edit', $row->id) }}" class="btn btn-sm btn-success ">
-                                            Modifier
-                                        </a>
-                                        <a href="{{ route('medias.show', $row->id) }}" class="btn btn-sm btn-primary ">
-                                            Afficher
-                                        </a>
+                                <thead>
+                                    <tr>
+                                        <th>Titre</th>
+                                        <th>Description</th>
+                                        <th>Type</th>
+                                        <th>url</th>
+                                        <th>Action</th>
+                                    </tr>
+                                    <tr>
+                                        <th><input type="text" placeholder="Filtrer"
+                                                class="form-control form-control-sm" />
+                                        </th>
+                                        <th><input type="text" placeholder="Filtrer"
+                                                class="form-control form-control-sm" />
+                                        </th>
+                                        <th><input type="text" placeholder="Filtrer"
+                                                class="form-control form-control-sm" />
+                                        </th>
+                                        <th><input type="text" placeholder="Filtrer"
+                                                class="form-control form-control-sm" />
+                                        </th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($media as $row)
+                                        <tr>
+                                            <td>{{ $row->titre }}</td>
+                                            <td>{!! $row->description !!}</td>
+                                            <td>{{ $row->type }}</td>
+                                            <td>{{ $row->url }}</td>
+                                            <td>
+                                                <a href="{{ route('medias.edit', $row->id) }}"
+                                                    class="btn btn-sm btn-success ">
+                                                    Modifier
+                                                </a>
+                                                <a href="{{ route('medias.show', $row->id) }}"
+                                                    class="btn btn-sm btn-primary ">
+                                                    Afficher
+                                                </a>
 
-                                    </td>
-                                </tr>
-                            @endforeach
-                            </tbody>
-                        </table>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
