@@ -10,7 +10,8 @@
                         <ol class="breadcrumb mb-0 p-0">
                             <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
                             </li>
-                            <li class="breadcrumb-item active" aria-current="page">Gestion pôle relation client(PRC)</li>
+                            <li class="breadcrumb-item active text-uppercase fw-bold" aria-current="page">Gestion pôle
+                                relation client(PRC)</li>
                         </ol>
                     </nav>
                 </div>
@@ -28,8 +29,9 @@
             <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="exampleModalLabel">Importer pôle relation client</h5>
+                        <div class="modal-header  bg-primary">
+                            <h5 class="modal-title text-white" id="exampleModalLabel">Importer pôle relation
+                                client</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
@@ -50,7 +52,7 @@
                                 </div>
 
 
-                                <button type="submit" class="btn btn-primary">Importer</button>
+                                <button type="submit" class="btn btn-sm btn-primary">Importer</button>
                             </form>
                         </div>
                     </div>

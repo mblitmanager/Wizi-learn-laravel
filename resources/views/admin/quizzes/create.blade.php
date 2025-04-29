@@ -213,7 +213,7 @@
                                     </div>
                                     <div class="row">
                                         <div class="col-md-6">
-                                            <label for="input1" class="form-label">Type de réponse</label>
+                                            <label for="input1" class="form-label">Position</label>
                                             <input type="number" name="reponse[position][]" placeholder="Position"
                                                 class="form-control mb-2">
                                         </div>

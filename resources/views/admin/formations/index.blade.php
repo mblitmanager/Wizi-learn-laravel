@@ -10,7 +10,8 @@
                         <ol class="breadcrumb mb-0 p-0">
                             <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
                             </li>
-                            <li class="breadcrumb-item active" aria-current="page">Gestion domain formation</li>
+                            <li class="breadcrumb-item active text-uppercase fw-bold" aria-current="page">Gestion domain
+                                formation</li>
                         </ol>
                     </nav>
                 </div>
@@ -64,7 +65,7 @@
                                                     Modifier
                                                 </a>
                                                 <a href="{{ route('formations.show', $row->id) }}"
-                                                    class="btn btn-sm btn-secondary">
+                                                    class="btn btn-sm btn-info">
                                                     Afficher
                                                 </a>
 

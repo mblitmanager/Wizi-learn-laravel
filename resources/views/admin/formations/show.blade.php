@@ -10,7 +10,8 @@
                             <li class="breadcrumb-item"><a href="{{ route('pole_relation_clients.index') }}"><i
                                         class="bx bx-home-alt"></i></a>
                             </li>
-                            <li class="breadcrumb-item active" aria-current="page">Détails du domain de formation :
+                            <li class="breadcrumb-item active text-uppercase fw-bold" aria-current="page">Détails du domain
+                                de formation :
                                 {{ $formation->titre }}</li>
                         </ol>
                     </nav>

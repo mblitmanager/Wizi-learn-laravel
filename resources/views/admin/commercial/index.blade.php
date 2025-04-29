@@ -10,14 +10,16 @@
                         <ol class="breadcrumb mb-0 p-0">
                             <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
                             </li>
-                            <li class="breadcrumb-item active" aria-current="page">Gestion commerciaux</li>
+                            <li class="breadcrumb-item active text-uppercase fw-bold" aria-current="page">Gestion des
+                                commerciaux
+                            </li>
                         </ol>
                     </nav>
                 </div>
                 <div class="ms-auto">
                     <div class="btn-group">
-                        <button class="btn btn-sm text-white btn-info mx-2" data-bs-toggle="modal"
-                            data-bs-target="#importModal"><i class="lni lni-cloud-download"></i>importer commercial</button>
+                        <button class="btn btn-sm  btn-info mx-2" data-bs-toggle="modal" data-bs-target="#importModal"><i
+                                class="lni  lni-cloud-download"></i>importer commercial</button>
                         <a href="{{ route('commercials.create') }}" type="button" class="btn btn-sm btn-primary px-4"> <i
                                 class="fadeIn animated bx bx-plus"></i> Nouveau commercial</a>
                     </div>
@@ -28,8 +30,8 @@
             <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="exampleModalLabel">Importer commercial</h5>
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title text-white" id="exampleModalLabel">Importer commercial</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
@@ -50,7 +52,7 @@
                                 </div>
 
 
-                                <button type="submit" class="btn btn-primary">Importer</button>
+                                <button type="submit" class="btn btn-sm btn-primary">Importer</button>
                             </form>
                         </div>
                     </div>

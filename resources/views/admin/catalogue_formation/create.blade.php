@@ -12,7 +12,8 @@
                             <li class="breadcrumb-item"><a href="{{ route('catalogue_formation.index') }}"><i
                                         class="bx bx-home-alt"></i></a>
                             </li>
-                            <li class="breadcrumb-item active" aria-current="page">Création catalogue Formation</li>
+                            <li class="breadcrumb-item active text-uppercase fw-bold" aria-current="page">Création catalogue
+                                Formation</li>
                         </ol>
                     </nav>
                 </div>

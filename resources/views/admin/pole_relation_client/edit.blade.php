@@ -11,7 +11,8 @@
                             <li class="breadcrumb-item"><a href="{{ route('pole_relation_clients.index') }}"><i
                                         class="bx bx-home-alt"></i></a>
                             </li>
-                            <li class="breadcrumb-item active" aria-current="page">Modification d'un pôle relation client
+                            <li class="breadcrumb-item active text-uppercase fw-bold" aria-current="page">Modification d'un
+                                pôle relation client
                             </li>
                         </ol>
                     </nav>

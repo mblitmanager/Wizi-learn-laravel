@@ -11,7 +11,8 @@
                             <li class="breadcrumb-item"><a href="{{ route('stagiaires.index') }}"><i
                                         class="bx bx-home-alt"></i></a>
                             </li>
-                            <li class="breadcrumb-item active" aria-current="page">Gestion des stagiaires</li>
+                            <li class="breadcrumb-item active text-uppercase fw-bold" aria-current="page">Gestion des
+                                stagiaires</li>
                         </ol>
                     </nav>
                 </div>
@@ -30,8 +31,8 @@
             <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="exampleModalLabel">Importer des stagiaires</h5>
+                        <div class="modal-header  bg-primary">
+                            <h5 class="modal-title text-white" id="exampleModalLabel">Importer des stagiaires</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
@@ -52,7 +53,7 @@
                                 </div>
 
 
-                                <button type="submit" class="btn btn-primary">Importer</button>
+                                <button type="submit" class="btn btn-sm btn-primary">Importer</button>
                             </form>
                         </div>
                     </div>
@@ -163,6 +164,7 @@
             </div>
         </div>
     </div>
+
 @endsection
 @section('scripts')
     <script>

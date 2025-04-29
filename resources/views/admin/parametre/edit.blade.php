@@ -3,24 +3,25 @@
 @section('content')
     <div class="container">
         <div class="shadow-lg border-0 px-2 py-2 mb-3">
-        <div class="page-breadcrumb d-none d-sm-flex align-items-center">
-            <div class="ps-3">
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb mb-0 p-0">
-                        <li class="breadcrumb-item"><a href="{{ route('parametre.index') }}"><i
-                                    class="bx bx-home-alt"></i></a>
-                        </li>
-                        <li class="breadcrumb-item active" aria-current="page">Utilisateur</li>
-                    </ol>
-                </nav>
-            </div>
-            <div class="ms-auto">
-                <div class="btn-group">
-                    <a href="{{ route('parametre.index') }}" type="button" class="btn btn-sm btn-primary"><i
-                            class="fadeIn animated bx bx-chevron-left-circle"></i>Retour</a>
+            <div class="page-breadcrumb d-none d-sm-flex align-items-center">
+                <div class="ps-3">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0 p-0">
+                            <li class="breadcrumb-item"><a href="{{ route('parametre.index') }}"><i
+                                        class="bx bx-home-alt"></i></a>
+                            </li>
+                            <li class="breadcrumb-item active text-uppercase fw-bold" aria-current="page">Modification d'un
+                                utilisateur</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div class="ms-auto">
+                    <div class="btn-group">
+                        <a href="{{ route('parametre.index') }}" type="button" class="btn btn-sm btn-primary"><i
+                                class="fadeIn animated bx bx-chevron-left-circle"></i>Retour</a>
+                    </div>
                 </div>
             </div>
-        </div>
         </div>
         @if (session('success'))
             <div class="alert alert-success border-0 bg-success alert-dismissible fade show">
@@ -61,12 +62,12 @@
         function toggleRoleFields() {
             const role = document.getElementById('role').value;
             document.getElementById('stagiaire-fields').style.display = role === 'stagiaire' ? '' : 'none';
-            document.getElementById('other-role-fields').style.display = ['formateur', 'commercial', 'pole relation client'].includes(role) ? '' : 'none';
+            document.getElementById('other-role-fields').style.display = ['formateur', 'commercial', 'pole relation client']
+                .includes(role) ? '' : 'none';
         }
 
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             toggleRoleFields(); // exécuter au chargement
         });
     </script>
-
 @endsection
