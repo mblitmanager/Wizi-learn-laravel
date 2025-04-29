@@ -1,208 +1,219 @@
 @extends('admin.layout')
 @section('title', 'Ajouter un Quiz')
 @section('content')
-  <div class="container">
-      <div class="shadow-lg border-0 px-2 py-2 mb-3">
-          <div class="page-breadcrumb d-none d-sm-flex align-items-center">
+    <div class="container">
+        <div class="shadow-lg border-0 px-2 py-2 mb-3">
+            <div class="page-breadcrumb d-none d-sm-flex align-items-center">
 
-              <div class="ps-3">
-                  <nav aria-label="breadcrumb">
-                      <ol class="breadcrumb mb-0 p-0">
-                          <li class="breadcrumb-item"><a href="{{ route('catalogue_formation.index') }}"><i
-                                      class="bx bx-home-alt"></i></a>
-                          </li>
-                          <li class="breadcrumb-item active" aria-current="page">Modification d'un catalogue de formations.</li>
-                      </ol>
-                  </nav>
-              </div>
-              <div class="ms-auto">
-                  <div class="btn-group">
-                      <a href="{{ route('catalogue_formation.index') }}" type="button" class="btn btn-sm btn-primary mx-4"> <i
-                              class="fadeIn animated bx bx-chevron-left-circle"></i>Retour</a>
-                  </div>
-              </div>
-          </div>
-      </div>
-      <div class="col-md-12">
+                <div class="ps-3">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0 p-0">
+                            <li class="breadcrumb-item"><a href="{{ route('catalogue_formation.index') }}"><i
+                                        class="bx bx-home-alt"></i></a>
+                            </li>
+                            <li class="breadcrumb-item active" aria-current="page">Modification d'un catalogue de formations.
+                            </li>
+                        </ol>
+                    </nav>
+                </div>
+                <div class="ms-auto">
+                    <div class="btn-group">
+                        <a href="{{ route('catalogue_formation.index') }}" type="button"
+                            class="btn btn-sm btn-primary mx-4"> <i
+                                class="fadeIn animated bx bx-chevron-left-circle"></i>Retour</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
 
 
 
-          @if (session('success'))
-              <div class="alert alert-success border-0 bg-success alert-dismissible fade show">
-                  <div class="text-white"> {{ session('success') }}</div>
-                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-              </div>
-          @endif
-          @if (session('error'))
-              <div class="alert alert-danger border-0 bg-danger alert-dismissible fade show">
-                  <div class="text-white"> {{ session('error') }}</div>
-                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-              </div>
-          @endif
+            @if (session('success'))
+                <div class="alert alert-success border-0 bg-success alert-dismissible fade show">
+                    <div class="text-white"> {{ session('success') }}</div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+            @if (session('error'))
+                <div class="alert alert-danger border-0 bg-danger alert-dismissible fade show">
+                    <div class="text-white"> {{ session('error') }}</div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
 
-          <div class="card">
-              <form action="{{ route('catalogue_formation.update', $catalogueFormation->id) }}" method="POST"
+            <div class="card">
+                <form action="{{ route('catalogue_formation.update', $catalogueFormation->id) }}" method="POST"
                     class="px-4 py-4" enctype="multipart/form-data">
-                  @csrf
-                  @method('PUT')
+                    @csrf
+                    @method('PUT')
 
-                  <div class="card mb-4 px-4">
-                      <div class="card-body">
-                          <h5 class="text-wizi">Modifier le catalogue formation</h5>
+                    <div class="card mb-4 px-4">
+                        <div class="card-body">
+                            <h5 class="text-wizi">Modifier le catalogue formation</h5>
 
-                          <div class="row">
-                              <div class="col-md-6">
-                                  <label for="titre" class="form-label">Titre</label>
-                                  <input type="text" name="titre" id="titre"
-                                         class="form-control mb-2 @error('titre') is-invalid @enderror"
-                                         value="{{ old('titre', $catalogueFormation->titre) }}" required>
-                                  @error('titre')
-                                  <div class="invalid-feedback">{{ $message }}</div>
-                                  @enderror
-                              </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label for="titre" class="form-label">Titre</label>
+                                    <input type="text" name="titre" id="titre"
+                                        class="form-control mb-2 @error('titre') is-invalid @enderror"
+                                        value="{{ old('titre', $catalogueFormation->titre) }}" required>
+                                    @error('titre')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
 
-                              <div class="col-md-6">
-                                  <label for="description" class="form-label">Description</label>
-                                  <textarea name="description" id="description" class="form-control mb-2 @error('description') is-invalid @enderror">{{ old('description', $catalogueFormation->description) }}</textarea>
-                                  @error('description')
-                                  <div class="invalid-feedback">{{ $message }}</div>
-                                  @enderror
-                              </div>
-                          </div>
+                                <div class="col-md-6">
+                                    <label for="description" class="form-label">Description</label>
+                                    <textarea name="description" id="description" class="form-control mb-2 @error('description') is-invalid @enderror">{{ old('description', $catalogueFormation->description) }}</textarea>
+                                    @error('description')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
 
-                          <div class="row">
-                              <div class="col-md-6">
-                                  <label for="duree" class="form-label">Durée (en heures)</label>
-                                  <input type="number" name="duree" id="duree"
-                                         class="form-control mb-2 @error('duree') is-invalid @enderror"
-                                         value="{{ old('duree', $catalogueFormation->duree) }}" required>
-                                  @error('duree')
-                                  <div class="invalid-feedback">{{ $message }}</div>
-                                  @enderror
-                              </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label for="duree" class="form-label">Durée (en heures)</label>
+                                    <input type="number" name="duree" id="duree"
+                                        class="form-control mb-2 @error('duree') is-invalid @enderror"
+                                        value="{{ old('duree', $catalogueFormation->duree) }}" required>
+                                    @error('duree')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
 
-                              <div class="col-md-6">
-                                  <label for="formation_id" class="form-label">Formation</label>
-                                  <select name="formation_id" id="formation_id"
-                                          class="form-select mb-2 @error('formation_id') is-invalid @enderror" required>
-                                      <option value="">Sélectionnez une formation</option>
-                                      @foreach ($formations as $f)
-                                          <option value="{{ $f->id }}"
-                                              {{ old('formation_id', $catalogueFormation->formation_id) == $f->id ? 'selected' : '' }}>
-                                              {{ $f->titre }}
-                                          </option>
-                                      @endforeach
-                                  </select>
-                                  @error('formation_id')
-                                  <div class="invalid-feedback d-block">{{ $message }}</div>
-                                  @enderror
-                              </div>
-                          </div>
+                                <div class="col-md-6">
+                                    <label for="formation_id" class="form-label">Formation</label>
+                                    <select name="formation_id" id="formation_id"
+                                        class="form-select mb-2 @error('formation_id') is-invalid @enderror" required>
+                                        <option value="">Sélectionnez une formation</option>
+                                        @foreach ($formations as $f)
+                                            <option value="{{ $f->id }}"
+                                                {{ old('formation_id', $catalogueFormation->formation_id) == $f->id ? 'selected' : '' }}>
+                                                {{ $f->titre }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    @error('formation_id')
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
 
-                          <div class="row">
-                              <div class="col-md-6">
-                                  <label for="certification" class="form-label">Certification</label>
-                                  <input type="text" name="certification" id="certification"
-                                         class="form-control mb-2 @error('certification') is-invalid @enderror"
-                                         value="{{ old('certification', $catalogueFormation->certification) }}">
-                                  @error('certification')
-                                  <div class="invalid-feedback">{{ $message }}</div>
-                                  @enderror
-                              </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label for="certification" class="form-label">Certification</label>
+                                    <input type="text" name="certification" id="certification"
+                                        class="form-control mb-2 @error('certification') is-invalid @enderror"
+                                        value="{{ old('certification', $catalogueFormation->certification) }}">
+                                    @error('certification')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
 
-                              <div class="col-md-6">
-                                  <label for="prerequis" class="form-label">Prérequis</label>
-                                  <input type="text" name="prerequis" id="prerequis"
-                                         class="form-control mb-2 @error('prerequis') is-invalid @enderror"
-                                         value="{{ old('prerequis', $catalogueFormation->prerequis) }}">
-                                  @error('prerequis')
-                                  <div class="invalid-feedback">{{ $message }}</div>
-                                  @enderror
-                              </div>
-                          </div>
+                                <div class="col-md-6">
+                                    <label for="prerequis" class="form-label">Prérequis</label>
+                                    <input type="text" name="prerequis" id="prerequis"
+                                        class="form-control mb-2 @error('prerequis') is-invalid @enderror"
+                                        value="{{ old('prerequis', $catalogueFormation->prerequis) }}">
+                                    @error('prerequis')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
 
-                          <div class="row">
-                              <div class="col-md-6">
-                                  <label for="image_url" class="form-label">Image</label>
-                                  <input type="file" name="image_url" id="image_url"
-                                         class="form-control mb-2 @error('image_url') is-invalid @enderror">
-                                  @error('image_url')
-                                  <div class="invalid-feedback d-block">{{ $message }}</div>
-                                  @enderror
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label for="image_url" class="form-label">Image</label>
+                                    <input type="file" name="image_url" id="image_url"
+                                        class="form-control mb-2 @error('image_url') is-invalid @enderror">
+                                    @error('image_url')
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                    @enderror
 
-                                  @if ($catalogueFormation->image_url)
-                                      @php
-                                          $extension = strtolower(pathinfo($catalogueFormation->image_url, PATHINFO_EXTENSION));
-                                      @endphp
+                                    @if ($catalogueFormation->image_url)
+                                        @php
+                                            $extension = strtolower(
+                                                pathinfo($catalogueFormation->image_url, PATHINFO_EXTENSION),
+                                            );
+                                        @endphp
 
-                                      <div class="mt-2 text-center">
-                                          @if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp']))
-                                              <img src="{{ asset('storage/' . $catalogueFormation->image_url) }}" alt="Image actuelle" class="img-fluid rounded shadow" style="max-width: 250px;">
-                                          @elseif (in_array($extension, ['mp4', 'webm', 'ogg']))
-                                              <video controls class="rounded shadow" style="max-width: 100%; height: auto;">
-                                                  <source src="{{ asset('storage/' . $catalogueFormation->image_url) }}" type="video/{{ $extension }}">
-                                                  Votre navigateur ne supporte pas la lecture de vidéos.
-                                              </video>
-                                          @elseif (in_array($extension, ['mp3', 'wav', 'ogg']))
-                                              <audio controls class="rounded shadow mt-2" style="width: 100%;">
-                                                  <source src="{{ asset('storage/' . $catalogueFormation->image_url) }}" type="audio/{{ $extension }}">
-                                                  Votre navigateur ne supporte pas la lecture d'audio.
-                                              </audio>
-                                          @else
-                                              <a href="{{ asset('storage/' . $catalogueFormation->image_url) }}" target="_blank" class="btn btn-outline-primary">
-                                                  Télécharger le fichier
-                                              </a>
-                                          @endif
-                                      </div>
-                                  @endif
+                                        <div class="mt-2 text-center">
+                                            @if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp']))
+                                                <img src="{{ asset('storage/' . $catalogueFormation->image_url) }}"
+                                                    alt="Image actuelle" class="img-fluid rounded shadow"
+                                                    style="max-width: 250px;">
+                                            @elseif (in_array($extension, ['mp4', 'webm', 'ogg']))
+                                                <video controls class="rounded shadow"
+                                                    style="max-width: 100%; height: auto;">
+                                                    <source src="{{ asset('storage/' . $catalogueFormation->image_url) }}"
+                                                        type="video/{{ $extension }}">
+                                                    Votre navigateur ne supporte pas la lecture de vidéos.
+                                                </video>
+                                            @elseif (in_array($extension, ['mp3', 'wav', 'ogg']))
+                                                <audio controls class="rounded shadow mt-2" style="width: 100%;">
+                                                    <source src="{{ asset('storage/' . $catalogueFormation->image_url) }}"
+                                                        type="audio/{{ $extension }}">
+                                                    Votre navigateur ne supporte pas la lecture d'audio.
+                                                </audio>
+                                            @else
+                                                <a href="{{ asset('storage/' . $catalogueFormation->image_url) }}"
+                                                    target="_blank" class="btn btn-outline-primary">
+                                                    Télécharger le fichier
+                                                </a>
+                                            @endif
+                                        </div>
+                                    @endif
 
-                              </div>
+                                </div>
 
-                              <div class="col-md-6">
-                                  <label for="tarif" class="form-label">Tarif</label>
-                                  <input type="number" name="tarif" id="tarif"
-                                         class="form-control mb-2 @error('tarif') is-invalid @enderror"
-                                         value="{{ old('tarif', $catalogueFormation->tarif) }}" required>
-                                  @error('tarif')
-                                  <div class="invalid-feedback">{{ $message }}</div>
-                                  @enderror
-                              </div>
-                          </div>
+                                <div class="col-md-6">
+                                    <label for="tarif" class="form-label">Tarif</label>
+                                    <input type="number" name="tarif" id="tarif"
+                                        class="form-control mb-2 @error('tarif') is-invalid @enderror"
+                                        value="{{ old('tarif', $catalogueFormation->tarif) }}" required>
+                                    @error('tarif')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
 
-                          <div class="row">
-                              <div class="col-md-6">
-                                  <label for="statut" class="form-label">Statut</label>
-                                  <select name="statut" id="statut"
-                                          class="form-select mb-2 @error('statut') is-invalid @enderror" required>
-                                      <option value="">Sélectionnez un statut</option>
-                                      <option value="1"
-                                          {{ old('statut', $catalogueFormation->statut) == '1' ? 'selected' : '' }}>Publié
-                                      </option>
-                                      <option value="0"
-                                          {{ old('statut', $catalogueFormation->statut) == '0' ? 'selected' : '' }}>Non
-                                          publié
-                                      </option>
-                                  </select>
-                                  @error('statut')
-                                  <div class="invalid-feedback d-block">{{ $message }}</div>
-                                  @enderror
-                              </div>
-                          </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label for="statut" class="form-label">Statut</label>
+                                    <select name="statut" id="statut"
+                                        class="form-select mb-2 @error('statut') is-invalid @enderror" required>
+                                        <option value="">Sélectionnez un statut</option>
+                                        <option value="1"
+                                            {{ old('statut', $catalogueFormation->statut) == '1' ? 'selected' : '' }}>
+                                            Publié
+                                        </option>
+                                        <option value="0"
+                                            {{ old('statut', $catalogueFormation->statut) == '0' ? 'selected' : '' }}>Non
+                                            publié
+                                        </option>
+                                    </select>
+                                    @error('statut')
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
 
-                      </div>
-                  </div>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-success btn-sm px-4">
+                            <i class="lni lni-checkmark-circle"></i> Mettre à jour
+                        </button>
+                    </div>
+                </form>
 
-                  <div class="text-center">
-                      <button type="submit" class="btn btn-success btn-sm px-4">
-                          <i class="lni lni-checkmark-circle"></i> Mettre à jour
-                      </button>
-                  </div>
-              </form>
 
-
-          </div>
-      </div>
-  </div>
+            </div>
+        </div>
+    </div>
 @endsection
 @section('scripts')
     <script>

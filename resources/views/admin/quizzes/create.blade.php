@@ -24,6 +24,12 @@
                 </div>
             </div>
         </div>
+        @if ($errors->any())
+            <div class="alert alert-danger border-0 bg-danger alert-dismissible fade show">
+                <div class="text-white"> {{ $errors->first() }}</div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
         @if (session('success'))
             <div class="alert alert-success border-0 bg-success alert-dismissible fade show">
                 <div class="text-white"> {{ session('success') }}</div>
@@ -182,7 +188,7 @@
                                     <div id="add-reponse-btn"
                                         class="d-flex align-items-center theme-icons p-2 cursor-pointer rounded">
                                         <button type="button" class="btn btn-sm btn-primary px-5"><i
-                                                class="bx bx-user mr-1"></i>Ajouter une réponse</button>
+                                                class="lni lni-plus"></i></i>Ajouter une réponse</button>
                                     </div>
                                 </div>
                             </div>

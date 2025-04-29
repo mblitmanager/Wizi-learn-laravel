@@ -79,42 +79,48 @@ class QuizController extends Controller
 
     public function update(Request $request, $id)
     {
+        // 1. Validation
+        $request->validate([
+            'quiz.titre' => 'required|string|max:255',
+            'quiz.description' => 'nullable|string',
+
+            'questions' => 'required|array',
+
+
+            'questions.*.media_file' => 'nullable|file|max:102400|mimes:jpg,jpeg,png,gif,pdf,doc,docx,xls,xlsx,mp3,mp4',
+
+            'questions.*.reponses' => 'nullable|array',
+            'questions.*.reponses.*.text' => 'nullable|string|max:1000',
+            'questions.*.reponses.*.is_correct' => 'nullable|boolean',
+            'questions.*.reponses.*.position' => 'nullable|integer',
+            'questions.*.reponses.*.match_pair' => 'nullable|string|max:255',
+            'questions.*.reponses.*.bank_group' => 'nullable|string|max:255',
+            'questions.*.reponses.*.flashcard_back' => 'nullable|string|max:1000',
+        ]);
+
         DB::beginTransaction();
 
         try {
             $quiz = Quiz::findOrFail($id);
-
-            // Mise à jour simple du quiz
             $quiz->update($request->input('quiz'));
 
             $questionData = $request->input('questions', []);
-
-            // Gestion des fichiers médias (sécurisée)
-            $mediaFiles = $request->file('question_media_file', []);
+            $questionFiles = $request->file('questions', []); // Accès aux fichiers imbriqués
 
             foreach ($questionData as $index => &$questionInput) {
-                // Ajoute le quiz_id si absent
-                $questionInput['quiz_id'] = $questionInput['quiz_id'] ?? $quiz->id;
+                $questionInput['quiz_id'] = $quiz->id;
 
-                // Si un fichier média est fourni pour cette question
-                if (isset($mediaFiles[$index])) {
-                    $file = $mediaFiles[$index];
-                    $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'doc', 'docx', 'xls', 'xlsx'];
-                    $extension = strtolower($file->getClientOriginalExtension());
-
-                    if (!in_array($extension, $allowedExtensions)) {
-                        return redirect()->back()->with('error', "Le type de fichier '$extension' n’est pas autorisé.");
-                    }
-
+                // Vérifie si un fichier média est bien envoyé pour cette question
+                if (isset($questionFiles[$index]['media_file'])) {
+                    $file = $questionFiles[$index]['media_file'];
                     $path = $file->store('medias', 'public');
                     $questionInput['media_url'] = $path;
                 }
             }
-            // important pour éviter des bugs après foreach par référence
-            unset($questionInput);
+
+            unset($questionInput); // éviter bug référence
 
             foreach ($questionData as $questionInput) {
-                // Suppression de la question si demandée
                 if (!empty($questionInput['id']) && !empty($questionInput['_delete'])) {
                     $question = $quiz->questions()->find($questionInput['id']);
                     if ($question) {
@@ -124,11 +130,9 @@ class QuizController extends Controller
                     continue;
                 }
 
-                // Mise à jour ou création de la question
                 if (!empty($questionInput['id'])) {
                     $question = $quiz->questions()->find($questionInput['id']);
                     if ($question) {
-                        // Supprimer l'ancien fichier si un nouveau est uploadé
                         if (!empty($questionInput['media_url']) && $question->media_url && Storage::disk('public')->exists($question->media_url)) {
                             Storage::disk('public')->delete($question->media_url);
                         }
@@ -139,10 +143,9 @@ class QuizController extends Controller
                 }
 
                 if (!$question) {
-                    continue; // sécurisation
+                    continue;
                 }
 
-                // Traitement des réponses
                 $reponses = $questionInput['reponses'] ?? [];
                 foreach ($reponses as $reponseInput) {
                     if (!empty($reponseInput['id'])) {
@@ -157,38 +160,32 @@ class QuizController extends Controller
                                 'flashcard_back' => $reponseInput['flashcard_back'] ?? null,
                             ]);
                         }
-                    } else {
-                        if (!empty($reponseInput['text'])) {
-                            $question->reponses()->create([
-                                'text' => $reponseInput['text'],
-                                'is_correct' => $reponseInput['is_correct'] ?? 0,
-                                'position' => $reponseInput['position'] ?? null,
-                                'match_pair' => $reponseInput['match_pair'] ?? null,
-                                'bank_group' => $reponseInput['bank_group'] ?? null,
-                                'flashcard_back' => $reponseInput['flashcard_back'] ?? null,
-                            ]);
-                        }
+                    } elseif (!empty($reponseInput['text'])) {
+                        $question->reponses()->create([
+                            'text' => $reponseInput['text'],
+                            'is_correct' => $reponseInput['is_correct'] ?? 0,
+                            'position' => $reponseInput['position'] ?? null,
+                            'match_pair' => $reponseInput['match_pair'] ?? null,
+                            'bank_group' => $reponseInput['bank_group'] ?? null,
+                            'flashcard_back' => $reponseInput['flashcard_back'] ?? null,
+                        ]);
                     }
                 }
 
-                // Mise à jour de la bonne réponse (texte)
                 $reponseCorrecte = $question->reponses()->where('is_correct', true)->first();
                 if ($reponseCorrecte) {
-                    $question->update([
-                        'reponse_correct' => $reponseCorrecte->text
-                    ]);
+                    $question->update(['reponse_correct' => $reponseCorrecte->text]);
                 }
             }
 
-
             DB::commit();
-
             return redirect()->route('quiz.index')->with('success', 'Quiz, questions et réponses mis à jour avec succès.');
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->with('error', 'Erreur : ' . $e->getMessage());
         }
     }
+
 
     public function storeNewQuestion(Request $request)
     {
@@ -239,7 +236,7 @@ class QuizController extends Controller
                 ]);
             }
 
-            return redirect()->route('quiz.edit',$quiz)->with('success', 'Nouvelle question créée avec succès.');
+            return redirect()->route('quiz.edit', $quiz)->with('success', 'Nouvelle question créée avec succès.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Erreur lors de la création de la question : ' . $e->getMessage());
         }
@@ -255,36 +252,45 @@ class QuizController extends Controller
     }
     public function storeAll(Request $request)
     {
+        // 1. Validation
+        $request->validate([
+            'quiz.titre' => 'required|string|max:255',
+            'quiz.description' => 'nullable|string',
+
+
+            'question.type' => 'required|string',
+            'question.media_url' => 'nullable|file|mimes:jpg,jpeg,png,gif,pdf,doc,docx,xls,xlsx,mp3,mp4|max:102400',
+
+            'reponse.text' => 'required|array',
+            'reponse.text.*' => 'required|string|max:1000',
+            'reponse.is_correct' => 'nullable|array',
+            'reponse.position' => 'nullable|array',
+            'reponse.match_pair' => 'nullable|array',
+            'reponse.bank_group' => 'nullable|array',
+            'reponse.flashcard_back' => 'nullable|array',
+        ]);
+
         DB::beginTransaction();
 
         try {
-            // 1. Création du quiz
+            // 2. Création du quiz
             $quiz = Quiz::create($request->input('quiz'));
 
-            // 2. Préparer les données de la question
+            // 3. Préparer les données de la question
             $questionData = $request->input('question');
             $questionData['quiz_id'] = $quiz->id;
 
-            // 3. Gérer l'upload du fichier media_url (image, PDF, Word, etc.)
+            // 4. Upload du fichier media_url
             if ($request->hasFile('question.media_url')) {
                 $file = $request->file('question.media_url');
-
-                // Extensions autorisées
-                $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'doc', 'docx', 'xls', 'xlsx'];
-                $extension = $file->getClientOriginalExtension();
-
-                if (!in_array($extension, $allowedExtensions)) {
-                    return redirect()->back()->with('error', 'Le type de fichier "' . $extension . '" n’est pas autorisé.');
-                }
-
-                // Stocker le fichier dans storage/app/public/medias
                 $path = $file->store('medias', 'public');
-                $questionData['media_url'] = $path; // On stocke juste le chemin dans la BDD
+                $questionData['media_url'] = $path;
             }
-            // 4. Création de la question
+
+            // 5. Création de la question
             $question = Questions::create($questionData);
 
-            // 5. Création des réponses
+            // 6. Création des réponses
             $reponses = $request->input('reponse');
 
             foreach ($reponses['text'] as $index => $text) {
@@ -307,6 +313,7 @@ class QuizController extends Controller
             return redirect()->back()->with('error', 'Erreur : ' . $e->getMessage());
         }
     }
+
 
     public function import(Request $request)
     {

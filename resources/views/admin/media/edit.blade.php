@@ -169,7 +169,7 @@
                                     @enderror
                                 </div>
                             </div>
-
+                            <hr>
                             <div class="text-center">
                                 <button type="submit" class="btn btn-sm btn-primary px-4">
                                     <i class="lni lni-save"></i> Mettre à jour

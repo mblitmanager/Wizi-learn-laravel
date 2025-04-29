@@ -119,7 +119,7 @@
                                 @enderror
                             </div>
                         </div>
-
+                        <hr>
                         <div class="text-center">
                             <button type="submit" class="btn btn-primary btn-sm px-4">
                                 <i class="lni lni-save"></i> Enregistrer

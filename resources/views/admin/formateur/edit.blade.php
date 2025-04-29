@@ -128,10 +128,21 @@
                                             <div class="row row-cols-1 row-cols-md-3 row-cols-lg-3 row-cols-xl-3">
                                                 @foreach ($formations as $formation)
                                                     <div class="col">
-                                                        <div class="card border-warning border-bottom border-3 border-0">
+                                                        @php
+                                                            $borderColor = match ($formation->categorie) {
+                                                                'Bureautique' => '#3D9BE9',
+                                                                'Langues' => '#A55E6E',
+                                                                'Internet' => '#FFC533',
+                                                                'Création' => '#9392BE',
+                                                                default => 'transparent',
+                                                            };
+                                                        @endphp
+                                                        <div class="card"
+                                                            style="box-shadow: rgba(0, 0, 0, 0.16) 0px 10px 36px 0px, rgba(0, 0, 0, 0.06) 0px 0px 0px 1px; border-left: 5px solid {{ $borderColor }};">
                                                             <div class="card-body">
                                                                 <h5 class="card-title">{{ $formation->titre }}</h5>
-                                                                <p class="card-text">Description rapide de la formation.
+                                                                <p class="card-text fw-bold">{{ $formation->categorie }}
+                                                                </p>
                                                                 </p>
                                                                 <div class="form-check">
                                                                     <input class="form-check-input" type="checkbox"
@@ -157,6 +168,7 @@
                             </div>
 
                         </div>
+                        <hr>
                         <div class="text-center">
                             <button type="submit" class="btn btn-sm btn-primary px-4"><i class="lni lni-save"></i>Mettre
                                 à
