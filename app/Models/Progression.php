@@ -25,6 +25,11 @@ class Progression extends Model
          'formation_id',
          'pourcentage',
          'explication',
+         'score',
+         'correct_answers',
+         'total_questions',
+         'time_spent',
+         'completion_time'
      ];
      public function stagiaire()
      {

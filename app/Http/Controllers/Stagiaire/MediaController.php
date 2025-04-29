@@ -17,23 +17,45 @@ class MediaController extends Controller
         $this->mediaService = $mediaService;
     }
 
-    public function getTutorials()
+    public function getTutoriels()
     {
         try {
             $user = JWTAuth::parseToken()->authenticate();
-            $tutorials = $this->mediaService->getTutorials();
-            return response()->json($tutorials);
+            $tutoriels = $this->mediaService->getTutoriels();
+            return response()->json($tutoriels);
         } catch (JWTException $e) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
     }
 
-    public function getLanguageSessions()
+    public function getAstuces()
     {
         try {
             $user = JWTAuth::parseToken()->authenticate();
-            $sessions = $this->mediaService->getLanguageSessions();
-            return response()->json($sessions);
+            $astuces = $this->mediaService->getAstuces();
+            return response()->json($astuces);
+        } catch (JWTException $e) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+    }
+
+    public function getTutorielsByFormation($formationId)
+    {
+        try {
+            $user = JWTAuth::parseToken()->authenticate();
+            $tutoriels = $this->mediaService->getTutorielsByFormation($formationId);
+            return response()->json($tutoriels);
+        } catch (JWTException $e) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+    }
+
+    public function getAstucesByFormation($formationId)
+    {
+        try {
+            $user = JWTAuth::parseToken()->authenticate();
+            $astuces = $this->mediaService->getAstucesByFormation($formationId);
+            return response()->json($astuces);
         } catch (JWTException $e) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
