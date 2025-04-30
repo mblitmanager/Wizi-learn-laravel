@@ -36,10 +36,10 @@
                                         class="img-fluid rounded shadow-lg" style="max-height: 400px; object-fit: cover;">
                                 @elseif (Str::startsWith($media->type, 'video'))
                                     <div class="card p-3 shadow-lg border-0"
-                                        style="background: linear-gradient(135deg, #ffb923, #fcde99); border-radius: 20px;">
-                                        <div class="position-relative" style="overflow: hidden; border-radius: 15px;">
+                                        style="background: linear-gradient(135deg, #ffb923, #fcde99);">
+                                        <div class="position-relative" style="overflow: hidden;">
                                             <video controls autoplay muted playsinline
-                                                style="width: 100%; height: auto; display: block; border-radius: 15px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);">
+                                                style="width: 100%; height: auto; display: block; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);">
                                                 <source src="{{ asset($media->url) }}" type="video/mp4">
                                                 Votre navigateur ne supporte pas la lecture de vidéos.
                                             </video>
@@ -65,7 +65,7 @@
                             </div>
 
                             <!-- Colonne pour les informations -->
-                            <div class="col-md-6">
+                            <div class="col-md-6" style="">
                                 <h3 class="mb-3" style="font-weight: bold; color: #333;">{{ $media->titre }}</h3>
                                 <p class="text-muted mb-4">{!! $media->description !!}</p>
                                 <ul class="list-group list-group-flush mb-4">
@@ -76,7 +76,7 @@
                                         {{ $media->categorie ?? 'Aucune' }}</li>
                                 </ul>
                                 <div class="text-end">
-                                    <a href="{{ route('medias.edit', $media->id) }}" class="btn btn-warning">
+                                    <a href="{{ route('medias.edit', $media->id) }}" class="btn btn-sm btn-warning">
                                         <i class="bx bx-edit"></i> Modifier
                                     </a>
                                 </div>

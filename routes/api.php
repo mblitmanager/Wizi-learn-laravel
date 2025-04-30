@@ -99,12 +99,15 @@ Route::middleware(['auth:api'])->group(function () {
         Route::get('/classement/global', [QuizController::class, 'getGlobalClassement']);
         Route::get('/{quizId}/user-participations', [QuizController::class, 'getUserParticipations']);
     });
-    // Routes pour les tutoriels et astuces
-    Route::get('tutoriels', [MediaController::class, 'getTutoriels']);
-    Route::get('astuces', [MediaController::class, 'getAstuces']);
-    Route::get('formations/{formationId}/tutoriels', [MediaController::class, 'getTutorielsByFormation']);
-    Route::get('formations/{formationId}/astuces', [MediaController::class, 'getAstucesByFormation']);
-    Route::get('formations/interactives', [MediaController::class, 'getInteractiveFormations']);
+    // Routes pour les tutoriels et astuce
+    Route::prefix('medias')->group(function () {
+        Route::get('tutoriels', [MediaController::class, 'getTutoriels']);
+        Route::get('astuces', [MediaController::class, 'getAstuces']);
+        Route::get('formations/{formationId}/tutoriels', [MediaController::class, 'getTutorielsByFormation']);
+        Route::get('formations/{formationId}/astuces', [MediaController::class, 'getAstucesByFormation']);
+        Route::get('formations/interactives', [MediaController::class, 'getInteractiveFormations']);
+        Route::get('/video/{videoName}', [MediaController::class, 'streamVideo']);
+    });
     // Questions routes
     Route::prefix('questions')->group(function () {
         Route::get('/{questionId}/reponses', [ReponseController::class, 'getReponsesByQuestion']);

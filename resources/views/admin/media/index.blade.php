@@ -32,7 +32,7 @@
                                 <thead>
                                     <tr>
                                         <th>Titre</th>
-                                        <th>Description</th>
+                                        <th>Catégorie</th>
                                         <th>Type</th>
                                         <th>url</th>
                                         <th>Action</th>
@@ -43,6 +43,7 @@
                                         </th>
                                         <th><input type="text" placeholder="Filtrer"
                                                 class="form-control form-control-sm" />
+                                        </th>
                                         </th>
                                         <th><input type="text" placeholder="Filtrer"
                                                 class="form-control form-control-sm" />
@@ -57,10 +58,10 @@
                                     @foreach ($media as $row)
                                         <tr>
                                             <td>{{ $row->titre }}</td>
-                                            <td>{!! $row->description !!}</td>
+                                            <td>{{ $row->categorie }}</td>
                                             <td>{{ $row->type }}</td>
                                             <td>{{ $row->url }}</td>
-                                            <td>
+                                            <td class="text-center">
                                                 <a href="{{ route('medias.edit', $row->id) }}"
                                                     class="btn btn-sm btn-success ">
                                                     Modifier
