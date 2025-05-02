@@ -106,8 +106,9 @@ Route::middleware(['auth:api'])->group(function () {
         Route::get('formations/{formationId}/tutoriels', [MediaController::class, 'getTutorielsByFormation']);
         Route::get('formations/{formationId}/astuces', [MediaController::class, 'getAstucesByFormation']);
         Route::get('formations/interactives', [MediaController::class, 'getInteractiveFormations']);
-        Route::get('/video/{videoName}', [MediaController::class, 'streamVideo']);
     });
+
+
     // Questions routes
     Route::prefix('questions')->group(function () {
         Route::get('/{questionId}/reponses', [ReponseController::class, 'getReponsesByQuestion']);
@@ -120,6 +121,12 @@ Route::middleware(['auth:api'])->group(function () {
     Route::post('/quiz/{id}/complete', [QuizController::class, 'completeParticipation']);
     Route::get('/quiz-participations/{participation}/resume', [App\Http\Controllers\QuizController::class, 'getParticipationResume']);
 });
+
+
+Route::get('/media/stream/{path}', [MediaController::class, 'stream'])
+    ->withoutMiddleware([JwtMiddleware::class]) // ➡️ Désactive JWT pour cette route
+    ->middleware('throttle:60,1') // Optionnel : limite les requêtes
+    ->where('path', '.*');
 
 // Routes d'authentification
 Route::post('refresh-token', [App\Http\Controllers\Auth\AuthController::class, 'refresh']);

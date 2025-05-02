@@ -8,6 +8,7 @@ use App\Services\MediaService;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class MediaController extends Controller
 {
@@ -74,44 +75,59 @@ class MediaController extends Controller
         }
     }
 
-    public function streamVideo(Request $request, $videoName)
+    public function stream(Request $request, $path)
     {
-        $videoPath = public_path('uploads/medias/' . $videoName);
-        $fileSize = filesize($videoPath);
-        $range = $request->header('Range');
+        $fullPath = public_path($path);
 
-        if ($range) {
-            // Parsing du Range
-            preg_match('/bytes=(\d+)-(\d*)/', $range, $matches);
-            $start = (int) $matches[1];
-            $end = $matches[2] ? (int) $matches[2] : $fileSize - 1;
-            $length = $end - $start + 1;
-
-            // Set the headers
-            $headers = [
-                'Content-Type' => 'video/mp4',
-                'Content-Length' => $length,
-                'Content-Range' => "bytes $start-$end/$fileSize",
-                'Accept-Ranges' => 'bytes',
-                'Cache-Control' => 'no-cache',
-                'Connection' => 'keep-alive',
-            ];
-
-            $file = fopen($videoPath, 'rb');
-            fseek($file, $start);
-            $stream = fread($file, $length);
-            fclose($file);
-
-            // Return the response with the video chunk
-            return response($stream, 206, $headers);
+        if (!file_exists($fullPath)) {
+            abort(404);
         }
 
-        // If no range, serve the entire video
+        $size = filesize($fullPath);
+        $start = 0;
+        $length = $size;
+
+        // Détection dynamique du type MIME
+        $mime = mime_content_type($fullPath);
+
         $headers = [
-            'Content-Type' => 'video/mp4',
-            'Content-Length' => $fileSize,
+            'Content-Type' => $mime,
+            'Content-Length' => $size,
+            'Accept-Ranges' => 'bytes',
+            'Access-Control-Allow-Origin' => '*',
+            'Content-Disposition' => 'inline',
         ];
 
-        return response()->file($videoPath, $headers);
+        if ($request->headers->has('Range')) {
+            $range = $request->header('Range');
+            if (preg_match('/bytes=(\d+)-(\d*)/', $range, $matches)) {
+                $start = intval($matches[1]);
+                $end = $matches[2] ? intval($matches[2]) : $size - 1;
+                $length = $end - $start + 1;
+
+                $headers['Content-Range'] = "bytes $start-$end/$size";
+                $headers['Content-Length'] = $length;
+                $status = 206;
+            }
+        } else {
+            $status = 200;
+        }
+
+        $response = new StreamedResponse(function () use ($fullPath, $start, $length) {
+            $file = fopen($fullPath, 'rb');
+            fseek($file, $start);
+            $remaining = $length;
+            $chunkSize = 1024 * 8;
+
+            while (!feof($file) && $remaining > 0) {
+                $toRead = min($chunkSize, $remaining);
+                echo fread($file, $toRead);
+                flush();
+                $remaining -= $toRead;
+            }
+            fclose($file);
+        }, $status, $headers);
+
+        return $response;
     }
 }

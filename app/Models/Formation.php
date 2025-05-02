@@ -55,4 +55,14 @@ class Formation extends Model
     {
         return $this->hasMany(CatalogueFormation::class, 'formation_id');
     }
+
+    public function tutoriels()
+    {
+        return $this->hasMany(Media::class)->where('type', 'tutoriel')->orderBy('ordre');
+    }
+
+    public function astuces()
+    {
+        return $this->hasMany(Media::class)->where('type', 'astuce')->orderBy('ordre');
+    }
 }

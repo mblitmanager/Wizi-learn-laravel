@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\MediaRequest;
 use App\Models\Formation;
 use App\Services\MediaAdminService;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class MediaController extends Controller
 {
@@ -99,5 +101,56 @@ class MediaController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    public function stream(Request $request, $filename)
+    {
+        $path = public_path("uploads/medias/{$filename}");
+
+        if (!file_exists($path)) {
+            abort(404);
+        }
+
+        $size = filesize($path);
+        $file = fopen($path, "rb");
+
+        $start = 0;
+        $end = $size - 1;
+
+        header("Content-Type: video/mp4");
+        header("Accept-Ranges: bytes");
+
+        if ($request->headers->has('Range')) {
+            // Exemple : bytes=1000-
+            $range = $request->header('Range');
+            [$start, $end] = explode('-', str_replace('bytes=', '', $range)) + [null, null];
+
+            $start = intval($start);
+            $end = $end ? intval($end) : $size - 1;
+
+            fseek($file, $start);
+
+            header("Content-Range: bytes $start-$end/$size");
+            header("Content-Length: " . ($end - $start + 1));
+            http_response_code(206); // Partial Content
+        } else {
+            header("Content-Length: $size");
+        }
+
+        $response = new StreamedResponse(function () use ($file, $start, $end) {
+            $buffer = 1024 * 8; // 8 KB
+            $position = $start;
+
+            while (!feof($file) && $position <= $end) {
+                $bytesToRead = min($buffer, $end - $position + 1);
+                echo fread($file, $bytesToRead);
+                flush();
+                $position += $bytesToRead;
+            }
+
+            fclose($file);
+        });
+
+        return $response;
     }
 }
