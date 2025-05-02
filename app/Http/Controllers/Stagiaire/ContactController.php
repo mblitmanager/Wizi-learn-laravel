@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Stagiaire;
 
+use App\Helpers\PaginationHelper;
 use App\Http\Controllers\Controller;
 use App\Services\ContactService;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -24,10 +25,9 @@ class ContactController extends Controller
     {
         try {
             $user = JWTAuth::parseToken()->authenticate();
-             // Charger la relation stagiaire si elle n'est pas déjà chargée
-             if (!isset($user->relations['stagiaire'])) {
+            // Charger la relation stagiaire si elle n'est pas déjà chargée
+            if (!isset($user->relations['stagiaire'])) {
                 $user->load('stagiaire');
-
             }
 
             // Vérifier si l'utilisateur est bien le stagiaire demandé ou a les droits d'accès
@@ -59,12 +59,12 @@ class ContactController extends Controller
                         'phone' => $formateur->telephone ?? '',
                         'role' => 'Formateur',
                         'formations' => $formateur->formations->pluck('titre')->toArray(),
-                        'avatar' => $formateur->user->avatar ?? '/images/default-avatar.png',
+                        'avatar' => $formateur->user->image ?? '/images/default-avatar.png',
                         'created_at' => $formateur->created_at->format('d/m/Y')
                     ];
                 });
-
-            return response()->json($formateurs);
+            $paginate = PaginationHelper::paginate($formateurs, 10);
+            return response()->json($paginate);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Erreur lors de la récupération des formateurs'], 500);
         }
@@ -74,20 +74,21 @@ class ContactController extends Controller
     {
         try {
             $commercials = Commercial::with(['user'])
-            ->get()
-            ->map(function ($commercial) {
-                return [
-                    'id' => $commercial->id,
-                    'name' => $commercial->user->name,
-                    'email' => $commercial->user->email,
-                    'phone' => $commercial->telephone ?? '',
-                    'role' => 'Commercial',
-                    'avatar' => $commercial->user->avatar ?? '/images/default-avatar.png',
-                    'created_at' => $commercial->created_at->format('d/m/Y')
-                ];
-            });
+                ->get()
+                ->map(function ($commercial) {
+                    return [
+                        'id' => $commercial->id,
+                        'name' => $commercial->user->name,
+                        'email' => $commercial->user->email,
+                        'phone' => $commercial->telephone ?? '',
+                        'role' => 'Commercial',
+                        'avatar' => $commercial->user->image ?? '/images/default-avatar.png',
+                        'created_at' => $commercial->created_at->format('d/m/Y')
+                    ];
+                });
 
-        return response()->json($commercials);
+            $paginate = PaginationHelper::paginate($commercials, 10);
+            return response()->json($paginate);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Erreur lors de la récupération des commerciaux'], 500);
         }
@@ -97,20 +98,20 @@ class ContactController extends Controller
     {
         try {
             $poles   = PoleRelationClient::with(['user'])
-            ->get()
-            ->map(function ($pole) {
-                return [
-                    'id' => $pole->id,
-                    'name' => $pole->user->name,
-                    'email' => $pole->user->email,
-                    'phone' => $pole->telephone ?? '',
-                    'role' => 'Pôle Relation',
-                    'avatar' => $pole->user->avatar ?? '/images/default-avatar.png',
-                    'created_at' => $pole->created_at->format('d/m/Y')
-                ];
-            });
-
-        return response()->json($poles);
+                ->get()
+                ->map(function ($pole) {
+                    return [
+                        'id' => $pole->id,
+                        'name' => $pole->user->name,
+                        'email' => $pole->user->email,
+                        'phone' => $pole->telephone ?? '',
+                        'role' => 'Pôle Relation',
+                        'avatar' => $pole->user->image ?? '/images/default-avatar.png',
+                        'created_at' => $pole->created_at->format('d/m/Y')
+                    ];
+                });
+            $paginate = PaginationHelper::paginate($poles, 10);
+            return response()->json($paginate);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Erreur lors de la récupération du pôle relation'], 500);
         }
@@ -122,10 +123,9 @@ class ContactController extends Controller
     {
         try {
             $user = JWTAuth::parseToken()->authenticate();
-             // Charger la relation stagiaire si elle n'est pas déjà chargée
-             if (!isset($user->relations['stagiaire'])) {
+            // Charger la relation stagiaire si elle n'est pas déjà chargée
+            if (!isset($user->relations['stagiaire'])) {
                 $user->load('stagiaire');
-
             }
 
             // Vérifier si l'utilisateur est bien le stagiaire demandé ou a les droits d'accès
