@@ -119,7 +119,7 @@ class QuizController extends Controller
                                 break;
 
                             case 'audioquestion':
-                                $questionData['audioUrl'] = $question->audio_url;
+                                $questionData['audioUrl'] = $question->audio_url ?? $question->media_url ?? null;
                                 $questionData['answers'] = $question->reponses->map(function($reponse) {
                                     return [
                                         'id' => (string)$reponse->id,
@@ -414,7 +414,7 @@ class QuizController extends Controller
                     $questionData = [
                         'id' => (string)$question->id,
                         'text' => $question->text,
-                        'type' => $question->type ?? 'multiplechoice',
+                        'type' => $question->type ?? 'choix multiples',
                     ];
 
                     // Par défaut, toutes les questions ont des réponses
@@ -428,7 +428,7 @@ class QuizController extends Controller
 
                     // Ajout des propriétés spécifiques selon le type
                     switch ($question->type) {
-                        case 'ordering':
+                        case 'rearrangement':
                             $questionData['answers'] = $question->reponses->map(function($reponse) {
                                 return [
                                     'id' => (string)$reponse->id,
@@ -438,7 +438,7 @@ class QuizController extends Controller
                             })->sortBy('position')->values()->toArray();
                             break;
 
-                        case 'fillblank':
+                        case 'remplir le champ vide':
                             $questionData['blanks'] = $question->reponses->map(function($reponse) {
                                 return [
                                     'id' => (string)$reponse->id,
@@ -448,7 +448,7 @@ class QuizController extends Controller
                             })->toArray();
                             break;
 
-                        case 'wordbank':
+                        case 'banque de mots':
                             $questionData['wordbank'] = $question->reponses->map(function($reponse) {
                                 return [
                                     'id' => (string)$reponse->id,
@@ -459,14 +459,14 @@ class QuizController extends Controller
                             })->toArray();
                             break;
 
-                        case 'flashcard':
+                        case 'carte flash':
                             $questionData['flashcard'] = [
                                 'front' => $question->text,
                                 'back' => $question->flashcard_back
                             ];
                             break;
 
-                        case 'matching':
+                        case 'correspondance':
                             $questionData['matching'] = $question->reponses->map(function($reponse) {
                                 return [
                                     'id' => (string)$reponse->id,
@@ -476,8 +476,8 @@ class QuizController extends Controller
                             })->toArray();
                             break;
 
-                        case 'audioquestion':
-                            $questionData['audioUrl'] = $question->audio_url;
+                        case 'question audio':
+                            $questionData['audioUrl'] = $question->audio_url ?? $question->media_url ?? null;
                             break;
                     }
 

@@ -41,6 +41,10 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(PRCInterface::class, PoleRelationClientRepository::class);
         $this->app->bind(CatalogueFormationInterface::class, CatalogueFormationRepository::class);
         $this->app->bind(ParametreRepositoryInterface::class, ParametreRepository::class);
+        $this->app->bind(
+            \App\Repositories\Interfaces\AgendaRepositoryInterface::class,
+            \App\Repositories\AgendaRepository::class
+        );
     }
 
     /**
