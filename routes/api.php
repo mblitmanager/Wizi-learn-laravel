@@ -52,6 +52,7 @@ Route::middleware(['auth:api'])->group(function () {
     Route::prefix('stagiaire')->group(function () {
         Route::get('/formations', [FormationStagiaireController::class, 'getFormations']);
         Route::get('/show', [ProfileController::class, 'show']);
+        Route::post('/profile/photo', [ProfileController::class, 'uploadAvatar']);
     });
 
     // New route for getting responses to a question

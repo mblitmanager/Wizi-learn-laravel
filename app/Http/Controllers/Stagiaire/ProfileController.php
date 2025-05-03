@@ -130,4 +130,35 @@ class ProfileController extends Controller
 
         return response()->json(['message' => 'All notifications marked as read']);
     }
+    public function uploadAvatar(Request $request, $id)
+    {
+        $request->validate([
+            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
+        ]);
+
+        $stagiaire = $this->stagiaireService->show($id);
+        if (!$stagiaire) {
+            return response()->json(['message' => 'Stagiaire not found'], 404);
+        }
+
+        $file = $request->file('avatar');
+        $fileName = 'avatar_' . $id . '_' . time() . '.' . $file->getClientOriginalExtension();
+
+        // S'assurer que le dossier existe
+        $destination = public_path('uploads/avatars');
+        if (!file_exists($destination)) {
+            mkdir($destination, 0775, true);
+        }
+
+        $file->move($destination, $fileName);
+        $avatarPath = 'uploads/avatars/' . $fileName;
+
+        $this->stagiaireService->update($id, ['avatar' => $avatarPath]);
+
+        return response()->json([
+            'message' => 'Avatar uploaded successfully',
+            'avatar' => $avatarPath,
+            'avatar_url' => asset($avatarPath)
+        ]);
+    }
 }
