@@ -580,12 +580,18 @@ class QuizController extends Controller
                 'completion_time' => now()
             ]);
 
-            // Enregistrer les réponses utilisateur avec la bonne participation_id
+            // Save user answers with both IDs and text
             foreach ($request->answers as $questionId => $answerIds) {
+                $answersText = $quiz->questions->firstWhere('id', $questionId)?->reponses
+                    ->whereIn('id', $answerIds)
+                    ->pluck('text')
+                    ->toArray();
+
                 QuizParticipationAnswer::create([
                     'participation_id' => $participation->id,
                     'question_id' => $questionId,
                     'answer_ids' => is_array($answerIds) ? $answerIds : [$answerIds],
+                    'answer_texts' => json_encode($answersText), // Store the text of the answers
                 ]);
             }
 

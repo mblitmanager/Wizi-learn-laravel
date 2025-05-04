@@ -64,24 +64,35 @@ class QuizeRepository implements QuizRepositoryInterface
 
             $score = 0;
             $totalQuestions = $questions->count();
+            $submittedAnswers = [];
 
             foreach ($answers as $questionId => $reponseId) {
                 $question = $questions->firstWhere('id', $questionId);
                 $reponse = $question->reponses->firstWhere('id', $reponseId);
 
-                if ($reponse && $reponse->isCorrect) {
-                    $score++;
+                if ($reponse) {
+                    $submittedAnswers[] = [
+                        'question_id' => $questionId,
+                        'reponse_id' => $reponseId,
+                        'reponse_text' => $reponse->text, // Store the text of the answer
+                        'is_correct' => $reponse->isCorrect
+                    ];
+
+                    if ($reponse->isCorrect) {
+                        $score++;
+                    }
                 }
             }
 
             $percentage = ($score / $totalQuestions) * 100;
 
-            // Enregistrer la participation
+            // Enregistrer la participation avec les réponses soumises
             $participation = Participation::create([
                 'quiz_id' => $quizId,
                 'stagiaire_id' => $stagiaireId,
                 'score' => $percentage,
-                'completed' => true
+                'completed' => true,
+                'submitted_answers' => json_encode($submittedAnswers) // Store submitted answers as JSON
             ]);
 
             DB::commit();
