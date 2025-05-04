@@ -64,22 +64,35 @@ class QuizeRepository implements QuizRepositoryInterface
 
             $score = 0;
             $totalQuestions = $questions->count();
-            $submittedAnswers = [];
+            $submittedAnswersData = [];
 
-            foreach ($answers as $questionId => $reponseId) {
+            foreach ($answers as $questionId => $submittedAnswers) {
                 $question = $questions->firstWhere('id', $questionId);
-                $reponse = $question->reponses->firstWhere('id', $reponseId);
 
-                if ($reponse) {
-                    $submittedAnswers[] = [
-                        'question_id' => $questionId,
-                        'reponse_id' => $reponseId,
-                        'reponse_text' => $reponse->text, // Store the text of the answer
-                        'is_correct' => $reponse->isCorrect
-                    ];
+                foreach ($submittedAnswers as $submittedAnswer) {
+                    $reponseId = $submittedAnswer['id'] ?? null;
+                    $reponseText = $submittedAnswer['text'] ?? null;
 
-                    if ($reponse->isCorrect) {
-                        $score++;
+                    $reponse = $question->reponses->firstWhere('id', $reponseId);
+
+                    if ($reponse) {
+                        $submittedAnswersData[] = [
+                            'question_id' => $questionId,
+                            'reponse_id' => $reponseId,
+                            'reponse_text' => $reponseText,
+                            'is_correct' => $reponse->isCorrect
+                        ];
+
+                        // Correct answer validation
+                        if ($reponse->isCorrect) {
+                            $score++;
+                        }
+                    } else {
+                        // Handle cases where the answer text matches but the ID is missing
+                        $correctReponse = $question->reponses->firstWhere('text', $reponseText);
+                        if ($correctReponse && $correctReponse->isCorrect) {
+                            $score++;
+                        }
                     }
                 }
             }
@@ -92,7 +105,7 @@ class QuizeRepository implements QuizRepositoryInterface
                 'stagiaire_id' => $stagiaireId,
                 'score' => $percentage,
                 'completed' => true,
-                'submitted_answers' => json_encode($submittedAnswers) // Store submitted answers as JSON
+                'submitted_answers' => json_encode($submittedAnswersData) // Store submitted answers as JSON
             ]);
 
             DB::commit();

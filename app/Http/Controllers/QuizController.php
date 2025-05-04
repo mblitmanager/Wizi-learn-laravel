@@ -543,16 +543,32 @@ class QuizController extends Controller
 
             // Préparer les détails des questions et réponses
             $questionsDetails = $quiz->questions->map(function($question) use ($request) {
-                $selectedAnswerIds = is_array($request->answers[$question->id] ?? null)
+                $selectedAnswerTexts = is_array($request->answers[$question->id] ?? null)
                     ? $request->answers[$question->id]
                     : [];
-                $correctAnswerIds = $question->reponses->where('is_correct', true)->pluck('id')->toArray();
+
+                $correctAnswerTexts = $question->reponses
+                    ->where('is_correct', true)
+                    ->pluck('text')
+                    ->toArray();
+
+                $isCorrect = false;
+                if ($question->type === 'remplir le champ vide') {
+                    // Compare case-insensitively for fill-in-the-blank questions
+                    $isCorrect = empty(array_udiff_assoc($selectedAnswerTexts, $correctAnswerTexts, 'strcasecmp')) &&
+                                 empty(array_udiff_assoc($correctAnswerTexts, $selectedAnswerTexts, 'strcasecmp'));
+                } else {
+                    // Default comparison for other question types
+                    $isCorrect = empty(array_diff($selectedAnswerTexts, $correctAnswerTexts)) &&
+                                 empty(array_diff($correctAnswerTexts, $selectedAnswerTexts));
+                }
+
                 return [
                     'id' => $question->id,
                     'text' => $question->text,
                     'type' => $question->type,
-                    'selectedAnswers' => $selectedAnswerIds,
-                    'correctAnswers' => $correctAnswerIds,
+                    'selectedAnswers' => $selectedAnswerTexts,
+                    'correctAnswers' => $correctAnswerTexts,
                     'answers' => $question->reponses->map(function($reponse) {
                         return [
                             'id' => $reponse->id,
@@ -560,8 +576,7 @@ class QuizController extends Controller
                             'isCorrect' => $reponse->is_correct
                         ];
                     })->toArray(),
-                    'isCorrect' => empty(array_diff($selectedAnswerIds, $correctAnswerIds)) &&
-                                 empty(array_diff($correctAnswerIds, $selectedAnswerIds))
+                    'isCorrect' => $isCorrect
                 ];
             });
 
