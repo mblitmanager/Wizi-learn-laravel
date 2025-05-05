@@ -28,6 +28,7 @@
                     <div class="card">
                         <div class="table-responsive px-3 py-3">
                             <table id="stagiairesTable" class="table table-bordered table-striped table-hover mb-0">
+
                                 <thead>
                                     <tr>
                                         <th>Titre</th>
@@ -54,13 +55,11 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-
-                                <tbody>
                                 @foreach ($media as $row)
                                     <tr>
                                         <td>
                                             @if ($row->type === 'image')
-                                                <img src="{{ asset($row->url) }}" alt="Image" style="max-width: 100px; max-height: 80px;">
+                                                <img src="{{ asset($row->url) }}" alt="Image" style="max-width: 60px;max-height: 60px; object-fit: cover">
                                             @elseif ($row->type === 'audio')
                                                 <img src="{{ asset('assets/images/mp3.png') }}" alt="Audio" style="max-width: 50px;">
                                             @elseif ($row->type === 'document')
@@ -84,8 +83,6 @@
                                         </td>
                                     </tr>
                                 @endforeach
-                                </tbody>
-
                                 </tbody>
                             </table>
                         </div>
