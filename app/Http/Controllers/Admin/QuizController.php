@@ -83,12 +83,9 @@ class QuizController extends Controller
         $request->validate([
             'quiz.titre' => 'required|string|max:255',
             'quiz.description' => 'nullable|string',
-
             'questions' => 'required|array',
 
-
             'questions.*.media_file' => 'nullable|file|max:102400|mimes:jpg,jpeg,png,gif,pdf,doc,docx,xls,xlsx,mp3,mp4',
-
             'questions.*.reponses' => 'nullable|array',
             'questions.*.reponses.*.text' => 'nullable|string|max:1000',
             'questions.*.reponses.*.is_correct' => 'nullable|boolean',
@@ -105,36 +102,43 @@ class QuizController extends Controller
             $quiz->update($request->input('quiz'));
 
             $questionData = $request->input('questions', []);
-            $questionFiles = $request->file('questions', []); // Accès aux fichiers imbriqués
+            $questionFiles = $request->file('questions', []);
 
             foreach ($questionData as $index => &$questionInput) {
                 $questionInput['quiz_id'] = $quiz->id;
 
-                // Vérifie si un fichier média est bien envoyé pour cette question
+                // Upload nouveau fichier média s'il est fourni
                 if (isset($questionFiles[$index]['media_file'])) {
                     $file = $questionFiles[$index]['media_file'];
                     $path = $file->store('medias', 'public');
                     $questionInput['media_url'] = $path;
                 }
             }
-
-            unset($questionInput); // éviter bug référence
+            unset($questionInput);
 
             foreach ($questionData as $questionInput) {
                 if (!empty($questionInput['id']) && !empty($questionInput['_delete'])) {
+                    // Suppression question + réponses
                     $question = $quiz->questions()->find($questionInput['id']);
                     if ($question) {
                         $question->reponses()->delete();
+                        if ($question->media_url && Storage::disk('public')->exists($question->media_url)) {
+                            Storage::disk('public')->delete($question->media_url);
+                        }
                         $question->delete();
                     }
                     continue;
                 }
 
+                // Création ou mise à jour de la question
                 if (!empty($questionInput['id'])) {
                     $question = $quiz->questions()->find($questionInput['id']);
                     if ($question) {
-                        if (!empty($questionInput['media_url']) && $question->media_url && Storage::disk('public')->exists($question->media_url)) {
-                            Storage::disk('public')->delete($question->media_url);
+                        // Si un nouveau fichier est envoyé, supprimer l'ancien
+                        if (!empty($questionInput['media_url']) && $question->media_url !== $questionInput['media_url']) {
+                            if ($question->media_url && Storage::disk('public')->exists($question->media_url)) {
+                                Storage::disk('public')->delete($question->media_url);
+                            }
                         }
                         $question->update($questionInput);
                     }
@@ -142,12 +146,12 @@ class QuizController extends Controller
                     $question = $quiz->questions()->create($questionInput);
                 }
 
-                if (!$question) {
-                    continue;
-                }
+                if (!$question) continue;
 
-                $reponses = $questionInput['reponses'] ?? [];
-                foreach ($reponses as $reponseInput) {
+                $reponsesInput = $questionInput['reponses'] ?? [];
+                $reponseIds = [];
+
+                foreach ($reponsesInput as $reponseInput) {
                     if (!empty($reponseInput['id'])) {
                         $reponse = $question->reponses()->find($reponseInput['id']);
                         if ($reponse) {
@@ -159,9 +163,10 @@ class QuizController extends Controller
                                 'bank_group' => $reponseInput['bank_group'] ?? null,
                                 'flashcard_back' => $reponseInput['flashcard_back'] ?? null,
                             ]);
+                            $reponseIds[] = $reponse->id;
                         }
                     } elseif (!empty($reponseInput['text'])) {
-                        $question->reponses()->create([
+                        $reponse = $question->reponses()->create([
                             'text' => $reponseInput['text'],
                             'is_correct' => $reponseInput['is_correct'] ?? 0,
                             'position' => $reponseInput['position'] ?? null,
@@ -169,9 +174,14 @@ class QuizController extends Controller
                             'bank_group' => $reponseInput['bank_group'] ?? null,
                             'flashcard_back' => $reponseInput['flashcard_back'] ?? null,
                         ]);
+                        $reponseIds[] = $reponse->id;
                     }
                 }
 
+                // Supprimer les anciennes réponses non présentes
+                $question->reponses()->whereNotIn('id', $reponseIds)->delete();
+
+                // Mettre à jour la bonne réponse texte
                 $reponseCorrecte = $question->reponses()->where('is_correct', true)->first();
                 if ($reponseCorrecte) {
                     $question->update(['reponse_correct' => $reponseCorrecte->text]);

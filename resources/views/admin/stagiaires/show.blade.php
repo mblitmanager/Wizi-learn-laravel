@@ -11,7 +11,7 @@
                             <li class="breadcrumb-item"><a href="{{ route('stagiaires.index') }}"><i
                                         class="bx bx-home-alt"></i></a>
                             </li>
-                            <li class="breadcrumb-item active text-uppercase fw-bold" aria-current="page">Détails d'un
+                            <li class="breadcrumb-item active text-uppercase " aria-current="page">Détails d'un
                                 stagiaire</li>
                         </ol>
                     </nav>
@@ -76,51 +76,51 @@
                                         </h4>
                                         <hr>
                                         <div class="row mb-3">
-                                            <label class="col-sm-4 fw-bold">Nom :</label>
+                                            <label class="col-sm-4 ">Nom :</label>
                                             <div class="col-sm-8">
                                                 {{ $stagiaire->user->name }}
                                             </div>
                                         </div>
                                         <div class="row mb-3">
-                                            <label class="col-sm-4 fw-bold">Prénom :</label>
+                                            <label class="col-sm-4 ">Prénom :</label>
                                             <div class="col-sm-8">
                                                 {{ $stagiaire->prenom }}
                                             </div>
                                         </div>
                                         <div class="row mb-3">
-                                            <label class="col-sm-4 fw-bold">Date de naissance :</label>
+                                            <label class="col-sm-4 ">Date de naissance :</label>
                                             <div class="col-sm-8">
                                                 {{ $stagiaire->created_at->format('d/m/Y') }}
                                             </div>
                                         </div>
 
                                         <div class="row mb-3">
-                                            <label class="col-sm-4 fw-bold">Adresse email :</label>
+                                            <label class="col-sm-4 ">Adresse email :</label>
                                             <div class="col-sm-8">
                                                 <a
                                                     href="mailto:{{ $stagiaire->user->email }}">{{ $stagiaire->user->email }}</a>
                                             </div>
                                         </div>
                                         <div class="row mb-3">
-                                            <label class="col-sm-4 fw-bold">Téléphone :</label>
+                                            <label class="col-sm-4 ">Téléphone :</label>
                                             <div class="col-sm-8">
                                                 {{ $stagiaire->telephone }}
                                             </div>
                                         </div>
                                         <div class="row mb-3">
-                                            <label class="col-sm-4 fw-bold">Ville :</label>
+                                            <label class="col-sm-4 ">Ville :</label>
                                             <div class="col-sm-8">
                                                 {{ $stagiaire->ville }}
                                             </div>
                                         </div>
                                         <div class="row mb-3">
-                                            <label class="col-sm-4 fw-bold">Code postal :</label>
+                                            <label class="col-sm-4 ">Code postal :</label>
                                             <div class="col-sm-8">
                                                 {{ $stagiaire->code_postal }}
                                             </div>
                                         </div>
                                         <div class="row mb-3">
-                                            <label class="col-sm-4 fw-bold">Adresse :</label>
+                                            <label class="col-sm-4 ">Adresse :</label>
                                             <div class="col-sm-8">
                                                 {{ $stagiaire->adresse }}
                                             </div>
@@ -144,26 +144,26 @@
                                                                 $bgColor = '';
                                                                 switch ($formation->categorie) {
                                                                     case 'Bureautique':
-                                                                        $bgColor = 'bg-primary';
+                                                                        $bgColor = '#3D9BE9';
                                                                         break;
                                                                     case 'Langues':
-                                                                        $bgColor = 'bg-secondary';
+                                                                        $bgColor = '#A55E6E';
                                                                         break;
                                                                     case 'Internet':
-                                                                        $bgColor = 'bg-warning';
+                                                                        $bgColor = '#FFC533';
                                                                         break;
                                                                     case 'Création':
-                                                                        $bgColor = 'bg-info';
+                                                                        $bgColor = '#9392BE';
                                                                         break;
                                                                     default:
                                                                         $bgColor = 'bg-success';
                                                                 }
                                                             @endphp
-                                                            <div class="accordion-item">
+                                                            <div class="accordion-item  ">
                                                                 <h2 class="accordion-header"
                                                                     id="formation-heading-{{ $index }}">
                                                                     <button
-                                                                        class="accordion-button text-white {{ $bgColor }}"
+                                                                        class="accordion-button text-white" style="background: {{ $bgColor }}"
                                                                         type="button" data-bs-toggle="collapse"
                                                                         data-bs-target="#formation-collapse-{{ $index }}"
                                                                         aria-expanded="false"
@@ -227,7 +227,7 @@
                                                                         <div class="d-flex align-items-center">
                                                                             <i class="bx bx-user-circle me-3"
                                                                                 style="font-size: 1.5rem;"></i>
-                                                                            <div class="fw-bold"> {{ $formateur->user->name }}
+                                                                            <div class=""> {{ $formateur->user->name }}
                                                                             </div>
                                                                         </div>
                                                                     </button>
@@ -253,23 +253,23 @@
                                                                                     $bgColor = '';
                                                                                     switch ($row->categorie) {
                                                                                         case 'Bureautique':
-                                                                                            $bgColor = 'bg-primary';
+                                                                                            $bgColor = '#3D9BE9';
                                                                                             break;
                                                                                         case 'Langues':
-                                                                                            $bgColor = 'bg-secondary';
+                                                                                            $bgColor = '#A55E6E';
                                                                                             break;
                                                                                         case 'Internet':
-                                                                                            $bgColor = 'bg-warning';
+                                                                                            $bgColor = '#FFC533';
                                                                                             break;
                                                                                         case 'Création':
-                                                                                            $bgColor = 'bg-info';
+                                                                                            $bgColor = '#9392BE';
                                                                                             break;
                                                                                         default:
                                                                                             $bgColor = 'bg-success';
                                                                                     }
                                                                                 @endphp
                                                                                 <li
-                                                                                    class="list-group-item text-white {{ $bgColor }}">
+                                                                                    class="list-group-item text-white" style="background: {{ $bgColor }}">
                                                                                     <strong>{{ $row->titre }}</strong> -
                                                                                     {{ $row->categorie }}</li>
                                                                             @endforeach
@@ -313,7 +313,7 @@
                                                                         <div class="d-flex align-items-center">
                                                                             <i class="bx bx-user-circle me-3"
                                                                                 style="font-size: 1.5rem;"></i>
-                                                                            <div class="fw-bold"> {{ $cormecial->user->name }}
+                                                                            <div class=""> {{ $cormecial->user->name }}
                                                                             </div>
                                                                         </div>
                                                                     </button>

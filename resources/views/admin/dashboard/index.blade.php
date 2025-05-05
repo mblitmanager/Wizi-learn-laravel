@@ -70,12 +70,12 @@
         <div class="col-md-6 mb-4">
             <div class="card shadow-sm border-0">
                 <div class="card-body">
-                    <h5 class="card-title text-primary">Statistiques de quiz par jour</h5>
+                    <h5 class="card-title">Statistiques de quiz par jour</h5>
 
                     <div class="mb-3">
                         <label for="quizSelectorDaily" class="form-label">Choisir un quiz :</label>
                         <select id="quizSelectorDaily" class="form-select">
-                            <option disabled selected>-- Sélectionner un quiz --</option>
+                            <option value="" selected>-- Tous les quiz --</option>
                         </select>
                     </div>
 
@@ -89,12 +89,12 @@
         <div class="col-md-6 mb-4">
             <div class="card shadow-sm border-0">
                 <div class="card-body">
-                    <h5 class="card-title text-success">Statistiques de quiz par mois</h5>
+                    <h5 class="card-title">Statistiques de quiz par mois</h5>
 
                     <div class="mb-3">
                         <label for="quizSelectorMonthly" class="form-label">Choisir un quiz :</label>
                         <select id="quizSelectorMonthly" class="form-select shadow-sm border border-primary">
-                            <option disabled selected>-- Sélectionner un quiz --</option>
+                            <option value="" selected>-- Tous les quiz --</option>
                         </select>
                     </div>
 
@@ -125,6 +125,17 @@
             return grouped;
         };
 
+        const mergeDataByLabel = (groupedData) => {
+            const merged = {};
+            for (const [quiz, entries] of Object.entries(groupedData)) {
+                entries.forEach(entry => {
+                    if (!merged[entry.label]) merged[entry.label] = 0;
+                    merged[entry.label] += entry.total;
+                });
+            }
+            return Object.entries(merged).map(([label, total]) => ({ label, total }));
+        };
+
         const dailyGrouped = groupByQuiz(dailyStats, 'date');
         const monthlyGrouped = groupByQuiz(monthlyStats, 'month');
 
@@ -132,11 +143,10 @@
         const monthlySelect = document.getElementById('quizSelectorMonthly');
 
         const fillSelect = (selectElement, quizTitles) => {
-            quizTitles.forEach((title, index) => {
+            quizTitles.forEach(title => {
                 const opt = document.createElement('option');
                 opt.value = title;
                 opt.textContent = title;
-                if (index === 0) opt.selected = true; // Par défaut : premier quiz sélectionné
                 selectElement.appendChild(opt);
             });
         };
@@ -147,19 +157,16 @@
         let dailyChart = null;
         let monthlyChart = null;
 
-        const createChart = (ctx, data, label, color = '#3b82f6') => {
+        const createChart = (ctx, data, label) => {
             return new Chart(ctx, {
-                type: 'line',
+                type: 'bar',
                 data: {
                     labels: data.map(item => item.label),
                     datasets: [{
                         label: label,
                         data: data.map(item => item.total),
-                        borderColor: color,
-                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                        tension: 0.3,
-                        pointRadius: 5,
-                        fill: true
+                        backgroundColor: '#FEB823',
+                        borderWidth: 1,
                     }]
                 },
                 options: {
@@ -167,18 +174,43 @@
                     maintainAspectRatio: false,
                     plugins: {
                         legend: {
-                            display: true
+                            display: true,
+                            labels: {
+                                color: '#000000' // légende en noir
+                            }
                         },
-                        title: {
-                            display: false
+                        tooltip: {
+                            callbacks: {
+                                title: (context) => label,
+                                label: (context) => {
+                                    const dateOrMonth = context.label;
+                                    const value = context.formattedValue;
+                                    return `Date: ${dateOrMonth} — ${value} participations`;
+                                }
+                            }
                         }
                     },
                     scales: {
+                        x: {
+                            ticks: {
+                                color: '#000000'
+                            },
+                            grid: {
+                                color: 'rgba(0,0,0,0.1)'
+                            }
+                        },
                         y: {
                             beginAtZero: true,
                             title: {
                                 display: true,
-                                text: 'Nombre de participations'
+                                text: 'Nombre de participations',
+                                color: '#000000'
+                            },
+                            ticks: {
+                                color: '#000000'
+                            },
+                            grid: {
+                                color: 'rgba(0,0,0,0.1)'
                             }
                         }
                     }
@@ -186,46 +218,49 @@
             });
         };
 
+
         const initCharts = () => {
-            const defaultDailyTitle = dailySelect.value;
-            const defaultMonthlyTitle = monthlySelect.value;
+            const dailyDataMerged = mergeDataByLabel(dailyGrouped);
+            const monthlyDataMerged = mergeDataByLabel(monthlyGrouped);
 
             dailyChart = createChart(
                 document.getElementById('filteredDailyChart'),
-                dailyGrouped[defaultDailyTitle],
-                defaultDailyTitle
+                dailyDataMerged,
+                'Tous les quiz (par jour)'
             );
 
             monthlyChart = createChart(
                 document.getElementById('filteredMonthlyChart'),
-                monthlyGrouped[defaultMonthlyTitle],
-                defaultMonthlyTitle,
-                '#10b981'
+                monthlyDataMerged,
+                'Tous les quiz (par mois)',
+                '#FEB823'
             );
         };
 
         dailySelect.addEventListener('change', () => {
             if (dailyChart) dailyChart.destroy();
             const title = dailySelect.value;
+            const data = title ? dailyGrouped[title] : mergeDataByLabel(dailyGrouped);
+            console.log(data)
             dailyChart = createChart(
                 document.getElementById('filteredDailyChart'),
-                dailyGrouped[title],
-                title
+                data,
+                title || 'Tous les quiz (par jour)'
             );
         });
 
         monthlySelect.addEventListener('change', () => {
             if (monthlyChart) monthlyChart.destroy();
             const title = monthlySelect.value;
+            const data = title ? monthlyGrouped[title] : mergeDataByLabel(monthlyGrouped);
             monthlyChart = createChart(
                 document.getElementById('filteredMonthlyChart'),
-                monthlyGrouped[title],
-                title,
-                '#10b981'
+                data,
+                title || 'Tous les quiz (par mois)',
+                '#FEB823'
             );
         });
 
-        // Affiche les charts dès le chargement
         window.addEventListener('DOMContentLoaded', initCharts);
     </script>
 @endsection

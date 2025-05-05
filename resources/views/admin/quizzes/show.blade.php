@@ -29,7 +29,7 @@
                         <i class="bx bx-clipboard"></i> {{ $quiz->titre }}
                     </h3>
                     <p class="mb-0 small">Niveau : <span
-                            class="badge px- py-2  bg-primary text-primary">{{ ucfirst($quiz->niveau) }}</span>
+                            class="badge px- py-2  bg-primary text-black-50">{{ ucfirst($quiz->niveau) }}</span>
                     </p>
                 </div>
 
@@ -97,7 +97,7 @@
                                                                         Modifier
                                                                     </a>
                                                                     <a href="{{ route('question.show', $row->id) }}"
-                                                                        class="btn btn-sm btn-info">
+                                                                        class="btn btn-sm btn-info text-white">
                                                                         Afficher
                                                                     </a>
 

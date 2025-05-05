@@ -127,7 +127,7 @@
                                                     Modifier
                                                 </a>
                                                 <a href="{{ route('pole_relation_clients.show', $row->id) }}"
-                                                    class="btn btn-sm btn-info">
+                                                    class="btn btn-sm btn-info text-white">
                                                     Afficher
                                                 </a>
 

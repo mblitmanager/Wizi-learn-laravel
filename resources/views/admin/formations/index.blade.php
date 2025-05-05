@@ -34,7 +34,7 @@
                                     <tr>
 
                                         <th>Titre</th>
-                                        <th>Description</th>
+                                        <th>Categorie</th>
                                         <th>Duree</th>
                                         <th>Action</th>
                                     </tr>
@@ -57,7 +57,7 @@
                                         <tr>
 
                                             <td>{{ $row->titre }}</td>
-                                            <td>{!! $row->description !!}</td>
+                                            <td>{!! $row->categorie !!}</td>
                                             <td>{{ $row->duree }}</td>
                                             <td>
                                                 <a href="{{ route('formations.edit', $row->id) }}"

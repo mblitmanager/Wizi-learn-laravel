@@ -28,7 +28,6 @@
                     <div class="card">
                         <div class="table-responsive px-3 py-3">
                             <table id="stagiairesTable" class="table table-bordered table-striped table-hover mb-0">
-
                                 <thead>
                                     <tr>
                                         <th>Titre</th>
@@ -55,25 +54,38 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($media as $row)
-                                        <tr>
-                                            <td>{{ $row->titre }}</td>
-                                            <td>{{ $row->categorie }}</td>
-                                            <td>{{ $row->type }}</td>
-                                            <td>{{ $row->url }}</td>
-                                            <td class="text-center">
-                                                <a href="{{ route('medias.edit', $row->id) }}"
-                                                    class="btn btn-sm btn-success ">
-                                                    Modifier
-                                                </a>
-                                                <a href="{{ route('medias.show', $row->id) }}"
-                                                    class="btn btn-sm btn-primary ">
-                                                    Afficher
-                                                </a>
 
-                                            </td>
-                                        </tr>
-                                    @endforeach
+                                <tbody>
+                                @foreach ($media as $row)
+                                    <tr>
+                                        <td>
+                                            @if ($row->type === 'image')
+                                                <img src="{{ asset($row->url) }}" alt="Image" style="max-width: 100px; max-height: 80px;">
+                                            @elseif ($row->type === 'audio')
+                                                <img src="{{ asset('assets/images/mp3.png') }}" alt="Audio" style="max-width: 50px;">
+                                            @elseif ($row->type === 'document')
+                                                <img src="{{ asset('images/icons/doc-icon.png') }}" alt="Document" style="max-width: 50px;">
+                                            @elseif($row->type = 'video')
+                                                <img src="{{ asset('assets/images/mp4.png') }}" alt="Document" style="max-width: 50px;">
+                                            @else
+                                                <span>Type inconnu</span>
+                                            @endif
+                                        </td>
+                                        <td>{{ $row->titre }}</td>
+                                        <td>{{ $row->categorie }}</td>
+                                        <td>{{ $row->type }}</td>
+                                        <td class="text-center">
+                                            <a href="{{ route('medias.edit', $row->id) }}" class="btn btn-sm btn-success">
+                                                Modifier
+                                            </a>
+                                            <a href="{{ route('medias.show', $row->id) }}" class="btn btn-sm btn-primary">
+                                                Afficher
+                                            </a>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                                </tbody>
+
                                 </tbody>
                             </table>
                         </div>

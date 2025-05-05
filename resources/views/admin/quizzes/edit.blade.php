@@ -265,6 +265,8 @@
                                                             <input type="hidden"
                                                                 name="questions[{{ $qIndex }}][reponses][{{ $rIndex }}][id]"
                                                                 value="{{ $reponse->id }}">
+                                                            <input type="hidden" class="delete-flag" name="questions[{{ $qIndex }}][reponses][{{ $rIndex }}][_delete]" value="0">
+
                                                             <div class="row">
                                                                 <div class="col-md-6">
                                                                     <label class="form-label">Texte de la
@@ -329,9 +331,7 @@
                                                             </div>
                                                         </div>
                                                     @endforeach
-
                                                 </div>
-
                                                 {{-- template caché pour réponse --}}
                                                 <template id="reponse-template-{{ $qIndex }}">
                                                     <div class="px-3 py-3 mb-3 reponse-form"
@@ -620,9 +620,22 @@
         // Gérer la suppression de réponse dynamique
         document.addEventListener('click', function(e) {
             if (e.target.classList.contains('remove-reponse-btn')) {
-                e.target.closest('.reponse-form').remove();
+                const reponseForm = e.target.closest('.reponse-form');
+                console.log('Form reponse',reponseForm)
+                const deleteInput = reponseForm.querySelector('.delete-flag');
+
+                if (deleteInput) {
+                    // Réponse existante : marquer pour suppression
+                    deleteInput.value = '1';
+                    reponseForm.remove();
+                } else {
+                    // Réponse ajoutée dynamiquement (pas encore enregistrée) : supprimer du DOM
+                    reponseForm.remove();
+                }
+
             }
         });
+
     </script>
     {{-- Media appercu --}}
     <script>

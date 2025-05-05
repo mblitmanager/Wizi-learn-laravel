@@ -70,7 +70,7 @@
                             @foreach ($formateur->formations as $key => $formation)
                                 <div class="accordion-item">
                                     <h2 class="accordion-header" id="heading{{ $key }}">
-                                        <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                                        <button class="accordion-button d-flex justify-content-between align-items-center shadow-sm p-3 collapsed" type="button" data-bs-toggle="collapse"
                                             data-bs-target="#collapse{{ $key }}" aria-expanded="true"
                                             aria-controls="collapse{{ $key }}">
                                             <i class="bx bx-book-open me-2"></i>{{ $formation->titre }}

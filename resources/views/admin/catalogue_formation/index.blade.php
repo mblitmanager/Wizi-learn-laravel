@@ -48,7 +48,6 @@
 
                                         <th>Titre</th>
                                         <th>Description</th>
-                                        <th>Duree</th>
                                         <th>Action</th>
                                     </tr>
                                     <tr>
@@ -59,9 +58,7 @@
                                         <th><input type="text" placeholder="Filtrer"
                                                 class="form-control form-control-sm" />
                                         </th>
-                                        <th><input type="text" placeholder="Filtrer"
-                                                class="form-control form-control-sm" />
-                                        </th>
+
                                         <th></th>
                                     </tr>
                                 </thead>
@@ -70,15 +67,15 @@
                                         <tr>
 
                                             <td>{{ $row->titre }}</td>
-                                            <td>{!! $row->description !!}</td>
-                                            <td>{{ $row->duree }}</td>
+                                            <td >{!! $row->description !!}</td>
+
                                             <td class="text-center">
                                                 <a href="{{ route('catalogue_formation.edit', $row->id) }}"
                                                     class="btn btn-sm btn-success ">
                                                     Modifier
                                                 </a>
                                                 <a href="{{ route('catalogue_formation.show', $row->id) }}"
-                                                    class="btn btn-sm btn-info">
+                                                    class="btn btn-sm btn-info text-white">
                                                     Afficher
                                                 </a>
 

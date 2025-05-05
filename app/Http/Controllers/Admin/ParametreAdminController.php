@@ -106,7 +106,7 @@ class ParametreAdminController extends Controller
             'email' => 'required|email|unique:users,email,' . $id,
             'password' => 'nullable|string|min:6',
             'role' => 'required|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:102400',
 
             // Champs supplémentaires partagés
             'prenom' => 'nullable|string|max:255',
@@ -204,7 +204,7 @@ class ParametreAdminController extends Controller
     public function updateImage(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:102400',
         ]);
 
         if ($validator->fails()) {

@@ -78,15 +78,13 @@
                             <table id="stagiairesTable" class="table table-bordered table-striped table-hover mb-0">
                                 <thead>
                                     <tr>
-                                        <th>#</th>
                                         <th>Titre</th>
-                                        <th>Description</th>
-                                        <th>Duree</th>
+                                        <th>Durer</th>
                                         <th>Niveau</th>
                                         <th>Action</th>
                                     </tr>
                                     <tr>
-                                        <th></th>
+
                                         <th><input type="text" placeholder="Filtrer"
                                                 class="form-control form-control-sm" />
                                         </th>
@@ -96,18 +94,14 @@
                                         <th><input type="text" placeholder="Filtrer"
                                                 class="form-control form-control-sm" />
                                         </th>
-                                        <th><input type="text" placeholder="Filtrer"
-                                                class="form-control form-control-sm" />
-                                        </th>
+
                                         <th></th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach ($quiz as $row)
                                         <tr>
-                                            <td>{{ $row->id }}</td>
                                             <td>{{ $row->titre }}</td>
-                                            <td>{{ $row->description }}</td>
                                             <td>{{ $row->duree }}</td>
                                             <td>{{ $row->niveau }}</td>
                                             <td>
@@ -115,7 +109,7 @@
                                                     class="btn btn-sm btn-success ">
                                                     Modifier
                                                 </a>
-                                                <a href="{{ route('quiz.show', $row->id) }}" class="btn btn-sm btn-info">
+                                                <a href="{{ route('quiz.show', $row->id) }}" class="btn btn-sm btn-info text-white">
                                                     Afficher
                                                 </a>
 

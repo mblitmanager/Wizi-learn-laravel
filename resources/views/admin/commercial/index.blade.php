@@ -126,7 +126,7 @@
                                                     Modifier
                                                 </a>
                                                 <a href="{{ route('commercials.show', $row->id) }}"
-                                                    class="btn btn-sm btn-info">
+                                                    class="btn btn-sm btn-info text-white">
                                                     Afficher
                                                 </a>
 
