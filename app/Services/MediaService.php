@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 use App\Repositories\Interfaces\MediaRepositoryInterface;
@@ -17,37 +18,39 @@ class MediaService
         $this->formationRepository = $formationRepository;
     }
 
-    public function getTutoriels()
+    public function getTutoriels($perPage = 10)
     {
-        return $this->mediaRepository->getTutoriels();
+        return $this->mediaRepository->getTutorielsQuery()->paginate($perPage);
     }
 
-    public function getAstuces()
+    public function getAstuces($perPage = 10)
     {
-        return $this->mediaRepository->getAstuces();
+        return $this->mediaRepository->getAstucesQuery()->paginate($perPage);
     }
 
-    public function getTutorielsByFormation($formationId)
+    public function getTutorielsByFormation($formationId, $perPage = 10)
     {
-        return $this->mediaRepository->getTutorielsByFormation($formationId);
+        return $this->mediaRepository->getTutorielsByFormationQuery($formationId)->paginate($perPage);
     }
 
-    public function getAstucesByFormation($formationId)
+    public function getAstucesByFormation($formationId, $perPage = 10)
     {
-        return $this->mediaRepository->getAstucesByFormation($formationId);
+        return $this->mediaRepository->getAstucesByFormationQuery($formationId)->paginate($perPage);
     }
 
     public function getInteractiveFormations()
     {
         $formations = $this->formationRepository->all();
-        return $formations->map(function($formation) {
+
+        return $formations->map(function ($formation) {
             return [
                 'id' => $formation->id,
                 'title' => $formation->title,
                 'description' => $formation->description,
                 'duration' => $formation->duration,
-                'tutoriels' => $this->mediaRepository->getTutorielsByFormation($formation->id),
-                'astuces' => $this->mediaRepository->getAstucesByFormation($formation->id)
+                // Attention : ici, on retourne toujours tout sans pagination
+                'tutoriels' => $this->mediaRepository->getTutorielsByFormationQuery($formation->id)->get(),
+                'astuces' => $this->mediaRepository->getAstucesByFormationQuery($formation->id)->get(),
             ];
         });
     }

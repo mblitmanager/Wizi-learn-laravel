@@ -19,45 +19,48 @@ class MediaController extends Controller
         $this->mediaService = $mediaService;
     }
 
-    public function getTutoriels()
+    public function getTutoriels(Request $request)
     {
         try {
-            $user = JWTAuth::parseToken()->authenticate();
-            $tutoriels = $this->mediaService->getTutoriels();
-            $data = PaginationHelper::paginate($tutoriels, 10);
-            return response()->json($data);
-        } catch (JWTException $e) {
-            return response()->json(['error' => 'Unauthorized'], 401);
-        }
-    }
-
-    public function getAstuces()
-    {
-        try {
-            $user = JWTAuth::parseToken()->authenticate();
-            $astuces = $this->mediaService->getAstuces();
-            return response()->json($astuces);
-        } catch (JWTException $e) {
-            return response()->json(['error' => 'Unauthorized'], 401);
-        }
-    }
-
-    public function getTutorielsByFormation($formationId)
-    {
-        try {
-            $user = JWTAuth::parseToken()->authenticate();
-            $tutoriels = $this->mediaService->getTutorielsByFormation($formationId);
+            JWTAuth::parseToken()->authenticate();
+            $perPage = $request->get('perPage', 10);
+            $tutoriels = $this->mediaService->getTutoriels($perPage);
             return response()->json($tutoriels);
         } catch (JWTException $e) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
     }
 
-    public function getAstucesByFormation($formationId)
+    public function getAstuces(Request $request)
     {
         try {
-            $user = JWTAuth::parseToken()->authenticate();
-            $astuces = $this->mediaService->getAstucesByFormation($formationId);
+            JWTAuth::parseToken()->authenticate();
+            $perPage = $request->get('perPage', 10);
+            $astuces = $this->mediaService->getAstuces($perPage);
+            return response()->json($astuces);
+        } catch (JWTException $e) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+    }
+
+    public function getTutorielsByFormation(Request $request, $formationId)
+    {
+        try {
+            JWTAuth::parseToken()->authenticate();
+            $perPage = $request->get('perPage', 10);
+            $tutoriels = $this->mediaService->getTutorielsByFormation($formationId, $perPage);
+            return response()->json($tutoriels);
+        } catch (JWTException $e) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+    }
+
+    public function getAstucesByFormation(Request $request, $formationId)
+    {
+        try {
+            JWTAuth::parseToken()->authenticate();
+            $perPage = $request->get('perPage', 10);
+            $astuces = $this->mediaService->getAstucesByFormation($formationId, $perPage);
             return response()->json($astuces);
         } catch (JWTException $e) {
             return response()->json(['error' => 'Unauthorized'], 401);
@@ -67,7 +70,7 @@ class MediaController extends Controller
     public function getInteractiveFormations()
     {
         try {
-            $user = JWTAuth::parseToken()->authenticate();
+            JWTAuth::parseToken()->authenticate();
             $formations = $this->mediaService->getInteractiveFormations();
             return response()->json($formations);
         } catch (JWTException $e) {
@@ -86,8 +89,6 @@ class MediaController extends Controller
         $size = filesize($fullPath);
         $start = 0;
         $length = $size;
-
-        // Détection dynamique du type MIME
         $mime = mime_content_type($fullPath);
 
         $headers = [

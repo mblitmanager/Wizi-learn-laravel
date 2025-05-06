@@ -14,13 +14,18 @@ use App\Http\Controllers\Admin\StagiaireController;
 use Illuminate\Support\Facades\Route;
 use PhpOffice\PhpSpreadsheet\Calculation\TextData\Format;
 
-Route::get('/register', [AdminController::class, 'showRegisterForm'])->name('register');
-Route::post('/register', [AdminController::class, 'register'])->name('register.post');
+Route::get('/', function () {
+    return redirect()->route('login');
+});
+Route::prefix('administrateur')->group(function () {
+    Route::get('/register', [AdminController::class, 'showRegisterForm'])->name('register');
+    Route::post('/register', [AdminController::class, 'register'])->name('register.post');
 
-Route::get('/', [AdminController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [AdminController::class, 'login'])->name('login.post');
+    Route::get('/login', [AdminController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [AdminController::class, 'login'])->name('login.post');
+});
 
-Route::middleware(['auth', 'isAdmin'])->group(function () {
+Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
     Route::get('/logout', [AdminController::class, 'logout'])->name('logout');
     Route::resource('stagiaires', StagiaireController::class);
@@ -32,7 +37,6 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
     Route::resource('formateur', FormateurController::class);
 
     Route::resource('commercials', CommercialController::class);
-
 
     Route::resource('formations', FormationController::class);
 

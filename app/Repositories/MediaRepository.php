@@ -7,6 +7,29 @@ use App\Repositories\Interfaces\MediaRepositoryInterface;
 
 class MediaRepository implements MediaRepositoryInterface
 {
+    public function getTutorielsQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        return Media::where('categorie', 'tutoriel')->orderBy('ordre', 'asc');
+    }
+
+    public function getAstucesQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        return Media::where('categorie', 'astuce')->orderBy('ordre', 'asc');
+    }
+
+    public function getTutorielsByFormationQuery($formationId): \Illuminate\Database\Eloquent\Builder
+    {
+        return Media::where('categorie', 'tutoriel')
+            ->where('formation_id', $formationId)
+            ->orderBy('ordre', 'asc');
+    }
+
+    public function getAstucesByFormationQuery($formationId): \Illuminate\Database\Eloquent\Builder
+    {
+        return Media::where('categorie', 'astuce')
+            ->where('formation_id', $formationId)
+            ->orderBy('ordre', 'asc');
+    }
     public function getTutoriels()
     {
         return Media::where('categorie', 'tutoriel')
