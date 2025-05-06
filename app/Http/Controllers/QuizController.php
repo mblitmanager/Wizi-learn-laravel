@@ -33,16 +33,16 @@ class QuizController extends Controller
         try {
             // Récupérer les quizzes des formations ayant la catégorie spécifiée et qui ont des stagiaires
             $quizzes = Quiz::with(['questions.reponses', 'formation'])
-                ->whereHas('formation', function($query) use ($category) {
+                ->whereHas('formation', function ($query) use ($category) {
                     $query->where('categorie', $category)
-                          ->whereHas('stagiaires', function($query) {
-                              $query->where('role', 'stagiaire');
-                          });
+                        ->whereHas('stagiaires', function ($query) {
+                            $query->where('role', 'stagiaire');
+                        });
                 })
                 ->get();
 
             // Transformer les données pour correspondre au format TypeScript
-            $formattedQuizzes = $quizzes->map(function($quiz) {
+            $formattedQuizzes = $quizzes->map(function ($quiz) {
                 return [
                     'id' => (string)$quiz->id,
                     'titre' => $quiz->titre,
@@ -50,7 +50,7 @@ class QuizController extends Controller
                     'categorie' => $quiz->formation->categorie ?? 'Non catégorisé',
                     'categorieId' => $quiz->formation->categorie ?? 'non-categorise',
                     'niveau' => $quiz->niveau ?? 'débutant',
-                    'questions' => $quiz->questions->map(function($question) {
+                    'questions' => $quiz->questions->map(function ($question) {
                         $questionData = [
                             'id' => (string)$question->id,
                             'text' => $question->text,
@@ -61,7 +61,7 @@ class QuizController extends Controller
                         switch ($question->type) {
                             case 'multiplechoice':
                             case 'truefalse':
-                                $questionData['answers'] = $question->reponses->map(function($reponse) {
+                                $questionData['answers'] = $question->reponses->map(function ($reponse) {
                                     return [
                                         'id' => (string)$reponse->id,
                                         'text' => $reponse->text,
@@ -71,7 +71,7 @@ class QuizController extends Controller
                                 break;
 
                             case 'ordering':
-                                $questionData['answers'] = $question->reponses->map(function($reponse) {
+                                $questionData['answers'] = $question->reponses->map(function ($reponse) {
                                     return [
                                         'id' => (string)$reponse->id,
                                         'text' => $reponse->text,
@@ -81,7 +81,7 @@ class QuizController extends Controller
                                 break;
 
                             case 'fillblank':
-                                $questionData['blanks'] = $question->reponses->map(function($reponse) {
+                                $questionData['blanks'] = $question->reponses->map(function ($reponse) {
                                     return [
                                         'id' => (string)$reponse->id,
                                         'text' => $reponse->text,
@@ -91,7 +91,7 @@ class QuizController extends Controller
                                 break;
 
                             case 'wordbank':
-                                $questionData['wordbank'] = $question->reponses->map(function($reponse) {
+                                $questionData['wordbank'] = $question->reponses->map(function ($reponse) {
                                     return [
                                         'id' => (string)$reponse->id,
                                         'text' => $reponse->text,
@@ -109,7 +109,7 @@ class QuizController extends Controller
                                 break;
 
                             case 'matching':
-                                $questionData['matching'] = $question->reponses->map(function($reponse) {
+                                $questionData['matching'] = $question->reponses->map(function ($reponse) {
                                     return [
                                         'id' => (string)$reponse->id,
                                         'text' => $reponse->text,
@@ -120,7 +120,7 @@ class QuizController extends Controller
 
                             case 'audioquestion':
                                 $questionData['audioUrl'] = $question->audio_url ?? $question->media_url ?? null;
-                                $questionData['answers'] = $question->reponses->map(function($reponse) {
+                                $questionData['answers'] = $question->reponses->map(function ($reponse) {
                                     return [
                                         'id' => (string)$reponse->id,
                                         'text' => $reponse->text,
@@ -167,13 +167,13 @@ class QuizController extends Controller
 
             // Récupérer les catégories uniques depuis les formations associées aux quizzes du stagiaire
             $categories = Quiz::with('formation')
-                ->whereHas('formation.stagiaires', function($query) use ($stagiaire) {
+                ->whereHas('formation.stagiaires', function ($query) use ($stagiaire) {
                     $query->where('stagiaires.id', $stagiaire->id);
                 })
                 ->select('formation_id')
                 ->distinct()
                 ->get()
-                ->map(function($quiz) use ($stagiaire) {
+                ->map(function ($quiz) use ($stagiaire) {
                     return [
                         'id' => $quiz->formation->categorie ?? 'non-categorise',
                         'name' => $quiz->formation->categorie ?? 'Non catégorisé',
@@ -181,7 +181,7 @@ class QuizController extends Controller
                         'icon' => $this->getCategoryIcon($quiz->formation->categorie ?? 'Non catégorisé'),
                         'description' => $this->getCategoryDescription($quiz->formation->categorie ?? 'Non catégorisé'),
                         'quizCount' => Quiz::where('formation_id', $quiz->formation_id)
-                            ->whereHas('formation.stagiaires', function($query) use ($stagiaire) {
+                            ->whereHas('formation.stagiaires', function ($query) use ($stagiaire) {
                                 $query->where('stagiaires.id', $stagiaire->id);
                             })
                             ->count(),
@@ -248,26 +248,26 @@ class QuizController extends Controller
             return response()->json([], 200);
         }
 
-        $history = Progression::with(['quiz' => function($query) {
+        $history = Progression::with(['quiz' => function ($query) {
             $query->with(['questions.reponses']);
         }])
-        ->where('stagiaire_id', $stagiaire->id)
-        ->orderBy('created_at', 'desc')
-        ->get()
-        ->map(function($progression) {
-            return [
-                'id' => (string)$progression->id,
-                'quiz' => [
-                    'id' => (string)$progression->quiz->id,
-                    'title' => $progression->quiz->titre,
-                    'category' => $progression->quiz->formation->categorie ?? 'Non catégorisé',
-                    'level' => $progression->quiz->niveau ?? 'débutant'
-                ],
-                'score' => $progression->score,
-                'completedAt' => $progression->created_at->toISOString(),
-                'timeSpent' => $progression->time_spent
-            ];
-        });
+            ->where('stagiaire_id', $stagiaire->id)
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($progression) {
+                return [
+                    'id' => (string)$progression->id,
+                    'quiz' => [
+                        'id' => (string)$progression->quiz->id,
+                        'title' => $progression->quiz->titre,
+                        'category' => $progression->quiz->formation->categorie ?? 'Non catégorisé',
+                        'level' => $progression->quiz->niveau ?? 'débutant'
+                    ],
+                    'score' => $progression->score,
+                    'completedAt' => $progression->created_at->toISOString(),
+                    'timeSpent' => $progression->time_spent
+                ];
+            });
 
         return response()->json($history);
     }
@@ -361,9 +361,9 @@ class QuizController extends Controller
             ->get();
 
         // Grouper les progressions par catégorie
-        $categoryStats = $progressions->groupBy(function($progression) {
+        $categoryStats = $progressions->groupBy(function ($progression) {
             return $progression->quiz->formation->categorie ?? 'Non catégorisé';
-        })->map(function($group) {
+        })->map(function ($group) {
             return [
                 'category' => $group->first()->quiz->formation->categorie ?? 'Non catégorisé',
                 'quizCount' => $group->count(),
@@ -384,7 +384,7 @@ class QuizController extends Controller
         $levelStats = [];
 
         foreach ($levels as $level) {
-            $levelQuizzes = $progressions->filter(function($progression) use ($level) {
+            $levelQuizzes = $progressions->filter(function ($progression) use ($level) {
                 return $progression->quiz->niveau === $level;
             });
 
@@ -410,7 +410,7 @@ class QuizController extends Controller
                 'categorie' => $quiz->formation->categorie ?? 'Non catégorisé',
                 'categorieId' => $quiz->formation->categorie ?? 'non-categorise',
                 'niveau' => $quiz->niveau ?? 'débutant',
-                'questions' => $quiz->questions->map(function($question) {
+                'questions' => $quiz->questions->map(function ($question) {
                     $questionData = [
                         'id' => (string)$question->id,
                         'text' => $question->text,
@@ -418,7 +418,7 @@ class QuizController extends Controller
                     ];
 
                     // Par défaut, toutes les questions ont des réponses
-                    $questionData['answers'] = $question->reponses->map(function($reponse) {
+                    $questionData['answers'] = $question->reponses->map(function ($reponse) {
                         return [
                             'id' => (string)$reponse->id,
                             'text' => $reponse->text,
@@ -429,7 +429,7 @@ class QuizController extends Controller
                     // Ajout des propriétés spécifiques selon le type
                     switch ($question->type) {
                         case 'rearrangement':
-                            $questionData['answers'] = $question->reponses->map(function($reponse) {
+                            $questionData['answers'] = $question->reponses->map(function ($reponse) {
                                 return [
                                     'id' => (string)$reponse->id,
                                     'text' => $reponse->text,
@@ -439,7 +439,7 @@ class QuizController extends Controller
                             break;
 
                         case 'remplir le champ vide':
-                            $questionData['blanks'] = $question->reponses->map(function($reponse) {
+                            $questionData['blanks'] = $question->reponses->map(function ($reponse) {
                                 return [
                                     'id' => (string)$reponse->id,
                                     'text' => $reponse->text,
@@ -449,7 +449,7 @@ class QuizController extends Controller
                             break;
 
                         case 'banque de mots':
-                            $questionData['wordbank'] = $question->reponses->map(function($reponse) {
+                            $questionData['wordbank'] = $question->reponses->map(function ($reponse) {
                                 return [
                                     'id' => (string)$reponse->id,
                                     'text' => $reponse->text,
@@ -467,7 +467,7 @@ class QuizController extends Controller
                             break;
 
                         case 'correspondance':
-                            $questionData['matching'] = $question->reponses->map(function($reponse) {
+                            $questionData['matching'] = $question->reponses->map(function ($reponse) {
                                 return [
                                     'id' => (string)$reponse->id,
                                     'text' => $reponse->text,
@@ -542,7 +542,7 @@ class QuizController extends Controller
             }
 
             // Préparer les détails des questions et réponses
-            $questionsDetails = $quiz->questions->map(function($question) use ($request) {
+            $questionsDetails = $quiz->questions->map(function ($question) use ($request) {
                 $selectedAnswerTexts = is_array($request->answers[$question->id] ?? null)
                     ? $request->answers[$question->id]
                     : [];
@@ -556,11 +556,11 @@ class QuizController extends Controller
                 if ($question->type === 'remplir le champ vide') {
                     // Compare case-insensitively for fill-in-the-blank questions
                     $isCorrect = empty(array_udiff_assoc($selectedAnswerTexts, $correctAnswerTexts, 'strcasecmp')) &&
-                                 empty(array_udiff_assoc($correctAnswerTexts, $selectedAnswerTexts, 'strcasecmp'));
+                        empty(array_udiff_assoc($correctAnswerTexts, $selectedAnswerTexts, 'strcasecmp'));
                 } else {
                     // Default comparison for other question types
                     $isCorrect = empty(array_diff($selectedAnswerTexts, $correctAnswerTexts)) &&
-                                 empty(array_diff($correctAnswerTexts, $selectedAnswerTexts));
+                        empty(array_diff($correctAnswerTexts, $selectedAnswerTexts));
                 }
 
                 return [
@@ -569,7 +569,7 @@ class QuizController extends Controller
                     'type' => $question->type,
                     'selectedAnswers' => $selectedAnswerTexts,
                     'correctAnswers' => $correctAnswerTexts,
-                    'answers' => $question->reponses->map(function($reponse) {
+                    'answers' => $question->reponses->map(function ($reponse) {
                         return [
                             'id' => $reponse->id,
                             'text' => $reponse->text,
@@ -634,7 +634,6 @@ class QuizController extends Controller
                 'timeSpent' => $result->time_spent,
                 'questions' => $questionsDetails
             ]);
-
         } catch (\Exception $e) {
             Log::error('Erreur dans submitQuizResult', [
                 'error' => $e->getMessage(),
@@ -724,7 +723,7 @@ class QuizController extends Controller
                 ->where('stagiaire_formations.stagiaire_id', $stagiaire->id)
                 ->with(['formation', 'questions.reponses'])
                 ->get()
-                ->map(function($quiz) {
+                ->map(function ($quiz) {
                     return [
                         'id' => (string)$quiz->id,
                         'titre' => $quiz->titre,
@@ -732,12 +731,12 @@ class QuizController extends Controller
                         'categorie' => $quiz->formation->categorie ?? 'Non catégorisé',
                         'categorieId' => $quiz->formation->categorie ?? 'non-categorise',
                         'niveau' => $quiz->niveau ?? 'débutant',
-                        'questions' => $quiz->questions->map(function($question) {
+                        'questions' => $quiz->questions->map(function ($question) {
                             return [
                                 'id' => (string)$question->id,
                                 'text' => $question->text,
                                 'type' => $question->type ?? 'multiplechoice',
-                                'answers' => $question->reponses->map(function($reponse) {
+                                'answers' => $question->reponses->map(function ($reponse) {
                                     return [
                                         'id' => (string)$reponse->id,
                                         'text' => $reponse->text,
@@ -771,7 +770,7 @@ class QuizController extends Controller
                 ->where('quiz_id', $quizId)
                 ->orderBy('rang')
                 ->get()
-                ->map(function($item) {
+                ->map(function ($item) {
                     return [
                         'id' => (string)$item->id,
                         'rang' => $item->rang,
@@ -809,7 +808,7 @@ class QuizController extends Controller
             $classements = Classement::with(['stagiaire.user', 'quiz'])
                 ->get()
                 ->groupBy('stagiaire_id')
-                ->map(function($group) {
+                ->map(function ($group) {
                     return [
                         'stagiaire' => [
                             'id' => (string)$group->first()->stagiaire->id,
@@ -823,7 +822,7 @@ class QuizController extends Controller
                 })
                 ->sortByDesc('totalPoints')
                 ->values()
-                ->map(function($item, $index) {
+                ->map(function ($item, $index) {
                     return [
                         ...$item,
                         'rang' => $index + 1
@@ -881,7 +880,6 @@ class QuizController extends Controller
                 'message' => 'Nouvelle participation créée',
                 'participation' => $participation
             ], 201);
-
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Erreur lors de la création de la participation',
@@ -907,7 +905,6 @@ class QuizController extends Controller
             return response()->json([
                 'participation' => $participation
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Erreur lors de la récupération de la participation',
@@ -942,7 +939,6 @@ class QuizController extends Controller
                 'message' => 'Participation terminée avec succès',
                 'participation' => $participation
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Erreur lors de la mise à jour de la participation',
@@ -965,7 +961,6 @@ class QuizController extends Controller
             return response()->json([
                 'rankings' => $rankings
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Erreur lors de la récupération des classements',
@@ -989,7 +984,6 @@ class QuizController extends Controller
             return response()->json([
                 'rankings' => $rankings
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Erreur lors de la récupération des classements du quiz',
@@ -1004,7 +998,7 @@ class QuizController extends Controller
         $participation = QuizParticipation::with(['quiz.questions.reponses'])->findOrFail($participationId);
         $answers = QuizParticipationAnswer::where('participation_id', $participationId)->get()->keyBy('question_id');
 
-        $resume = $participation->quiz->questions->map(function($question) use ($answers) {
+        $resume = $participation->quiz->questions->map(function ($question) use ($answers) {
             $userAnswerIds = $answers[$question->id]->answer_ids ?? [];
             $correctAnswers = $question->reponses->where('is_correct', true)->pluck('id')->toArray();
 
@@ -1013,7 +1007,7 @@ class QuizController extends Controller
                 'question_id' => $question->id,
                 'correctAnswers' => $correctAnswers,
                 'userAnswers' => $userAnswerIds,
-                'answers' => $question->reponses->map(function($r) {
+                'answers' => $question->reponses->map(function ($r) {
                     return [
                         'id' => $r->id,
                         'text' => $r->text,

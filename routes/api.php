@@ -121,6 +121,7 @@ Route::middleware(['auth:api'])->group(function () {
     Route::get('/quiz/{id}/participation', [QuizController::class, 'getCurrentParticipation']);
     Route::post('/quiz/{id}/complete', [QuizController::class, 'completeParticipation']);
     Route::get('/quiz-participations/{participation}/resume', [App\Http\Controllers\QuizController::class, 'getParticipationResume']);
+    Route::post('/quiz/{quiz}/reararrangement', [QuizStagiaireController::class, 'submitRearrangement']);
 });
 
 

@@ -37,4 +37,4 @@ class QuizParticipation extends Model
     {
         return $this->belongsTo(Quiz::class);
     }
-} 
+}
