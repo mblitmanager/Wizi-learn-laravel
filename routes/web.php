@@ -33,12 +33,14 @@ Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function
     Route::patch('/stagiaires/{id}/active', [StagiaireController::class, 'active'])->name('stagiaires.active');
 
     Route::resource('quiz', QuizController::class);
+    Route::post('/quiz/{id}/duplicate', [QuizController::class, 'duplicate'])->name('quiz.duplicate');
 
     Route::resource('formateur', FormateurController::class);
 
     Route::resource('commercials', CommercialController::class);
 
     Route::resource('formations', FormationController::class);
+    Route::post('/formations/{id}/duplicate', [FormationController::class, 'duplicate'])->name('formations.duplicate');
 
     Route::resource('medias', MediaController::class);
 
@@ -55,6 +57,7 @@ Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function
     Route::resource('question', QuestionController::class);
 
     Route::resource('catalogue_formation', CatalogueFormationController::class);
+    Route::post('/catalogue_formation/{id}/duplicate', [CatalogueFormationController::class, 'duplicate'])->name('catalogue_formation.duplicate');
 
     Route::resource('parametre', ParametreAdminController::class);
     Route::put('/parametre/{id}/update-image', [ParametreAdminController::class, 'updateImage'])->name('parametre.updateImage');

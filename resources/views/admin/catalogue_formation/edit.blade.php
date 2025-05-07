@@ -22,6 +22,19 @@
                         <a href="{{ route('catalogue_formation.index') }}" type="button"
                             class="btn btn-sm btn-primary mx-4"> <i
                                 class="fadeIn animated bx bx-chevron-left-circle"></i>Retour</a>
+                        <form action="{{ route('catalogue_formation.duplicate', $catalogueFormation->id) }}" method="POST" style="display:inline;">
+                            @csrf
+                            <button type="submit" class="btn btn-warning btn-sm mx-2" onclick="return confirm('Dupliquer ce catalogue ?')">
+                                <i class="lni lni-copy"></i> Dupliquer
+                            </button>
+                        </form>
+                        <form action="{{ route('catalogue_formation.destroy', $catalogueFormation->id) }}" method="POST" style="display:inline;">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-danger btn-sm mx-2" onclick="return confirm('Supprimer ce catalogue ?')">
+                                <i class="lni lni-trash"></i> Supprimer
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>

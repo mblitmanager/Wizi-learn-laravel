@@ -10,8 +10,8 @@
                             <li class="breadcrumb-item"><a href="{{ route('formations.index') }}"><i
                                         class="bx bx-home-alt"></i></a>
                             </li>
-                            <li class="breadcrumb-item active text-uppercase fw-bold" aria-current="page">Modification d'un
-                                domain formation</li>
+                            <li class="breadcrumb-item active text-uppercase fw-bold" aria-current="page">Modification d'une
+                                formation</li>
                         </ol>
                     </nav>
                 </div>
@@ -19,6 +19,19 @@
                     <div class="btn-group">
                         <a href="{{ route('formations.index') }}" type="button" class="btn btn-sm btn-primary"><i
                                 class="fadeIn animated bx bx-chevron-left-circle"></i>Retour</a>
+                        <form action="{{ route('formations.duplicate', $formation->id) }}" method="POST" style="display:inline;">
+                            @csrf
+                            <button type="submit" class="btn btn-warning btn-sm mx-2" onclick="return confirm('Dupliquer cette formation ?')">
+                                <i class="lni lni-copy"></i> Dupliquer
+                            </button>
+                        </form>
+                        <form action="{{ route('formations.destroy', $formation->id) }}" method="POST" style="display:inline;">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-danger btn-sm mx-2" onclick="return confirm('Supprimer cette formation ?')">
+                                <i class="lni lni-trash"></i> Supprimer
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>

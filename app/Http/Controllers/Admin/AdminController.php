@@ -12,6 +12,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Session;
 
 class AdminController extends Controller
 {
@@ -56,13 +58,58 @@ class AdminController extends Controller
             ->orderBy('month', 'desc')
             ->get();
 
+        // Récupération des listes pour les filtres
+        $formateurs = Formateur::with('user')->get();
+        $commerciaux = Commercial::with('user')->get();
+        $poles = PoleRelationClient::with('user')->get();
+
+        // Utilisateurs connectés (sessions actives dans la dernière heure)
+        $connectedUsers = User::whereIn('id', function($query) {
+            $query->select('user_id')
+                ->from('sessions')
+                ->where('last_activity', '>=', now()->subHour()->getTimestamp());
+        })->get();
+
+        // Quiz récemment joués (10 derniers terminés)
+        $recentQuizzes = DB::table('quiz_participations')
+            ->join('quizzes', 'quiz_participations.quiz_id', '=', 'quizzes.id')
+            ->join('users', 'quiz_participations.user_id', '=', 'users.id')
+            ->select(
+                'quiz_participations.completed_at',
+                'quizzes.titre as quiz_title',
+                'users.name as user_name'
+            )
+            ->where('quiz_participations.status', 'completed')
+            ->orderByDesc('quiz_participations.completed_at')
+            ->limit(10)
+            ->get();
+
+        // Quiz en cours (participations non terminées)
+        $activeQuizzes = DB::table('quiz_participations')
+            ->join('quizzes', 'quiz_participations.quiz_id', '=', 'quizzes.id')
+            ->join('users', 'quiz_participations.user_id', '=', 'users.id')
+            ->select(
+                'quiz_participations.started_at',
+                'quizzes.titre as quiz_title',
+                'users.name as user_name'
+            )
+            ->where('quiz_participations.status', 'in_progress')
+            ->orderByDesc('quiz_participations.started_at')
+            ->get();
+
         return view('admin.dashboard.index', compact(
             'totalStagiaires',
             'totalFormateurs',
             'totalCommerciaux',
             'totalPoleRelationClient',
             'dailyStats',
-            'monthlyStats'
+            'monthlyStats',
+            'formateurs',
+            'commerciaux',
+            'poles',
+            'connectedUsers',
+            'recentQuizzes',
+            'activeQuizzes'
         ));
     }
 

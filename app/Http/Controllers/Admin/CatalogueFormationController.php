@@ -99,6 +99,23 @@ class CatalogueFormationController extends Controller
     }
 
     /**
+     * Dupliquer un catalogue de formation
+     */
+    public function duplicate($id)
+    {
+        $catalogue = $this->catalogueFormationService->show($id);
+        if (!$catalogue) {
+            return redirect()->route('catalogue_formation.index')->with('error', 'Catalogue non trouvé.');
+        }
+        $newData = $catalogue->toArray();
+        unset($newData['id'], $newData['created_at'], $newData['updated_at']);
+        $newData['titre'] = $catalogue->titre . ' (copie)';
+        $newCatalogue = $this->catalogueFormationService->create($newData);
+        return redirect()->route('catalogue_formation.edit', $newCatalogue->id)
+            ->with('success', 'Catalogue de formation dupliqué avec succès.');
+    }
+
+    /**
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)

@@ -19,6 +19,19 @@
                         <button class="btn btn-sm text-white btn-info mx-2" data-bs-toggle="modal"
                             data-bs-target="#importModal"><i class="lni lni-cloud-download"></i>importer quiz
                         </button>
+                        <form action="{{ route('quiz.duplicate', $quiz->id) }}" method="POST" style="display:inline;">
+                            @csrf
+                            <button type="submit" class="btn btn-warning btn-sm mx-2" onclick="return confirm('Dupliquer ce quiz ?')">
+                                <i class="lni lni-copy"></i> Dupliquer
+                            </button>
+                        </form>
+                        <form action="{{ route('quiz.destroy', $quiz->id) }}" method="POST" style="display:inline;">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-danger btn-sm mx-2" onclick="return confirm('Supprimer ce quiz ?')">
+                                <i class="lni lni-trash"></i> Supprimer
+                            </button>
+                        </form>
                         <a href="{{ route('quiz.index') }}" type="button" class="btn btn-sm btn-primary px-4"> <i
                                 class="fadeIn animated bx bx-chevron-left-circle"></i> Retour</a>
                     </div>

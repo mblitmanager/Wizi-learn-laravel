@@ -517,4 +517,37 @@ class QuizController extends Controller
             return back()->with('error', 'Erreur : ' . $e->getMessage() . ' à la ligne ' . $e->getLine());
         }
     }
+
+    /**
+     * Dupliquer un quiz avec ses questions et réponses
+     */
+    public function duplicate($id)
+    {
+        DB::beginTransaction();
+        try {
+            $quiz = Quiz::with('questions.reponses')->findOrFail($id);
+            // Dupliquer le quiz (sauf id, timestamps)
+            $newQuiz = $quiz->replicate(['id', 'created_at', 'updated_at']);
+            $newQuiz->titre = $quiz->titre . ' (copie)';
+            $newQuiz->push();
+
+            foreach ($quiz->questions as $question) {
+                $newQuestion = $question->replicate(['id', 'quiz_id', 'created_at', 'updated_at']);
+                $newQuestion->quiz_id = $newQuiz->id;
+                $newQuestion->push();
+
+                foreach ($question->reponses as $reponse) {
+                    $newReponse = $reponse->replicate(['id', 'question_id', 'created_at', 'updated_at']);
+                    $newReponse->question_id = $newQuestion->id;
+                    $newReponse->push();
+                }
+            }
+            DB::commit();
+            return redirect()->route('quiz.edit', $newQuiz->id)
+                ->with('success', 'Quiz dupliqué avec succès.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Erreur lors de la duplication : ' . $e->getMessage());
+        }
+    }
 }
