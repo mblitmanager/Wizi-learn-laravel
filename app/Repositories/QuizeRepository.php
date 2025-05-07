@@ -45,7 +45,7 @@ class QuizeRepository implements QuizRepositoryInterface
             $query->whereHas('stagiaires', function($q) use ($stagiaireId) {
                 $q->where('stagiaires.id', $stagiaireId);
             });
-        })->with(['questions.reponses'])->get();
+        })->with(['formation','questions.reponses'])->get();
     }
 
     public function getQuizQuestions($quizId): Collection
