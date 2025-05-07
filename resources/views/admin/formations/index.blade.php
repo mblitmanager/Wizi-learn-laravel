@@ -1,7 +1,7 @@
 @extends('admin.layout')
 @section('title', 'Ajouter un stagiaire')
 @section('content')
-    <div class="container">
+    <div class="container-fluid">
         <div class="shadow-lg border-0 px-2 py-2 mb-3">
             <div class="page-breadcrumb d-none d-sm-flex align-items-center">
                 <div class="breadcrumb-title pe-3"></div>
@@ -59,13 +59,13 @@
                                             <td>{{ $row->titre }}</td>
                                             <td>{!! $row->categorie !!}</td>
                                             <td>{{ $row->duree }}</td>
-                                            <td>
+                                            <td class="text-center">
                                                 <a href="{{ route('formations.edit', $row->id) }}"
                                                     class=" btn btn-sm btn-success">
                                                     Modifier
                                                 </a>
                                                 <a href="{{ route('formations.show', $row->id) }}"
-                                                    class="btn btn-sm btn-info">
+                                                    class="btn btn-sm btn-info text-white">
                                                     Afficher
                                                 </a>
 

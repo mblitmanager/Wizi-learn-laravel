@@ -9,6 +9,7 @@ use App\Models\QuizParticipationAnswer;
 use App\Models\Stagiaire;
 use App\Models\User;
 use App\Services\QuizService;
+use Illuminate\Container\Attributes\Auth;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Illuminate\Http\Request;
@@ -131,8 +132,9 @@ class QuizStagiaireController extends Controller
             'answers' => 'required|array',
             'answers.*' => 'array'
         ]);
-
-        $stagiaire = Stagiaire::find(18);
+        $user = JWTAuth::parseToken()->authenticate()->load('stagiaire');
+        $stagiaireId = $user->stagiaire->id;
+        $stagiaire = Stagiaire::find($stagiaireId);
 
         $result = $this->submitRearrangementQuiz($request->input('answers'), $quiz, $stagiaire);
 
@@ -190,6 +192,97 @@ class QuizStagiaireController extends Controller
             }
 
             // Mise à jour des scores
+            $participation->update([
+                'score' => $scoreTotal,
+                'correct_answers' => $correctCount
+            ]);
+
+            return [
+                'participation' => $participation,
+                'result_by_question' => $resultByQuestion
+            ];
+        });
+    }
+
+    public function submitMatching(Request $request, Quiz $quiz)
+    {
+
+        $request->validate([
+            'answers' => 'required|array',
+            'answers.*' => 'integer'
+        ]);
+        // $user = JWTAuth::parseToken()->authenticate()->load('stagiaire');
+        // dd($user->stagiaire);
+
+        // $stagiaireId = $user->stagiaire->id;
+        $stagiaire = Stagiaire::find(1);
+        if (!$stagiaire) {
+            return response()->json(['error' => 'Stagiaire not found'], 404);
+        }
+
+        $result = $this->submitMatchingQuiz($request->input('answers'), $quiz, $stagiaire);
+
+        return response()->json($result);
+    }
+
+
+    function submitMatchingQuiz(array $userAnswers, Quiz $quiz, Stagiaire $stagiaire)
+    {
+        return DB::transaction(function () use ($userAnswers, $quiz, $stagiaire) {
+            $participation = QuizParticipation::create([
+                'user_id' => $stagiaire->id,
+                'quiz_id' => $quiz->id,
+                'status' => 'completed',
+                'started_at' => now(),
+                'completed_at' => now(),
+                'score' => 0,
+                'correct_answers' => 0,
+                'time_spent' => 0
+            ]);
+
+            $scoreTotal = 0;
+            $correctCount = 0;
+            $resultByQuestion = [];
+
+            foreach ($quiz->questions()->where('type', 'matching')->get() as $question) {
+                $submittedPairs = $userAnswers[$question->id] ?? []; // format: [left_id => right_id]
+
+                // Sauvegarder la réponse
+                QuizParticipationAnswer::create([
+                    'participation_id' => $participation->id,
+                    'question_id' => $question->id,
+                    'answer_ids' => json_encode($submittedPairs), // stocké comme JSON
+                ]);
+
+                // Récupérer les paires correctes
+                $leftItems = $question->reponses()->where('bank_group', 'left')->get();
+                $rightItems = $question->reponses()->where('bank_group', 'right')->get()->keyBy('match_pair');
+
+                $correctPairs = [];
+                foreach ($leftItems as $left) {
+                    $matchKey = $left->match_pair;
+                    $matchingRight = $rightItems[$matchKey] ?? null;
+                    if ($matchingRight) {
+                        $correctPairs[$left->id] = $matchingRight->id;
+                    }
+                }
+
+                // Comparer les réponses
+                $isCorrect = $submittedPairs == $correctPairs;
+
+                if ($isCorrect) {
+                    $scoreTotal += intval($question->points);
+                    $correctCount++;
+                }
+
+                $resultByQuestion[] = [
+                    'question_id' => $question->id,
+                    'is_correct' => $isCorrect,
+                    'expected_pairs' => $correctPairs,
+                    'submitted_pairs' => $submittedPairs
+                ];
+            }
+
             $participation->update([
                 'score' => $scoreTotal,
                 'correct_answers' => $correctCount

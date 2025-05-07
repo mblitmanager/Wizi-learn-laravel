@@ -498,6 +498,88 @@ class QuizController extends Controller
         }
     }
 
+
+    // private function isAnswerCorrect($question, $selectedAnswers)
+    // {
+    //     $correctAnswers = $question->reponses
+    //         ->where('is_correct', true)
+    //         ->pluck('text')
+    //         ->toArray();
+
+    //     if ($question->type === 'rearrangement') {
+    //         // Ordre exact requis
+    //         return $selectedAnswers === $correctAnswers;
+    //     }
+
+    //     if ($question->type === 'remplir le champ vide') {
+    //         // Comparaison insensible à la casse et à l'ordre
+    //         return empty(array_udiff_assoc($selectedAnswers, $correctAnswers, 'strcasecmp')) &&
+    //             empty(array_udiff_assoc($correctAnswers, $selectedAnswers, 'strcasecmp'));
+    //     }
+
+    //     // Comparaison standard, ordre non important
+    //     return empty(array_diff($selectedAnswers, $correctAnswers)) &&
+    //         empty(array_diff($correctAnswers, $selectedAnswers));
+    // }
+
+
+    private function isAnswerCorrect($question, $selectedAnswers)
+    {
+        if ($question->type === 'correspondance') {
+            // Récupère les paires correctes : par ex. "France" => "Paris"
+            $correctPairs = $question->reponses
+                ->where('is_correct', true)
+                ->pluck('text', 'id')
+                ->toArray();
+
+            // Inverser pour avoir les bons mappings "Pays" => "Capitale"
+            $leftItems = array_slice($correctPairs, 0, count($correctPairs) / 2, true);
+            $rightItems = array_slice($correctPairs, count($correctPairs) / 2);
+
+            $correctAssociations = array_combine(array_values($leftItems), array_values($rightItems));
+
+            // Convertir les `selectedAnswers` (clé = id_gauche, valeur = texte_droite)
+            $selectedAssociations = [];
+            foreach ($selectedAnswers as $leftId => $rightText) {
+                $leftText = $question->reponses->firstWhere('id', $leftId)?->text;
+                if ($leftText) {
+                    $selectedAssociations[$leftText] = $rightText;
+                }
+            }
+
+            return $selectedAssociations == $correctAssociations;
+        }
+
+        // Traitement pour "rearrangement"
+        if ($question->type === 'rearrangement') {
+            $correctAnswers = $question->reponses
+                ->where('is_correct', true)
+                ->pluck('text')
+                ->toArray();
+            return $selectedAnswers === $correctAnswers;
+        }
+
+        // Traitement pour "remplir le champ vide"
+        if ($question->type === 'remplir le champ vide') {
+            $correctAnswers = $question->reponses
+                ->where('is_correct', true)
+                ->pluck('text')
+                ->toArray();
+            return empty(array_udiff_assoc($selectedAnswers, $correctAnswers, 'strcasecmp')) &&
+                empty(array_udiff_assoc($correctAnswers, $selectedAnswers, 'strcasecmp'));
+        }
+
+        // Comparaison standard
+        $correctAnswers = $question->reponses
+            ->where('is_correct', true)
+            ->pluck('text')
+            ->toArray();
+        return empty(array_diff($selectedAnswers, $correctAnswers)) &&
+            empty(array_diff($correctAnswers, $selectedAnswers));
+    }
+
+
+
     public function submitQuizResult(Request $request, $id)
     {
         $user = null;
@@ -541,33 +623,25 @@ class QuizController extends Controller
                 ]);
             }
 
+
             // Préparer les détails des questions et réponses
             $questionsDetails = $quiz->questions->map(function ($question) use ($request) {
-                $selectedAnswerTexts = is_array($request->answers[$question->id] ?? null)
+                $selectedAnswers = is_array($request->answers[$question->id] ?? null)
                     ? $request->answers[$question->id]
                     : [];
+
+                $isCorrect = $this->isAnswerCorrect($question, $selectedAnswers);
 
                 $correctAnswerTexts = $question->reponses
                     ->where('is_correct', true)
                     ->pluck('text')
                     ->toArray();
 
-                $isCorrect = false;
-                if ($question->type === 'remplir le champ vide') {
-                    // Compare case-insensitively for fill-in-the-blank questions
-                    $isCorrect = empty(array_udiff_assoc($selectedAnswerTexts, $correctAnswerTexts, 'strcasecmp')) &&
-                        empty(array_udiff_assoc($correctAnswerTexts, $selectedAnswerTexts, 'strcasecmp'));
-                } else {
-                    // Default comparison for other question types
-                    $isCorrect = empty(array_diff($selectedAnswerTexts, $correctAnswerTexts)) &&
-                        empty(array_diff($correctAnswerTexts, $selectedAnswerTexts));
-                }
-
                 return [
                     'id' => $question->id,
                     'text' => $question->text,
                     'type' => $question->type,
-                    'selectedAnswers' => $selectedAnswerTexts,
+                    'selectedAnswers' => $selectedAnswers,
                     'correctAnswers' => $correctAnswerTexts,
                     'answers' => $question->reponses->map(function ($reponse) {
                         return [
