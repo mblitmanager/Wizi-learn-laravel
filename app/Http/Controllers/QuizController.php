@@ -498,31 +498,6 @@ class QuizController extends Controller
         }
     }
 
-
-    // private function isAnswerCorrect($question, $selectedAnswers)
-    // {
-    //     $correctAnswers = $question->reponses
-    //         ->where('is_correct', true)
-    //         ->pluck('text')
-    //         ->toArray();
-
-    //     if ($question->type === 'rearrangement') {
-    //         // Ordre exact requis
-    //         return $selectedAnswers === $correctAnswers;
-    //     }
-
-    //     if ($question->type === 'remplir le champ vide') {
-    //         // Comparaison insensible à la casse et à l'ordre
-    //         return empty(array_udiff_assoc($selectedAnswers, $correctAnswers, 'strcasecmp')) &&
-    //             empty(array_udiff_assoc($correctAnswers, $selectedAnswers, 'strcasecmp'));
-    //     }
-
-    //     // Comparaison standard, ordre non important
-    //     return empty(array_diff($selectedAnswers, $correctAnswers)) &&
-    //         empty(array_diff($correctAnswers, $selectedAnswers));
-    // }
-
-
     private function isAnswerCorrect($question, $selectedAnswers)
     {
         if ($question->type === 'correspondance') {
@@ -567,6 +542,16 @@ class QuizController extends Controller
                 ->toArray();
             return empty(array_udiff_assoc($selectedAnswers, $correctAnswers, 'strcasecmp')) &&
                 empty(array_udiff_assoc($correctAnswers, $selectedAnswers, 'strcasecmp'));
+        }
+
+        // Traitement pour "question audio"
+        if ($question->type === 'question audio') {
+            $correctAnswers = $question->reponses
+                ->where('is_correct', true)
+                ->pluck('text')
+                ->toArray();
+            $selectedText = is_array($selectedAnswers) && isset($selectedAnswers['text']) ? $selectedAnswers['text'] : null;
+            return in_array($selectedText, $correctAnswers);
         }
 
         // Comparaison standard
