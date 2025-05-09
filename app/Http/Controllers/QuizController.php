@@ -500,38 +500,40 @@ class QuizController extends Controller
 
     private function isAnswerCorrect($question, $selectedAnswers)
     {
+        // Vérification si la réponse est correcte
         if ($question->type === 'correspondance') {
-            // Récupère les paires correctes : par ex. "France" => "Paris"
+            // Récupère les paires correctes : par ex. "1" => "Paris"
             $correctPairs = $question->reponses
                 ->where('is_correct', true)
-                ->pluck('text', 'id')
+                ->pluck('match_pair', 'id') // Utilise les IDs comme clés et les textes correspondants comme valeurs
                 ->toArray();
-
-            // Inverser pour avoir les bons mappings "Pays" => "Capitale"
-            $leftItems = array_slice($correctPairs, 0, count($correctPairs) / 2, true);
-            $rightItems = array_slice($correctPairs, count($correctPairs) / 2);
-
-            $correctAssociations = array_combine(array_values($leftItems), array_values($rightItems));
 
             // Convertir les `selectedAnswers` (clé = id_gauche, valeur = texte_droite)
             $selectedAssociations = [];
             foreach ($selectedAnswers as $leftId => $rightText) {
-                $leftText = $question->reponses->firstWhere('id', $leftId)?->text;
-                if ($leftText) {
-                    $selectedAssociations[$leftText] = $rightText;
-                }
+                $selectedAssociations[$leftId] = $rightText;
             }
 
-            return $selectedAssociations == $correctAssociations;
-        }
-
-        // Traitement pour "rearrangement"
-        if ($question->type === 'rearrangement') {
-            $correctAnswers = $question->reponses
+            // Ajouter les paires correspondantes (match_pair) pour chaque réponse
+            $matchPairs = $question->reponses
                 ->where('is_correct', true)
-                ->pluck('text')
-                ->toArray();
-            return $selectedAnswers === $correctAnswers;
+                ->map(function ($reponse) {
+                    return [
+                        'id' => $reponse->id,
+                        'text' => $reponse->text,
+                        'match_pair' => $reponse->match_pair
+                    ];
+                })->values()->toArray();
+
+            // Comparer les associations soumises avec les associations correctes
+            $isCorrect = $selectedAssociations == $correctPairs;
+
+            return [
+                'selectedAnswers' => $selectedAssociations,
+                'correctAnswers' => $correctPairs,
+                'isCorrect' => $isCorrect,
+                'match_pair' => $matchPairs // Ajout des paires correspondantes
+            ];
         }
 
         // Traitement pour "remplir le champ vide"

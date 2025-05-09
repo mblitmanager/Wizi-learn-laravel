@@ -125,8 +125,8 @@ Route::middleware(['auth:api'])->group(function () {
 
 
 Route::get('/media/stream/{path}', [MediaController::class, 'stream'])
-    ->withoutMiddleware([JwtMiddleware::class]) // ➡️ Désactive JWT pour cette route
-    ->middleware('throttle:60,1') // Optionnel : limite les requêtes
+    ->withoutMiddleware([JwtMiddleware::class])
+    ->middleware('throttle:60,1')
     ->where('path', '.*');
 
 // Routes d'authentification
