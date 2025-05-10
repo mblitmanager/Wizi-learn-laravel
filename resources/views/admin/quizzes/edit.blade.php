@@ -227,7 +227,7 @@
                                                         accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.mp4,.mp3">
                                                     @if ($question->media_url)
                                                     <small>
-                                                        <a href="{{ asset('storage/' . $question->media_url) }}"
+                                                        <a href="{{ asset(  $question->media_url) }}"
                                                             target="_blank">Voir le fichier</a>
                                                     </small>
                                                     @endif

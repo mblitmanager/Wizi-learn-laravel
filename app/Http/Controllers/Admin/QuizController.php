@@ -110,8 +110,9 @@ class QuizController extends Controller
                 // Upload nouveau fichier média s'il est fourni
                 if (isset($questionFiles[$index]['media_file'])) {
                     $file = $questionFiles[$index]['media_file'];
-                    $path = $file->store('medias', 'public');
-                    $questionInput['media_url'] = $path;
+                    $fileName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                    $file->move(public_path('uploads/medias'), $fileName);
+                    $questionInput['media_url'] = 'uploads/medias/' . $fileName;
                 }
             }
             unset($questionInput);
@@ -122,8 +123,8 @@ class QuizController extends Controller
                     $question = $quiz->questions()->find($questionInput['id']);
                     if ($question) {
                         $question->reponses()->delete();
-                        if ($question->media_url && Storage::disk('public')->exists($question->media_url)) {
-                            Storage::disk('public')->delete($question->media_url);
+                        if ($question->media_url && file_exists(public_path($question->media_url))) {
+                            @unlink(public_path($question->media_url));
                         }
                         $question->delete();
                     }
@@ -136,8 +137,8 @@ class QuizController extends Controller
                     if ($question) {
                         // Si un nouveau fichier est envoyé, supprimer l'ancien
                         if (!empty($questionInput['media_url']) && $question->media_url !== $questionInput['media_url']) {
-                            if ($question->media_url && Storage::disk('public')->exists($question->media_url)) {
-                                Storage::disk('public')->delete($question->media_url);
+                            if ($question->media_url && file_exists(public_path($question->media_url))) {
+                                @unlink(public_path($question->media_url));
                             }
                         }
                         $question->update($questionInput);
@@ -214,7 +215,7 @@ class QuizController extends Controller
             $questionInput = [
                 'quiz_id' => $quiz->id,
                 'text' => $request->input('text'),
-                'type' => $request->input('question')['type'], // <- ici aussi, bien récupérer
+                'type' => $request->input('question')['type'],
                 'explication' => $request->input('explication'),
                 'astuce' => $request->input('astuce'),
                 'points' => $request->input('points') ?? 1,
@@ -222,8 +223,9 @@ class QuizController extends Controller
 
             if ($request->hasFile('media_file')) {
                 $file = $request->file('media_file');
-                $path = $file->store('medias', 'public');
-                $questionInput['media_url'] = $path;
+                $fileName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                $file->move(public_path('uploads/medias'), $fileName);
+                $questionInput['media_url'] = 'uploads/medias/' . $fileName;
             }
 
             $question = $quiz->questions()->create($questionInput);
@@ -253,20 +255,12 @@ class QuizController extends Controller
     }
 
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
-    }
     public function storeAll(Request $request)
     {
         // 1. Validation
         $request->validate([
             'quiz.titre' => 'required|string|max:255',
             'quiz.description' => 'nullable|string',
-
 
             'question.type' => 'required|string',
             'question.media_url' => 'nullable|file|mimes:jpg,jpeg,png,gif,pdf,doc,docx,xls,xlsx,mp3,mp4|max:102400',
@@ -293,8 +287,9 @@ class QuizController extends Controller
             // 4. Upload du fichier media_url
             if ($request->hasFile('question.media_url')) {
                 $file = $request->file('question.media_url');
-                $path = $file->store('medias', 'public');
-                $questionData['media_url'] = $path;
+                $fileName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                $file->move(public_path('uploads/medias'), $fileName);
+                $questionData['media_url'] = 'uploads/medias/' . $fileName;
             }
 
             // 5. Création de la question

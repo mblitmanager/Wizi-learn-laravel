@@ -22,6 +22,7 @@ class Quiz extends Model
         'niveau',
         'nb_points_total',
         'formation_id',
+        'status', // Ajout du champ status
     ];
 
     public function participations()
