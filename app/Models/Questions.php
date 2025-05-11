@@ -36,6 +36,6 @@ class Questions extends Model
 
     public function correspondancePairs()
     {
-        return $this->hasMany(CorrespondancePair::class);
+        return $this->hasMany(CorrespondancePair::class, 'question_id');
     }
 }

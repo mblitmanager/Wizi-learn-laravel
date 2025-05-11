@@ -504,6 +504,7 @@ class QuizController extends Controller
 
         if ($question->type === 'correspondance') {
             // Récupérer les paires correctes depuis la table correspondante
+            $correctPairs = $question->correspondancePairs->pluck('right_text', 'left_text')->toArray();
             $correctPairs = CorrespondancePair::where('question_id', $question->id)
                 ->get()
                 ->mapWithKeys(fn($pair) => [$pair->left_text => $pair->right_text])
@@ -606,7 +607,6 @@ class QuizController extends Controller
                 ]);
             }
 
-
             // Préparer les détails des questions et réponses
             $questionsDetails = $quiz->questions->map(function ($question) use ($request) {
                 $selectedAnswers = is_array($request->answers[$question->id] ?? null)
@@ -655,19 +655,50 @@ class QuizController extends Controller
                 'completion_time' => now()
             ]);
 
-            // Save user answers with both IDs and text
-            foreach ($request->answers as $questionId => $answerIds) {
-                $answersText = $quiz->questions->firstWhere('id', $questionId)?->reponses
-                    ->whereIn('id', $answerIds)
-                    ->pluck('text')
-                    ->toArray();
+            // Enregistrer les réponses pour les questions de type "correspondance"
+            foreach ($request->answers as $questionId => $answerValue) {
+                $question = $quiz->questions->firstWhere('id', $questionId);
 
-                QuizParticipationAnswer::create([
-                    'participation_id' => $participation->id,
-                    'question_id' => $questionId,
-                    'answer_ids' => is_array($answerIds) ? $answerIds : [$answerIds],
-                    'answer_texts' => json_encode($answersText), // Store the text of the answers
-                ]);
+                if (!$question) continue;
+
+                if ($question->type === 'correspondance') {
+                    // Format: [left_id => right_text]
+                    $answerPairs = [];
+                    $newPairs = [];
+
+                    foreach ($answerValue as $leftId => $rightText) {
+                        $leftAnswer = $question->reponses->firstWhere('id', $leftId);
+                        $leftText = $leftAnswer ? $leftAnswer->text : 'unknown';
+                        $answerPairs[] = ['left' => $leftText, 'right' => $rightText];
+
+                        // Vérifie si la paire existe déjà
+                        $exists = CorrespondancePair::where('question_id', $questionId)
+                            ->where('left_text', $leftText)
+                            ->where('right_text', $rightText)
+                            ->exists();
+
+                        if (!$exists) {
+                            // On retient uniquement les nouvelles paires
+                            $newPairs[] = [
+                                'question_id' => $questionId,
+                                'left_text' => $leftText,
+                                'right_text' => $rightText
+                            ];
+                        }
+                    }
+
+                    // Si au moins une paire est nouvelle, on les insère toutes ensemble
+                    if (!empty($newPairs)) {
+                        CorrespondancePair::insert($newPairs);
+                    }
+
+                    QuizParticipationAnswer::create([
+                        'participation_id' => $participation->id,
+                        'question_id' => $questionId,
+                        'answer_ids' => array_keys($answerValue),
+                        'answer_texts' => json_encode($answerPairs),
+                    ]);
+                }
             }
 
             // Marquer la participation comme terminée
@@ -711,6 +742,7 @@ class QuizController extends Controller
             ], 500);
         }
     }
+
 
     private function updateClassement($quizId, $stagiaireId, $score)
     {
