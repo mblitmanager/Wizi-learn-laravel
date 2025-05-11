@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use App\Models\Stagiaire;
 use App\Models\Classement;
+use App\Models\CorrespondancePair;
 use App\Models\QuizParticipation;
 use App\Models\QuizParticipationAnswer;
 use Illuminate\Support\Facades\DB;
@@ -500,39 +501,37 @@ class QuizController extends Controller
 
     private function isAnswerCorrect($question, $selectedAnswers)
     {
-        // Vérification si la réponse est correcte
+
         if ($question->type === 'correspondance') {
-            // Récupère les paires correctes : par ex. "1" => "Paris"
-            $correctPairs = $question->reponses
-                ->where('is_correct', true)
-                ->pluck('match_pair', 'id') // Utilise les IDs comme clés et les textes correspondants comme valeurs
+            // Récupérer les paires correctes depuis la table correspondante
+            $correctPairs = CorrespondancePair::where('question_id', $question->id)
+                ->get()
+                ->mapWithKeys(fn($pair) => [$pair->left_text => $pair->right_text])
                 ->toArray();
 
-            // Convertir les `selectedAnswers` (clé = id_gauche, valeur = texte_droite)
-            $selectedAssociations = [];
-            foreach ($selectedAnswers as $leftId => $rightText) {
-                $selectedAssociations[$leftId] = $rightText;
+            // Convertir les réponses sélectionnées avec les `left_id` mappés à leur texte
+            $selectedPairs = [];
+            foreach ($selectedAnswers as $leftText => $rightText) {
+                $selectedPairs[$leftText] = $rightText;
             }
 
-            // Ajouter les paires correspondantes (match_pair) pour chaque réponse
-            $matchPairs = $question->reponses
-                ->where('is_correct', true)
-                ->map(function ($reponse) {
+            // Structure des paires complètes pour le meta
+            $matchPairs = CorrespondancePair::where('question_id', $question->id)
+                ->get()
+                ->map(function ($pair) {
                     return [
-                        'id' => $reponse->id,
-                        'text' => $reponse->text,
-                        'match_pair' => $reponse->match_pair
+                        'left' => $pair->left_text,
+                        'right' => $pair->right_text
                     ];
-                })->values()->toArray();
+                });
 
-            // Comparer les associations soumises avec les associations correctes
-            $isCorrect = $selectedAssociations == $correctPairs;
+            $isCorrect = $selectedPairs == $correctPairs;
 
             return [
-                'selectedAnswers' => $selectedAssociations,
+                'selectedAnswers' => $selectedPairs,
                 'correctAnswers' => $correctPairs,
                 'isCorrect' => $isCorrect,
-                'match_pair' => $matchPairs // Ajout des paires correspondantes
+                'match_pair' => $matchPairs
             ];
         }
 
@@ -564,9 +563,6 @@ class QuizController extends Controller
         return empty(array_diff($selectedAnswers, $correctAnswers)) &&
             empty(array_diff($correctAnswers, $selectedAnswers));
     }
-
-
-
     public function submitQuizResult(Request $request, $id)
     {
         $user = null;
@@ -617,19 +613,14 @@ class QuizController extends Controller
                     ? $request->answers[$question->id]
                     : [];
 
-                $isCorrect = $this->isAnswerCorrect($question, $selectedAnswers);
-
-                $correctAnswerTexts = $question->reponses
-                    ->where('is_correct', true)
-                    ->pluck('text')
-                    ->toArray();
+                $isCorrectResult = $this->isAnswerCorrect($question, $selectedAnswers);
 
                 return [
                     'id' => $question->id,
                     'text' => $question->text,
                     'type' => $question->type,
-                    'selectedAnswers' => $selectedAnswers,
-                    'correctAnswers' => $correctAnswerTexts,
+                    'selectedAnswers' => $isCorrectResult['selectedAnswers'] ?? [],
+                    'correctAnswers' => $isCorrectResult['correctAnswers'] ?? [],
                     'answers' => $question->reponses->map(function ($reponse) {
                         return [
                             'id' => $reponse->id,
@@ -637,7 +628,15 @@ class QuizController extends Controller
                             'isCorrect' => $reponse->is_correct
                         ];
                     })->toArray(),
-                    'isCorrect' => $isCorrect
+                    'isCorrect' => $isCorrectResult['isCorrect'] ?? false,
+                    'meta' => $question->type === 'correspondance'
+                        ? [
+                            'selectedAnswers' => $isCorrectResult['selectedAnswers'],
+                            'correctAnswers' => $isCorrectResult['correctAnswers'],
+                            'isCorrect' => $isCorrectResult['isCorrect'],
+                            'match_pair' => $isCorrectResult['match_pair']
+                        ]
+                        : null
                 ];
             });
 
