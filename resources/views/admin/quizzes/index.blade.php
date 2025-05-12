@@ -21,6 +21,9 @@
 
                         <a href="{{ route('quiz.create') }}" type="button" class="btn btn-sm btn-primary px-4"> <i
                                 class="fadeIn animated bx bx-plus"></i> Nouveau quiz</a>
+                        <button class="btn btn-sm btn-warning mx-2" data-bs-toggle="modal" data-bs-target="#exportModal">
+                            <i class="lni lni-download"></i> Exporter des Quiz
+                        </button>
                     </div>
                 </div>
             </div>
@@ -64,6 +67,31 @@
 
 
                                 <button type="submit" class="btn btn-primary">Importer</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div>
+            <div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="exportModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exportModalLabel">Exporter des Quiz</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="exportForm" method="GET">
+                                <div class="mb-3">
+                                    <label for="quizSelect" class="form-label">Sélectionnez les quiz à exporter</label>
+                                    <select id="quizSelect" name="quiz_ids[]" class="form-select" multiple required>
+                                        @foreach ($quiz as $row)
+                                            <option value="{{ $row->id }}">{{ $row->titre }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Exporter</button>
                             </form>
                         </div>
                     </div>
