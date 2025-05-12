@@ -567,15 +567,6 @@ class QuizController extends Controller
                 empty(array_udiff_assoc($correctAnswers, $selectedAnswers, 'strcasecmp'));
         }
 
-        // Traitement pour "question audio"
-        if ($question->type === 'question audio') {
-            $correctAnswers = $question->reponses
-                ->where('is_correct', true)
-                ->pluck('text')
-                ->toArray();
-            $selectedText = is_array($selectedAnswers) && isset($selectedAnswers['text']) ? $selectedAnswers['text'] : null;
-            return in_array($selectedText, $correctAnswers);
-        }
         // Traitement pour "choix multiples"
         if ($question->type === 'choix multiples') {
             $correctAnswers = $question->reponses
@@ -590,6 +581,25 @@ class QuizController extends Controller
                 'correctAnswers' => $correctAnswers,
                 'isCorrect' => empty(array_diff($selectedAnswers, $correctAnswers)) &&
                     empty(array_diff($correctAnswers, $selectedAnswers))
+            ];
+        }
+
+        if ($question->type === 'rearrangement') {
+            // On suppose que selectedAnswers est un tableau d'IDs de réponses dans l'ordre donné
+            $correctAnswers = $question->reponses
+                ->where('is_correct', true)
+                ->pluck('text')
+                ->values()
+                ->toArray();
+
+            $selectedAnswers = is_array($selectedAnswers) ? array_values($selectedAnswers) : [];
+
+            $isCorrect = $selectedAnswers === $correctAnswers;
+
+            return [
+                'selectedAnswers' => $selectedAnswers,
+                'correctAnswers' => $correctAnswers,
+                'isCorrect' => $isCorrect
             ];
         }
 
