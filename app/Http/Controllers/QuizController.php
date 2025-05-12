@@ -503,20 +503,21 @@ class QuizController extends Controller
     {
 
         if ($question->type === 'correspondance') {
-            // Récupérer les paires correctes depuis la table correspondante
-            $correctPairs = $question->correspondancePairs->pluck('right_text', 'left_text')->toArray();
+            // Récupérer les paires correctes
             $correctPairs = CorrespondancePair::where('question_id', $question->id)
                 ->get()
                 ->mapWithKeys(fn($pair) => [$pair->left_text => $pair->right_text])
                 ->toArray();
 
-            // Convertir les réponses sélectionnées avec les `left_id` mappés à leur texte
+            // Convertir les `selectedAnswers` en utilisant les `left_id` pour obtenir le `left_text`
             $selectedPairs = [];
-            foreach ($selectedAnswers as $leftText => $rightText) {
+            foreach ($selectedAnswers as $leftId => $rightText) {
+                $leftAnswer = $question->reponses->firstWhere('id', $leftId);
+                $leftText = $leftAnswer ? $leftAnswer->text : 'unknown';
                 $selectedPairs[$leftText] = $rightText;
             }
 
-            // Structure des paires complètes pour le meta
+            // Créer le tableau `match_pair`
             $matchPairs = CorrespondancePair::where('question_id', $question->id)
                 ->get()
                 ->map(function ($pair) {

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\QuizStoreRequest;
+use App\Models\CorrespondancePair;
 use App\Models\Formation;
 use App\Models\Questions;
 use App\Models\Quiz;
@@ -202,7 +203,7 @@ class QuizController extends Controller
         $request->validate([
             'quiz_id' => 'required|exists:quizzes,id',
             'text' => 'required|string',
-            'question.type' => 'required|string', // attention ici
+            'question.type' => 'required|string',
             'points' => 'required|integer|min:1',
             'reponses' => 'required|array|min:1',
             'reponses.*.text' => 'required|string',
@@ -214,7 +215,7 @@ class QuizController extends Controller
             $questionInput = [
                 'quiz_id' => $quiz->id,
                 'text' => $request->input('text'),
-                'type' => $request->input('question')['type'], // <- ici aussi, bien récupérer
+                'type' => $request->input('question')['type'],
                 'explication' => $request->input('explication'),
                 'astuce' => $request->input('astuce'),
                 'points' => $request->input('points') ?? 1,
@@ -229,7 +230,7 @@ class QuizController extends Controller
             $question = $quiz->questions()->create($questionInput);
 
             foreach ($request->input('reponses', []) as $reponseInput) {
-                $question->reponses()->create([
+                $reponse = $question->reponses()->create([
                     'text' => $reponseInput['text'],
                     'is_correct' => $reponseInput['is_correct'] ?? 0,
                     'position' => $reponseInput['position'] ?? null,
@@ -237,13 +238,14 @@ class QuizController extends Controller
                     'bank_group' => $reponseInput['bank_group'] ?? null,
                     'flashcard_back' => $reponseInput['flashcard_back'] ?? null,
                 ]);
-            }
 
-            $reponseCorrecte = $question->reponses()->where('is_correct', true)->first();
-            if ($reponseCorrecte) {
-                $question->update([
-                    'reponse_correct' => $reponseCorrecte->text
-                ]);
+                if ($question->type === 'correspondance' && isset($reponseInput['match_pair'])) {
+                    CorrespondancePair::create([
+                        'question_id' => $question->id,
+                        'left_text' => $reponseInput['text'],
+                        'right_text' => $reponseInput['match_pair']
+                    ]);
+                }
             }
 
             return redirect()->route('quiz.edit', $quiz)->with('success', 'Nouvelle question créée avec succès.');
@@ -262,11 +264,9 @@ class QuizController extends Controller
     }
     public function storeAll(Request $request)
     {
-        // 1. Validation
         $request->validate([
             'quiz.titre' => 'required|string|max:255',
             'quiz.description' => 'nullable|string',
-
 
             'question.type' => 'required|string',
             'question.media_url' => 'nullable|file|mimes:jpg,jpeg,png,gif,pdf,doc,docx,xls,xlsx,mp3,mp4|max:102400',
@@ -283,28 +283,23 @@ class QuizController extends Controller
         DB::beginTransaction();
 
         try {
-            // 2. Création du quiz
             $quiz = Quiz::create($request->input('quiz'));
 
-            // 3. Préparer les données de la question
             $questionData = $request->input('question');
             $questionData['quiz_id'] = $quiz->id;
 
-            // 4. Upload du fichier media_url
             if ($request->hasFile('question.media_url')) {
                 $file = $request->file('question.media_url');
                 $path = $file->store('medias', 'public');
                 $questionData['media_url'] = $path;
             }
 
-            // 5. Création de la question
             $question = Questions::create($questionData);
 
-            // 6. Création des réponses
             $reponses = $request->input('reponse');
 
             foreach ($reponses['text'] as $index => $text) {
-                Reponse::create([
+                $reponse = Reponse::create([
                     'question_id' => $question->id,
                     'text' => $text,
                     'is_correct' => $reponses['is_correct'][$index] ?? null,
@@ -313,6 +308,14 @@ class QuizController extends Controller
                     'bank_group' => $reponses['bank_group'][$index] ?? null,
                     'flashcard_back' => $reponses['flashcard_back'][$index] ?? null,
                 ]);
+
+                if ($questionData['type'] === 'correspondance' && isset($reponses['match_pair'][$index])) {
+                    CorrespondancePair::create([
+                        'question_id' => $question->id,
+                        'left_text' => $text,
+                        'right_text' => $reponses['match_pair'][$index]
+                    ]);
+                }
             }
 
             DB::commit();
