@@ -631,4 +631,28 @@ class QuizController extends Controller
             return redirect()->back()->with('error', 'Erreur lors de la duplication : ' . $e->getMessage());
         }
     }
+
+    public function disable($id)
+    {
+        try {
+            $quiz = Quiz::findOrFail($id);
+            $quiz->update(['status' => 'inactif']);
+
+            return redirect()->route('quiz.index')->with('success', 'Quiz désactivé avec succès.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Erreur lors de la désactivation du quiz : ' . $e->getMessage());
+        }
+    }
+
+    public function enable($id)
+    {
+        try {
+            $quiz = Quiz::findOrFail($id);
+            $quiz->update(['status' => 'actif']);
+
+            return redirect()->route('quiz.index')->with('success', 'Quiz réactivé avec succès.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Erreur lors de la réactivation du quiz : ' . $e->getMessage());
+        }
+    }
 }

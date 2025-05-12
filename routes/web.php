@@ -34,6 +34,8 @@ Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function
 
     Route::resource('quiz', QuizController::class);
     Route::post('/quiz/{id}/duplicate', [QuizController::class, 'duplicate'])->name('quiz.duplicate');
+    Route::post('/quiz/{quiz}/disable', [QuizController::class, 'disable'])->name('quiz.disable');
+    Route::post('/quiz/{quiz}/enable', [QuizController::class, 'enable'])->name('quiz.enable');
 
     Route::resource('formateur', FormateurController::class);
 

@@ -34,6 +34,7 @@ class QuizController extends Controller
         try {
             // Récupérer les quizzes des formations ayant la catégorie spécifiée et qui ont des stagiaires
             $quizzes = Quiz::with(['questions.reponses', 'formation'])
+                ->where('status', 'actif')
                 ->whereHas('formation', function ($query) use ($category) {
                     $query->where('categorie', $category)
                         ->whereHas('stagiaires', function ($query) {
@@ -55,13 +56,13 @@ class QuizController extends Controller
                         $questionData = [
                             'id' => (string)$question->id,
                             'text' => $question->text,
-                            'type' => $question->type ?? 'multiplechoice',
+                            'type' => $question->type ?? 'choix multiples',
                         ];
 
                         // Gestion spécifique selon le type de question
                         switch ($question->type) {
-                            case 'multiplechoice':
-                            case 'truefalse':
+                            case 'choix multiples':
+                            case 'vrai/faux':
                                 $questionData['answers'] = $question->reponses->map(function ($reponse) {
                                     return [
                                         'id' => (string)$reponse->id,
@@ -71,7 +72,7 @@ class QuizController extends Controller
                                 })->toArray();
                                 break;
 
-                            case 'ordering':
+                            case 'rearrangement':
                                 $questionData['answers'] = $question->reponses->map(function ($reponse) {
                                     return [
                                         'id' => (string)$reponse->id,
@@ -81,7 +82,7 @@ class QuizController extends Controller
                                 })->sortBy('position')->values()->toArray();
                                 break;
 
-                            case 'fillblank':
+                            case 'remplir le champ vide':
                                 $questionData['blanks'] = $question->reponses->map(function ($reponse) {
                                     return [
                                         'id' => (string)$reponse->id,
@@ -91,7 +92,7 @@ class QuizController extends Controller
                                 })->toArray();
                                 break;
 
-                            case 'wordbank':
+                            case 'banque de mots':
                                 $questionData['wordbank'] = $question->reponses->map(function ($reponse) {
                                     return [
                                         'id' => (string)$reponse->id,
@@ -102,14 +103,14 @@ class QuizController extends Controller
                                 })->toArray();
                                 break;
 
-                            case 'flashcard':
+                            case 'carte flash':
                                 $questionData['flashcard'] = [
                                     'front' => $question->text,
                                     'back' => $question->flashcard_back
                                 ];
                                 break;
 
-                            case 'matching':
+                            case 'correspondance':
                                 $questionData['matching'] = $question->reponses->map(function ($reponse) {
                                     return [
                                         'id' => (string)$reponse->id,
@@ -119,7 +120,7 @@ class QuizController extends Controller
                                 })->toArray();
                                 break;
 
-                            case 'audioquestion':
+                            case 'question audio':
                                 $questionData['audioUrl'] = $question->audio_url ?? $question->media_url ?? null;
                                 $questionData['answers'] = $question->reponses->map(function ($reponse) {
                                     return [
