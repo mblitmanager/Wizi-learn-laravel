@@ -109,8 +109,9 @@ class QuizController extends Controller
 
                 if (isset($questionFiles[$index]['media_file'])) {
                     $file = $questionFiles[$index]['media_file'];
-                    $path = $file->store('medias', 'public');
-                    $questionInput['media_url'] = $path;
+                    $fileName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                    $file->move(public_path('uploads/medias'), $fileName);
+                    $questionInput['media_url'] = 'uploads/medias/' . $fileName;
                 }
             }
             unset($questionInput);
@@ -120,8 +121,8 @@ class QuizController extends Controller
                     $question = $quiz->questions()->find($questionInput['id']);
                     if ($question) {
                         $question->reponses()->delete();
-                        if ($question->media_url && Storage::disk('public')->exists($question->media_url)) {
-                            Storage::disk('public')->delete($question->media_url);
+                        if ($question->media_url && file_exists(public_path($question->media_url))) {
+                            @unlink(public_path($question->media_url));
                         }
                         $question->delete();
                     }
@@ -132,8 +133,8 @@ class QuizController extends Controller
                     $question = $quiz->questions()->find($questionInput['id']);
                     if ($question) {
                         if (!empty($questionInput['media_url']) && $question->media_url !== $questionInput['media_url']) {
-                            if ($question->media_url && Storage::disk('public')->exists($question->media_url)) {
-                                Storage::disk('public')->delete($question->media_url);
+                            if ($question->media_url && file_exists(public_path($question->media_url))) {
+                                @unlink(public_path($question->media_url));
                             }
                         }
                         $question->update($questionInput);
@@ -245,8 +246,9 @@ class QuizController extends Controller
 
             if ($request->hasFile('media_file')) {
                 $file = $request->file('media_file');
-                $path = $file->store('medias', 'public');
-                $questionInput['media_url'] = $path;
+                $fileName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                $file->move(public_path('uploads/medias'), $fileName);
+                $questionInput['media_url'] = 'uploads/medias/' . $fileName;
             }
 
             $question = $quiz->questions()->create($questionInput);
@@ -303,80 +305,6 @@ class QuizController extends Controller
     }
 
 
-
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
-    }
-    // public function storeAll(Request $request)
-    // {
-    //     $request->validate([
-    //         'quiz.titre' => 'required|string|max:255',
-    //         'quiz.description' => 'nullable|string',
-
-    //         'question.type' => 'required|string',
-    //         'question.media_url' => 'nullable|file|mimes:jpg,jpeg,png,gif,pdf,doc,docx,xls,xlsx,mp3,mp4|max:102400',
-
-    //         'reponse.text' => 'required|array',
-    //         'reponse.text.*' => 'required|string|max:1000',
-    //         'reponse.is_correct' => 'nullable|array',
-    //         'reponse.position' => 'nullable|array',
-    //         'reponse.match_pair' => 'nullable|array',
-    //         'reponse.bank_group' => 'nullable|array',
-    //         'reponse.flashcard_back' => 'nullable|array',
-    //     ]);
-
-    //     DB::beginTransaction();
-
-    //     try {
-    //         $quiz = Quiz::create($request->input('quiz'));
-
-    //         $questionData = $request->input('question');
-    //         $questionData['quiz_id'] = $quiz->id;
-
-    //         if ($request->hasFile('question.media_url')) {
-    //             $file = $request->file('question.media_url');
-    //             $path = $file->store('medias', 'public');
-    //             $questionData['media_url'] = $path;
-    //         }
-
-    //         $question = Questions::create($questionData);
-
-    //         $reponses = $request->input('reponse');
-
-    //         foreach ($reponses['text'] as $index => $text) {
-    //             $reponse = Reponse::create([
-    //                 'question_id' => $question->id,
-    //                 'text' => $text,
-    //                 'is_correct' => $reponses['is_correct'][$index] ?? null,
-    //                 'position' => $reponses['position'][$index] ?? null,
-    //                 'match_pair' => $reponses['match_pair'][$index] ?? null,
-    //                 'bank_group' => $reponses['bank_group'][$index] ?? null,
-    //                 'flashcard_back' => $reponses['flashcard_back'][$index] ?? null,
-    //             ]);
-
-    //             if ($questionData['type'] === 'correspondance' && isset($reponses['match_pair'][$index])) {
-    //                 CorrespondancePair::create([
-    //                     'question_id' => $question->id,
-    //                     'left_text' => $text,
-    //                     'right_text' => $reponses['match_pair'][$index]
-    //                 ]);
-    //             }
-    //         }
-
-    //         DB::commit();
-
-    //         return redirect()->route('quiz.index')->with('success', 'Quiz, question et réponses créés avec succès.');
-    //     } catch (\Exception $e) {
-    //         DB::rollBack();
-    //         return redirect()->back()->with('error', 'Erreur : ' . $e->getMessage());
-    //     }
-    // }
-
     public function storeAll(Request $request)
     {
         $request->validate([
@@ -405,8 +333,9 @@ class QuizController extends Controller
 
             if ($request->hasFile('question.media_url')) {
                 $file = $request->file('question.media_url');
-                $path = $file->store('medias', 'public');
-                $questionData['media_url'] = $path;
+                $fileName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                $file->move(public_path('uploads/medias'), $fileName);
+                $questionData['media_url'] = 'uploads/medias/' . $fileName;
             }
 
             $question = Questions::create($questionData);
