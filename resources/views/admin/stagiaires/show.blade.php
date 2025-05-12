@@ -125,6 +125,12 @@
                                             {{ $stagiaire->adresse }}
                                         </div>
                                     </div>
+                                    <div class="row mb-3">
+                                        <label class="col-sm-4 ">Date de début de formation :</label>
+                                        <div class="col-sm-8">
+                                            {{ $stagiaire->date_debut_formation ? \Carbon\Carbon::parse($stagiaire->date_debut_formation)->format('d/m/Y') : 'Non renseignée' }}
+                                        </div>
+                                    </div>
 
                                 </div>
                                 <hr>

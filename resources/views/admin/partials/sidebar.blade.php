@@ -79,7 +79,7 @@
                 <li> <a href="{{ route('catalogue_formation.index') }}"><i class="bx bx-right-arrow-alt"></i>Catalogue
                         formation</a>
                 </li>
-                <li> <a href="{{ route('formations.index') }}"><i class="bx bx-right-arrow-alt"></i>Domain formation</a>
+                <li> <a href="{{ route('formations.index') }}"><i class="bx bx-right-arrow-alt"></i>Domaine formation</a>
                 </li>
             </ul>
         </li>
@@ -120,7 +120,7 @@
             <a href="javascript:;" class="has-arrow">
                 <div class="parent-icon"><i class='fadeIn animated bx bx-calendar'></i>
                 </div>
-                <div class="menu-title">Planing</div>
+                <div class="menu-title">Planning</div>
             </a>
             <ul>
                 <li> <a href="#"><i class="bx bx-right-arrow-alt"></i>Listes</a>

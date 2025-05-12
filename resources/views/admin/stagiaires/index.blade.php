@@ -120,7 +120,7 @@
                                     <tbody>
                                         @foreach ($stagiaires as $row)
                                             <tr>
-                                                <td>{{ $row->user->name }}</td>
+                                                <td>{{ strtoupper($row->user->name) }}</td>
                                                 <td>{{ $row->prenom }}</td>
                                                 <td>{{ $row->telephone }}</td>
                                                 <td>{{ $row->user->email }}</td>
