@@ -501,10 +501,10 @@ class QuizController extends Controller
 
     private function isAnswerCorrect($question, $selectedAnswers)
     {
-
         if ($question->type === 'correspondance') {
-            // Récupérer les paires correctes
+            // Récupérer uniquement les paires pays → capitale
             $correctPairs = CorrespondancePair::where('question_id', $question->id)
+                ->whereIn('left_text', $question->reponses->pluck('text')->toArray())  // On ne garde que les "left" présents dans les réponses
                 ->get()
                 ->mapWithKeys(fn($pair) => [$pair->left_text => $pair->right_text])
                 ->toArray();
@@ -519,6 +519,7 @@ class QuizController extends Controller
 
             // Créer le tableau `match_pair`
             $matchPairs = CorrespondancePair::where('question_id', $question->id)
+                ->whereIn('left_text', $question->reponses->pluck('text')->toArray())
                 ->get()
                 ->map(function ($pair) {
                     return [
@@ -534,6 +535,25 @@ class QuizController extends Controller
                 'correctAnswers' => $correctPairs,
                 'isCorrect' => $isCorrect,
                 'match_pair' => $matchPairs
+            ];
+        }
+
+        // Traitement pour "question audio"
+        if ($question->type === 'question audio') {
+            $correctAnswers = $question->reponses
+                ->where('is_correct', true)
+                ->pluck('text')
+                ->toArray();
+
+            // Gestion du format {"id": "3", "text": "Arctique"}
+            $selectedText = is_array($selectedAnswers)
+                ? ($selectedAnswers['text'] ?? null)
+                : (is_object($selectedAnswers) ? $selectedAnswers->text : null);
+
+            return [
+                'selectedAnswers' => $selectedText,
+                'correctAnswers' => $correctAnswers,
+                'isCorrect' => in_array($selectedText, $correctAnswers)
             ];
         }
 
@@ -607,6 +627,7 @@ class QuizController extends Controller
                     'time_spent' => 0
                 ]);
             }
+
 
             // Préparer les détails des questions et réponses
             $questionsDetails = $quiz->questions->map(function ($question) use ($request) {

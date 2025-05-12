@@ -80,7 +80,6 @@ class QuizController extends Controller
 
     public function update(Request $request, $id)
     {
-        // 1. Validation
         $request->validate([
             'quiz.titre' => 'required|string|max:255',
             'quiz.description' => 'nullable|string',
@@ -108,7 +107,6 @@ class QuizController extends Controller
             foreach ($questionData as $index => &$questionInput) {
                 $questionInput['quiz_id'] = $quiz->id;
 
-                // Upload nouveau fichier média s'il est fourni
                 if (isset($questionFiles[$index]['media_file'])) {
                     $file = $questionFiles[$index]['media_file'];
                     $path = $file->store('medias', 'public');
@@ -119,7 +117,6 @@ class QuizController extends Controller
 
             foreach ($questionData as $questionInput) {
                 if (!empty($questionInput['id']) && !empty($questionInput['_delete'])) {
-                    // Suppression question + réponses
                     $question = $quiz->questions()->find($questionInput['id']);
                     if ($question) {
                         $question->reponses()->delete();
@@ -131,11 +128,9 @@ class QuizController extends Controller
                     continue;
                 }
 
-                // Création ou mise à jour de la question
                 if (!empty($questionInput['id'])) {
                     $question = $quiz->questions()->find($questionInput['id']);
                     if ($question) {
-                        // Si un nouveau fichier est envoyé, supprimer l'ancien
                         if (!empty($questionInput['media_url']) && $question->media_url !== $questionInput['media_url']) {
                             if ($question->media_url && Storage::disk('public')->exists($question->media_url)) {
                                 Storage::disk('public')->delete($question->media_url);
@@ -151,6 +146,8 @@ class QuizController extends Controller
 
                 $reponsesInput = $questionInput['reponses'] ?? [];
                 $reponseIds = [];
+                $leftItems = [];
+                $rightItems = [];
 
                 foreach ($reponsesInput as $reponseInput) {
                     if (!empty($reponseInput['id'])) {
@@ -177,15 +174,36 @@ class QuizController extends Controller
                         ]);
                         $reponseIds[] = $reponse->id;
                     }
+
+                    if ($question->type === 'correspondance') {
+                        if ($reponseInput['bank_group'] === 'left') {
+                            $leftItems[] = $reponseInput;
+                        } elseif ($reponseInput['bank_group'] === 'right') {
+                            $rightItems[] = $reponseInput;
+                        }
+                    }
                 }
 
-                // Supprimer les anciennes réponses non présentes
                 $question->reponses()->whereNotIn('id', $reponseIds)->delete();
 
-                // Mettre à jour la bonne réponse texte
-                $reponseCorrecte = $question->reponses()->where('is_correct', true)->first();
-                if ($reponseCorrecte) {
-                    $question->update(['reponse_correct' => $reponseCorrecte->text]);
+                if ($question->type === 'correspondance') {
+                    foreach ($leftItems as $leftItem) {
+                        $matchingRightItems = collect($rightItems)->filter(fn($item) => $item['match_pair'] === $leftItem['match_pair']);
+                        foreach ($matchingRightItems as $rightItem) {
+                            $existingPair = CorrespondancePair::where('question_id', $question->id)
+                                ->where('left_text', $leftItem['text'])
+                                ->where('right_text', $rightItem['text'])
+                                ->first();
+
+                            if (!$existingPair) {
+                                CorrespondancePair::create([
+                                    'question_id' => $question->id,
+                                    'left_text' => $leftItem['text'],
+                                    'right_text' => $rightItem['text']
+                                ]);
+                            }
+                        }
+                    }
                 }
             }
 
@@ -198,6 +216,9 @@ class QuizController extends Controller
     }
 
 
+
+
+
     public function storeNewQuestion(Request $request)
     {
         $request->validate([
@@ -207,6 +228,7 @@ class QuizController extends Controller
             'points' => 'required|integer|min:1',
             'reponses' => 'required|array|min:1',
             'reponses.*.text' => 'required|string',
+            'reponses.*.bank_group' => 'required_if:question.type,correspondance',
         ]);
 
         try {
@@ -229,6 +251,9 @@ class QuizController extends Controller
 
             $question = $quiz->questions()->create($questionInput);
 
+            $leftItems = [];
+            $rightItems = [];
+
             foreach ($request->input('reponses', []) as $reponseInput) {
                 $reponse = $question->reponses()->create([
                     'text' => $reponseInput['text'],
@@ -239,12 +264,35 @@ class QuizController extends Controller
                     'flashcard_back' => $reponseInput['flashcard_back'] ?? null,
                 ]);
 
-                if ($question->type === 'correspondance' && isset($reponseInput['match_pair'])) {
-                    CorrespondancePair::create([
-                        'question_id' => $question->id,
-                        'left_text' => $reponseInput['text'],
-                        'right_text' => $reponseInput['match_pair']
-                    ]);
+                if ($question->type === 'correspondance') {
+                    if ($reponseInput['bank_group'] === 'left') {
+                        $leftItems[] = $reponseInput;
+                    } elseif ($reponseInput['bank_group'] === 'right') {
+                        $rightItems[] = $reponseInput;
+                    }
+                }
+            }
+
+            if ($question->type === 'correspondance') {
+                foreach ($leftItems as $leftItem) {
+                    $matchingRightItems = collect($rightItems)->filter(function ($rightItem) use ($leftItem) {
+                        return $rightItem['match_pair'] === $leftItem['match_pair'];
+                    });
+
+                    foreach ($matchingRightItems as $rightItem) {
+                        $existingPair = CorrespondancePair::where('question_id', $question->id)
+                            ->where('left_text', $leftItem['text'])
+                            ->where('right_text', $rightItem['text'])
+                            ->first();
+
+                        if (!$existingPair) {
+                            CorrespondancePair::create([
+                                'question_id' => $question->id,
+                                'left_text' => $leftItem['text'],
+                                'right_text' => $rightItem['text']
+                            ]);
+                        }
+                    }
                 }
             }
 
@@ -255,6 +303,8 @@ class QuizController extends Controller
     }
 
 
+
+
     /**
      * Remove the specified resource from storage.
      */
@@ -262,6 +312,71 @@ class QuizController extends Controller
     {
         //
     }
+    // public function storeAll(Request $request)
+    // {
+    //     $request->validate([
+    //         'quiz.titre' => 'required|string|max:255',
+    //         'quiz.description' => 'nullable|string',
+
+    //         'question.type' => 'required|string',
+    //         'question.media_url' => 'nullable|file|mimes:jpg,jpeg,png,gif,pdf,doc,docx,xls,xlsx,mp3,mp4|max:102400',
+
+    //         'reponse.text' => 'required|array',
+    //         'reponse.text.*' => 'required|string|max:1000',
+    //         'reponse.is_correct' => 'nullable|array',
+    //         'reponse.position' => 'nullable|array',
+    //         'reponse.match_pair' => 'nullable|array',
+    //         'reponse.bank_group' => 'nullable|array',
+    //         'reponse.flashcard_back' => 'nullable|array',
+    //     ]);
+
+    //     DB::beginTransaction();
+
+    //     try {
+    //         $quiz = Quiz::create($request->input('quiz'));
+
+    //         $questionData = $request->input('question');
+    //         $questionData['quiz_id'] = $quiz->id;
+
+    //         if ($request->hasFile('question.media_url')) {
+    //             $file = $request->file('question.media_url');
+    //             $path = $file->store('medias', 'public');
+    //             $questionData['media_url'] = $path;
+    //         }
+
+    //         $question = Questions::create($questionData);
+
+    //         $reponses = $request->input('reponse');
+
+    //         foreach ($reponses['text'] as $index => $text) {
+    //             $reponse = Reponse::create([
+    //                 'question_id' => $question->id,
+    //                 'text' => $text,
+    //                 'is_correct' => $reponses['is_correct'][$index] ?? null,
+    //                 'position' => $reponses['position'][$index] ?? null,
+    //                 'match_pair' => $reponses['match_pair'][$index] ?? null,
+    //                 'bank_group' => $reponses['bank_group'][$index] ?? null,
+    //                 'flashcard_back' => $reponses['flashcard_back'][$index] ?? null,
+    //             ]);
+
+    //             if ($questionData['type'] === 'correspondance' && isset($reponses['match_pair'][$index])) {
+    //                 CorrespondancePair::create([
+    //                     'question_id' => $question->id,
+    //                     'left_text' => $text,
+    //                     'right_text' => $reponses['match_pair'][$index]
+    //                 ]);
+    //             }
+    //         }
+
+    //         DB::commit();
+
+    //         return redirect()->route('quiz.index')->with('success', 'Quiz, question et réponses créés avec succès.');
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+    //         return redirect()->back()->with('error', 'Erreur : ' . $e->getMessage());
+    //     }
+    // }
+
     public function storeAll(Request $request)
     {
         $request->validate([
@@ -298,6 +413,9 @@ class QuizController extends Controller
 
             $reponses = $request->input('reponse');
 
+            $leftItems = [];
+            $rightItems = [];
+
             foreach ($reponses['text'] as $index => $text) {
                 $reponse = Reponse::create([
                     'question_id' => $question->id,
@@ -309,12 +427,42 @@ class QuizController extends Controller
                     'flashcard_back' => $reponses['flashcard_back'][$index] ?? null,
                 ]);
 
-                if ($questionData['type'] === 'correspondance' && isset($reponses['match_pair'][$index])) {
-                    CorrespondancePair::create([
-                        'question_id' => $question->id,
-                        'left_text' => $text,
-                        'right_text' => $reponses['match_pair'][$index]
-                    ]);
+                if ($questionData['type'] === 'correspondance') {
+                    if (isset($reponses['bank_group'][$index])) {
+                        if ($reponses['bank_group'][$index] === 'left') {
+                            $leftItems[] = [
+                                'text' => $text,
+                                'match_pair' => $reponses['match_pair'][$index] ?? null
+                            ];
+                        } elseif ($reponses['bank_group'][$index] === 'right') {
+                            $rightItems[] = [
+                                'text' => $text,
+                                'match_pair' => $reponses['match_pair'][$index] ?? null
+                            ];
+                        }
+                    }
+                }
+            }
+
+            // Création des paires de correspondance
+            if ($questionData['type'] === 'correspondance') {
+                foreach ($leftItems as $leftItem) {
+                    $rightItem = collect($rightItems)->firstWhere('match_pair', $leftItem['match_pair']);
+                    if ($rightItem) {
+                        // Vérifier si la paire existe déjà
+                        $existingPair = CorrespondancePair::where('question_id', $question->id)
+                            ->where('left_text', $leftItem['text'])
+                            ->where('right_text', $rightItem['text'])
+                            ->first();
+
+                        if (!$existingPair) {
+                            CorrespondancePair::create([
+                                'question_id' => $question->id,
+                                'left_text' => $leftItem['text'],
+                                'right_text' => $rightItem['text']
+                            ]);
+                        }
+                    }
                 }
             }
 
@@ -326,6 +474,7 @@ class QuizController extends Controller
             return redirect()->back()->with('error', 'Erreur : ' . $e->getMessage());
         }
     }
+
 
 
     public function import(Request $request)
