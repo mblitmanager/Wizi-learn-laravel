@@ -576,6 +576,22 @@ class QuizController extends Controller
             $selectedText = is_array($selectedAnswers) && isset($selectedAnswers['text']) ? $selectedAnswers['text'] : null;
             return in_array($selectedText, $correctAnswers);
         }
+        // Traitement pour "choix multiples"
+        if ($question->type === 'choix multiples') {
+            $correctAnswers = $question->reponses
+                ->where('is_correct', true)
+                ->pluck('text')
+                ->toArray();
+
+            $selectedAnswers = is_array($selectedAnswers) ? $selectedAnswers : [];
+
+            return [
+                'selectedAnswers' => $selectedAnswers,
+                'correctAnswers' => $correctAnswers,
+                'isCorrect' => empty(array_diff($selectedAnswers, $correctAnswers)) &&
+                    empty(array_diff($correctAnswers, $selectedAnswers))
+            ];
+        }
 
         // Comparaison standard
         $correctAnswers = $question->reponses
@@ -632,8 +648,9 @@ class QuizController extends Controller
             // Préparer les détails des questions et réponses
             $questionsDetails = $quiz->questions->map(function ($question) use ($request) {
                 $selectedAnswers = is_array($request->answers[$question->id] ?? null)
-                    ? $request->answers[$question->id]
+                    ? array_map(fn($answer) => is_array($answer) ? $answer['text'] : $answer, $request->answers[$question->id])
                     : [];
+
 
                 $isCorrectResult = $this->isAnswerCorrect($question, $selectedAnswers);
 
