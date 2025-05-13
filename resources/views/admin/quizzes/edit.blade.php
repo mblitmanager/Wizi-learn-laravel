@@ -27,6 +27,21 @@
                                     <i class="lni lni-copy"></i> Dupliquer
                                 </button>
                             </form>
+                            @if($quiz->status === 'inactif')
+                                <form action="{{ route('quiz.enable', $quiz->id) }}" method="POST" style="display:inline;">
+                                    @csrf
+                                    <button type="submit" class="btn btn-success btn-sm mx-2" onclick="return confirm('Réactiver ce quiz ?')">
+                                        <i class="lni lni-checkmark-circle"></i> Réactiver
+                                    </button>
+                                </form>
+                            @else
+                                <form action="{{ route('quiz.disable', $quiz->id) }}" method="POST" style="display:inline;">
+                                    @csrf
+                                    <button type="submit" class="btn btn-secondary btn-sm mx-2" onclick="return confirm('Désactiver ce quiz ?')">
+                                        <i class="lni lni-ban"></i> Désactiver
+                                    </button>
+                                </form>
+                            @endif
                             <form action="{{ route('quiz.destroy', $quiz->id) }}" method="POST" style="display:inline;">
                                 @csrf
                                 @method('DELETE')

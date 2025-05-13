@@ -66,6 +66,47 @@
             </div>
         </div>
     </div>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-4">
+        <div class="col">
+            <div class="card radius-10 border-start border-0 border-4 border-danger">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div>
+                            <p class="mb-0 text-secondary">App téléchargée</p>
+                            <h4 class="my-1 text-danger">{{ $totalAppDownloads ?? 0 }}</h4>
+                        </div>
+                        <div class="widgets-icons-2 rounded-circle bg-gradient-orange text-white ms-auto"><i class="bx bx-download"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card radius-10 border-start border-0 border-4 border-warning">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div>
+                            <p class="mb-0 text-secondary">Première connexion</p>
+                            <h4 class="my-1 text-warning">{{ $totalFirstLogins ?? 0 }}</h4>
+                        </div>
+                        <div class="widgets-icons-2 rounded-circle bg-gradient-orange text-white ms-auto"><i class="bx bx-log-in"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card radius-10 border-start border-0 border-4 border-success">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div>
+                            <p class="mb-0 text-secondary">Quiz joués</p>
+                            <h4 class="my-1 text-success">{{ $totalQuizzesPlayed ?? 0 }}</h4>
+                        </div>
+                        <div class="widgets-icons-2 rounded-circle bg-gradient-orange text-white ms-auto"><i class="bx bx-play-circle"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="row mt-5">
         <div class="col-md-6 mb-4">
             <div class="card shadow-sm border-0">

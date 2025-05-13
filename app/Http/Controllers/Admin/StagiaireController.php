@@ -194,6 +194,8 @@ class StagiaireController extends Controller
                     'user_id' => $user->id,
                     'role' => 'stagiaire',
                     'statut' => true,
+                    'date_debut_formation' => null, // ou une valeur par défaut si dispo dans l'import
+                    'date_inscription' => now(), // date d'import comme inscription
                 ]);
             }
 

@@ -31,7 +31,11 @@ class QuizController extends Controller
     public function index()
     {
         $quiz = $this->quizeService->getAll();
-        return view('admin.quizzes.index', compact('quiz'));
+        $formations = Formation::all();
+        $categories = Formation::distinct()->pluck('categorie');
+        $niveaux = Quiz::distinct()->pluck('niveau');
+        $status = Quiz::distinct()->pluck('status');
+        return view('admin.quizzes.index', compact('quiz', 'formations', 'categories', 'niveaux', 'status'));
     }
 
     /**
@@ -642,6 +646,30 @@ class QuizController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->with('error', 'Erreur lors de la duplication : ' . $e->getMessage());
+        }
+    }
+
+    public function disable($id)
+    {
+        try {
+            $quiz = Quiz::findOrFail($id);
+            $quiz->update(['status' => 'inactif']);
+
+            return redirect()->route('quiz.index')->with('success', 'Quiz désactivé avec succès.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Erreur lors de la désactivation du quiz : ' . $e->getMessage());
+        }
+    }
+
+    public function enable($id)
+    {
+        try {
+            $quiz = Quiz::findOrFail($id);
+            $quiz->update(['status' => 'actif']);
+
+            return redirect()->route('quiz.index')->with('success', 'Quiz réactivé avec succès.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Erreur lors de la réactivation du quiz : ' . $e->getMessage());
         }
     }
 }

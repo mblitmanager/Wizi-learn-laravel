@@ -21,6 +21,9 @@
 
                         <a href="{{ route('quiz.create') }}" type="button" class="btn btn-sm btn-primary px-4"> <i
                                 class="fadeIn animated bx bx-plus"></i> Nouveau quiz</a>
+                        <button class="btn btn-sm btn-warning mx-2" data-bs-toggle="modal" data-bs-target="#exportModal">
+                            <i class="lni lni-download"></i> Exporter des Quiz
+                        </button>
                     </div>
                 </div>
             </div>
@@ -70,31 +73,92 @@
                 </div>
             </div>
         </div>
+        <div>
+            <div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="exportModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exportModalLabel">Exporter des Quiz</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="exportForm" method="GET">
+                                <div class="mb-3">
+                                    <label for="quizSelect" class="form-label">Sélectionnez les quiz à exporter</label>
+                                    <select id="quizSelect" name="quiz_ids[]" class="form-select" multiple required>
+                                        @foreach ($quiz as $row)
+                                            <option value="{{ $row->id }}">{{ $row->titre }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Exporter</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="card">
             <div class="card-body">
                 <div class="col-md-12">
                     <div class="card">
                         <div class="table-responsive px-4 py-4">
+                            <div class="row mb-3">
+                                <div class="col-md-3">
+                                    <label for="formationFilter">Filtrer par formation</label>
+                                    <select id="formationFilter" class="form-select">
+                                        <option value="">Toutes les formations</option>
+                                        @foreach ($formations as $formation)
+                                            <option value="{{ $formation->titre }}">{{ $formation->titre }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="categorieFilter">Filtrer par catégorie</label>
+                                    <select id="categorieFilter" class="form-select">
+                                        <option value="">Toutes les catégories</option>
+                                        @foreach ($categories as $categorie)
+                                            <option value="{{ $categorie }}">{{ $categorie }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="niveauFilter">Filtrer par niveau</label>
+                                    <select id="niveauFilter" class="form-select">
+                                        <option value="">Tous les niveaux</option>
+                                        @foreach ($niveaux as $niveau)
+                                            <option value="{{ $niveau }}">{{ $niveau }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="statusFilter">Filtrer par status</label>
+                                    <select id="statusFilter" class="form-select">
+                                        <option value="">Tous les status</option>
+                                        @foreach ($status as $statut)
+                                            <option value="{{ $statut }}">{{ $statut }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
                             <table id="stagiairesTable" class="table table-bordered table-striped table-hover mb-0">
                                 <thead>
                                     <tr>
                                         <th>Titre</th>
-                                        <th>Durer</th>
+                                        <th style="display:none">Formation</th>
+                                        <th style="display:none">Catégorie</th>
                                         <th>Niveau</th>
+                                        <th>Status</th>
+                                        <th>Durer</th>
                                         <th>Action</th>
                                     </tr>
                                     <tr>
-
-                                        <th><input type="text" placeholder="Filtrer"
-                                                class="form-control form-control-sm" />
-                                        </th>
-                                        <th><input type="text" placeholder="Filtrer"
-                                                class="form-control form-control-sm" />
-                                        </th>
-                                        <th><input type="text" placeholder="Filtrer"
-                                                class="form-control form-control-sm" />
-                                        </th>
-
+                                        <th><input type="text" placeholder="Filtrer" class="form-control form-control-sm" /></th>
+                                        <th style="display:none"><input type="text" placeholder="Filtrer" class="form-control form-control-sm" /></th>
+                                        <th style="display:none"><input type="text" placeholder="Filtrer" class="form-control form-control-sm" /></th>
+                                        <th><input type="text" placeholder="Filtrer" class="form-control form-control-sm" /></th>
+                                        <th><input type="text" placeholder="Filtrer" class="form-control form-control-sm" /></th>
+                                        <th><input type="text" placeholder="Filtrer" class="form-control form-control-sm" /></th>
                                         <th></th>
                                     </tr>
                                 </thead>
@@ -102,8 +166,11 @@
                                     @foreach ($quiz as $row)
                                         <tr>
                                             <td>{{ $row->titre }}</td>
-                                            <td>{{ $row->duree }}</td>
+                                            <td style="display:none">{{ $row->formation->titre ?? '' }}</td>
+                                            <td style="display:none">{{ $row->formation->categorie ?? '' }}</td>
                                             <td>{{ $row->niveau }}</td>
+                                            <td>{{ $row->status }}</td>
+                                            <td>{{ $row->duree }}</td>
                                             <td>
                                                 <a href="{{ route('quiz.edit', $row->id) }}"
                                                     class="btn btn-sm btn-success ">
@@ -149,6 +216,27 @@
                         });
                     });
                 }
+            });
+
+            // Filtre par formation
+            $('#formationFilter').on('change', function() {
+                var val = $(this).val();
+                table.column(1).search(val).draw();
+            });
+            // Filtre par catégorie
+            $('#categorieFilter').on('change', function() {
+                var val = $(this).val();
+                table.column(2).search(val).draw();
+            });
+            // Filtre par niveau
+            $('#niveauFilter').on('change', function() {
+                var val = $(this).val();
+                table.column(3).search(val).draw();
+            });
+            // Filtre par status (fix: colonne 4)
+            $('#statusFilter').on('change', function() {
+                var val = $(this).val();
+                table.column(4).search(val).draw();
             });
         });
     </script>

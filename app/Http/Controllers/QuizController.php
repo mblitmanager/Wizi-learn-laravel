@@ -34,6 +34,7 @@ class QuizController extends Controller
         try {
             // Récupérer les quizzes des formations ayant la catégorie spécifiée et qui ont des stagiaires
             $quizzes = Quiz::with(['questions.reponses', 'formation'])
+                ->where('status', 'actif')
                 ->whereHas('formation', function ($query) use ($category) {
                     $query->where('categorie', $category)
                         ->whereHas('stagiaires', function ($query) {
@@ -55,13 +56,13 @@ class QuizController extends Controller
                         $questionData = [
                             'id' => (string)$question->id,
                             'text' => $question->text,
-                            'type' => $question->type ?? 'multiplechoice',
+                            'type' => $question->type ?? 'choix multiples',
                         ];
 
                         // Gestion spécifique selon le type de question
                         switch ($question->type) {
-                            case 'multiplechoice':
-                            case 'truefalse':
+                            case 'choix multiples':
+                            case 'vrai/faux':
                                 $questionData['answers'] = $question->reponses->map(function ($reponse) {
                                     return [
                                         'id' => (string)$reponse->id,
@@ -71,7 +72,7 @@ class QuizController extends Controller
                                 })->toArray();
                                 break;
 
-                            case 'ordering':
+                            case 'rearrangement':
                                 $questionData['answers'] = $question->reponses->map(function ($reponse) {
                                     return [
                                         'id' => (string)$reponse->id,
@@ -81,7 +82,7 @@ class QuizController extends Controller
                                 })->sortBy('position')->values()->toArray();
                                 break;
 
-                            case 'fillblank':
+                            case 'remplir le champ vide':
                                 $questionData['blanks'] = $question->reponses->map(function ($reponse) {
                                     return [
                                         'id' => (string)$reponse->id,
@@ -91,7 +92,7 @@ class QuizController extends Controller
                                 })->toArray();
                                 break;
 
-                            case 'wordbank':
+                            case 'banque de mots':
                                 $questionData['wordbank'] = $question->reponses->map(function ($reponse) {
                                     return [
                                         'id' => (string)$reponse->id,
@@ -102,14 +103,14 @@ class QuizController extends Controller
                                 })->toArray();
                                 break;
 
-                            case 'flashcard':
+                            case 'carte flash':
                                 $questionData['flashcard'] = [
                                     'front' => $question->text,
                                     'back' => $question->flashcard_back
                                 ];
                                 break;
 
-                            case 'matching':
+                            case 'correspondance':
                                 $questionData['matching'] = $question->reponses->map(function ($reponse) {
                                     return [
                                         'id' => (string)$reponse->id,
@@ -119,7 +120,7 @@ class QuizController extends Controller
                                 })->toArray();
                                 break;
 
-                            case 'audioquestion':
+                            case 'question audio':
                                 $questionData['audioUrl'] = $question->audio_url ?? $question->media_url ?? null;
                                 $questionData['answers'] = $question->reponses->map(function ($reponse) {
                                     return [
@@ -564,12 +565,57 @@ class QuizController extends Controller
 
         // Traitement pour "remplir le champ vide"
         if ($question->type === 'remplir le champ vide') {
-            $correctAnswers = $question->reponses
-                ->where('is_correct', true)
-                ->pluck('text')
-                ->toArray();
-            return empty(array_udiff_assoc($selectedAnswers, $correctAnswers, 'strcasecmp')) &&
-                empty(array_udiff_assoc($correctAnswers, $selectedAnswers, 'strcasecmp'));
+            // Préparer la map bank_group => bonne réponse
+            $correctBlanks = [];
+            foreach ($question->reponses as $reponse) {
+                if ($reponse->bank_group && $reponse->is_correct) {
+                    $correctBlanks[$reponse->bank_group] = $reponse->text;
+                }
+            }
+
+            $normalize = function($v) {
+                return is_string($v) ? mb_strtolower(trim($v)) : $v;
+            };
+
+            $isCorrect = false;
+            $details = [
+                'selectedAnswers' => $selectedAnswers,
+                'correctAnswers' => $correctBlanks,
+                'isCorrect' => false
+            ];
+
+            if (is_array($selectedAnswers) && count($correctBlanks) > 0 && count($selectedAnswers) > 0 && array_keys($selectedAnswers) !== range(0, count($selectedAnswers) - 1)) {
+                // Cas objet: mapping blank ids (bank_group) => réponse
+                $allCorrect = true;
+                // Ne comparer que les clés attendues (blanks de la question)
+                foreach ($correctBlanks as $blankId => $correctText) {
+                    $userText = $selectedAnswers[$blankId] ?? null;
+                    if ($normalize($userText) !== $normalize($correctText)) {
+                        $allCorrect = false;
+                        break;
+                    }
+                }
+                // Vérifier qu'il n'y a pas de réponses en trop pour cette question
+                $userBlanks = array_filter(array_keys($selectedAnswers), function($k) use ($correctBlanks) {
+                    return array_key_exists($k, $correctBlanks);
+                });
+                if ($allCorrect && count($userBlanks) === count($correctBlanks)) {
+                    $isCorrect = true;
+                }
+                $details['isCorrect'] = $isCorrect;
+                return $details;
+            } else if (is_array($selectedAnswers)) {
+                // Fallback: comparer par ordre (array simple)
+                $correctAnswers = array_values(array_filter($question->reponses->toArray(), function($r) { return $r['is_correct']; }));
+                $correctTexts = array_map(function($r) use ($normalize) { return $normalize($r['text']); }, $correctAnswers);
+                $userTexts = array_map($normalize, array_values($selectedAnswers));
+                $isCorrect = $userTexts === $correctTexts;
+                $details['correctAnswers'] = $correctTexts;
+                $details['isCorrect'] = $isCorrect;
+                return $details;
+            }
+            // Si aucun format reconnu, faux par défaut
+            return $details;
         }
 
         // Traitement pour "choix multiples"
@@ -697,7 +743,7 @@ class QuizController extends Controller
 
             $correctAnswers = $questionsDetails->where('isCorrect', true)->count();
             $totalQuestions = $questionsDetails->count();
-            $score = $totalQuestions > 0 ? round(($correctAnswers / $totalQuestions) * 100) : 0;
+            $score = $totalQuestions > 0 ? round(($correctAnswers / $totalQuestions)) : 0;
 
             $result = Progression::create([
                 'stagiaire_id' => $stagiaire->id,
@@ -1223,6 +1269,106 @@ class QuizController extends Controller
                 'error' => 'Une erreur est survenue lors de la récupération des participations',
                 'message' => $e->getMessage(),
             ], 500);
+        }
+    }
+
+    public function exportQuiz($id)
+    {
+        try {
+            $quiz = Quiz::with(['questions.reponses'])->findOrFail($id);
+
+            $exportData = [
+                'quiz' => [
+                    'id' => $quiz->id,
+                    'titre' => $quiz->titre,
+                    'description' => $quiz->description,
+                    'niveau' => $quiz->niveau,
+                    'duree' => $quiz->duree,
+                    'nb_points_total' => $quiz->nb_points_total,
+                    'formation_id' => $quiz->formation_id,
+                ],
+                'questions' => $quiz->questions->map(function ($question) {
+                    return [
+                        'id' => $question->id,
+                        'text' => $question->text,
+                        'type' => $question->type,
+                        'points' => $question->points,
+                        'reponses' => $question->reponses->map(function ($reponse) {
+                            return [
+                                'id' => $reponse->id,
+                                'text' => $reponse->text,
+                                'is_correct' => $reponse->is_correct,
+                                'position' => $reponse->position,
+                                'match_pair' => $reponse->match_pair,
+                                'bank_group' => $reponse->bank_group,
+                                'flashcard_back' => $reponse->flashcard_back,
+                            ];
+                        }),
+                    ];
+                }),
+            ];
+
+            $fileName = 'quiz_export_' . $quiz->id . '.json';
+            $filePath = storage_path('app/' . $fileName);
+            file_put_contents($filePath, json_encode($exportData, JSON_PRETTY_PRINT));
+
+            return response()->download($filePath)->deleteFileAfterSend(true);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Erreur lors de l\'exportation du quiz : ' . $e->getMessage());
+        }
+    }
+
+    public function exportMultipleQuizzes(Request $request)
+    {
+        try {
+            $quizIds = $request->input('quiz_ids', []);
+
+            if (empty($quizIds)) {
+                return redirect()->back()->with('error', 'Aucun quiz sélectionné pour l\'exportation.');
+            }
+
+            $quizzes = Quiz::with(['questions.reponses'])->whereIn('id', $quizIds)->get();
+
+            $exportData = $quizzes->map(function ($quiz) {
+                return [
+                    'quiz' => [
+                        'id' => $quiz->id,
+                        'titre' => $quiz->titre,
+                        'description' => $quiz->description,
+                        'niveau' => $quiz->niveau,
+                        'duree' => $quiz->duree,
+                        'nb_points_total' => $quiz->nb_points_total,
+                        'formation_id' => $quiz->formation_id,
+                    ],
+                    'questions' => $quiz->questions->map(function ($question) {
+                        return [
+                            'id' => $question->id,
+                            'text' => $question->text,
+                            'type' => $question->type,
+                            'points' => $question->points,
+                            'reponses' => $question->reponses->map(function ($reponse) {
+                                return [
+                                    'id' => $reponse->id,
+                                    'text' => $reponse->text,
+                                    'is_correct' => $reponse->is_correct,
+                                    'position' => $reponse->position,
+                                    'match_pair' => $reponse->match_pair,
+                                    'bank_group' => $reponse->bank_group,
+                                    'flashcard_back' => $reponse->flashcard_back,
+                                ];
+                            }),
+                        ];
+                    }),
+                ];
+            });
+
+            $fileName = 'quizzes_export_' . now()->format('Ymd_His') . '.json';
+            $filePath = storage_path('app/' . $fileName);
+            file_put_contents($filePath, json_encode($exportData, JSON_PRETTY_PRINT));
+
+            return response()->download($filePath)->deleteFileAfterSend(true);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Erreur lors de l\'exportation des quiz : ' . $e->getMessage());
         }
     }
 }
