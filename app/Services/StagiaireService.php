@@ -87,12 +87,17 @@ class StagiaireService
         $this->stagiaireRepository->update($id, $data);
 
         // 4. Synchronisation des formations
-        $stagiaire->formations()->sync($formationIds);
-
+        if (!empty($formationIds)) {
+            $stagiaire->formations()->sync($formationIds);
+        }
         // 5. Synchronisation des formateurs
-        $stagiaire->formateurs()->sync($formateurIds);
+        if (!empty($formateurIds)) {
+            $stagiaire->formateurs()->sync($formateurIds);
+        }
         // 6. Synchronisation des commerciaux
-        $stagiaire->commercials()->sync($commercialIds);
+        if (!empty($commercialIds)) {
+            $stagiaire->commercials()->sync($commercialIds);
+        }
 
         return true;
     }

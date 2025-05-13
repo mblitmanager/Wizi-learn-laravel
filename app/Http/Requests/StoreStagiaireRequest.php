@@ -45,6 +45,8 @@ class StoreStagiaireRequest extends FormRequest
             'formation_id' => 'required|exists:formations,id',
             'formateur_id' => 'nullable|exists:formateurs,id',
             'commercial_id' => 'nullable|exists:commercials,id',
+            'date_debut_formation' => 'nullable|date',
+            'date_inscription' => 'nullable|date',
         ];
     }
 

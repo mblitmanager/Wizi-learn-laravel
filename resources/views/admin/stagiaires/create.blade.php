@@ -162,6 +162,32 @@
                             @enderror
                         </div>
                     </div>
+
+                    <div class="col-md-4">
+                        <!-- Date début formation -->
+                        <div class="mb-3">
+                            <label for="date_debut_formation">Date début formation</label>
+                            <input type="date" name="date_debut_formation" id="date_debut_formation"
+                                class="form-control @error('date_debut_formation') is-invalid @enderror"
+                                value="{{ old('date_debut_formation', $stagiaire->date_debut_formation ?? '') }}">
+                            @error('date_debut_formation')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <!-- Date inscription -->
+                        <div class="mb-3">
+                            <label for="date_inscription">Date inscription</label>
+                            <input type="date" name="date_inscription" id="date_inscription"
+                                class="form-control @error('date_inscription') is-invalid @enderror"
+                                value="{{ old('date_inscription', $stagiaire->date_inscription ?? '') }}">
+                            @error('date_inscription')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+
                     <div class="col-md-12">
                         <div class="accordion mb-3" id="accordionExample">
                             <div class="accordion-item">
