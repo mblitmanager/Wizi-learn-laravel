@@ -516,8 +516,10 @@ class QuizController extends Controller
             $selectedPairs = [];
 
             foreach ($selectedAnswers as $leftId => $rightText) {
-                $leftText = $reponsesMap[$leftId] ?? 'ato';  // On utilise maintenant le map correct
-                $selectedPairs[$leftText] = $rightText;
+                if (isset($reponsesMap[$leftId])) {
+                    $leftText = $reponsesMap[$leftId];
+                    $selectedPairs[$leftText] = $rightText;
+                }
             }
 
             // Créer le tableau `match_pair`
