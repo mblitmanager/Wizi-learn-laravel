@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class CorrespondancePair extends Model
 {
-    protected $fillable = ['question_id', 'left_text', 'right_text'];
+    protected $fillable = ['question_id', 'left_text', 'right_text', 'left_id', 'right_id'];
 
     public function question()
     {

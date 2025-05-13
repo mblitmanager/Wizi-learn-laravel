@@ -113,6 +113,7 @@ Route::middleware(['auth:api'])->group(function () {
     // Questions routes
     Route::prefix('questions')->group(function () {
         Route::get('/{questionId}/reponses', [ReponseController::class, 'getReponsesByQuestion']);
+        Route::get('questionById/{id}', [ReponseController::class, 'getQuestionById']);
     });
     // Quiz routes
     Route::get('/quiz/category/{category}', [QuizController::class, 'getQuizzesByCategory']);

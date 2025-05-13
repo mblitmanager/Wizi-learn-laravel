@@ -504,16 +504,19 @@ class QuizController extends Controller
         if ($question->type === 'correspondance') {
             // Récupérer uniquement les paires pays → capitale
             $correctPairs = CorrespondancePair::where('question_id', $question->id)
-                ->whereIn('left_text', $question->reponses->pluck('text')->toArray())  // On ne garde que les "left" présents dans les réponses
+                ->whereIn('left_text', $question->reponses->pluck('text')->toArray())
                 ->get()
                 ->mapWithKeys(fn($pair) => [$pair->left_text => $pair->right_text])
                 ->toArray();
 
+            // Créer le map des réponses
+            $reponsesMap = $question->reponses->pluck('text', 'id')->toArray();
+
             // Convertir les `selectedAnswers` en utilisant les `left_id` pour obtenir le `left_text`
             $selectedPairs = [];
+
             foreach ($selectedAnswers as $leftId => $rightText) {
-                $leftAnswer = $question->reponses->firstWhere('id', $leftId);
-                $leftText = $leftAnswer ? $leftAnswer->text : 'unknown';
+                $leftText = $reponsesMap[$leftId] ?? 'ato';  // On utilise maintenant le map correct
                 $selectedPairs[$leftText] = $rightText;
             }
 
@@ -588,6 +591,7 @@ class QuizController extends Controller
             // On suppose que selectedAnswers est un tableau d'IDs de réponses dans l'ordre donné
             $correctAnswers = $question->reponses
                 ->where('is_correct', true)
+                ->sortBy('position')
                 ->pluck('text')
                 ->values()
                 ->toArray();
@@ -706,6 +710,11 @@ class QuizController extends Controller
 
             // Enregistrer les réponses pour les questions de type "correspondance"
             foreach ($request->answers as $questionId => $answerValue) {
+                Log::info('Traitement de la question :', [
+                    'question_id' => $questionId,
+                    'answers' => $answerValue
+                ]);
+
                 $question = $quiz->questions->firstWhere('id', $questionId);
 
                 if (!$question) continue;
@@ -716,30 +725,35 @@ class QuizController extends Controller
                     $newPairs = [];
 
                     foreach ($answerValue as $leftId => $rightText) {
-                        $leftAnswer = $question->reponses->firstWhere('id', $leftId);
-                        $leftText = $leftAnswer ? $leftAnswer->text : 'unknown';
-                        $answerPairs[] = ['left' => $leftText, 'right' => $rightText];
+                        // $leftAnswer = $question->reponses->firstWhere('id', $leftId);
+
+                        // $leftText = $leftAnswer ? $leftAnswer->text : 'unknown';
+                        // $answerPairs[] = ['left' => $leftText, 'right' => $rightText];
 
                         // Vérifie si la paire existe déjà
-                        $exists = CorrespondancePair::where('question_id', $questionId)
-                            ->where('left_text', $leftText)
-                            ->where('right_text', $rightText)
-                            ->exists();
+                        // $exists = CorrespondancePair::where('question_id', $questionId)
+                        //     ->where('left_text', $leftText)
+                        //     ->where('right_text', $rightText)
+                        //     ->exists();
 
-                        if (!$exists) {
-                            // On retient uniquement les nouvelles paires
-                            $newPairs[] = [
-                                'question_id' => $questionId,
-                                'left_text' => $leftText,
-                                'right_text' => $rightText
-                            ];
-                        }
+                        // if (!$exists) {
+                        //     $newPairs[] = [
+                        //         'question_id' => $questionId,
+                        //         'left_text' => $leftText,
+                        //         'right_text' => $rightText
+                        //     ];
+                        // }
                     }
 
-                    // Si au moins une paire est nouvelle, on les insère toutes ensemble
-                    if (!empty($newPairs)) {
-                        CorrespondancePair::insert($newPairs);
-                    }
+                    Log::info('Paires pour la question :', [
+                        'question_id' => $questionId,
+                        'answerPairs' => $answerPairs,
+                        'newPairs' => $newPairs
+                    ]);
+
+                    // if (!empty($newPairs)) {
+                    //     CorrespondancePair::insert($newPairs);
+                    // }
 
                     QuizParticipationAnswer::create([
                         'participation_id' => $participation->id,
@@ -749,6 +763,7 @@ class QuizController extends Controller
                     ]);
                 }
             }
+
 
             // Marquer la participation comme terminée
             $participation->update([
