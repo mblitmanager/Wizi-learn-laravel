@@ -39,4 +39,11 @@ class Quiz extends Model
     {
         return $this->hasMany(Questions::class);
     }
+
+    protected static function booted()
+    {
+        static::saving(function ($quiz) {
+            $quiz->nb_points_total = $quiz->questions()->sum('points');
+        });
+    }
 }

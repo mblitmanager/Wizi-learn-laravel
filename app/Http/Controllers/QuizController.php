@@ -806,8 +806,7 @@ class QuizController extends Controller
             ]);
 
             // Mettre à jour le classement
-            $this->updateClassement($quiz->id, $stagiaire->id, $score);
-
+            $this->updateClassement($quiz->id, $stagiaire->id, $correctAnswers);
             return response()->json([
                 'id' => $result->id,
                 'quizId' => $result->quiz_id,
@@ -839,31 +838,26 @@ class QuizController extends Controller
     }
 
 
-    private function updateClassement($quizId, $stagiaireId, $score)
+    private function updateClassement($quizId, $stagiaireId, $points)
     {
         try {
-            // Vérifier si le stagiaire a déjà un classement pour ce quiz
             $classement = Classement::where('quiz_id', $quizId)
                 ->where('stagiaire_id', $stagiaireId)
                 ->first();
 
             if ($classement) {
-                // Mettre à jour le score si le nouveau score est meilleur
-                if ($score > $classement->points) {
-                    $classement->update(['points' => $score]);
+                if ($points > $classement->points) {
+                    $classement->update(['points' => $points]);
                 }
             } else {
-                // Créer un nouveau classement
                 $classement = Classement::create([
                     'quiz_id' => $quizId,
                     'stagiaire_id' => $stagiaireId,
-                    'points' => $score
+                    'points' => $points
                 ]);
             }
 
-            // Mettre à jour les rangs pour ce quiz
             $this->updateRanks($quizId);
-
             return $classement;
         } catch (\Exception $e) {
             Log::error('Erreur dans updateClassement', [
@@ -873,6 +867,7 @@ class QuizController extends Controller
             throw $e;
         }
     }
+
 
     private function updateRanks($quizId)
     {
