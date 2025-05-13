@@ -737,7 +737,7 @@ class QuizController extends Controller
 
             $correctAnswers = $questionsDetails->where('isCorrect', true)->count();
             $totalQuestions = $questionsDetails->count();
-            $score = $totalQuestions > 0 ? round(($correctAnswers / $totalQuestions) * 100) : 0;
+            $score = $totalQuestions > 0 ? round(($correctAnswers / $totalQuestions)) : 0;
 
             $result = Progression::create([
                 'stagiaire_id' => $stagiaire->id,

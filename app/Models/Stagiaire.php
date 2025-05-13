@@ -21,6 +21,8 @@ class Stagiaire extends Model
         'date_naissance',
         'ville',
         'code_postal',
+        'date_debut_formation', // Ajout date début formation
+        'date_inscription',     // Ajout date inscription
         'role',
         'statut',
         'user_id',

@@ -19,6 +19,8 @@ return new class extends Migration {
             $table->date('date_naissance')->nullable();
             $table->string('ville')->nullable();
             $table->string('code_postal')->nullable();
+            $table->date('date_debut_formation')->nullable(); // Ajout date début formation
+            $table->date('date_inscription')->nullable(); // Ajout date inscription
             $table->string('role')->default('stagiaire');
             $table->boolean('statut')->default(true);
             $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade');
