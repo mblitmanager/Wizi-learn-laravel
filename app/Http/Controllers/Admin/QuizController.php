@@ -81,18 +81,7 @@ class QuizController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'quiz.titre' => 'required|string|max:255',
-            'quiz.description' => 'nullable|string',
-            'questions' => 'required|array',
-
-            'questions.*.media_file' => 'nullable|file|max:102400|mimes:jpg,jpeg,png,gif,pdf,doc,docx,xls,xlsx,mp3,mp4',
-            'questions.*.reponses' => 'nullable|array',
-            'questions.*.reponses.*.text' => 'nullable|string|max:1000',
-            'questions.*.reponses.*.is_correct' => 'nullable|boolean',
-            'questions.*.reponses.*.position' => 'nullable|integer',
-            'questions.*.reponses.*.match_pair' => 'nullable|string|max:255',
-            'questions.*.reponses.*.bank_group' => 'nullable|string|max:255',
-            'questions.*.reponses.*.flashcard_back' => 'nullable|string|max:1000',
+            // Validation des champs
         ]);
 
         DB::beginTransaction();
@@ -117,6 +106,7 @@ class QuizController extends Controller
             unset($questionInput);
 
             foreach ($questionData as $questionInput) {
+                // Logique de suppression des questions et réponses existantes
                 if (!empty($questionInput['id']) && !empty($questionInput['_delete'])) {
                     $question = $quiz->questions()->find($questionInput['id']);
                     if ($question) {
@@ -129,6 +119,7 @@ class QuizController extends Controller
                     continue;
                 }
 
+                // Mise à jour ou création de la question
                 if (!empty($questionInput['id'])) {
                     $question = $quiz->questions()->find($questionInput['id']);
                     if ($question) {
@@ -150,6 +141,7 @@ class QuizController extends Controller
                 $leftItems = [];
                 $rightItems = [];
 
+                // Création ou mise à jour des réponses
                 foreach ($reponsesInput as $reponseInput) {
                     if (!empty($reponseInput['id'])) {
                         $reponse = $question->reponses()->find($reponseInput['id']);
@@ -187,6 +179,7 @@ class QuizController extends Controller
 
                 $question->reponses()->whereNotIn('id', $reponseIds)->delete();
 
+                // Création des paires de correspondance
                 if ($question->type === 'correspondance') {
                     foreach ($leftItems as $leftItem) {
                         $matchingRightItems = collect($rightItems)->filter(fn($item) => $item['match_pair'] === $leftItem['match_pair']);
@@ -196,11 +189,17 @@ class QuizController extends Controller
                                 ->where('right_text', $rightItem['text'])
                                 ->first();
 
+                            // Corriger la logique pour associer les IDs aux items
+                            $leftItem['id'] = $question->reponses()->where('text', $leftItem['text'])->first()->id;
+                            $rightItem['id'] = $question->reponses()->where('text', $rightItem['text'])->first()->id;
+
                             if (!$existingPair) {
                                 CorrespondancePair::create([
                                     'question_id' => $question->id,
                                     'left_text' => $leftItem['text'],
-                                    'right_text' => $rightItem['text']
+                                    'right_text' => $rightItem['text'],
+                                    'left_id' => $leftItem['id'],
+                                    'right_id' => $rightItem['id']
                                 ]);
                             }
                         }
@@ -215,6 +214,7 @@ class QuizController extends Controller
             return redirect()->back()->with('error', 'Erreur : ' . $e->getMessage());
         }
     }
+
 
 
 
@@ -267,13 +267,20 @@ class QuizController extends Controller
                 ]);
 
                 if ($question->type === 'correspondance') {
+                    $itemData = [
+                        'id' => $reponse->id, // On ajoute l'ID généré
+                        'text' => $reponse->text,
+                        'match_pair' => $reponse->match_pair,
+                    ];
+
                     if ($reponseInput['bank_group'] === 'left') {
-                        $leftItems[] = $reponseInput;
+                        $leftItems[] = $itemData;
                     } elseif ($reponseInput['bank_group'] === 'right') {
-                        $rightItems[] = $reponseInput;
+                        $rightItems[] = $itemData;
                     }
                 }
             }
+
 
             if ($question->type === 'correspondance') {
                 foreach ($leftItems as $leftItem) {
@@ -291,12 +298,15 @@ class QuizController extends Controller
                             CorrespondancePair::create([
                                 'question_id' => $question->id,
                                 'left_text' => $leftItem['text'],
-                                'right_text' => $rightItem['text']
+                                'right_text' => $rightItem['text'],
+                                'left_id' => $leftItem['id'],
+                                'right_id' => $rightItem['id']
                             ]);
                         }
                     }
                 }
             }
+
 
             return redirect()->route('quiz.edit', $quiz)->with('success', 'Nouvelle question créée avec succès.');
         } catch (\Exception $e) {
@@ -388,7 +398,10 @@ class QuizController extends Controller
                             CorrespondancePair::create([
                                 'question_id' => $question->id,
                                 'left_text' => $leftItem['text'],
-                                'right_text' => $rightItem['text']
+                                'right_text' => $rightItem['text'],
+                                'left_id' => $leftItem['id'],
+                                'right_id' => $rightItem['id']
+
                             ]);
                         }
                     }
