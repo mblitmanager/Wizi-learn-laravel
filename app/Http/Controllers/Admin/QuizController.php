@@ -31,7 +31,11 @@ class QuizController extends Controller
     public function index()
     {
         $quiz = $this->quizeService->getAll();
-        return view('admin.quizzes.index', compact('quiz'));
+        $formations = Formation::all();
+        $categories = Formation::distinct()->pluck('categorie');
+        $niveaux = Quiz::distinct()->pluck('niveau');
+        $status = Quiz::distinct()->pluck('status');
+        return view('admin.quizzes.index', compact('quiz', 'formations', 'categories', 'niveaux', 'status'));
     }
 
     /**
