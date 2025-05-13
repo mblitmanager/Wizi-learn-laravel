@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Stagiaire;
 
 use App\Http\Controllers\Controller;
 use App\Models\Formation;
+use App\Models\User;
 use Illuminate\Http\Request;
 use App\Services\FormationService;
+use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use OpenApi\Attributes as OA;
@@ -81,8 +83,8 @@ class FormationStagiaireController extends Controller
     {
         try {
             $user = JWTAuth::parseToken()->authenticate();
-             // Charger la relation stagiaire si elle n'est pas déjà chargée
-             if (!isset($user->relations['stagiaire'])) {
+            // Charger la relation stagiaire si elle n'est pas déjà chargée
+            if (!isset($user->relations['stagiaire'])) {
                 $user->load('stagiaire');
             }
 
@@ -90,7 +92,7 @@ class FormationStagiaireController extends Controller
             if ($user->role != 'formateur' && $user->role != 'admin') {
                 // Vérifier si l'utilisateur est associé à ce stagiaire
                 $userStagiaire = $user->stagiaire;
-                if (!$userStagiaire ) {
+                if (!$userStagiaire) {
                     return response()->json(['error' => 'non autorisé'], 403);
                 }
             }
@@ -101,6 +103,35 @@ class FormationStagiaireController extends Controller
             ]);
         } catch (JWTException $e) {
             return response()->json(['error' => 'Non autorisé'], 401);
+        }
+    }
+
+    public function updateImage(Request $request, $id)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:102400',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json(['errors' => $validator->errors()], 422);
+            }
+
+            $user = User::findOrFail($id);
+
+            if ($request->hasFile('image')) {
+                $imageName = time() . '.' . $request->image->extension();
+                $request->image->move(public_path('uploads/users'), $imageName);
+                $user->image = 'uploads/users/' . $imageName;
+                $user->save();
+            }
+
+            return response()->json([
+                'message' => 'Image mise à jour avec succès',
+                'image' => $user->image,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 }
