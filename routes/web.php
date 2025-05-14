@@ -17,6 +17,12 @@ use PhpOffice\PhpSpreadsheet\Calculation\TextData\Format;
 Route::get('/', function () {
     return view('stagiaire');
 });
+Route::get('/administrateur', function () {
+    return redirect()->route('dashboard');
+});
+Route::get('/admin', function () {
+    return redirect()->route('dashboard');
+});
 Route::prefix('administrateur')->group(function () {
     Route::get('/register', [AdminController::class, 'showRegisterForm'])->name('register');
     Route::post('/register', [AdminController::class, 'register'])->name('register.post');
@@ -68,3 +74,12 @@ Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function
     Route::post('/import/prc', [PoleRelationClientController::class, 'import'])->name('prc.import');
     Route::post('/quiz-question/new', [QuizController::class, 'storeNewQuestion'])->name('quiz_question.new');
 });
+
+Route::fallback(function () {
+    return redirect('/');
+});
+
+// Catch-all route for React Router (SPA)
+Route::get('/{any}', function () {
+    return view('stagiaire'); // Assurez-vous que la vue correspond à votre build React
+})->where('any', '.*');
