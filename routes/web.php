@@ -67,4 +67,5 @@ Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function
     Route::put('/parametre/{id}/update-image', [ParametreAdminController::class, 'updateImage'])->name('parametre.updateImage');
     Route::post('/import/prc', [PoleRelationClientController::class, 'import'])->name('prc.import');
     Route::post('/quiz-question/new', [QuizController::class, 'storeNewQuestion'])->name('quiz_question.new');
+    Route::get('/telecharger-modele-stagiaire', [StagiaireController::class, 'downloadStagiaireModel'])->name('download.stagiaire.model');
 });

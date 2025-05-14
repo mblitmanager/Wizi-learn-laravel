@@ -18,6 +18,10 @@
                 </div>
                 <div class="ms-auto">
                     <div class="btn-group">
+                        <a href="{{ route('download.stagiaire.model') }}" class="btn btn-sm btn-success mx-2">
+                            Télécharger le modèle Stagiaire
+                        </a>
+
                         <button class="btn btn-sm text-white btn-info mx-2" data-bs-toggle="modal"
                             data-bs-target="#importModal"><i class="lni lni-cloud-download"></i>importer stagiaires</button>
                         <a href="{{ route('stagiaires.create') }}" type="button" class="btn btn-sm btn-primary mx-2"> <i

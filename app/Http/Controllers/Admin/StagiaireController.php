@@ -15,7 +15,9 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Response;
 
 class StagiaireController extends Controller
 {
@@ -148,11 +150,70 @@ class StagiaireController extends Controller
         $request->validate([
             'file' => 'required|file|mimes:xlsx,xls'
         ]);
+
         try {
             $file = $request->file('file');
             $spreadsheet = IOFactory::load($file->getRealPath());
             $sheet = $spreadsheet->getActiveSheet();
+
             $ignoredEmails = [];
+            $invalidRows = [];
+            $importedCount = 0;
+
+            // Vérifier l'en-tête en ignorant les espaces
+            $headerRow = $sheet->getRowIterator()->current();
+            $headerCells = $headerRow->getCellIterator();
+            $expectedHeaders = [
+                'Civilité',
+                'Tiers',
+                'Email',
+                'Téléphone',
+                'Ville',
+                ['Code postal', 'Codepostal', 'Code Postal'],
+                'Adresse',
+                ['Date de naissance', 'Datedenaissance', 'Date Naissance']
+            ];
+            $headerValues = [];
+            $headerCells->rewind();
+            // On ne prend que les 8 premières colonnes (même si le fichier en a plus)
+            for ($i = 0; $i < 8; $i++) {
+                if ($headerCells->valid()) {
+                    $headerValues[] = preg_replace('/\s+/', '', strtolower(trim($headerCells->current()->getValue())));
+                    $headerCells->next();
+                } else {
+                    $headerValues[] = '';
+                }
+            }
+
+            // Préparation des en-têtes attendus pour comparaison
+            $expectedHeadersNormalized = [];
+            foreach ($expectedHeaders as $header) {
+                if (is_array($header)) {
+                    // Si plusieurs variations sont possibles, on prend la première comme version "officielle"
+                    $normalized = array_map(function ($h) {
+                        return preg_replace('/\s+/', '', strtolower($h));
+                    }, $header);
+                    $expectedHeadersNormalized[] = $normalized;
+                } else {
+                    $expectedHeadersNormalized[] = [preg_replace('/\s+/', '', strtolower($header))];
+                }
+            }
+
+            // Vérification des en-têtes
+            $headerErrors = [];
+            foreach ($expectedHeadersNormalized as $index => $possibleHeaders) {
+                if (!isset($headerValues[$index]) || !in_array($headerValues[$index], $possibleHeaders)) {
+                    $officialHeader = is_array($expectedHeaders[$index]) ? $expectedHeaders[$index][0] : $expectedHeaders[$index];
+                    $headerErrors[] = "Colonne " . ($index + 1) . ": Attendu '{$officialHeader}'";
+                }
+            }
+
+            return redirect()->route('stagiaires.index')
+                ->with('error', new \Illuminate\Support\HtmlString(
+                    'En-têtes incorrects:<br>' . implode('<br>', $headerErrors) .
+                        '<br>Veuillez utiliser le modèle fourni.'
+                ));
+
 
 
             foreach ($sheet->getRowIterator(2) as $row) {
@@ -160,13 +221,44 @@ class StagiaireController extends Controller
                 $cellIterator->setIterateOnlyExistingCells(false);
                 $data = [];
 
+                $data = [];
                 foreach ($cellIterator as $cell) {
-                    $data[] = trim($cell->getValue());
+                    $value = trim($cell->getValue());
+
+                    // On ignore les cellules vides
+                    if ($value !== '') {
+                        $data[] = $value;
+                    }
+
+                    // On arrête une fois qu'on a 8 valeurs non vides
+                    if (count($data) === 8) {
+                        break;
+                    }
                 }
 
-                if (count($data) < 8) continue;
+                // Si moins de 8 valeurs, on complète avec des chaînes vides
+                while (count($data) < 8) {
+                    $data[] = '';
+                }
+
+                // // Vérifier que la ligne contient exactement 8 colonnes comme dans l'en-tête
+                if (count($data) !== 8) {
+                    $invalidRows[] = 'Ligne ' . $row->getRowIndex() . ': Nombre de colonnes incorrect';
+                    continue;
+                }
 
                 list($civilite, $tiers, $email, $telephone, $ville, $codePostal, $adresse, $dateNaissance) = $data;
+                // Validation des champs obligatoires
+                if (empty($email) || empty($tiers) || empty($civilite)) {
+                    $invalidRows[] = 'Ligne ' . $row->getRowIndex() . ': Champs obligatoires manquants';
+                    continue;
+                }
+
+                // Validation de l'email
+                if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                    $invalidRows[] = 'Ligne ' . $row->getRowIndex() . ': Email invalide';
+                    continue;
+                }
 
                 // Vérifie si l'utilisateur existe déjà par email
                 if (User::where('email', $email)->exists()) {
@@ -174,35 +266,98 @@ class StagiaireController extends Controller
                     continue;
                 }
 
+                // Extraction du nom et prénom
                 $np = $this->extraireNomPrenom($tiers);
+                if (empty($np['nom']) || empty($np['prenom'])) {
+                    $invalidRows[] = 'Ligne ' . $row->getRowIndex() . ': Format du nom/prénom invalide';
+                    continue;
+                }
 
-                $user = User::create([
-                    'name' => $np['prenom'] . ' ' . $np['nom'],
-                    'email' => $email,
-                    'password' => bcrypt('stagiaire123'),
-                    'role' => 'stagiaire',
-                ]);
+                // Validation de la date de naissance
+                try {
+                    $dateNaissance = $this->convertExcelDate($dateNaissance);
+                    if (!$dateNaissance) {
+                        throw new \Exception('Date invalide');
+                    }
+                } catch (\Exception $e) {
+                    $invalidRows[] = 'Ligne ' . $row->getRowIndex() . ': Date de naissance invalide';
+                    continue;
+                }
 
-                Stagiaire::create([
-                    'civilite' => $civilite,
-                    'prenom' => $np['prenom'],
-                    'telephone' => $telephone,
-                    'adresse' => $adresse,
-                    'date_naissance' => $this->convertExcelDate($dateNaissance),
-                    'ville' => $ville,
-                    'code_postal' => $codePostal,
-                    'user_id' => $user->id,
-                    'role' => 'stagiaire',
-                    'statut' => true,
-                    'date_debut_formation' => null, // ou une valeur par défaut si dispo dans l'import
-                    'date_inscription' => now(), // date d'import comme inscription
-                ]);
+                // Tout est valide, on crée les enregistrements
+                DB::beginTransaction();
+                try {
+                    $user = User::create([
+                        'name' => $np['prenom'] . ' ' . $np['nom'],
+                        'email' => $email,
+                        'password' => bcrypt('stagiaire123'),
+                        'role' => 'stagiaire',
+                    ]);
+
+                    Stagiaire::create([
+                        'civilite' => $civilite,
+                        'prenom' => $np['prenom'],
+                        'nom' => $np['nom'],
+                        'telephone' => $telephone,
+                        'adresse' => $adresse,
+                        'date_naissance' => $dateNaissance,
+                        'ville' => $ville,
+                        'code_postal' => $codePostal,
+                        'user_id' => $user->id,
+                        'role' => 'stagiaire',
+                        'statut' => true,
+                        'date_debut_formation' => null,
+                        'date_inscription' => now(),
+                    ]);
+
+                    DB::commit();
+                    $importedCount++;
+                } catch (\Exception $e) {
+                    DB::rollBack();
+                    $invalidRows[] = 'Ligne ' . $row->getRowIndex() . ': Erreur lors de la création - ' . $e->getMessage();
+                }
+            }
+
+            // dd($invalidRows);
+
+            $message = "Importation terminée";
+            if ($importedCount > 0) {
+                $message .= ": $importedCount stagiaires importés";
+            }
+
+            if (count($ignoredEmails) > 0) {
+                $message .= "<br>" . count($ignoredEmails) . " doublons ignorés";
+            }
+
+            if (count($invalidRows) > 0) {
+                $message .= "<br>" . count($invalidRows) . ' ' . (count($invalidRows) === 1 ? 'erreur' : 'erreurs');
             }
 
 
-            return redirect()->route('stagiaires.index')->with('success', 'Importation réussie.')->with('ignored', $ignoredEmails);;
+            // Retour avec le statut approprié
+            if ($importedCount > 0) {
+                return redirect()->route('stagiaires.index')
+                    ->with('success', $message);
+            } else {
+                return redirect()->route('stagiaires.index')
+                    ->with('error', $message);
+            }
         } catch (\Exception $e) {
-            return redirect()->route('stagiaires.index')->with('error', 'Erreur: ' . $e->getMessage());
+            return redirect()->route('stagiaires.index')
+                ->with('error', 'Erreur lors de l\'import: ' . $e->getMessage());
         }
+    }
+
+    public function downloadStagiaireModel()
+    {
+        $filePath = public_path('models/stagiaire/stagiaire.xlsx');
+
+        if (!File::exists($filePath)) {
+            return redirect()->back()->with('error', 'Le fichier modèle est introuvable.');
+        }
+
+        $fileName = 'modele_import_stagiaire.xlsx';
+
+        return Response::download($filePath, $fileName);
     }
 }
