@@ -634,6 +634,38 @@ class QuizController extends Controller
                     empty(array_diff($correctAnswers, $selectedAnswers))
             ];
         }
+         // Traitement pour "banque de mots"
+        if ($question->type === 'banque de mots') {
+            $correctAnswers = $question->reponses
+                ->where('is_correct', true)
+                ->pluck('text')
+                ->toArray();
+
+            $selectedAnswers = is_array($selectedAnswers) ? $selectedAnswers : [];
+
+            return [
+                'selectedAnswers' => $selectedAnswers,
+                'correctAnswers' => $correctAnswers,
+                'isCorrect' => empty(array_diff($selectedAnswers, $correctAnswers)) &&
+                    empty(array_diff($correctAnswers, $selectedAnswers))
+            ];
+        }
+         // Traitement pour "vrai/faux"
+        if ($question->type === 'vrai/faux') {
+            $correctAnswers = $question->reponses
+                ->where('is_correct', true)
+                ->pluck('text')
+                ->toArray();
+
+            $selectedAnswers = is_array($selectedAnswers) ? $selectedAnswers : [];
+
+            return [
+                'selectedAnswers' => $selectedAnswers,
+                'correctAnswers' => $correctAnswers,
+                'isCorrect' => empty(array_diff($selectedAnswers, $correctAnswers)) &&
+                    empty(array_diff($correctAnswers, $selectedAnswers))
+            ];
+        }
 
         if ($question->type === 'rearrangement') {
             // On suppose que selectedAnswers est un tableau d'IDs de réponses dans l'ordre donné
@@ -743,7 +775,7 @@ class QuizController extends Controller
 
             $correctAnswers = $questionsDetails->where('isCorrect', true)->count();
             $totalQuestions = $questionsDetails->count();
-            $score = $totalQuestions > 0 ? round(($correctAnswers / $totalQuestions)) : 0;
+            $score = $totalQuestions > 0 ? round(($correctAnswers / $totalQuestions)*2) : 0;
 
             $result = Progression::create([
                 'stagiaire_id' => $stagiaire->id,
