@@ -1,0 +1,6 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Redirige toutes les requêtes vers le dossier public
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
