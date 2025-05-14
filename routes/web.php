@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Route;
 use PhpOffice\PhpSpreadsheet\Calculation\TextData\Format;
 
 Route::get('/', function () {
-    return redirect()->route('login');
+    return view('stagiaire');
 });
 Route::prefix('administrateur')->group(function () {
     Route::get('/register', [AdminController::class, 'showRegisterForm'])->name('register');
