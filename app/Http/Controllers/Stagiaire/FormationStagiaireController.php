@@ -110,7 +110,7 @@ class FormationStagiaireController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:102400',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:102400',
             ]);
 
             if ($validator->fails()) {
@@ -119,12 +119,19 @@ class FormationStagiaireController extends Controller
 
             $user = User::findOrFail($id);
 
+            // Vérifie si l'utilisateur a déjà une image
+            if ($user->image && file_exists(public_path($user->image))) {
+                unlink(public_path($user->image));  // Supprime l'ancienne image
+                $user->image = null;  // Réinitialise le chemin
+            }
+
             if ($request->hasFile('image')) {
                 $imageName = time() . '.' . $request->image->extension();
                 $request->image->move(public_path('uploads/users'), $imageName);
                 $user->image = 'uploads/users/' . $imageName;
-                $user->save();
             }
+
+            $user->save();
 
             return response()->json([
                 'message' => 'Image mise à jour avec succès',

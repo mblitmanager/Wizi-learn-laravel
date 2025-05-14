@@ -122,11 +122,8 @@ Route::middleware(['auth:api'])->group(function () {
     Route::get('/quiz/{id}/participation', [QuizController::class, 'getCurrentParticipation']);
     Route::post('/quiz/{id}/complete', [QuizController::class, 'completeParticipation']);
     Route::get('/quiz-participations/{participation}/resume', [App\Http\Controllers\QuizController::class, 'getParticipationResume']);
-    route::put('/avatar/{id}/update-profile', [FormationStagiaireController::class, 'updateImage']);
+    Route::post('/avatar/{id}/update-profile', [FormationStagiaireController::class, 'updateImage']);
 });
-
-// update image user 
-
 
 Route::get('/media/stream/{path}', [MediaController::class, 'stream'])
     ->withoutMiddleware([JwtMiddleware::class])
