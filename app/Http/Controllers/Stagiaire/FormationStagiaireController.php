@@ -141,4 +141,22 @@ class FormationStagiaireController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
+    public function getFormationsByStagiaire($stagiaireId)
+    {
+        try {
+            $user = JWTAuth::parseToken()->authenticate();
+            // Charger la relation stagiaire si elle n'est pas déjà chargée
+            if (!isset($user->relations['stagiaire'])) {
+                $user->load('stagiaire');
+            }
+            $formations = $this->formationService->getFormationsByStagiaire($stagiaireId);
+
+            return response()->json([
+                'data' => $formations
+            ]);
+        } catch (JWTException $e) {
+            return response()->json(['error' => 'Non autorisé'], 401);
+        }
+    }
 }

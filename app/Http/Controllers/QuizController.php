@@ -573,7 +573,7 @@ class QuizController extends Controller
                 }
             }
 
-            $normalize = function($v) {
+            $normalize = function ($v) {
                 return is_string($v) ? mb_strtolower(trim($v)) : $v;
             };
 
@@ -596,7 +596,7 @@ class QuizController extends Controller
                     }
                 }
                 // Vérifier qu'il n'y a pas de réponses en trop pour cette question
-                $userBlanks = array_filter(array_keys($selectedAnswers), function($k) use ($correctBlanks) {
+                $userBlanks = array_filter(array_keys($selectedAnswers), function ($k) use ($correctBlanks) {
                     return array_key_exists($k, $correctBlanks);
                 });
                 if ($allCorrect && count($userBlanks) === count($correctBlanks)) {
@@ -606,8 +606,12 @@ class QuizController extends Controller
                 return $details;
             } else if (is_array($selectedAnswers)) {
                 // Fallback: comparer par ordre (array simple)
-                $correctAnswers = array_values(array_filter($question->reponses->toArray(), function($r) { return $r['is_correct']; }));
-                $correctTexts = array_map(function($r) use ($normalize) { return $normalize($r['text']); }, $correctAnswers);
+                $correctAnswers = array_values(array_filter($question->reponses->toArray(), function ($r) {
+                    return $r['is_correct'];
+                }));
+                $correctTexts = array_map(function ($r) use ($normalize) {
+                    return $normalize($r['text']);
+                }, $correctAnswers);
                 $userTexts = array_map($normalize, array_values($selectedAnswers));
                 $isCorrect = $userTexts === $correctTexts;
                 $details['correctAnswers'] = $correctTexts;

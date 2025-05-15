@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Stagiaire;
 
 use App\Helpers\PaginationHelper;
 use App\Http\Controllers\Controller;
+use App\Models\Stagiaire;
 use App\Services\MediaService;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class MediaController extends Controller
