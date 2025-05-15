@@ -110,7 +110,7 @@ class FormationStagiaireController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:102400',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:102400',
             ]);
 
             if ($validator->fails()) {
@@ -119,12 +119,19 @@ class FormationStagiaireController extends Controller
 
             $user = User::findOrFail($id);
 
+            // Vérifie si l'utilisateur a déjà une image
+            if ($user->image && file_exists(public_path($user->image))) {
+                unlink(public_path($user->image));  // Supprime l'ancienne image
+                $user->image = null;  // Réinitialise le chemin
+            }
+
             if ($request->hasFile('image')) {
                 $imageName = time() . '.' . $request->image->extension();
                 $request->image->move(public_path('uploads/users'), $imageName);
                 $user->image = 'uploads/users/' . $imageName;
-                $user->save();
             }
+
+            $user->save();
 
             return response()->json([
                 'message' => 'Image mise à jour avec succès',
@@ -132,6 +139,24 @@ class FormationStagiaireController extends Controller
             ]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getFormationsByStagiaire($stagiaireId)
+    {
+        try {
+            $user = JWTAuth::parseToken()->authenticate();
+            // Charger la relation stagiaire si elle n'est pas déjà chargée
+            if (!isset($user->relations['stagiaire'])) {
+                $user->load('stagiaire');
+            }
+            $formations = $this->formationService->getFormationsByStagiaire($stagiaireId);
+
+            return response()->json([
+                'data' => $formations
+            ]);
+        } catch (JWTException $e) {
+            return response()->json(['error' => 'Non autorisé'], 401);
         }
     }
 }
