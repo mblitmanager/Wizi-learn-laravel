@@ -21,34 +21,34 @@
                     </button>
                     <a href="{{ route('quiz.index') }}" type="button" class="btn btn-sm btn-primary px-4"> <i
                             class="fadeIn animated bx bx-chevron-left-circle"></i> Retour</a>
-                            <form action="{{ route('quiz.duplicate', $quiz->id) }}" method="POST" style="display:inline;">
-                                @csrf
-                                <button type="submit" class="btn btn-warning btn-sm mx-2" onclick="return confirm('Dupliquer ce quiz ?')">
-                                    <i class="lni lni-copy"></i> Dupliquer
-                                </button>
-                            </form>
-                            @if($quiz->status === 'inactif')
-                                <form action="{{ route('quiz.enable', $quiz->id) }}" method="POST" style="display:inline;">
-                                    @csrf
-                                    <button type="submit" class="btn btn-success btn-sm mx-2" onclick="return confirm('Réactiver ce quiz ?')">
-                                        <i class="lni lni-checkmark-circle"></i> Réactiver
-                                    </button>
-                                </form>
-                            @else
-                                <form action="{{ route('quiz.disable', $quiz->id) }}" method="POST" style="display:inline;">
-                                    @csrf
-                                    <button type="submit" class="btn btn-secondary btn-sm mx-2" onclick="return confirm('Désactiver ce quiz ?')">
-                                        <i class="lni lni-ban"></i> Désactiver
-                                    </button>
-                                </form>
-                            @endif
-                            <form action="{{ route('quiz.destroy', $quiz->id) }}" method="POST" style="display:inline;">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-danger btn-sm mx-2" onclick="return confirm('Supprimer ce quiz ?')">
-                                    <i class="lni lni-trash"></i> Supprimer
-                                </button>
-                            </form>
+                    <form action="{{ route('quiz.duplicate', $quiz->id) }}" method="POST" style="display:inline;">
+                        @csrf
+                        <button type="submit" class="btn btn-warning btn-sm mx-2" onclick="return confirm('Dupliquer ce quiz ?')">
+                            <i class="lni lni-copy"></i> Dupliquer
+                        </button>
+                    </form>
+                    @if($quiz->status === 'inactif')
+                    <form action="{{ route('quiz.enable', $quiz->id) }}" method="POST" style="display:inline;">
+                        @csrf
+                        <button type="submit" class="btn btn-success btn-sm mx-2" onclick="return confirm('Réactiver ce quiz ?')">
+                            <i class="lni lni-checkmark-circle"></i> Réactiver
+                        </button>
+                    </form>
+                    @else
+                    <form action="{{ route('quiz.disable', $quiz->id) }}" method="POST" style="display:inline;">
+                        @csrf
+                        <button type="submit" class="btn btn-secondary btn-sm mx-2" onclick="return confirm('Désactiver ce quiz ?')">
+                            <i class="lni lni-ban"></i> Désactiver
+                        </button>
+                    </form>
+                    @endif
+                    <form action="{{ route('quiz.destroy', $quiz->id) }}" method="POST" style="display:inline;">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger btn-sm mx-2" onclick="return confirm('Supprimer ce quiz ?')">
+                            <i class="lni lni-trash"></i> Supprimer
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -93,9 +93,9 @@
                                 <div class="col-md-6">
                                     <label for="input1" class="form-label">Description</label>
 
-                                    <input type="text" name="quiz[description]" placeholder="Description"
+                                    <textarea type="text" name="quiz[description]" placeholder="Description"
                                         id="description" class="form-control mb-2"
-                                        value="{{ old('quiz.description', $quiz->description) }}">
+                                        value="{{ old('quiz.description', $quiz->description) }}">{{ old('quiz.description', $quiz->description) }}</textarea>
                                 </div>
                             </div>
                             <div class="row">
