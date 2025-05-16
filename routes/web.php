@@ -15,7 +15,13 @@ use Illuminate\Support\Facades\Route;
 use PhpOffice\PhpSpreadsheet\Calculation\TextData\Format;
 
 Route::get('/', function () {
-    return redirect()->route('login');
+    return view('stagiaire');
+});
+Route::get('/administrateur', function () {
+    return redirect()->route('dashboard');
+});
+Route::get('/admin', function () {
+    return redirect()->route('dashboard');
 });
 Route::prefix('administrateur')->group(function () {
     Route::get('/register', [AdminController::class, 'showRegisterForm'])->name('register');
@@ -69,3 +75,12 @@ Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function
     Route::post('/quiz-question/new', [QuizController::class, 'storeNewQuestion'])->name('quiz_question.new');
     Route::get('/telecharger-modele-stagiaire', [StagiaireController::class, 'downloadStagiaireModel'])->name('download.stagiaire.model');
 });
+
+Route::fallback(function () {
+    return redirect('/');
+});
+
+// Catch-all route for React Router (SPA)
+Route::get('/{any}', function () {
+    return view('stagiaire'); // Assurez-vous que la vue correspond à votre build React
+})->where('any', '.*');
