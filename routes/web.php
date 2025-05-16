@@ -68,4 +68,6 @@ Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function
     Route::post('/import/prc', [PoleRelationClientController::class, 'import'])->name('prc.import');
     Route::post('/quiz-question/new', [QuizController::class, 'storeNewQuestion'])->name('quiz_question.new');
     Route::get('/telecharger-modele-stagiaire', [StagiaireController::class, 'downloadStagiaireModel'])->name('download.stagiaire.model');
+    Route::get('/telecharger-modele-commercial', [CommercialController::class, 'downloadCommercialModel'])->name('download.commercial.model');
+    Route::get('/telecharger-modele-prc', [PoleRelationClientController::class, 'downloadPrcModel'])->name('download.prc.model');
 });

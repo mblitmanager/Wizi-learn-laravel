@@ -23,6 +23,7 @@ class Formateur extends Model
         'role',
         'user_id',
         'prenom',
+        'telephone',
     ];
 
     public function user()
@@ -39,5 +40,4 @@ class Formateur extends Model
     {
         return $this->belongsToMany(Stagiaire::class, 'formateur_stagiaire');
     }
-
 }

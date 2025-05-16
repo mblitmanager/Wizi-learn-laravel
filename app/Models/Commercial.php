@@ -20,7 +20,9 @@ class Commercial extends Model
     protected $fillable = [
         'role',
         'user_id',
-        'prenom'
+        'prenom',
+        'telephone',
+
     ];
     public function user()
     {
@@ -30,6 +32,4 @@ class Commercial extends Model
     {
         return $this->belongsToMany(Stagiaire::class, 'commercial_stagiaire');
     }
-
-
 }
