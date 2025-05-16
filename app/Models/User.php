@@ -9,9 +9,10 @@ use Illuminate\Notifications\Notifiable;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\ApiResource;
 use Tymon\JWTAuth\Contracts\JWTSubject;
+
 #[ApiResource(
     paginationItemsPerPage: 10
-    )]
+)]
 class User extends Authenticatable implements JWTSubject
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
@@ -63,7 +64,7 @@ class User extends Authenticatable implements JWTSubject
     {
         return [];
     }
-     public function hasAdminRole(): bool
+    public function hasAdminRole(): bool
     {
         return $this->role === 'administrateur';
     }
@@ -71,5 +72,25 @@ class User extends Authenticatable implements JWTSubject
     public function stagiaire()
     {
         return $this->hasOne(Stagiaire::class, 'user_id');
+    }
+
+    // Dans app/Models/User.php
+    public function getFormattedNameAttribute()
+    {
+        $parts = explode(' ', $this->name);
+
+        if (count($parts) <= 1) {
+            return $this->name;
+        }
+
+        $formatted = array_shift($parts);
+
+        foreach ($parts as $part) {
+            if (!empty($part)) {
+                $formatted .= ' ' . $part[0] . '.';
+            }
+        }
+
+        return $formatted;
     }
 }
