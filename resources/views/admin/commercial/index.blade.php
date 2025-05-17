@@ -18,8 +18,8 @@
                 </div>
                 <div class="ms-auto">
                     <div class="btn-group">
-                        <a href="{{ route('download.stagiaire.model') }}" class="btn btn-sm btn-success mx-2">
-                            Télécharger le modèle Stagiaire
+                        <a href="{{ route('download.commercial.model') }}" class="btn btn-sm btn-success mx-2">
+                            Télécharger le modèle Commercial
                         </a>
                         <button class="btn btn-sm  btn-info text-white mx-2" data-bs-toggle="modal"
                             data-bs-target="#importModal"><i class="lni  lni-cloud-download "></i>importer
@@ -63,14 +63,16 @@
                 </div>
             </div>
         </div>
-        @if (session('ignored'))
-            <div class="alert alert-warning border-0 bg-warning alert-dismissible fade show">
+        @if (session('ignoredEmails'))
+            <div class="alert alert-danger border-0 bg-danger alert-dismissible fade show">
                 <div class="text-white">
-                    <ul>
-                        @foreach (session('ignored') as $email)
-                            <li>{{ $email }}</li>
-                        @endforeach
-                    </ul>
+                    <h5> Les commerciauix sont déjà été ajouté</h2>
+                        <hr>
+                        <ul>
+                            @foreach (session('ignoredEmails') as $email)
+                                <li>{{ $email }}</li>
+                            @endforeach
+                        </ul>
                 </div>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>

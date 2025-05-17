@@ -9,7 +9,7 @@ use ApiPlatform\Metadata\Patch;
 
 #[ApiResource(
     paginationItemsPerPage: 10
-    )]
+)]
 class PoleRelationClient extends Model
 {
     use HasFactory;
@@ -21,14 +21,16 @@ class PoleRelationClient extends Model
         'role',
         'stagiaire_id',
         'user_id',
-        'prenom'
+        'prenom',
+        'telephone',
+
     ];
 
     public function stagiaires()
     {
         return $this->belongsToMany(Stagiaire::class, 'pole_relation_client_stagiaire');
     }
-    
+
 
     public function user()
     {

@@ -82,13 +82,24 @@
                                 <label for="email">Adresse e-mail</label>
                                 <input type="email" name="email" id="email"
                                     class="form-control @error('email') is-invalid @enderror"
-                                    value="{{ old('email', $stagiaire->user->email ?? '') }}">
+                                    value="{{ old('email', $commercial->user->email ?? '') }}">
                                 @error('email')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
-
+                        <div class="col-md-4">
+                            <!-- Mot de passe -->
+                            <div class="mb-3">
+                                <label for="telephone">Téléphone</label>
+                                <input type="text" name="telephone" id="telephone"
+                                    class="form-control @error('telephone') is-invalid @enderror"
+                                    value="{{ old('telephone', $commercial->telephone ?? '') }}">
+                                @error('telephone')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
 
                         <div class="col-md-4">
                             <!-- Mot de passe -->

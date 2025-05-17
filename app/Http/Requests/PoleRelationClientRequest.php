@@ -38,6 +38,8 @@ class PoleRelationClientRequest extends FormRequest
             'role' => [
                 Rule::in(['pole relation client']),
             ],
+            'telephone' => 'nullable|string',
+
             'stagiaire_id' => 'nullable|exists:stagiaires,id',
         ];
     }
