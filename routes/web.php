@@ -17,6 +17,7 @@ use PhpOffice\PhpSpreadsheet\Calculation\TextData\Format;
 Route::get('/', function () {
     return redirect()->route('login');
 });
+
 Route::prefix('administrateur')->group(function () {
     Route::get('/register', [AdminController::class, 'showRegisterForm'])->name('register');
     Route::post('/register', [AdminController::class, 'register'])->name('register.post');
