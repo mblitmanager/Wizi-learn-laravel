@@ -59,3 +59,4 @@ jobs:
           chmod -R 755 storage
           chmod -R 755 bootstrap/cache
           echo "✓ Permissions set"
+          php artisan optimize:clear
