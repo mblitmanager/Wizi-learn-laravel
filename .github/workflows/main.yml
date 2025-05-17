@@ -3,7 +3,6 @@ name: Laravel CI/CD
 on:
   push:
     branches: [main]
-
 env:
   LARAVEL_ENV: production
 
