@@ -62,20 +62,23 @@
                 </div>
             </div>
         </div>
+
         @if (session('ignoredEmails'))
-            <div class="alert alert-danger border-0 bg-danger alert-dismissible fade show">
+            <div class="alert alert-danger border-0 bg-danger alert-dismissible fade show text-white">
                 <div class="text-white">
-                    <h5> Le pôle Relation Client a déjà été ajouté</h2>
-                        <hr>
-                        <ul>
-                            @foreach (session('ignoredEmails') as $email)
-                                <li>{{ $email }}</li>
-                            @endforeach
-                        </ul>
+                    <h5 class="text-white">Les pôle Relation Client ont déjà été ajoutés.</h5>
+                    {!! session('ignoredMessage') !!}
+                    <hr>
+                    <ul>
+                        @foreach (session('ignoredEmails') as $email)
+                            <li>{{ $email }}</li>
+                        @endforeach
+                    </ul>
                 </div>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         @endif
+
 
         @if (session('success'))
             <div class="alert alert-success border-0 bg-success alert-dismissible fade show">

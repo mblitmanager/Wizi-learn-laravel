@@ -16,6 +16,9 @@
                 </div>
                 <div class="ms-auto">
                     <div class="btn-group">
+                        <a href="{{ route('download.quiz.model') }}" class="btn btn-sm btn-success mx-2">
+                            Télécharger le modèle de quiz
+                        </a>
                         <button class="btn btn-sm text-white btn-info mx-2" data-bs-toggle="modal"
                             data-bs-target="#importModal"><i class="lni lni-cloud-download"></i>importer quiz</button>
 
@@ -153,12 +156,18 @@
                                         <th>Action</th>
                                     </tr>
                                     <tr>
-                                        <th><input type="text" placeholder="Filtrer" class="form-control form-control-sm" /></th>
-                                        <th style="display:none"><input type="text" placeholder="Filtrer" class="form-control form-control-sm" /></th>
-                                        <th style="display:none"><input type="text" placeholder="Filtrer" class="form-control form-control-sm" /></th>
-                                        <th><input type="text" placeholder="Filtrer" class="form-control form-control-sm" /></th>
-                                        <th><input type="text" placeholder="Filtrer" class="form-control form-control-sm" /></th>
-                                        <th><input type="text" placeholder="Filtrer" class="form-control form-control-sm" /></th>
+                                        <th><input type="text" placeholder="Filtrer"
+                                                class="form-control form-control-sm" /></th>
+                                        <th style="display:none"><input type="text" placeholder="Filtrer"
+                                                class="form-control form-control-sm" /></th>
+                                        <th style="display:none"><input type="text" placeholder="Filtrer"
+                                                class="form-control form-control-sm" /></th>
+                                        <th><input type="text" placeholder="Filtrer"
+                                                class="form-control form-control-sm" /></th>
+                                        <th><input type="text" placeholder="Filtrer"
+                                                class="form-control form-control-sm" /></th>
+                                        <th><input type="text" placeholder="Filtrer"
+                                                class="form-control form-control-sm" /></th>
                                         <th></th>
                                     </tr>
                                 </thead>
@@ -171,12 +180,13 @@
                                             <td>{{ $row->niveau }}</td>
                                             <td>{{ $row->status }}</td>
                                             <td>{{ $row->duree }}</td>
-                                            <td>
+                                            <td class="text-center">
                                                 <a href="{{ route('quiz.edit', $row->id) }}"
                                                     class="btn btn-sm btn-success ">
                                                     Modifier
                                                 </a>
-                                                <a href="{{ route('quiz.show', $row->id) }}" class="btn btn-sm btn-info text-white">
+                                                <a href="{{ route('quiz.show', $row->id) }}"
+                                                    class="btn btn-sm btn-info text-white">
                                                     Afficher
                                                 </a>
 

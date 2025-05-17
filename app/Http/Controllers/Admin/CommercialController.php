@@ -227,13 +227,14 @@ class CommercialController extends Controller
                 }
             }
 
+
             // Construction du message de résultat
             $message = "Importation terminée";
             if ($importedCount > 0) {
                 $message .= ": $importedCount commerciaux importés";
             }
             if (count($ignoredEmails) > 0) {
-                $message .= "<br>" . count($ignoredEmails) . " doublons ignorés";
+                $message .= "<br>" . count($ignoredEmails) . " doublons ignorés : " . implode(', ', $ignoredEmails);
             }
 
             if (count($invalidRows) > 0) {
@@ -242,9 +243,14 @@ class CommercialController extends Controller
 
             // Retour avec le statut approprié
             $redirect = redirect()->route('commercials.index');
-            if ($ignoredEmails > 0) {
-                return $redirect->with('warning', new HtmlString($message));
+            if (count($ignoredEmails) > 0) {
+                $message = "<br>" . count($ignoredEmails) . " doublons ignorés";
+                return $redirect->with([
+                    'ignoredEmails' => $ignoredEmails,
+                    'ignoredMessage' => new HtmlString($message)
+                ]);
             }
+
             if ($importedCount > 0) {
                 return $redirect->with('success', new HtmlString($message));
             } elseif (count($invalidRows) > 0) {

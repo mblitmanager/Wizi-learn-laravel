@@ -146,11 +146,11 @@ class PoleRelationClientController extends Controller
             $headerCell = $headerRow->getCellIterator()->current();
             $headerValue = trim($headerCell->getValue());
             $normalizedHeader = mb_strtolower(trim($headerValue));
-            $expectedHeader = mb_strtolower(trim('Consultant Formateur'));
+            $expectedHeader = mb_strtolower(trim('Consultant 1er accueil'));
             $lastRow = $sheet->getHighestDataRow();
             if ($normalizedHeader !== $expectedHeader) {
                 return redirect()->route('pole_relation_clients.index')
-                    ->with('error', 'En-tête incorrect. La première colonne doit être "Consultant Formateur".')
+                    ->with('error', 'En-tête incorrect. La première colonne doit être "Consultant 1er accueil".')
                     ->with('debug_header', $headerValue); // Pour le débogage
             }
             $lastRow = $sheet->getHighestDataRow(); // Récupère la dernière ligne avec des données
@@ -235,13 +235,14 @@ class PoleRelationClientController extends Controller
             }
 
 
+
             // Construction du message de résultat
             $message = "Importation terminée";
             if ($importedCount > 0) {
-                $message .= ": $importedCount membres du pôle relation client importés";
+                $message .= ": $importedCount pôle relation clients importés";
             }
             if (count($ignoredEmails) > 0) {
-                $message .= "<br>" . count($ignoredEmails) . " doublons ignorés";
+                $message .= "<br>" . count($ignoredEmails) . " doublons ignorés : " . implode(', ', $ignoredEmails);
             }
 
             if (count($invalidRows) > 0) {
@@ -250,14 +251,20 @@ class PoleRelationClientController extends Controller
 
             // Retour avec le statut approprié
             $redirect = redirect()->route('pole_relation_clients.index');
+            if (count($ignoredEmails) > 0) {
+                $message = "<br>" . count($ignoredEmails) . " doublons ignorés";
+                return $redirect->with([
+                    'ignoredEmails' => $ignoredEmails,
+                    'ignoredMessage' => new HtmlString($message)
+                ]);
+            }
 
-            if ($ignoredEmails > 0) {
-                return $redirect->with('success', new HtmlString($message))
-                    ->with('ignoredEmails', $ignoredEmails);
+            if ($importedCount > 0) {
+                return $redirect->with('success', new HtmlString($message));
             } elseif (count($invalidRows) > 0) {
                 return $redirect->with('error', new HtmlString($message));
             } else {
-                return $redirect->with('info', 'Aucun membre importé (fichier vide ou seulement des doublons)');
+                return $redirect->with('info', 'Aucun pôle relation client importé (fichier vide ou seulement des doublons)');
             }
         } catch (\Exception $e) {
             return redirect()->route('pole_relation_clients.index')

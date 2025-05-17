@@ -10,6 +10,10 @@ use App\Models\Stagiaire;
 use App\Models\User;
 use App\Services\FormateurService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Response;
+use Illuminate\Support\HtmlString;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class FormateurController extends Controller
@@ -99,28 +103,31 @@ class FormateurController extends Controller
 
     private function extraireNomPrenom($fullName)
     {
-        $parts = preg_split('/\s+/', trim($fullName));
+        $fullName = trim(preg_replace('/\s+/', ' ', $fullName)); // Normaliser les espaces
 
-        if (is_numeric($parts[0])) {
-            array_shift($parts);
+        // Supprimer les numéros en début de ligne si existent
+        $fullName = preg_replace('/^\d+\s*/', '', $fullName);
+
+        $parts = explode(' ', $fullName);
+
+        // Cas simple: 2 parties = prénom + nom
+        if (count($parts) === 2) {
+            return [
+                'prenom' => ucfirst($parts[0]),
+                'nom' => ucfirst($parts[1])
+            ];
         }
 
-        $nom = [];
-        $prenom = [];
-
-        foreach ($parts as $part) {
-            if (mb_strtoupper($part, 'UTF-8') === $part) {
-                $nom[] = ucfirst(strtolower($part));
-            } else {
-                $prenom[] = ucfirst(strtolower($part));
-            }
-        }
+        // Cas complexe: on prend le dernier mot comme nom, le reste comme prénom
+        $nom = array_pop($parts);
+        $prenom = implode(' ', $parts);
 
         return [
-            'nom' => implode(' ', $nom),
-            'prenom' => implode(' ', $prenom),
+            'prenom' => ucfirst($prenom),
+            'nom' => ucfirst($nom)
         ];
     }
+
 
     public function import(Request $request)
     {
@@ -134,47 +141,152 @@ class FormateurController extends Controller
             $file = $request->file('file');
             $spreadsheet = IOFactory::load($file->getRealPath());
             $sheet = $spreadsheet->getActiveSheet();
-            $ignoredEmails = [];
 
-            foreach ($sheet->getRowIterator(2) as $row) {
-                $cell = $row->getCellIterator()->current();
+            $ignoredEmails = [];
+            $invalidRows = [];
+            $importedCount = 0;
+
+            // Vérification de l'en-tête (optionnel mais recommandé)
+            $headerRow = $sheet->getRowIterator()->current();
+            $headerCell = $headerRow->getCellIterator()->current();
+            $headerValue = trim($headerCell->getValue());
+            $normalizedHeader = mb_strtolower(trim($headerValue));
+            $expectedHeader = mb_strtolower(trim('Consultant Formateur'));
+            $lastRow = $sheet->getHighestDataRow();
+            if ($normalizedHeader !== $expectedHeader) {
+                return redirect()->route('formateur.index')
+                    ->with('error', 'En-tête incorrect. La première colonne doit être "Consultant Formateur".')
+                    ->with('debug_header', $headerValue); // Pour le débogage
+            }
+            $lastRow = $sheet->getHighestDataRow(); // Récupère la dernière ligne avec des données
+
+            for ($rowIndex = 2; $rowIndex <= $lastRow; $rowIndex++) {
+                $cell = $sheet->getCell('A' . $rowIndex);
                 $consultantsCell = trim($cell->getValue());
 
-                if (empty($consultantsCell))
+                // Si la cellule est vide, on passe à la ligne suivante
+                if (empty($consultantsCell)) {
+                    \Log::info("Ligne $rowIndex vide - Ignorée.");
                     continue;
+                }
+
+                \Log::info("Ligne $rowIndex : $consultantsCell");
 
                 $consultants = $this->splitConsultants($consultantsCell);
 
                 foreach ($consultants as $consultant) {
-                    $np = $this->extraireNomPrenom($consultant);
+                    DB::beginTransaction();
+                    try {
+                        $np = $this->extraireNomPrenom($consultant);
 
-                    $email = strtolower(str_replace(' ', '.', $np['prenom']) . '.' . strtolower($np['nom'])) . '@example.com';
+                        if (empty($np['nom']) || empty($np['prenom'])) {
+                            $invalidRows[] = 'Ligne ' . $rowIndex . ': Format du nom/prénom invalide - "' . $consultant . '"';
+                            DB::rollBack();
+                            continue;
+                        }
 
-                    if (User::where('email', $email)->exists()) {
-                        $ignoredEmails[] = $email;
-                        continue;
+                        $email = trim(strtolower(preg_replace('/[^a-z]/', '', $np['prenom']))) . '.' .
+                            trim(strtolower(preg_replace('/[^a-z]/', '', $np['nom']))) . '@example.com';
+
+                        if ($email === '@example.com') {
+                            $invalidRows[] = 'Ligne ' . $rowIndex . ': Email invalide - "' . $consultant . '"';
+                            DB::rollBack();
+                            continue;
+                        }
+
+                        \Log::info("Import - Ligne {$rowIndex}", [
+                            'consultant' => $consultant,
+                            'np' => $np,
+                            'email' => $email
+                        ]);
+
+                        $existingUser = User::where('email', $email)
+                            ->where('role', 'Formateur')
+                            ->first();
+
+                        if ($existingUser) {
+                            $ignoredEmails[] = $email;
+                            DB::rollBack();
+                            continue;
+                        }
+
+                        $user = User::create([
+                            'name' => $np['prenom'] . ' ' . $np['nom'],
+                            'email' => $email,
+                            'password' => bcrypt('pole123'),
+                            'role' => 'pole relation client',
+                        ]);
+
+                        Formateur::create([
+                            'prenom' => $np['prenom'],
+                            'nom' => $np['nom'],
+                            'user_id' => $user->id,
+                            'role' => 'Formateur',
+                            'statut' => true,
+                        ]);
+
+                        DB::commit();
+                        $importedCount++;
+                    } catch (\Exception $e) {
+                        \Log::error("Erreur d'import - Ligne {$rowIndex}", [
+                            'consultant' => $consultant,
+                            'np' => $np,
+                            'error' => $e->getMessage()
+                        ]);
+                        DB::rollBack();
+                        $invalidRows[] = 'Ligne ' . $rowIndex . ': Erreur - ' . $e->getMessage();
                     }
-
-                    $user = User::create([
-                        'name' => $np['prenom'] . ' ' . $np['nom'],
-                        'email' => $email,
-                        'password' => bcrypt('formateur123'),
-                        'role' => 'Formateur',
-                    ]);
-
-                    Formateur::create([
-                        'prenom' => $np['prenom'],
-                        'user_id' => $user->id,
-                        'role' => 'Formateur',
-                    ]);
                 }
             }
 
-            return redirect()->route('formateur.index')
-                ->with('success', 'Importation réussie.')
-                ->with('ignored', $ignoredEmails);
+
+
+            // Construction du message de résultat
+            $message = "Importation terminée";
+            if ($importedCount > 0) {
+                $message .= ": $importedCount Formateurs importés";
+            }
+            if (count($ignoredEmails) > 0) {
+                $message .= "<br>" . count($ignoredEmails) . " doublons ignorés : " . implode(', ', $ignoredEmails);
+            }
+
+            if (count($invalidRows) > 0) {
+                $message .= "<br>" . count($invalidRows) . ' ' . (count($invalidRows) === 1 ? 'erreur' : 'erreurs');
+            }
+
+            // Retour avec le statut approprié
+            $redirect = redirect()->route('formateur.index');
+            if (count($ignoredEmails) > 0) {
+                $message = "<br>" . count($ignoredEmails) . " doublons ignorés";
+                return $redirect->with([
+                    'ignoredEmails' => $ignoredEmails,
+                    'ignoredMessage' => new HtmlString($message)
+                ]);
+            }
+
+            if ($importedCount > 0) {
+                return $redirect->with('success', new HtmlString($message));
+            } elseif (count($invalidRows) > 0) {
+                return $redirect->with('error', new HtmlString($message));
+            } else {
+                return $redirect->with('info', 'Aucun Formateur importé (fichier vide ou seulement des doublons)');
+            }
         } catch (\Exception $e) {
-            return redirect()->route('formateur.index')->with('error', 'Erreur: ' . $e->getMessage());
+            return redirect()->route('formateur.index')
+                ->with('error', 'Erreur lors de l\'import: ' . $e->getMessage());
         }
+    }
+
+    public function downloadFormateurModel()
+    {
+        $filePath = public_path('models/formateur/formateur.xlsx');
+
+        if (!File::exists($filePath)) {
+            return redirect()->back()->with('error', 'Le fichier modèle est introuvable.');
+        }
+
+        $fileName = 'modele_import_formateur.xlsx';
+
+        return Response::download($filePath, $fileName);
     }
 }

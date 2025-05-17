@@ -12,7 +12,9 @@ use App\Models\Reponse;
 use App\Services\QuizService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
@@ -421,8 +423,6 @@ class QuizController extends Controller
         }
     }
 
-
-
     public function import(Request $request)
     {
         set_time_limit(0);
@@ -435,99 +435,147 @@ class QuizController extends Controller
             $file = $request->file('file');
             $spreadsheet = IOFactory::load($file->getRealPath());
             $sheet = $spreadsheet->getActiveSheet();
-            $rows = $sheet->toArray(null, true, true, true);
 
-            // Réindexe les lignes pour garantir un index numérique
+            // [Code de vérification des en-têtes inchangé...]
+
+            // Récupération des données jusqu'à la colonne L seulement
+            $rows = $sheet->rangeToArray('A1:L' . $sheet->getHighestRow(), null, true, true, false);
             $rows = array_values($rows);
 
-            // Ignore la première ligne si elle contient les en-têtes
-            $firstRow = $rows[0];
-            if (strtoupper(trim($firstRow['E'])) === 'FORMATION') {
-                $firstRow = $rows[1];
-                $startIndex = 2;
-            } else {
-                $startIndex = 1;
+            // Suppression des lignes totalement vides
+            $rows = array_filter($rows, function ($row) {
+                return !empty(array_filter($row, function ($value) {
+                    return $value !== null && trim($value) !== '';
+                }));
+            });
+
+            if (count($rows) < 2) {
+                return back()->with('error', 'Le fichier ne contient pas de données valides.');
             }
 
-            $niveau = $firstRow['A'];
-            $duree = $firstRow['B'];
-            $nbPoints = $firstRow['C'];
-            $titreQuiz = $firstRow['D'];
-            $formationNom = trim($firstRow['E']);
+            $firstDataRow = $rows[1]; // La première ligne de données (après l'en-tête)
+            $startIndex = 1; // On commence à l'index 1 car nous avons filtré les lignes vides
 
-            // 🔍 Recherche de la formation par titre
+            $niveau = $firstDataRow[0] ?? null;
+            $duree = $firstDataRow[1] ?? null;
+            $nbPoints = $firstDataRow[2] ?? null;
+            $titreQuiz = $firstDataRow[3] ?? null;
+            $formationNom = trim($firstDataRow[4] ?? '');
+
+            // Vérification des données obligatoires
+            if (empty($formationNom)) {
+                return back()->with('error', "Le nom de la formation est obligatoire dans la première ligne de données.");
+            }
+
+            // Recherche de la formation
             $formation = Formation::where('titre', $formationNom)->first();
             if (!$formation) {
                 return back()->with('error', "La formation '$formationNom' n'existe pas dans la base.");
             }
+            // verification de quiz existant
+            $quiz = Quiz::where('formation_id', $formation->id)->where('titre', $titreQuiz)->first();
+            if ($quiz) {
+                return back()->with('error', "Un quiz avec le titre '$titreQuiz' existe deja pour cette formation.");
+            }
 
-            // 📝 Création du quiz
+            // Création du quiz
             $quiz = Quiz::create([
                 'titre' => $titreQuiz,
                 'niveau' => $niveau,
                 'duree' => $duree,
-                'nb_points_total' => $nbPoints,
+                'nb_points_total' => $nbPoints ?? 0, // Valeur par défaut si null
                 'formation_id' => $formation->id,
             ]);
 
-            // 📥 Import des questions
-            foreach ($rows as $index => $row) {
-                if ($index < $startIndex)
+            $importedQuestions = 0;
+            $errors = [];
+
+            // Import des questions (en commençant à l'index 1 pour sauter l'en-tête)
+            for ($i = 1; $i < count($rows); $i++) {
+                $row = $rows[$i];
+
+                $questionText = $row[6] ?? null; // Colonne G (index 6)
+                if (empty($questionText)) {
                     continue;
-
-                $questionText = $row['G'] ?? null;
-                if (!$questionText)
-                    continue;
-
-                $repA = $row['H'] ?? '';
-                $repB = $row['I'] ?? '';
-                $repC = $row['J'] ?? '';
-                $bonnesLettres = strtoupper(trim($row['K'] ?? ''));
-                $type = $row['L'] ?? '';
-
-                $question = Questions::create([
-                    'quiz_id' => $quiz->id,
-                    'text' => $questionText,
-                    'points' => 1,
-                    'type' => $type,
-                ]);
-
-                $reponses = [
-                    'A' => $repA,
-                    'B' => $repB,
-                    'C' => $repC,
-                ];
-
-                $bonnes = array_map('trim', explode(',', $bonnesLettres));
-                $correctIds = [];
-
-                foreach ($reponses as $lettre => $texte) {
-                    if (empty($texte))
-                        continue;
-
-                    $reponse = Reponse::create([
-                        'question_id' => $question->id,
-                        'text' => $texte,
-                        'is_correct' => in_array($lettre, $bonnes),
-                        'position' => 1,
-                    ]);
-
-                    if (in_array($lettre, $bonnes)) {
-                        $correctIds[] = $reponse->id;
-                    }
                 }
 
-                // Met à jour la question avec les ID des bonnes réponses
-                $question->update([
-                    'correct_reponses_ids' => json_encode($correctIds)
-                ]);
+                $repA = $row[7] ?? ''; // Colonne H
+                $repB = $row[8] ?? ''; // Colonne I
+                $repC = $row[9] ?? ''; // Colonne J
+                $bonnesLettres = strtoupper(trim($row[10] ?? '')); // Colonne K
+                $type = $row[11] ?? 'QCM'; // Colonne L
+
+                try {
+                    DB::beginTransaction();
+
+                    $question = Questions::create([
+                        'quiz_id' => $quiz->id,
+                        'text' => $questionText,
+                        'points' => 1,
+                        'type' => $type,
+                    ]);
+
+                    $reponses = [
+                        'A' => $repA,
+                        'B' => $repB,
+                        'C' => $repC,
+                    ];
+
+                    $bonnes = array_filter(array_map('trim', explode(',', $bonnesLettres)));
+                    $correctIds = [];
+
+                    foreach ($reponses as $lettre => $texte) {
+                        if (empty($texte)) continue;
+
+                        $isCorrect = in_array($lettre, $bonnes);
+                        $reponse = Reponse::create([
+                            'question_id' => $question->id,
+                            'text' => $texte,
+                            'is_correct' => $isCorrect,
+                            'position' => 1,
+                        ]);
+
+                        if ($isCorrect) {
+                            $correctIds[] = $reponse->id;
+                        }
+                    }
+
+                    if (empty($correctIds)) {
+                        throw new \Exception("Aucune réponse correcte définie pour la question");
+                    }
+
+                    $question->update([
+                        'correct_reponses_ids' => json_encode($correctIds)
+                    ]);
+
+                    DB::commit();
+                    $importedQuestions++;
+                } catch (\Exception $e) {
+                    DB::rollBack();
+                    $errors[] = "Ligne " . ($i + 1) . ": " . $e->getMessage();
+                }
             }
 
-            return back()->with('success', 'Importation réussie.');
+            if ($importedQuestions === 0) {
+                return back()->with('error', empty($errors)
+                    ? 'Aucune question valide trouvée dans le fichier.'
+                    : 'Importation échouée: ' . implode(', ', $errors));
+            }
+
+            $message = "Importation réussie: $importedQuestions questions importées";
+            if (!empty($errors)) {
+                $message .= "<br>" . count($errors) . " erreurs";
+            }
+
+            return back()->with(
+                empty($errors) ? 'success' : 'warning',
+                new \Illuminate\Support\HtmlString($message)
+            );
         } catch (\Exception $e) {
-            return back()->with('error', 'Erreur : ' . $e->getMessage());
+            return back()->with('error', 'Erreur lors de l\'import: ' . $e->getMessage());
         }
     }
+
 
     public function importQuestionReponseForQuiz(Request $request)
     {
@@ -671,5 +719,18 @@ class QuizController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Erreur lors de la réactivation du quiz : ' . $e->getMessage());
         }
+    }
+
+    public function downloadQuizModel()
+    {
+        $filePath = public_path('models/quiz/quiz.xlsx');
+
+        if (!File::exists($filePath)) {
+            return redirect()->back()->with('error', 'Le fichier modèle est introuvable.');
+        }
+
+        $fileName = 'modele_import_quiz.xlsx';
+
+        return Response::download($filePath, $fileName);
     }
 }
