@@ -27,7 +27,7 @@ jobs:
       run: composer validate
 
     - name: Execute deployment via SSH
-      uses: appleboy/ssh-action@v0.1.10
+      uses: appleboy/ssh-action@v1.2.2
       with:
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USERNAME }}
