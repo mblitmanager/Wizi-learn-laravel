@@ -42,7 +42,7 @@ jobs:
           echo "✓ Code updated"
           
           echo "➤ Installing dependencies..."
-          composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction
+          php composer.phar install --no-dev --prefer-dist --optimize-autoloader --no-interaction
           echo "✓ Composer dependencies installed"
           
           echo "➤ Optimizing Laravel..."
@@ -60,3 +60,4 @@ jobs:
           chmod -R 755 storage
           chmod -R 755 bootstrap/cache
           echo "✓ Permissions set"
+          php artisan optimize:clear
