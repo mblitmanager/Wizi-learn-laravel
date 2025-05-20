@@ -11,10 +11,6 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Controllers\Controller;
 
-
-
-
-
 class ParrainageController extends Controller
 {
 
@@ -76,7 +72,7 @@ class ParrainageController extends Controller
             'date_naissance' => 'required|date',
             'date_debut_formation' => 'nullable|date',
             'date_inscription' => 'nullable|date',
-            'statut' => 'nullable|string|in:en_attente,actif,inactif,abandon',
+            'statut' => 'nullable|string',
             'parrain_id' => 'required|exists:users,id',
         ]);
 
@@ -115,7 +111,8 @@ class ParrainageController extends Controller
         Parrainage::create([
             'parrain_id' => $request->parrain_id,
             'filleul_id' => $user->id,
-            'date_parrainage' => now()
+            'date_parrainage' => now(),
+            'points' => 2
         ]);
 
         return response()->json([
@@ -125,6 +122,19 @@ class ParrainageController extends Controller
                 'user' => $user,
                 'stagiaire' => $stagiaire
             ]
+        ]);
+    }
+
+    public function getStatsParrain($parrain_id)
+    {
+        $nombreFilleuls = Parrainage::where('parrain_id', $parrain_id)->count();
+        $totalPoints = Parrainage::where('parrain_id', $parrain_id)->sum('points');
+
+        return response()->json([
+            'success' => true,
+            'parrain_id' => $parrain_id,
+            'nombre_filleuls' => $nombreFilleuls,
+            'total_points' => $totalPoints
         ]);
     }
 }

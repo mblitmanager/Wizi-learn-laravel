@@ -19,7 +19,7 @@ use App\Http\Controllers\Stagiaire\MediaController;
 Route::post('login', [JWTAuthController::class, 'login']);
 Route::prefix('parrainage')->group(function () {
     Route::get('/get-data/{token}', [ParrainageController::class, 'getParrainData']);
-    Route::post('/registerPainnage', [ParrainageController::class, 'registerFilleul']);
+    Route::post('/register-filleul', [ParrainageController::class, 'registerFilleul']);
 });
 Route::middleware(['auth:api'])->group(function () {
     Route::post('logout', [JWTAuthController::class, 'logout']);
@@ -123,6 +123,8 @@ Route::middleware(['auth:api'])->group(function () {
     Route::post('/quiz/{id}/complete', [QuizController::class, 'completeParticipation']);
     Route::get('/quiz-participations/{participation}/resume', [App\Http\Controllers\QuizController::class, 'getParticipationResume']);
     Route::post('/avatar/{id}/update-profile', [FormationStagiaireController::class, 'updateImage']);
+
+    Route::get('/parrainage/stats/{parrain_id}', [ParrainageController::class, 'getStatsParrain']);
 });
 
 Route::get('/media/stream/{path}', [MediaController::class, 'stream'])
