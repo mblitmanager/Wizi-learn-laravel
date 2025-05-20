@@ -257,17 +257,28 @@ class QuizController extends Controller
             ->orderBy('created_at', 'desc')
             ->get()
             ->map(function ($progression) {
+                $niveau = $progression->quiz->niveau ?? 'débutant';
+                $totalQuestions = $progression->total_questions;
+                if ($niveau === 'débutant' && $totalQuestions > 5) {
+                    $totalQuestions = 5;
+                } elseif ($niveau === 'intermédiaire' && $totalQuestions > 10) {
+                    $totalQuestions = 10;
+                } elseif ($niveau === 'avancé' && $totalQuestions > 20) {
+                    $totalQuestions = 20;
+                }
                 return [
                     'id' => (string)$progression->id,
                     'quiz' => [
                         'id' => (string)$progression->quiz->id,
                         'title' => $progression->quiz->titre,
                         'category' => $progression->quiz->formation->categorie ?? 'Non catégorisé',
-                        'level' => $progression->quiz->niveau ?? 'débutant'
+                        'level' => $niveau
                     ],
                     'score' => $progression->score,
                     'completedAt' => $progression->created_at->toISOString(),
-                    'timeSpent' => $progression->time_spent
+                    'timeSpent' => $progression->time_spent,
+                    'totalQuestions' => $totalQuestions,
+                    'correctAnswers' => $progression->correct_answers
                 ];
             });
 
