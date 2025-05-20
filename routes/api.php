@@ -17,7 +17,10 @@ use App\Http\Controllers\Stagiaire\CatalogueFormationController;
 use App\Http\Controllers\Stagiaire\MediaController;
 
 Route::post('login', [JWTAuthController::class, 'login']);
-
+Route::prefix('parrainage')->group(function () {
+    Route::get('/get-data/{token}', [ParrainageController::class, 'getParrainData']);
+    Route::post('/registerPainnage', [ParrainageController::class, 'registerFilleul']);
+});
 Route::middleware(['auth:api'])->group(function () {
     Route::post('logout', [JWTAuthController::class, 'logout']);
     Route::get('user', [JWTAuthController::class, 'getUser']);
@@ -43,10 +46,7 @@ Route::middleware(['auth:api'])->group(function () {
     Route::get('/stagiaire/progress', [RankingController::class, 'getMyProgress']);
 
     // Parrainage routes
-    Route::get('/stagiaire/parrainage/link', [ParrainageController::class, 'getParrainageLink']);
-    Route::post('/stagiaire/parrainage/generate-link', [ParrainageController::class, 'generateParrainageLink']);
-    Route::get('/stagiaire/parrainage/filleuls', [ParrainageController::class, 'getFilleuls']);
-    Route::get('/stagiaire/parrainage/stats', [ParrainageController::class, 'getParrainageStats']);
+    Route::post('/parrainage/generate-link', [ParrainageController::class, 'generateLink']);
 
     // Routes pour les stagiaires
     Route::prefix('stagiaire')->group(function () {
@@ -132,3 +132,4 @@ Route::get('/media/stream/{path}', [MediaController::class, 'stream'])
 
 // Routes d'authentification
 Route::post('refresh-token', [App\Http\Controllers\Auth\AuthController::class, 'refresh']);
+// Routes de parrainage sans connection
