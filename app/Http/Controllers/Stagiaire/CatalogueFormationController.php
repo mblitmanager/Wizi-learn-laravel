@@ -19,15 +19,12 @@ class CatalogueFormationController extends Controller
     public function getAllCatalogueFormations()
     {
         $catalogueFormations = $this->catalogueFormationService->list();
-        $paginated = PaginationHelper::paginate($catalogueFormations, 6);
-
-        return response()->json($paginated);
+        return response()->json($catalogueFormations);
     }
 
     public function getCatalogueFormationById($id)
     {
         $catalogueFormation = CatalogueFormation::with('formation')->find($id);
-        dd($catalogueFormation);
 
         if (!$catalogueFormation) {
             return response()->json(['error' => 'Catalogue de formation introuvable'], 404);
