@@ -10,6 +10,7 @@ use App\Models\Questions;
 use App\Models\Quiz;
 use App\Models\Reponse;
 use App\Services\QuizService;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -22,10 +23,12 @@ class QuizController extends Controller
 {
 
     protected $quizeService;
+    protected $notificationService;
 
-    public function __construct(QuizService $quizeService)
+    public function __construct(QuizService $quizeService, NotificationService $notificationService)
     {
         $this->quizeService = $quizeService;
+        $this->notificationService = $notificationService;
     }
     /**
      * Display a listing of the resource.
@@ -55,7 +58,13 @@ class QuizController extends Controller
      */
     public function store(QuizStoreRequest $request)
     {
-        $this->quizeService->create($request->validated());
+        $quiz = $this->quizeService->create($request->validated());
+
+        // Envoyer une notification pour le nouveau quiz
+        $this->notificationService->notifyQuizAvailable(
+            $quiz->titre,
+            $quiz->id
+        );
 
         return redirect()->route('quiz.index')
             ->with('success', 'Le quiz a été créé avec succès.');
