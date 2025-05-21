@@ -19,9 +19,7 @@ class CatalogueFormationController extends Controller
     public function getAllCatalogueFormations()
     {
         $catalogueFormations = $this->catalogueFormationService->list();
-        $paginated = PaginationHelper::paginate($catalogueFormations, 6);
-
-        return response()->json($paginated);
+        return response()->json($catalogueFormations);
     }
 
     public function getCatalogueFormationById($id)
