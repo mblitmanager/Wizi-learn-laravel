@@ -27,7 +27,6 @@ class CatalogueFormationController extends Controller
     public function getCatalogueFormationById($id)
     {
         $catalogueFormation = CatalogueFormation::with('formation')->find($id);
-        dd($catalogueFormation);
 
         if (!$catalogueFormation) {
             return response()->json(['error' => 'Catalogue de formation introuvable'], 404);
