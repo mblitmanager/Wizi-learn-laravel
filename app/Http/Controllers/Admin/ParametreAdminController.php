@@ -76,11 +76,11 @@ class ParametreAdminController extends Controller
     }
 
     /**
-     * Affiche les détails d’un utilisateur.
+     * Affiche les détails d'un utilisateur.
      */
     public function show($id)
     {
-        $user = $this->parametreService->find($id);
+        $user = $this->parametreService->find((int) $id);
         return view('admin.parametre.show', compact('user'));
     }
 
@@ -96,7 +96,6 @@ class ParametreAdminController extends Controller
     /**
      * Met à jour un utilisateur.
      */
-
     public function update(Request $request, $id)
     {
         $data = $request->only(['name', 'email', 'password', 'role']);
@@ -221,5 +220,39 @@ class ParametreAdminController extends Controller
         }
 
         return redirect()->back()->with('success', 'Image mise à jour avec succès.');
+    }
+
+    /**
+     * Affiche la page de réinitialisation des données.
+     */
+    public function showResetData()
+    {
+        return view('admin.parametre.reset-data');
+    }
+
+    /**
+     * Réinitialise les données du système.
+     */
+    public function resetData()
+    {
+        try {
+            // Réinitialiser les classements
+            \App\Models\Classement::truncate();
+
+            // Réinitialiser les participations aux quiz
+            \App\Models\Participation::truncate();
+
+            // Réinitialiser les réponses aux quiz
+            \App\Models\QuizParticipationAnswer::truncate();
+
+            // Réinitialiser les progressions
+            \App\Models\Progression::truncate();
+
+            return redirect()->route('admin.parametre.reset-data')
+                ->with('success', 'Les données ont été réinitialisées avec succès.');
+        } catch (\Exception $e) {
+            return redirect()->route('admin.parametre.reset-data')
+                ->with('error', 'Une erreur est survenue lors de la réinitialisation des données : ' . $e->getMessage());
+        }
     }
 }

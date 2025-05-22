@@ -45,4 +45,11 @@ class Progression extends Model
      {
          return $this->belongsTo(Formation::class);
      }
+
+     protected static function booted()
+     {
+         static::creating(function ($progression) {
+             $progression->score = $progression->correct_answers * 2; // 2 points par bonne réponse
+         });
+     }
 }

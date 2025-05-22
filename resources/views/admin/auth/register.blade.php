@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr">
 
 <head>
     <!-- Required meta tags -->
@@ -20,7 +20,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
     <link href="{{ asset('assets/css/app.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/css/icons.css') }}" rel="stylesheet">
-    <title>Wizi Learn</title>
+    <title>Wizi Learn - Inscription Administration</title>
 </head>
 
 <body class="bg-login">
@@ -37,54 +37,53 @@
                             <div class="card-body">
                                 <div class="border p-4 rounded">
                                     <div class="text-center">
-                                        <h3 class="">inscrivez-vous</h3>
-                                        <p>Vous avez deja un compte? <a href="{{ route('login') }}">conectez-vous
-                                                ici</a>
-                                        </p>
+                                        <h3 class="">Inscription</h3>
+                                        <p>Vous avez déjà un compte? <a href="{{ route('login') }}">Connectez-vous ici</a></p>
                                     </div>
                                     <div class="login-separater text-center mb-4">
+                                        <span>OU INSCRIVEZ-VOUS AVEC VOTRE COURRIEL</span>
                                         <hr />
                                     </div>
                                     <div class="form-body">
-                                        <form class="row g-3" method="POST" action="{{ route('register.post') }}">
+                                        <form class="row g-3" action="{{ route('register.post') }}" method="POST">
                                             @csrf
                                             <div class="col-12">
-                                                <label for="inputNom" class="form-label">Nom</label>
-                                                <input type="text" class="form-control" id="inputNom"
-                                                    placeholder="votre nom" name="name">
+                                                <label for="inputName" class="form-label">Nom complet</label>
+                                                <input type="text" class="form-control @error('name') is-invalid @enderror" name="name" id="inputName" placeholder="Votre nom" value="{{ old('name') }}">
+                                                @error('name')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
                                             </div>
                                             <div class="col-12">
-                                                <label for="inputEmailAddress" class="form-label">adresse e-mail</label>
-                                                <input type="email" class="form-control" id="inputEmailAddress"
-                                                    name="email" placeholder="Email Address">
+                                                <label for="inputEmailAddress" class="form-label">Adresse e-mail</label>
+                                                <input type="email" class="form-control @error('email') is-invalid @enderror" name="email" id="inputEmailAddress" placeholder="Email Address" value="{{ old('email') }}">
+                                                @error('email')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
                                             </div>
                                             <div class="col-12">
-                                                <label for="inputChoosePassword" class="form-label">saisir le mot de
-                                                    passe</label>
+                                                <label for="inputChoosePassword" class="form-label">Mot de passe</label>
                                                 <div class="input-group" id="show_hide_password">
-                                                    <input type="password" class="form-control border-end-0"
-                                                        name="password" id="inputChoosePassword" value="12345678"
-                                                        placeholder="Enter Password"> <a href="javascript:;"
-                                                        class="input-group-text bg-transparent"><i
-                                                            class='bx bx-hide'></i></a>
+                                                    <input type="password" class="form-control border-end-0 @error('password') is-invalid @enderror" id="inputChoosePassword" name="password" placeholder="Entrez votre mot de passe">
+                                                    <a href="javascript:;" class="input-group-text bg-transparent"><i class='bx bx-hide'></i></a>
+                                                    @error('password')
+                                                        <div class="invalid-feedback">{{ $message }}</div>
+                                                    @enderror
                                                 </div>
                                             </div>
                                             <div class="col-12">
-                                                <label for="inputChoosePassword" class="form-label">saisir le mot de
-                                                    passe</label>
-                                                <div class="input-group" id="show_hide_password">
-                                                    <input type="password" class="form-control border-end-0"
-                                                        name="password_confirmation" id="inputChoosePassword"
-                                                        value="12345678" placeholder="Enter Password"> <a
-                                                        href="javascript:;" class="input-group-text bg-transparent"><i
-                                                            class='bx bx-hide'></i></a>
+                                                <label for="inputConfirmPassword" class="form-label">Confirmer le mot de passe</label>
+                                                <div class="input-group" id="show_hide_password_confirm">
+                                                    <input type="password" class="form-control border-end-0 @error('password_confirmation') is-invalid @enderror" id="inputConfirmPassword" name="password_confirmation" placeholder="Confirmez votre mot de passe">
+                                                    <a href="javascript:;" class="input-group-text bg-transparent"><i class='bx bx-hide'></i></a>
+                                                    @error('password_confirmation')
+                                                        <div class="invalid-feedback">{{ $message }}</div>
+                                                    @enderror
                                                 </div>
                                             </div>
-
                                             <div class="col-12">
                                                 <div class="d-grid">
-                                                    <button type="submit" class="btn btn-primary"><i
-                                                            class="bx bxs-lock-open"></i>connectez-vous</button>
+                                                    <button type="submit" class="btn btn-primary"><i class="bx bxs-user-plus"></i>Inscription</button>
                                                 </div>
                                             </div>
                                         </form>
@@ -94,7 +93,6 @@
                         </div>
                     </div>
                 </div>
-                <!--end row-->
             </div>
         </div>
     </div>
@@ -109,16 +107,17 @@
     <!--Password show & hide js -->
     <script>
         $(document).ready(function () {
-            $("#show_hide_password a").on('click', function (event) {
+            $("#show_hide_password a, #show_hide_password_confirm a").on('click', function (event) {
                 event.preventDefault();
-                if ($('#show_hide_password input').attr("type") == "text") {
-                    $('#show_hide_password input').attr('type', 'password');
-                    $('#show_hide_password i').addClass("bx-hide");
-                    $('#show_hide_password i').removeClass("bx-show");
-                } else if ($('#show_hide_password input').attr("type") == "password") {
-                    $('#show_hide_password input').attr('type', 'text');
-                    $('#show_hide_password i').removeClass("bx-hide");
-                    $('#show_hide_password i').addClass("bx-show");
+                var input = $(this).closest('.input-group').find('input');
+                if (input.attr("type") == "text") {
+                    input.attr('type', 'password');
+                    $(this).find('i').addClass("bx-hide");
+                    $(this).find('i').removeClass("bx-show");
+                } else if (input.attr("type") == "password") {
+                    input.attr('type', 'text');
+                    $(this).find('i').removeClass("bx-hide");
+                    $(this).find('i').addClass("bx-show");
                 }
             });
         });

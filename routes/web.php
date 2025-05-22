@@ -70,8 +70,13 @@ Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function
     Route::resource('catalogue_formation', CatalogueFormationController::class);
     Route::post('/catalogue_formation/{id}/duplicate', [CatalogueFormationController::class, 'duplicate'])->name('catalogue_formation.duplicate');
 
+    // Routes pour la réinitialisation des données
+    Route::get('/parametre/reset-data', [ParametreAdminController::class, 'showResetData'])->name('admin.parametre.reset-data');
+    Route::post('/parametre/reset-data', [ParametreAdminController::class, 'resetData'])->name('admin.parametre.reset-data.post');
+
     Route::resource('parametre', ParametreAdminController::class);
     Route::put('/parametre/{id}/update-image', [ParametreAdminController::class, 'updateImage'])->name('parametre.updateImage');
+
     Route::post('/import/prc', [PoleRelationClientController::class, 'import'])->name('prc.import');
     Route::post('/quiz-question/new', [QuizController::class, 'storeNewQuestion'])->name('quiz_question.new');
     Route::get('/telecharger-modele-stagiaire', [StagiaireController::class, 'downloadStagiaireModel'])->name('download.stagiaire.model');

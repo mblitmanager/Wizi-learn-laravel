@@ -790,7 +790,7 @@ class QuizController extends Controller
 
             $correctAnswers = $questionsDetails->where('isCorrect', true)->count();
             $totalQuestions = $questionsDetails->count();
-            $score = $totalQuestions > 0 ? round(($correctAnswers / $totalQuestions)*2) : 0;
+            $score = $correctAnswers * 2; // 2 points par bonne réponse
 
             $result = Progression::create([
                 'stagiaire_id' => $stagiaire->id,
@@ -870,7 +870,7 @@ class QuizController extends Controller
             ]);
 
             // Mettre à jour le classement
-            $this->updateClassement($quiz->id, $stagiaire->id, $correctAnswers);
+            $this->updateClassement($quiz->id, $stagiaire->id, ($correctAnswers * 2));
             return response()->json([
                 'id' => $result->id,
                 'quizId' => $result->quiz_id,

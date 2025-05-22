@@ -136,6 +136,8 @@
             <ul>
                 <li> <a href="#"><i class="bx bx-right-arrow-alt"></i>Listes</a>
                 </li>
+                <li> <a href="{{ route('admin.parametre.reset-data') }}"><i class="bx bx-right-arrow-alt"></i>Réinitialisation des données</a>
+                </li>
             </ul>
         </li>
         <li>
