@@ -424,6 +424,12 @@ class QuizController extends Controller
             }
 
             DB::commit();
+               // Envoyer une notification pour le nouveau quiz
+        $this->notificationService->notifyQuizAvailable(
+            $quiz->titre,
+            $quiz->id
+        );
+
 
             return redirect()->route('quiz.index')->with('success', 'Quiz, question et réponses créés avec succès.');
         } catch (\Exception $e) {
@@ -698,6 +704,14 @@ class QuizController extends Controller
                 }
             }
             DB::commit();
+                      // Envoyer une notification pour le nouveau quiz
+        if ($newQuiz->status === 'actif') {
+            $this->notificationService->notifyQuizAvailable(
+            $newQuiz->titre,
+            $newQuiz->id
+            );
+        }
+
             return redirect()->route('quiz.edit', $newQuiz->id)
                 ->with('success', 'Quiz dupliqué avec succès.');
         } catch (\Exception $e) {

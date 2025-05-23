@@ -13,17 +13,26 @@ class NotificationService
         $users = User::where('role', 'stagiaire')->get();
 
         foreach ($users as $user) {
+            // Récupérer la formation active du stagiaire via la relation Stagiaire
+            $stagiaire = $user->stagiaire;
+            $formation = null;
+            if ($stagiaire) {
+                $formation = $stagiaire->formations();//->wherePivot('status', 'active')->first();
+            }
+            if ($formation) {
             Notification::create([
                 'user_id' => $user->id,
                 'type' => 'quiz',
                 'message' => "Un nouveau quiz \"{$quizTitle}\" est disponible !",
                 'data' => [
-                    'quiz_id' => $quizId,
-                    'quiz_title' => $quizTitle
+                'quiz_id' => $quizId,
+                'quiz_title' => $quizTitle
                 ],
                 'read' => false
             ]);
+            }
         }
+
     }
 
     public function notifyQuizCompleted(int $userId, int $quizId, int $score, int $totalQuestions): void
