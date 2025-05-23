@@ -12,6 +12,7 @@ return new class extends Migration {
             $table->foreignId('participation_id')->constrained('quiz_participations')->onDelete('cascade');
             $table->foreignId('question_id')->constrained('questions')->onDelete('cascade');
             $table->json('answer_ids');
+            $table->softDeletes();
             $table->timestamps();
         });
     }
@@ -20,4 +21,4 @@ return new class extends Migration {
     {
         Schema::dropIfExists('quiz_participation_answers');
     }
-}; 
+};

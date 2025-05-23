@@ -13,9 +13,13 @@ return new class extends Migration {
         Schema::create('media', function (Blueprint $table) {
             $table->id();
             $table->string('titre')->nullable();
-            $table->string('description')->nullable();
+            $table->text('description')->nullable();
             $table->string('url')->nullable();
             $table->string('type')->nullable();
+            $table->enum('categorie', ['tutoriel', 'astuce'])->nullable();
+            $table->integer('duree')->nullable();
+            $table->integer('ordre')->nullable();
+            $table->foreignId('formation_id')->nullable()->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }

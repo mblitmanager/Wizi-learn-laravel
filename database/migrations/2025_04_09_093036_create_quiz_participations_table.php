@@ -18,6 +18,7 @@ return new class extends Migration
             $table->integer('score')->default(0);
             $table->integer('correct_answers')->default(0);
             $table->integer('time_spent')->default(0);
+            $table->softDeletes();
             $table->timestamps();
         });
     }
@@ -26,4 +27,4 @@ return new class extends Migration
     {
         Schema::dropIfExists('quiz_participations');
     }
-}; 
+};

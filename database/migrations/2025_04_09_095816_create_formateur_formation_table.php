@@ -14,7 +14,7 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('formateur_id')->constrained('formateurs')->onDelete('cascade');
             $table->foreignId('formation_id')->constrained('formations')->onDelete('cascade');
-
+            $table->softDeletes();
             $table->timestamps();
         });
     }

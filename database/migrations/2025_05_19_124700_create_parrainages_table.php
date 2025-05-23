@@ -16,6 +16,8 @@ return new class extends Migration
             $table->foreignId('parrain_id')->constrained('users');
             $table->foreignId('filleul_id')->constrained('users');
             $table->dateTime('date_parrainage');
+            $table->integer('points')->default(0);
+            $table->softDeletes();
             $table->timestamps();
         });
     }

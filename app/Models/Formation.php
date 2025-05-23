@@ -30,15 +30,12 @@ class Formation extends Model
         return $this->belongsToMany(Formateur::class, 'formateur_formation');
     }
 
-    public function formations()
-    {
-        return $this->belongsToMany(Formation::class, 'stagiaire_formations');
-    }
 
-    public function stagiaires()
-    {
-        return $this->belongsToMany(Stagiaire::class, 'stagiaire_formations');
-    }
+
+    // public function stagiaires()
+    // {
+    //     return $this->belongsToMany(Stagiaire::class, 'stagiaire_formations');
+    // }
 
     public function medias()
     {

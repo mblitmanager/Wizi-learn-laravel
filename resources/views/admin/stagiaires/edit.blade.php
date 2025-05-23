@@ -145,17 +145,17 @@
                         </div>
 
                         <div class="col-md-4">
-                            <label for="formation_id">Formations</label>
-                            <select name="formation_id[]" id="formation_id" multiple
-                                class="form-control select2 @error('formation_id') is-invalid @enderror">
+                            <label for="catalogue_formation_id">Formations</label>
+                            <select name="catalogue_formation_id[]" id="catalogue_formation_id" multiple
+                                class="form-control select2 @error('catalogue_formation_id') is-invalid @enderror">
                                 @foreach ($formations as $formation)
                                     <option value="{{ $formation->id }}"
-                                        {{ in_array($formation->id, old('formation_id', $stagiaire->formations->pluck('id')->toArray())) ? 'selected' : '' }}>
+                                        {{ in_array($formation->id, old('catalogue_formation_id', $stagiaire->catalogue_formations->pluck('id')->toArray())) ? 'selected' : '' }}>
                                         {{ $formation->titre }}
                                     </option>
                                 @endforeach
                             </select>
-                            @error('formation_id')
+                            @error('catalogue_formation_id')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>

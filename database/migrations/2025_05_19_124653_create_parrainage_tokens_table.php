@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained();
             $table->json('parrain_data');
             $table->timestamp('expires_at');
+            $table->softDeletes();
             $table->timestamps();
         });
     }
