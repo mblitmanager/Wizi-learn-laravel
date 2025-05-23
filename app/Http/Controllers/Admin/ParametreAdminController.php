@@ -233,23 +233,39 @@ class ParametreAdminController extends Controller
     /**
      * Réinitialise les données du système.
      */
-    public function resetData()
+    public function resetData(Request $request)
     {
         try {
+            $resetData = $request->input('reset_data', []);
+
+            if (empty($resetData)) {
+                return redirect()->route('admin.parametre.reset-data')
+                    ->with('error', 'Veuillez sélectionner au moins un type de données à réinitialiser.');
+            }
+
             // Réinitialiser les classements
-            \App\Models\Classement::truncate();
+            if (in_array('classements', $resetData)) {
+                \App\Models\Classement::truncate();
+            }
 
             // Réinitialiser les participations aux quiz
-            \App\Models\Participation::truncate();
+            if (in_array('participations', $resetData)) {
+                \App\Models\Participation::truncate();
+            }
 
             // Réinitialiser les réponses aux quiz
-            \App\Models\QuizParticipationAnswer::truncate();
+            if (in_array('reponses', $resetData)) {
+                \App\Models\QuizParticipationAnswer::truncate();
+            }
 
             // Réinitialiser les progressions
-            \App\Models\Progression::truncate();
+            if (in_array('progression', $resetData)) {
+                \App\Models\Progression::truncate();
+            }
 
+            $message = 'Les données sélectionnées ont été réinitialisées avec succès.';
             return redirect()->route('admin.parametre.reset-data')
-                ->with('success', 'Les données ont été réinitialisées avec succès.');
+                ->with('success', $message);
         } catch (\Exception $e) {
             return redirect()->route('admin.parametre.reset-data')
                 ->with('error', 'Une erreur est survenue lors de la réinitialisation des données : ' . $e->getMessage());

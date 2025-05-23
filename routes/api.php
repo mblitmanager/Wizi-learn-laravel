@@ -15,6 +15,7 @@ use App\Http\Controllers\Stagiaire\ProfileController;
 use App\Http\Controllers\Admin\ReponseController;
 use App\Http\Controllers\Stagiaire\CatalogueFormationController;
 use App\Http\Controllers\Stagiaire\MediaController;
+use App\Http\Controllers\BroadcastingController;
 
 Route::post('login', [JWTAuthController::class, 'login']);
 Route::prefix('parrainage')->group(function () {
@@ -63,7 +64,7 @@ Route::middleware(['auth:api'])->group(function () {
 
     // Routes de parrainage
     Route::prefix('stagiaire/parrainage')->group(function () {
-        Route::get('stats', [ParrainageController::class, 'getParrainageStats']);
+        Route::get('stats', [ParrainageController::class, 'getStatsParrain']);
         Route::get('filleuls', [ParrainageController::class, 'getFilleuls']);
         Route::post('accept', [ParrainageController::class, 'acceptParrainage']);
         Route::get('rewards', [ParrainageController::class, 'getParrainageRewards']);
@@ -134,4 +135,17 @@ Route::get('/media/stream/{path}', [MediaController::class, 'stream'])
 
 // Routes d'authentification
 Route::post('refresh-token', [App\Http\Controllers\Auth\AuthController::class, 'refresh']);
+
+// Broadcasting Authentication
+Route::post('/broadcasting/auth', [BroadcastingController::class, 'auth'])
+    ->middleware(['auth:api']);
 // Routes de parrainage sans connection
+
+// Routes pour les notifications
+Route::middleware(['auth:api'])->group(function () {
+    Route::get('/notifications', [App\Http\Controllers\Api\NotificationController::class, 'index']);
+    Route::post('/notifications/{id}/read', [App\Http\Controllers\Api\NotificationController::class, 'markAsRead']);
+    Route::post('/notifications/mark-all-read', [App\Http\Controllers\Api\NotificationController::class, 'markAllAsRead']);
+    Route::delete('/notifications/{id}', [App\Http\Controllers\Api\NotificationController::class, 'delete']);
+    Route::get('/notifications/unread-count', [App\Http\Controllers\Api\NotificationController::class, 'getUnreadCount']);
+});

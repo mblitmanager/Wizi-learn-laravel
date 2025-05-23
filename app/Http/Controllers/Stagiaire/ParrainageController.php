@@ -125,8 +125,9 @@ class ParrainageController extends Controller
         ]);
     }
 
-    public function getStatsParrain($parrain_id)
+    public function getStatsParrain(Request $request)
     {
+        $parrain_id = $request->user()->id;
         $nombreFilleuls = Parrainage::where('parrain_id', $parrain_id)->count();
         $totalPoints = Parrainage::where('parrain_id', $parrain_id)->sum('points');
 
