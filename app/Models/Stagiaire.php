@@ -21,8 +21,8 @@ class Stagiaire extends Model
         'date_naissance',
         'ville',
         'code_postal',
-        'date_debut_formation', // Ajout date début formation
-        'date_inscription',     // Ajout date inscription
+        'date_debut_formation',
+        'date_inscription',
         'role',
         'statut',
         'user_id',
@@ -30,9 +30,10 @@ class Stagiaire extends Model
 
 
 
-    public function formations()
+
+    public function catalogue_formations()
     {
-        return $this->belongsToMany(Formation::class, 'stagiaire_formations');
+        return $this->belongsToMany(CatalogueFormation::class, 'stagiaire_catalogue_formations', 'stagiaire_id', 'catalogue_formation_id');
     }
 
     public function user()

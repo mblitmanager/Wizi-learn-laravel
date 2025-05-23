@@ -12,13 +12,13 @@ return new class extends Migration {
     {
         Schema::create('reponses', function (Blueprint $table) {
             $table->id();
-            $table->text('text')->nullable(); // Texte de la réponse ou élément à associer
-            $table->boolean('is_correct')->nullable(); // Pour multiplechoice, truefalse, etc.
-            $table->integer('position')->nullable(); // Pour ordering
-            $table->string('match_pair')->nullable(); // Pour matching (clé à associer)
-            $table->string('bank_group')->nullable(); // Pour wordbank ou fillblank (groupe ou tag)
-            $table->text('flashcard_back')->nullable(); // Pour flashcards (le verso)
-            $table->foreignId('question_id')->constrained('reponses')->onDelete('cascade');
+            $table->text('text')->nullable();
+            $table->foreignId('question_id')->constrained('questions')->onDelete('cascade');
+            $table->boolean('is_correct')->nullable();
+            $table->integer('position')->nullable();
+            $table->string('match_pair')->nullable();
+            $table->string('bank_group')->nullable();
+            $table->text('flashcard_back')->nullable();
             $table->timestamps();
         });
     }

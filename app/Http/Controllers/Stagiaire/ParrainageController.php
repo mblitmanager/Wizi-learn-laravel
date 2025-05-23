@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\DB;
 
 class ParrainageController extends Controller
 {
@@ -33,7 +34,7 @@ class ParrainageController extends Controller
 
         return response()->json([
             'success' => true,
-            'link' => config('app.frontend_url') . '/parrainage/' . $token
+            'token' => $token
         ]);
     }
 
@@ -61,19 +62,20 @@ class ParrainageController extends Controller
     public function registerFilleul(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'civilite' => 'required|in:M,Mme',
-            'prenom' => 'required|string|max:255',
-            'nom' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'telephone' => 'required|string|max:20',
-            'adresse' => 'required|string|max:255',
-            'code_postal' => 'required|string|max:10',
-            'ville' => 'required|string|max:255',
-            'date_naissance' => 'required|date',
+            'civilite' => 'nullable|in:M,Mme',
+            'prenom' => 'nullable|string|max:255',
+            'nom' => 'nullable|string|max:255',
+            'email' => 'nullable|email|unique:users,email',
+            'telephone' => 'nullable|string|max:20',
+            'adresse' => 'nullable|string|max:255',
+            'code_postal' => 'nullable|string|max:10',
+            'ville' => 'nullable|string|max:255',
+            'date_naissance' => 'nullable|date',
             'date_debut_formation' => 'nullable|date',
             'date_inscription' => 'nullable|date',
             'statut' => 'nullable|string',
             'parrain_id' => 'required|exists:users,id',
+            'catalogue_formation_id' => 'required|exists:catalogue_formations,id',
         ]);
 
         if ($validator->fails()) {
@@ -113,6 +115,13 @@ class ParrainageController extends Controller
             'filleul_id' => $user->id,
             'date_parrainage' => now(),
             'points' => 2
+        ]);
+
+        DB::table('stagiaire_catalogue_formations')->insert([
+            'stagiaire_id' => $stagiaire->id,
+            'catalogue_formation_id' => $request->catalogue_formation_id,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         return response()->json([

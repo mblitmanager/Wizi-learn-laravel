@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::create('correspondance_pairs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('question_id')->constrained()->onDelete('cascade');
+            $table->unsignedBigInteger('left_id')->nullable();
+            $table->unsignedBigInteger('right_id')->nullable();
             $table->string('left_text');
             $table->string('right_text');
             $table->timestamps();

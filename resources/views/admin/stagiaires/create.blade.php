@@ -213,10 +213,10 @@
                                                                 </p>
                                                                 <div class="form-check">
                                                                     <input class="form-check-input" type="checkbox"
-                                                                        name="formation_id[]"
+                                                                        name="catalogue_formation_id[]"
                                                                         id="formation_{{ $formation->id }}"
                                                                         value="{{ $formation->id }}"
-                                                                        {{ in_array($formation->id, old('formation_id', [])) ? 'checked' : '' }}>
+                                                                        {{ in_array($formation->id, old('catalogue_formation_id', [])) ? 'checked' : '' }}>
                                                                     <label class="form-check-label"
                                                                         for="formation_{{ $formation->id }}">
                                                                         Sélectionner

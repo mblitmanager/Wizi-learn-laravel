@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('points')->nullable();
             $table->foreignId('stagiaire_id')->constrained()->onDelete('cascade');
             $table->foreignId('quiz_id')->constrained()->onDelete('cascade');
+            $table->softDeletes();
             $table->timestamps();
         });
     }

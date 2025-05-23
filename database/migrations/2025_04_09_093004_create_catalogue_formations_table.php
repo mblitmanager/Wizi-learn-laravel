@@ -21,6 +21,7 @@ return new class extends Migration {
             $table->boolean('statut')->default(false);
             $table->string('duree')->nullable();
             $table->foreignId('formation_id')->constrained()->onDelete('cascade');
+            $table->softDeletes();
             $table->timestamps();
         });
     }

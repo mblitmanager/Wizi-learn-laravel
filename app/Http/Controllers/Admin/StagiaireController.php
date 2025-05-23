@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreStagiaireRequest;
+use App\Models\CatalogueFormation;
 use App\Models\Commercial;
 use App\Models\Formateur;
 use App\Models\Formation;
@@ -42,7 +43,7 @@ class StagiaireController extends Controller
 
     public function create(): View
     {
-        $formations = Formation::all();
+        $formations = CatalogueFormation::all();
         $formateurs = Formateur::all();
         $commercials = Commercial::all();
         return view('admin.stagiaires.create', compact('formations', 'formateurs', 'commercials'));
@@ -60,7 +61,7 @@ class StagiaireController extends Controller
     {
         $stagiaire = $this->stagiaireService->show($id);
 
-        $formations = Formation::all();
+        $formations = CatalogueFormation::all();
         $formateurs = Formateur::all();
         $commercials = Commercial::all();
         return view('admin.stagiaires.edit', compact('formations', 'formateurs', 'commercials', 'stagiaire'));

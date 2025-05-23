@@ -42,7 +42,7 @@ class StoreStagiaireRequest extends FormRequest
             'code_postal' => 'required|string',
             'role' => 'nullable|string',
             'statut' => 'nullable|string',
-            'formation_id' => 'required|exists:formations,id',
+            'catalogue_formation_id' => 'required|exists:catalogue_formations,id',
             'formateur_id' => 'nullable|exists:formateurs,id',
             'commercial_id' => 'nullable|exists:commercials,id',
             'date_debut_formation' => 'nullable|date',
@@ -74,7 +74,7 @@ class StoreStagiaireRequest extends FormRequest
             'ville.required' => 'La ville est obligatoire.',
             'code_postal.required' => 'Le code postal est obligatoire.',
 
-            'formation_id.required' => 'La formation est obligatoire.',
+            'catalogue_formation_id.required' => 'La formation est obligatoire.',
             'formation_id.exists' => 'La formation sélectionnée est invalide.',
 
             'formateur_id.exists' => 'Le formateur sélectionné est invalide.',

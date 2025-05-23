@@ -11,6 +11,8 @@ class CatalogueFormation extends Model
 {
     use HasFactory;
 
+    protected $table = 'catalogue_formations';
+
     /**
      * Les attributs qui peuvent être assignés en masse.
      */
@@ -32,5 +34,10 @@ class CatalogueFormation extends Model
     public function formation()
     {
         return $this->belongsTo(Formation::class);
+    }
+
+    public function stagiaires()
+    {
+        return $this->belongsToMany(Stagiaire::class, 'stagiaire_catalogue_formations', 'catalogue_formation_id', 'stagiaire_id');
     }
 }
