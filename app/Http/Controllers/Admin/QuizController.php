@@ -18,6 +18,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use App\Models\QuizParticipationAnswer;
+use App\Models\QuizParticipation;
 
 class QuizController extends Controller
 {
@@ -755,5 +757,39 @@ class QuizController extends Controller
         $fileName = 'modele_import_quiz.xlsx';
 
         return Response::download($filePath, $fileName);
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy($id)
+    {
+        try {
+            $quiz = Quiz::findOrFail($id);
+
+            // Supprimer les réponses associées
+            QuizParticipationAnswer::whereHas('participation', function($query) use ($id) {
+                $query->where('quiz_id', $id);
+            })->delete();
+
+            // Supprimer les participations
+            QuizParticipation::where('quiz_id', $id)->delete();
+
+            // Supprimer les questions et leurs réponses
+            $questions = Questions::where('quiz_id', $id)->get();
+            foreach ($questions as $question) {
+                Reponse::where('question_id', $question->id)->delete();
+                $question->delete();
+            }
+
+            // Supprimer le quiz
+            $quiz->delete();
+
+            return redirect()->route('quiz.index')
+                ->with('success', 'Quiz supprimé avec succès.');
+        } catch (\Exception $e) {
+            return redirect()->route('quiz.index')
+                ->with('error', 'Une erreur est survenue lors de la suppression du quiz : ' . $e->getMessage());
+        }
     }
 }
