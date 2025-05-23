@@ -43,7 +43,7 @@ class Quiz extends Model
     protected static function booted()
     {
         static::saving(function ($quiz) {
-            $quiz->nb_points_total = $quiz->questions()->sum('points');
+            $quiz->nb_points_total = $quiz->questions()->count() * 2; // 2 points par question
         });
     }
 }
