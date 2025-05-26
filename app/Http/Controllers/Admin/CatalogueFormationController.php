@@ -124,4 +124,24 @@ class CatalogueFormationController extends Controller
         return redirect()->route('catalogue_formation.index')
             ->with('success', 'Le catalogue de formation a été supprimé avec succès.');
     }
+
+    /**
+     * Télécharger le PDF du cursus
+     */
+    public function downloadPdf($id)
+    {
+        $catalogueFormation = $this->catalogueFormationService->show($id);
+
+        if (!$catalogueFormation || !$catalogueFormation->cursus_pdf) {
+            return redirect()->back()->with('error', 'Le fichier PDF n\'existe pas.');
+        }
+
+        $path = storage_path('app/public/' . $catalogueFormation->cursus_pdf);
+
+        if (!file_exists($path)) {
+            return redirect()->back()->with('error', 'Le fichier PDF n\'a pas été trouvé sur le serveur.');
+        }
+
+        return response()->download($path, 'cursus_' . $catalogueFormation->titre . '.pdf');
+    }
 }

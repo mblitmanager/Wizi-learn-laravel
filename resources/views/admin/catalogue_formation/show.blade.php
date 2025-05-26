@@ -120,10 +120,24 @@
                         </div>
                         @else
                         <div class="alert alert-warning text-center mt-4">
-                            Aucune image n’est disponible pour cette formation.
+                            Aucune image n'est disponible pour cette formation.
                         </div>
                         @endif
                     </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700">Cursus PDF</label>
+                    @if($catalogueFormations->cursus_pdf)
+                        <a href="{{ route('catalogue_formation.download-pdf', $catalogueFormations->id) }}" class="mt-2 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
+                            <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            Télécharger le PDF
+                        </a>
+                    @else
+                        <p class="mt-2 text-gray-500">Aucun PDF</p>
+                    @endif
                 </div>
             </div>
         </div>

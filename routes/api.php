@@ -78,6 +78,7 @@ Route::middleware(['auth:api'])->group(function () {
         Route::get('formations', [CatalogueFormationController::class, 'getAllCatalogueFormations']);
         Route::get('stagiaire/{id}', [CatalogueFormationController::class, 'getFormationsAndCatalogues']);
         Route::get('/formations/{id}', [CatalogueFormationController::class, 'getCatalogueFormationById']);
+        Route::get('/formations/{id}/download-pdf', [CatalogueFormationController::class, 'downloadPdf']);
     });
 
     Route::prefix('formation')->group(function () {
