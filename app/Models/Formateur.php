@@ -33,7 +33,7 @@ class Formateur extends Model
 
     public function formations()
     {
-        return $this->belongsToMany(Formation::class, 'formateur_formation');
+        return $this->belongsToMany(CatalogueFormation::class, 'formateur_catalogue_formation');
     }
 
     public function stagiaires()
