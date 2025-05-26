@@ -41,14 +41,20 @@ class CatalogueFormationController extends Controller
     {
         $validated = $request->validated();
 
-
         if ($request->hasFile('image_url')) {
             $file = $request->file('image_url');
             $filename = time() . '_' . $file->getClientOriginalName();
             $path = $file->storeAs('media', $filename, 'public');
 
-            $validated['image_url'] = $path; // <-- CORRECTION ICI
+            $validated['image_url'] = $path;
             $validated['file_type'] = $file->getClientMimeType();
+        }
+
+        if ($request->hasFile('cursus_pdf')) {
+            $pdfFile = $request->file('cursus_pdf');
+            $pdfName = time() . '_' . $pdfFile->getClientOriginalName();
+            $pdfFile->move(public_path('pdfs'), $pdfName);
+            $validated['cursus_pdf'] = 'pdfs/' . $pdfName;
         }
 
         $this->catalogueFormationService->create($validated);
@@ -89,8 +95,15 @@ class CatalogueFormationController extends Controller
             $filename = time() . '_' . $file->getClientOriginalName();
             $path = $file->storeAs('media', $filename, 'public');
 
-            $validated['image_url'] = $path; // <-- CORRECTION ICI
+            $validated['image_url'] = $path;
             $validated['file_type'] = $file->getClientMimeType();
+        }
+
+        if ($request->hasFile('cursus_pdf')) {
+            $pdfFile = $request->file('cursus_pdf');
+            $pdfName = time() . '_' . $pdfFile->getClientOriginalName();
+            $pdfFile->move(public_path('pdfs'), $pdfName);
+            $validated['cursus_pdf'] = 'pdfs/' . $pdfName;
         }
 
         $this->catalogueFormationService->update($id, $validated);
@@ -130,18 +143,38 @@ class CatalogueFormationController extends Controller
      */
     public function downloadPdf($id)
     {
-        $catalogueFormation = $this->catalogueFormationService->show($id);
+        try {
+            $catalogueFormation = $this->catalogueFormationService->show($id);
 
-        if (!$catalogueFormation || !$catalogueFormation->cursus_pdf) {
-            return redirect()->back()->with('error', 'Le fichier PDF n\'existe pas.');
+            if (!$catalogueFormation || !$catalogueFormation->cursus_pdf) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Le fichier PDF n\'existe pas.'
+                ], 404);
+            }
+
+            // Vérifier si le fichier existe dans le dossier public
+            $filePath = base_path('public/' . $catalogueFormation->cursus_pdf);
+
+            if (!file_exists($filePath)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Le fichier PDF n\'a pas été trouvé sur le serveur.'
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'url' => asset($catalogueFormation->cursus_pdf),
+                    'filename' => 'cursus_' . strtoupper($catalogueFormation->titre) . '.pdf'
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Une erreur est survenue lors du téléchargement du PDF.'
+            ], 500);
         }
-
-        $path = storage_path('app/public/' . $catalogueFormation->cursus_pdf);
-
-        if (!file_exists($path)) {
-            return redirect()->back()->with('error', 'Le fichier PDF n\'a pas été trouvé sur le serveur.');
-        }
-
-        return response()->download($path, 'cursus_' . $catalogueFormation->titre . '.pdf');
     }
 }

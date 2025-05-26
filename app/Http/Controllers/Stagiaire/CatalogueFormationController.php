@@ -59,9 +59,10 @@ class CatalogueFormationController extends Controller
                 ], 404);
             }
 
-            $path = storage_path('app/public/' . $catalogueFormation->cursus_pdf);
+            // Vérifier si le fichier existe dans le dossier public
+            $filePath = base_path('public/' . $catalogueFormation->cursus_pdf);
 
-            if (!file_exists($path)) {
+            if (!file_exists($filePath)) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Le fichier PDF n\'a pas été trouvé sur le serveur.'
@@ -71,8 +72,8 @@ class CatalogueFormationController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => [
-                    'url' => $catalogueFormation->cursus_pdf_url,
-                    'filename' => 'cursus_' . $catalogueFormation->titre . '.pdf'
+                    'url' => asset($catalogueFormation->cursus_pdf),
+                    'filename' => 'cursus_' . strtoupper($catalogueFormation->titre) . '.pdf'
                 ]
             ]);
         } catch (\Exception $e) {
