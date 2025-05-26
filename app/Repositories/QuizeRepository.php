@@ -43,8 +43,10 @@ class QuizeRepository implements QuizRepositoryInterface
     {
         return Quiz::where('status', 'actif')
             ->whereHas('formation', function($query) use ($stagiaireId) {
-                $query->whereHas('stagiaires', function($q) use ($stagiaireId) {
-                    $q->where('stagiaires.id', $stagiaireId);
+                $query->whereHas('catalogueFormation', function($q) use ($stagiaireId) {
+                    $q->whereHas('stagiaires', function($q) use ($stagiaireId) {
+                        $q->where('stagiaires.id', $stagiaireId);
+                    });
                 });
             })
             ->with(['formation','questions.reponses'])
