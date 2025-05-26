@@ -7,6 +7,7 @@ use App\Repositories\Interfaces\CatalogueFormationInterface;
 use Illuminate\Support\Collection;
 
 use Illuminate\Support\Facades\Log;
+use App\Models\Formateur;
 
 class CatalogueFormationRepository implements CatalogueFormationInterface
 {
@@ -53,6 +54,13 @@ class CatalogueFormationRepository implements CatalogueFormationInterface
         $catalogueFormation = CatalogueFormation::findOrFail($id);
         $catalogueFormation->update($data);
         return $catalogueFormation;
+    }
+
+
+    public function updateFormateur(int $id, array $data): bool
+    {
+        $formateur = Formateur::findOrFail($id);
+        return $formateur->update($data);
     }
     /**
      * Supprimer une entrée de la table catalogue_formations.

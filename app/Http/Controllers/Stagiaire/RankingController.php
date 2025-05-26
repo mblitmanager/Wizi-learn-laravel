@@ -220,7 +220,7 @@ class RankingController extends Controller
                 return $item['stagiaire']['id'] == (string)$stagiaire->id;
             });
             $progress = $this->rankingService->getStagiaireProgress($user->stagiaire->id);
-            $user->stagiaire->load(['user', 'formations', 'formateur', 'commercial']);
+            $user->stagiaire->load(['user', 'catalogueFormation', 'formateur', 'commercial']);
             $response = [
                 'stagiaire' => [
                     'id' => (string)$user->stagiaire->id,
