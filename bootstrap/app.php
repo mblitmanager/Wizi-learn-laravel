@@ -5,6 +5,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\JwtMiddleware;
+use App\Http\Middleware\TrackUserActivity; // Ajoutez cette ligne
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -16,7 +17,14 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
             'isAdmin' => \App\Http\Middleware\IsAdmin::class,
+            'trackActivity' => TrackUserActivity::class,
         ]);
+
+        // Ajoutez le middleware aux groupes web et api
+        $middleware->appendToGroup('web', TrackUserActivity::class);
+        $middleware->appendToGroup('api', TrackUserActivity::class);
+
+        // Gardez votre middleware JWT existant
         $middleware->appendToGroup('api', JwtMiddleware::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {

@@ -35,7 +35,10 @@ class CatalogueFormation extends Model
     {
         return $this->belongsTo(Formation::class);
     }
-
+    public function formateurs()
+    {
+        return $this->belongsToMany(Formateur::class, 'formateur_catalogue_formation');
+    }
     public function stagiaires()
     {
         return $this->belongsToMany(Stagiaire::class, 'stagiaire_catalogue_formations', 'catalogue_formation_id', 'stagiaire_id');

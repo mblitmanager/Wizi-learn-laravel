@@ -66,6 +66,11 @@ class JWTAuthController extends Controller
         ]);
 
         $token = JWTAuth::fromUser($user);
+        if ($user = auth()->user()) {
+            $user->update([
+                'last_activity_at' => now()
+            ]);
+        }
 
         return response()->json(compact('user', 'token'), 201);
     }
@@ -107,10 +112,27 @@ class JWTAuthController extends Controller
                 return response()->json(['error' => 'Accès invalide'], 401);
             }
 
+            // Récupérer l'IP client (avec prise en compte des proxies)
+            $ip = $request->header('X-Forwarded-For') ?? $request->ip();
+            // Mettre à jour les informations de connexion
             $user = auth()->user();
-            $token = JWTAuth::claims(['role' => $user->role])->fromUser($user);
+            $user->update([
+                'last_login_at' => now(),
+                'last_activity_at' => now(),
+                'last_login_ip' => $ip,
+                'is_online' => true
+            ]);
 
-            return response()->json(compact('token'));
+            // Ajouter le rôle dans le token JWT
+            $token = JWTAuth::claims([
+                'role' => $user->role,
+                'ip' => $ip // Optionnel: stocker l'IP dans le token
+            ])->fromUser($user);
+
+            return response()->json([
+                'token' => $token,
+                'user' => $user->load('stagiaire') // Charger la relation stagiaire si nécessaire
+            ]);
         } catch (JWTException $e) {
             return response()->json(['error' => 'Impossible de créer le token'], 500);
         }
@@ -203,8 +225,24 @@ class JWTAuthController extends Controller
     )]
     public function logout()
     {
-        JWTAuth::invalidate(JWTAuth::getToken());
+        try {
+            // Mettre à jour le statut avant la déconnexion
+            if ($user = auth()->user()) {
+                $user->update([
+                    'is_online' => false,
+                    'last_activity_at' => now()
+                ]);
+            }
 
-        return response()->json(['message' => 'Deconnexion réussie'], 200);
+            // Invalider le token JWT
+            JWTAuth::invalidate(JWTAuth::getToken());
+
+            return response()->json([
+                'message' => 'Déconnexion réussie',
+                'logout_at' => now()->toDateTimeString()
+            ], 200);
+        } catch (JWTException $e) {
+            return response()->json(['error' => 'Échec de la déconnexion'], 500);
+        }
     }
 }

@@ -79,7 +79,8 @@
                 <li> <a href="{{ route('catalogue_formation.index') }}"><i class="bx bx-right-arrow-alt"></i>Catalogue
                         formation</a>
                 </li>
-                <li> <a href="{{ route('formations.index') }}"><i class="bx bx-right-arrow-alt"></i>Domaine formation</a>
+                <li> <a href="{{ route('formations.index') }}"><i class="bx bx-right-arrow-alt"></i>Domaine
+                        formation</a>
                 </li>
             </ul>
         </li>
@@ -90,7 +91,7 @@
                 <div class="menu-title">Parrainage</div>
             </a>
             <ul>
-                <li> <a href="#"><i class="bx bx-right-arrow-alt"></i>Listes</a>
+                <li> <a href="{{ route('parrainage.index') }}"><i class="bx bx-right-arrow-alt"></i>Listes</a>
                 </li>
             </ul>
         </li>
@@ -136,7 +137,8 @@
             <ul>
                 <li> <a href="#"><i class="bx bx-right-arrow-alt"></i>Listes</a>
                 </li>
-                <li> <a href="{{ route('admin.parametre.reset-data') }}"><i class="bx bx-right-arrow-alt"></i>Réinitialisation des données</a>
+                <li> <a href="{{ route('admin.parametre.reset-data') }}"><i
+                            class="bx bx-right-arrow-alt"></i>Réinitialisation des données</a>
                 </li>
             </ul>
         </li>

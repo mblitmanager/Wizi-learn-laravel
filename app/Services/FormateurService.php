@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 use App\Models\User;
@@ -41,15 +42,15 @@ class FormateurService
 
         // Vérifier si les stagiaires et formations sont définis
         $stagiaireIds = $data['stagiaire_id'] ?? [];
-        $formationIds = $data['formation_id'] ?? [];
-        unset($data['stagiaire_id'], $data['formation_id']);
+        $formationIds = $data['catalogue_formation_id'] ?? [];
+        unset($data['stagiaire_id'], $data['catalogue_formation_id']);
 
         // Créer le formateur
         $formateur = $this->formateurInterface->create($data);
 
         // Synchroniser les relations avec les stagiaires et formations
         $formateur->stagiaires()->sync($stagiaireIds);
-        $formateur->formations()->sync($formationIds);
+        $formateur->catalogue_formations()->sync($formationIds);
 
         return $formateur;
     }
@@ -74,12 +75,12 @@ class FormateurService
 
         // Vérifier si les stagiaires et formations sont définis
         $stagiaireIds = $data['stagiaire_id'] ?? [];
-        $formationIds = $data['formation_id'] ?? [];
-        unset($data['name'], $data['email'], $data['password'], $data['stagiaire_id'], $data['formation_id']);
+        $formationIds = $data['catalogue_formation_id'] ?? [];
+        unset($data['name'], $data['email'], $data['password'], $data['stagiaire_id'], $data['catalogue_formation_id']);
 
         // Synchroniser les relations avec les stagiaires et formations
         $formateur->stagiaires()->sync($stagiaireIds);
-        $formateur->formations()->sync($formationIds);
+        $formateur->catalogue_formations()->sync($formationIds);
 
         // Mettre à jour les autres données du formateur
         return $this->formateurInterface->update($id, $data);

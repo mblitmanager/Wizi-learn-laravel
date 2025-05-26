@@ -64,7 +64,7 @@ class AdminController extends Controller
         $poles = PoleRelationClient::with('user')->get();
 
         // Utilisateurs connectés (sessions actives dans la dernière heure)
-        $connectedUsers = User::whereIn('id', function($query) {
+        $connectedUsers = User::whereIn('id', function ($query) {
             $query->select('user_id')
                 ->from('sessions')
                 ->where('last_activity', '>=', now()->subHour()->getTimestamp());
@@ -97,6 +97,25 @@ class AdminController extends Controller
             ->orderByDesc('quiz_participations.started_at')
             ->get();
 
+
+        $onlineUsers = User::where('is_online', true)
+            ->with(['stagiaire', 'commercial', 'formateur', 'poleRelationClient'])
+            ->orderBy('last_activity_at', 'desc')
+            ->get();
+
+        $recentlyOnlineUsers = User::where('last_activity_at', '>=', now()->subHours(24))
+            ->where('is_online', false)
+            ->with(['stagiaire', 'commercial', 'formateur', 'poleRelationClient'])
+            ->orderBy('last_activity_at', 'desc')
+            ->get();
+
+        // Statistiques de connexion
+        $loginStats = [
+            'today' => User::whereDate('last_login_at', today())->count(),
+            'this_week' => User::whereBetween('last_login_at', [now()->startOfWeek(), now()->endOfWeek()])->count(),
+            'this_month' => User::whereBetween('last_login_at', [now()->startOfMonth(), now()->endOfMonth()])->count(),
+        ];
+
         return view('admin.dashboard.index', compact(
             'totalStagiaires',
             'totalFormateurs',
@@ -109,7 +128,10 @@ class AdminController extends Controller
             'poles',
             'connectedUsers',
             'recentQuizzes',
-            'activeQuizzes'
+            'activeQuizzes',
+            'onlineUsers',
+            'recentlyOnlineUsers',
+            'loginStats',
         ));
     }
 
@@ -154,11 +176,21 @@ class AdminController extends Controller
             'password' => 'required',
         ]);
 
+        $ip = $request->header('X-Client-IP') ?? $request->ip();
+
         if (Auth::attempt($request->only('email', 'password'))) {
-            if (Auth::user()->role === 'administrateur') {
+            $user = auth()->user(); // Maintenant connecté
+            $user->update([
+                'last_login_at' => now(),
+                'last_login_ip' => $ip,
+                'is_online' => true,
+                'last_activity_at' => now()
+            ]);
+
+            if ($user->role === 'administrateur') {
                 return redirect()->route('dashboard');
             } else {
-                Auth::logout(); // Cela déconnecte l'utilisateur si ce n'est pas un admin
+                Auth::logout(); // Déconnecter si ce n'est pas un admin
                 return redirect()->route('login')->with('error', 'Access denied.');
             }
         }
@@ -166,9 +198,13 @@ class AdminController extends Controller
         return back()->withErrors(['email' => 'Invalid credentials.']);
     }
 
+
     public function logout()
     {
-        Auth::logout();
+        if (auth()->check()) {
+            auth()->user()->update(['is_online' => false]);
+            Auth::logout();
+        }
         return redirect()->route('login')->with('success', 'Logged out successfully.');
     }
 }

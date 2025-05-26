@@ -25,17 +25,6 @@ class Formation extends Model
         'duree',
     ];
 
-    public function formateurs()
-    {
-        return $this->belongsToMany(Formateur::class, 'formateur_formation');
-    }
-
-
-
-    // public function stagiaires()
-    // {
-    //     return $this->belongsToMany(Stagiaire::class, 'stagiaire_formations');
-    // }
 
     public function medias()
     {
