@@ -25,15 +25,15 @@ class CatalogueFormation extends Model
         'duree',
         'image_url',
         'tarif',
-        'catalogueFormation_id',
+        'formation_id',
     ];
 
     /**
      * Relation avec le modèle Formation (Many-to-One).
      */
-    public function catalogueFormation()
+    public function formation()
     {
-        return $this->belongsTo(CatalogueFormation::class);
+        return $this->belongsTo(Formation::class);
     }
 
     public function stagiaires()

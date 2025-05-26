@@ -11,12 +11,12 @@ class FormationRepository implements FormationRepositoryInterface
 {
     public function all()
     {
-        return Formation::with(['formateurs', 'stagiaires'])->get();
+        return Formation::with(['formateurs', 'catalogueFormation'])->get();
     }
 
     public function find($id): ?Formation
     {
-        return Formation::with(['formateurs', 'stagiaires'])->find($id);
+        return Formation::with(['formateurs', 'catalogueFormation'])->find($id);
     }
 
     public function create(array $data): Formation
