@@ -44,7 +44,7 @@
 {{--        integrity="sha512-hj9rznBPdFg9A4fACbJcp4ttzdinMDtPrtZ3gBD11DiY3O1xJfn0r1U5so/J0zwfGOzq9teIaH5rFmjFAFw8SA=="--}}
 {{--        crossorigin="anonymous" referrerpolicy="no-referrer" />--}}
 
-    <title>Wize Learn</title>
+    <title>Wizi Learn</title>
 </head>
 
 <body>

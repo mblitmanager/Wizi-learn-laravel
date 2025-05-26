@@ -120,6 +120,8 @@ class CatalogueFormationController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $this->catalogueFormationService->delete($id);
+        return redirect()->route('catalogue_formation.index')
+            ->with('success', 'Le catalogue de formation a été supprimé avec succès.');
     }
 }
