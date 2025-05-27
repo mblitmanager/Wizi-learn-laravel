@@ -132,6 +132,18 @@
                             </div>
 
                             <div class="col-md-6">
+                                <label for="cursus_pdf" class="form-label">Cursus PDF</label>
+                                <input type="file" name="cursus_pdf" id="cursus_pdf" accept=".pdf"
+                                    class="form-control mb-2 @error('cursus_pdf') is-invalid @enderror">
+                                <p class="mt-1 text-sm text-gray-500">Format accepté : PDF</p>
+                                @error('cursus_pdf')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
                                 <label for="tarif" class="form-label">Tarif</label>
                                 <input type="number" name="tarif" id="tarif" placeholder="Tarif"
                                     class="form-control mb-2 @error('tarif') is-invalid @enderror"
@@ -140,9 +152,7 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
-                        </div>
 
-                        <div class="row">
                             <div class="col-md-6">
                                 <label for="statut" class="form-label">Statut</label>
                                 <select name="statut" id="statut"

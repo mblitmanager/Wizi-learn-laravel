@@ -29,6 +29,7 @@ class CatalogueFormationRequest extends FormRequest
             'certification' => 'nullable|string|max:255',
             'prerequis' => 'nullable|string|max:255',
             'image_url' => 'nullable|file|mimes:jpg,jpeg,png,gif,mp4,avi,mov,pdf,mp3,webp|max:102400',
+            'cursus_pdf' => 'nullable|file|mimes:pdf|max:10240',
             'tarif' => 'required|numeric|min:0',
             'statut' => 'required|in:1,0',
 
@@ -57,6 +58,10 @@ class CatalogueFormationRequest extends FormRequest
             'image_url.file' => 'Le fichier doit être une image.',
             'image_url.mimes' => 'Le fichier doit être de type : jpeg, png, jpg, gif, webp.',
             'image_url.max' => 'L\'image ne doit pas dépasser 100 Mo.',
+
+            'cursus_pdf.file' => 'Le fichier doit être un PDF.',
+            'cursus_pdf.mimes' => 'Le fichier doit être de type : pdf.',
+            'cursus_pdf.max' => 'Le fichier ne doit pas dépasser 100 Mo.',
 
             'tarif.required' => 'Le tarif est obligatoire.',
             'tarif.numeric' => 'Le tarif doit être un nombre.',
