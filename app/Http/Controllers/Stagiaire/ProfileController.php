@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Stagiaire;
 
 use App\Http\Controllers\Controller;
 use App\Models\Stagiaire;
+use App\Models\User;
 use Illuminate\Http\Request;
 use App\Services\FormationService;
 use App\Services\StagiaireService;
@@ -159,6 +160,18 @@ class ProfileController extends Controller
             'message' => 'Avatar uploaded successfully',
             'avatar' => $avatarPath,
             'avatar_url' => asset($avatarPath)
+        ]);
+    }
+
+    public function onlineUsers()
+    {
+        return response()->json([
+            'online_users' => User::where('is_online', true)->get(),
+            'recently_online' => User::where('last_activity_at', '>=', now()->subMinutes(15))
+                ->where('is_online', false)
+                ->orderBy('last_activity_at', 'desc')
+                ->get(),
+            'all_users' => User::orderBy('last_activity_at', 'desc')->get()
         ]);
     }
 }

@@ -31,7 +31,7 @@ class Formateur extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function formations()
+    public function catalogue_formations()
     {
         return $this->belongsToMany(CatalogueFormation::class, 'formateur_catalogue_formation');
     }

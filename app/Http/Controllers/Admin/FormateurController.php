@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\FormateurStoreRequest;
+use App\Models\CatalogueFormation;
 use App\Models\Formateur;
-use App\Models\Formation;
 use App\Models\Stagiaire;
 use App\Models\User;
 use App\Services\FormateurService;
@@ -37,9 +37,9 @@ class FormateurController extends Controller
      */
     public function create()
     {
-        $formations = Formation::all();
+        $catalogue_formations = CatalogueFormation::all();
         $stagiaires = Stagiaire::all();
-        return view('admin.formateur.create', compact('formations', 'stagiaires'));
+        return view('admin.formateur.create', compact('catalogue_formations', 'stagiaires'));
     }
 
     /**
@@ -68,9 +68,9 @@ class FormateurController extends Controller
     public function edit(string $id)
     {
         $formateur = $this->formateurService->show($id);
-        $formations = Formation::all();
+        $catalogue_formations = CatalogueFormation::all();
         $stagiaires = Stagiaire::all();
-        return view('admin.formateur.edit', compact('formateur', 'formations', 'stagiaires'));
+        return view('admin.formateur.edit', compact('formateur', 'catalogue_formations', 'stagiaires'));
     }
 
     /**
@@ -146,33 +146,48 @@ class FormateurController extends Controller
             $invalidRows = [];
             $importedCount = 0;
 
-            // Vérification de l'en-tête (optionnel mais recommandé)
+            // Vérification des en-têtes
             $headerRow = $sheet->getRowIterator()->current();
-            $headerCell = $headerRow->getCellIterator()->current();
-            $headerValue = trim($headerCell->getValue());
-            $normalizedHeader = mb_strtolower(trim($headerValue));
-            $expectedHeader = mb_strtolower(trim('Consultant Formateur'));
-            $lastRow = $sheet->getHighestDataRow();
-            if ($normalizedHeader !== $expectedHeader) {
-                return redirect()->route('formateur.index')
-                    ->with('error', 'En-tête incorrect. La première colonne doit être "Consultant Formateur".')
-                    ->with('debug_header', $headerValue); // Pour le débogage
+            $headerCells = $headerRow->getCellIterator();
+            $headerCells->setIterateOnlyExistingCells(false);
+
+            // Vérification des 2 premières colonnes
+            $expectedHeaders = [
+                'A' => 'Consultant Formateur',
+                'B' => 'Formation'
+            ];
+
+            $headerErrors = [];
+            foreach ($expectedHeaders as $column => $expectedHeader) {
+                $cellValue = trim($sheet->getCell($column . '1')->getValue() ?? '');
+                if (mb_strtolower($cellValue) !== mb_strtolower($expectedHeader)) {
+                    $headerErrors[] = "Colonne $column: En-tête attendu '$expectedHeader' mais trouvé '$cellValue'";
+                }
             }
-            $lastRow = $sheet->getHighestDataRow(); // Récupère la dernière ligne avec des données
+
+            if (!empty($headerErrors)) {
+                return redirect()->route('formateur.index')
+                    ->with('error', new HtmlString(
+                        'En-têtes incorrects:<br>' . implode('<br>', $headerErrors) .
+                            '<br>Veuillez utiliser le modèle fourni.'
+                    ));
+            }
+
+            $lastRow = $sheet->getHighestDataRow();
 
             for ($rowIndex = 2; $rowIndex <= $lastRow; $rowIndex++) {
-                $cell = $sheet->getCell('A' . $rowIndex);
-                $consultantsCell = trim($cell->getValue());
+                $consultantCell = trim($sheet->getCell('A' . $rowIndex)->getValue());
+                $formationCell = trim($sheet->getCell('B' . $rowIndex)->getValue());
 
-                // Si la cellule est vide, on passe à la ligne suivante
-                if (empty($consultantsCell)) {
+                // Si la cellule consultant est vide, on passe à la ligne suivante
+                if (empty($consultantCell)) {
                     \Log::info("Ligne $rowIndex vide - Ignorée.");
                     continue;
                 }
 
-                \Log::info("Ligne $rowIndex : $consultantsCell");
+                \Log::info("Ligne $rowIndex : Consultant: $consultantCell | Formation: $formationCell");
 
-                $consultants = $this->splitConsultants($consultantsCell);
+                $consultants = $this->splitConsultants($consultantCell);
 
                 foreach ($consultants as $consultant) {
                     DB::beginTransaction();
@@ -217,13 +232,30 @@ class FormateurController extends Controller
                             'role' => 'pole relation client',
                         ]);
 
-                        Formateur::create([
+                        $formateur  = Formateur::create([
                             'prenom' => $np['prenom'],
                             'nom' => $np['nom'],
                             'user_id' => $user->id,
                             'role' => 'Formateur',
                             'statut' => true,
                         ]);
+
+                        if (!empty($formationCell)) {
+                            $formation = CatalogueFormation::where('titre', $formationCell)->first();
+
+                            if ($formation) {
+                                DB::table('formateur_catalogue_formation')->insert([
+                                    'formateur_id' => $formateur->id,
+                                    'catalogue_formation_id' => $formation->id ?? null,
+                                    'created_at' => now(),
+                                    'updated_at' => now(),
+                                ]);
+                            } else {
+                                \Log::warning("Formation non trouvée: $formationCell");
+                                // Vous pouvez choisir d'ajouter une erreur ou juste logger
+                                $invalidRows[] = 'Ligne ' . $rowIndex . ': Formation non trouvée - "' . $formationCell . '"';
+                            }
+                        }
 
                         DB::commit();
                         $importedCount++;

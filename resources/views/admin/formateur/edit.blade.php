@@ -131,27 +131,19 @@
                                     <h2 class="accordion-header" id="headingOne">
                                         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                             data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
-                                            Selectionz les formations associées
-                                            <span class="badge bg-primary mx-4"> {{ count($formations) }}</span>
+                                            Selectionz les catalogues formations associées
+                                            <span class="badge bg-primary mx-4"> {{ count($catalogue_formations) }}</span>
                                         </button>
                                     </h2>
                                     <div id="collapseOne" class="accordion-collapse collapse"
                                         aria-labelledby="headingOne" data-bs-parent="#accordionExample" style="">
                                         <div class="accordion-body">
                                             <div class="row row-cols-1 row-cols-md-3 row-cols-lg-3 row-cols-xl-3">
-                                                @foreach ($formations as $formation)
+                                                @foreach ($catalogue_formations as $formation)
                                                     <div class="col">
-                                                        @php
-                                                            $borderColor = match ($formation->categorie) {
-                                                                'Bureautique' => '#3D9BE9',
-                                                                'Langues' => '#A55E6E',
-                                                                'Internet' => '#FFC533',
-                                                                'Création' => '#9392BE',
-                                                                default => 'transparent',
-                                                            };
-                                                        @endphp
+
                                                         <div class="card"
-                                                            style="box-shadow: rgba(0, 0, 0, 0.16) 0px 10px 36px 0px, rgba(0, 0, 0, 0.06) 0px 0px 0px 1px; border-left: 5px solid {{ $borderColor }};">
+                                                            style="box-shadow: rgba(0, 0, 0, 0.16) 0px 10px 36px 0px, rgba(0, 0, 0, 0.06) 0px 0px 0px 1px; border-left: 5px solid #feb823;">
                                                             <div class="card-body">
                                                                 <h5 class="card-title">{{ $formation->titre }}</h5>
                                                                 <p class="card-text fw-bold">{{ $formation->categorie }}
@@ -159,10 +151,10 @@
                                                                 </p>
                                                                 <div class="form-check">
                                                                     <input class="form-check-input" type="checkbox"
-                                                                        name="formation_id[]"
+                                                                        name="catalogue_formation_id[]"
                                                                         id="formation_{{ $formation->id }}"
                                                                         value="{{ $formation->id }}"
-                                                                        {{ in_array($formation->id, old('formation_id', $formateur->formations->pluck('id')->toArray())) ? 'checked' : '' }}>
+                                                                        {{ in_array($formation->id, old('catalogue_formation_id', $formateur->catalogue_formations->pluck('id')->toArray())) ? 'checked' : '' }}>
                                                                     <label class="form-check-label"
                                                                         for="formation_{{ $formation->id }}">
                                                                         Sélectionner
@@ -199,7 +191,7 @@
     <script>
         $(document).ready(function() {
             $('.select2').select2({
-                placeholder: "Choisir des formations",
+                placeholder: "Choisir des catalogue_formations",
                 allowClear: true
             });
         });

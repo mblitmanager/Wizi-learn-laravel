@@ -128,6 +128,7 @@ Route::middleware(['auth:api'])->group(function () {
     Route::post('/avatar/{id}/update-profile', [FormationStagiaireController::class, 'updateImage']);
 
     Route::get('/parrainage/stats/{parrain_id}', [ParrainageController::class, 'getStatsParrain']);
+    Route::get('/user-status', [ProfileController::class, 'onlineUsers'])->middleware('auth:api');
 });
 
 Route::get('/media/stream/{path}', [MediaController::class, 'stream'])

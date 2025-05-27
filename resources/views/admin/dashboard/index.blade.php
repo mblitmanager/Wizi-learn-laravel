@@ -66,6 +66,63 @@
             </div>
         </div>
     </div>
+
+
+    <style>
+        .dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .dot-sm {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .pulse {
+            animation: pulse-animation 1.5s infinite;
+        }
+
+        @keyframes pulse-animation {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        .extra-small {
+            font-size: 0.65rem;
+        }
+    </style>
+
+    <style>
+        .thin-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .thin-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .thin-scrollbar::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 10px;
+        }
+    </style>
+
     <div class="row row-cols-1 row-cols-md-2 row-cols-xl-4">
         <div class="col">
             <div class="card radius-10 border-start border-0 border-4 border-danger">
@@ -75,7 +132,8 @@
                             <p class="mb-0 text-secondary">App téléchargée</p>
                             <h4 class="my-1 text-danger">{{ $totalAppDownloads ?? 0 }}</h4>
                         </div>
-                        <div class="widgets-icons-2 rounded-circle bg-gradient-orange text-white ms-auto"><i class="bx bx-download"></i></div>
+                        <div class="widgets-icons-2 rounded-circle bg-gradient-orange text-white ms-auto"><i
+                                class="bx bx-download"></i></div>
                     </div>
                 </div>
             </div>
@@ -88,7 +146,8 @@
                             <p class="mb-0 text-secondary">Première connexion</p>
                             <h4 class="my-1 text-warning">{{ $totalFirstLogins ?? 0 }}</h4>
                         </div>
-                        <div class="widgets-icons-2 rounded-circle bg-gradient-orange text-white ms-auto"><i class="bx bx-log-in"></i></div>
+                        <div class="widgets-icons-2 rounded-circle bg-gradient-orange text-white ms-auto"><i
+                                class="bx bx-log-in"></i></div>
                     </div>
                 </div>
             </div>
@@ -101,7 +160,81 @@
                             <p class="mb-0 text-secondary">Quiz joués</p>
                             <h4 class="my-1 text-success">{{ $totalQuizzesPlayed ?? 0 }}</h4>
                         </div>
-                        <div class="widgets-icons-2 rounded-circle bg-gradient-orange text-white ms-auto"><i class="bx bx-play-circle"></i></div>
+                        <div class="widgets-icons-2 rounded-circle bg-gradient-orange text-white ms-auto"><i
+                                class="bx bx-play-circle"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <!-- Utilisateurs en ligne -->
+        <div class="col-12 col-md-6 col-xl-3 mb-3">
+            <div class="card shadow-sm border-light">
+                <div class="card-body p-2">
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="dot bg-success me-2 pulse"></span>
+                        <h6 class="mb-0 small fw-bold text-muted">En ligne ({{ count($onlineUsers) }})</h6>
+                    </div>
+                    <ul class="list-unstyled mb-0">
+                        @forelse ($onlineUsers as $user)
+                            <li class="d-flex align-items-center py-1">
+                                <span class="dot-sm bg-success me-2"></span>
+                                <span class="small text-truncate flex-grow-1">{{ $user->name }}</span>
+                                <span class="text-muted extra-small ms-2">{{ $user->role }}</span>
+                            </li>
+                        @empty
+                            <li class="small text-muted fst-italic py-1">Aucun utilisateur</li>
+                        @endforelse
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Récemment connectés -->
+        <div class="col-12 col-md-6 col-xl-3 mb-3">
+            <div class="card shadow-sm border-light">
+                <div class="card-body p-2">
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="dot bg-secondary me-2"></span>
+                        <h6 class="mb-0 small fw-bold text-muted">Récemment ({{ count($recentlyOnlineUsers) }})</h6>
+                    </div>
+                    <ul class="list-unstyled mb-0">
+                        @forelse ($recentlyOnlineUsers as $user)
+                            <li class="d-flex align-items-center py-1">
+                                <span class="dot-sm bg-secondary me-2"></span>
+                                <span class="small text-truncate flex-grow-1">{{ $user->name }}</span>
+                                <span class="text-muted extra-small ms-2">{{ $user->role }}</span>
+                            </li>
+                        @empty
+                            <li class="small text-muted fst-italic py-1">Aucune activité</li>
+                        @endforelse
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistiques -->
+        <div class="col-12 col-md-6 col-xl-3 mb-3">
+            <div class="card shadow-sm border-light">
+                <div class="card-body p-2">
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="dot bg-primary me-2"></span>
+                        <h6 class="mb-0 small fw-bold text-muted">Statistiques</h6>
+                    </div>
+                    <div class="row g-1 text-center">
+                        <div class="col-4">
+                            <div class="small fw-bold text-primary">{{ $loginStats['today'] ?? 0 }}</div>
+                            <div class="extra-small text-muted">Aujourd'hui</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="small fw-bold text-primary">{{ $loginStats['week'] ?? 0 }}</div>
+                            <div class="extra-small text-muted">Semaine</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="small fw-bold text-primary">{{ $loginStats['month'] ?? 0 }}</div>
+                            <div class="extra-small text-muted">Mois</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -119,7 +252,7 @@
                             <label for="formateurFilterDaily" class="form-label">Formateur :</label>
                             <select id="formateurFilterDaily" class="form-select">
                                 <option value="">Tous</option>
-                                @foreach($formateurs ?? [] as $formateur)
+                                @foreach ($formateurs ?? [] as $formateur)
                                     <option value="{{ $formateur->id }}">{{ $formateur->user->name }}</option>
                                 @endforeach
                             </select>
@@ -128,7 +261,7 @@
                             <label for="commercialFilterDaily" class="form-label">Commercial :</label>
                             <select id="commercialFilterDaily" class="form-select">
                                 <option value="">Tous</option>
-                                @foreach($commerciaux ?? [] as $commercial)
+                                @foreach ($commerciaux ?? [] as $commercial)
                                     <option value="{{ $commercial->id }}">{{ $commercial->user->name }}</option>
                                 @endforeach
                             </select>
@@ -137,7 +270,7 @@
                             <label for="poleFilterDaily" class="form-label">Pôle relation client :</label>
                             <select id="poleFilterDaily" class="form-select">
                                 <option value="">Tous</option>
-                                @foreach($poles ?? [] as $pole)
+                                @foreach ($poles ?? [] as $pole)
                                     <option value="{{ $pole->id }}">{{ $pole->user->name }}</option>
                                 @endforeach
                             </select>
@@ -172,7 +305,7 @@
                             <label for="formateurFilterMonthly" class="form-label">Formateur :</label>
                             <select id="formateurFilterMonthly" class="form-select">
                                 <option value="">Tous</option>
-                                @foreach($formateurs ?? [] as $formateur)
+                                @foreach ($formateurs ?? [] as $formateur)
                                     <option value="{{ $formateur->id }}">{{ $formateur->user->name }}</option>
                                 @endforeach
                             </select>
@@ -181,7 +314,7 @@
                             <label for="commercialFilterMonthly" class="form-label">Commercial :</label>
                             <select id="commercialFilterMonthly" class="form-select">
                                 <option value="">Tous</option>
-                                @foreach($commerciaux ?? [] as $commercial)
+                                @foreach ($commerciaux ?? [] as $commercial)
                                     <option value="{{ $commercial->id }}">{{ $commercial->user->name }}</option>
                                 @endforeach
                             </select>
@@ -190,7 +323,7 @@
                             <label for="poleFilterMonthly" class="form-label">Pôle relation client :</label>
                             <select id="poleFilterMonthly" class="form-select">
                                 <option value="">Tous</option>
-                                @foreach($poles ?? [] as $pole)
+                                @foreach ($poles ?? [] as $pole)
                                     <option value="{{ $pole->id }}">{{ $pole->user->name }}</option>
                                 @endforeach
                             </select>
@@ -231,7 +364,7 @@
                 <div class="card-body">
                     <h5 class="card-title">Utilisateurs connectés</h5>
                     <ul id="connectedUsersList" class="list-group">
-                        @foreach($connectedUsers ?? [] as $user)
+                        @foreach ($connectedUsers ?? [] as $user)
                             <li class="list-group-item d-flex align-items-center">
                                 <span class="badge bg-success rounded-circle me-2" style="width:10px;height:10px;"></span>
                                 {{ $user->name }} <span class="text-muted ms-2">({{ $user->role }})</span>
@@ -254,7 +387,8 @@
                                 <span>
                                     <strong>{{ $quiz->quiz_title }}</strong> par {{ $quiz->user_name }}
                                 </span>
-                                <span class="badge bg-primary">{{ $quiz->completed_at ? \Carbon\Carbon::parse($quiz->completed_at)->format('d/m/Y H:i') : '' }}</span>
+                                <span
+                                    class="badge bg-primary">{{ $quiz->completed_at ? \Carbon\Carbon::parse($quiz->completed_at)->format('d/m/Y H:i') : '' }}</span>
                             </li>
                         @empty
                             <li class="list-group-item">Aucun quiz récemment joué.</li>
@@ -273,7 +407,8 @@
                                 <span>
                                     <strong>{{ $quiz->quiz_title }}</strong> par {{ $quiz->user_name }}
                                 </span>
-                                <span class="badge bg-warning">{{ $quiz->started_at ? \Carbon\Carbon::parse($quiz->started_at)->format('d/m/Y H:i') : '' }}</span>
+                                <span
+                                    class="badge bg-warning">{{ $quiz->started_at ? \Carbon\Carbon::parse($quiz->started_at)->format('d/m/Y H:i') : '' }}</span>
                             </li>
                         @empty
                             <li class="list-group-item">Aucun quiz en cours.</li>
@@ -312,7 +447,10 @@
                     merged[entry.label] += entry.total;
                 });
             }
-            return Object.entries(merged).map(([label, total]) => ({ label, total }));
+            return Object.entries(merged).map(([label, total]) => ({
+                label,
+                total
+            }));
         };
 
         const dailyGrouped = groupByQuiz(dailyStats, 'date');
@@ -417,7 +555,9 @@
                 csvRows.push(headers.map(field => '"' + (row[field] ?? '') + '"').join(','));
             });
             const csvString = csvRows.join('\n');
-            const blob = new Blob([csvString], { type: 'text/csv' });
+            const blob = new Blob([csvString], {
+                type: 'text/csv'
+            });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
             link.download = filename;
@@ -510,15 +650,20 @@
                         datasets: [{
                             data: pieValues,
                             backgroundColor: [
-                                '#0d6efd', '#17a00e', '#f41127', '#ffc107', '#212529', '#FEB823', '#6c757d', '#20c997', '#6610f2', '#fd7e14'
+                                '#0d6efd', '#17a00e', '#f41127', '#ffc107', '#212529',
+                                '#FEB823', '#6c757d', '#20c997', '#6610f2', '#fd7e14'
                             ],
                         }]
                     },
                     options: {
                         responsive: true,
                         plugins: {
-                            legend: { position: 'bottom' },
-                            title: { display: false }
+                            legend: {
+                                position: 'bottom'
+                            },
+                            title: {
+                                display: false
+                            }
                         }
                     }
                 });

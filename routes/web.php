@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\FormateurController;
 use App\Http\Controllers\Admin\FormationController;
 use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\ParametreAdminController;
+use App\Http\Controllers\Admin\ParrainageController;
 use App\Http\Controllers\Admin\PoleRelationClientController;
 use App\Http\Controllers\Admin\QuestionController;
 use App\Http\Controllers\Admin\QuizController;
@@ -84,6 +85,8 @@ Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function
     Route::get('/telecharger-modele-prc', [PoleRelationClientController::class, 'downloadPrcModel'])->name('download.prc.model');
     Route::get('/telecharger-modele-formateur', [FormateurController::class, 'downloadFormateurModel'])->name('download.formateur.model');
     Route::get('/telecharger-modele-quiz', [QuizController::class, 'downloadQuizModel'])->name('download.quiz.model');
+    Route::get('parrainage', [ParrainageController::class, 'index'])->name('parrainage.index');
+    Route::get('parrainage/{id}', [ParrainageController::class, 'show'])->name('parrainage.show');
 });
 
 Route::fallback(function () {

@@ -28,7 +28,11 @@ class User extends Authenticatable implements JWTSubject
         'email',
         'password',
         'role',
-        'image'
+        'image',
+        'last_login_at',
+        'last_activity_at',
+        'last_login_ip',
+        'is_online'
     ];
 
     /**
@@ -54,6 +58,11 @@ class User extends Authenticatable implements JWTSubject
         ];
     }
 
+    protected $dates = [
+        'last_login_at',
+        'last_activity_at'
+    ];
+
 
     public function getJWTIdentifier()
     {
@@ -74,6 +83,19 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasOne(Stagiaire::class, 'user_id');
     }
 
+    public function commercial()
+    {
+        return $this->hasOne(Commercial::class, 'user_id');
+    }
+    public function formateur()
+    {
+        return $this->hasOne(Formateur::class, 'user_id');
+    }
+    public function poleRelationClient()
+    {
+        return $this->hasOne(PoleRelationClient::class, 'user_id');
+    }
+
     // Dans app/Models/User.php
     public function getFormattedNameAttribute()
     {
@@ -92,5 +114,14 @@ class User extends Authenticatable implements JWTSubject
         }
 
         return $formatted;
+    }
+
+    public function parrainages()
+    {
+        return $this->hasMany(Parrainage::class, 'parrain_id');
+    }
+    public function filleuls()
+    {
+        return $this->hasMany(Parrainage::class, 'filleul_id');
     }
 }

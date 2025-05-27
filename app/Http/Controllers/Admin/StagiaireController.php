@@ -7,7 +7,6 @@ use App\Http\Requests\StoreStagiaireRequest;
 use App\Models\CatalogueFormation;
 use App\Models\Commercial;
 use App\Models\Formateur;
-use App\Models\Formation;
 use App\Models\Stagiaire;
 use App\Models\User;
 use App\Services\StagiaireService;
@@ -19,6 +18,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\HtmlString;
 
 class StagiaireController extends Controller
 {
@@ -172,12 +172,13 @@ class StagiaireController extends Controller
                 'Ville',
                 ['Code postal', 'Codepostal', 'Code Postal'],
                 'Adresse',
-                ['Date de naissance', 'Datedenaissance', 'Date Naissance']
+                ['Date de naissance', 'Datedenaissance', 'Date Naissance'],
+                'Formation'
             ];
             $headerValues = [];
             $headerCells->rewind();
             // On ne prend que les 8 premières colonnes (même si le fichier en a plus)
-            for ($i = 0; $i < 8; $i++) {
+            for ($i = 0; $i < 9; $i++) {
                 if ($headerCells->valid()) {
                     $headerValues[] = preg_replace('/\s+/', '', strtolower(trim($headerCells->current()->getValue())));
                     $headerCells->next();
@@ -185,6 +186,7 @@ class StagiaireController extends Controller
                     $headerValues[] = '';
                 }
             }
+
 
             // Préparation des en-têtes attendus pour comparaison
             $expectedHeadersNormalized = [];
@@ -199,21 +201,25 @@ class StagiaireController extends Controller
                     $expectedHeadersNormalized[] = [preg_replace('/\s+/', '', strtolower($header))];
                 }
             }
-
             // Vérification des en-têtes
             $headerErrors = [];
+            $headerIsValid = true;
+
             foreach ($expectedHeadersNormalized as $index => $possibleHeaders) {
                 if (!isset($headerValues[$index]) || !in_array($headerValues[$index], $possibleHeaders)) {
                     $officialHeader = is_array($expectedHeaders[$index]) ? $expectedHeaders[$index][0] : $expectedHeaders[$index];
                     $headerErrors[] = "Colonne " . ($index + 1) . ": Attendu '{$officialHeader}'";
+                    $headerIsValid = false;
                 }
             }
 
-            return redirect()->route('stagiaires.index')
-                ->with('error', new \Illuminate\Support\HtmlString(
-                    'En-têtes incorrects:<br>' . implode('<br>', $headerErrors) .
-                        '<br>Veuillez utiliser le modèle fourni.'
-                ));
+            if (!$headerIsValid) {
+                return redirect()->route('stagiaires.index')
+                    ->with('error', new \Illuminate\Support\HtmlString(
+                        'En-têtes incorrects:<br>' . implode('<br>', $headerErrors) .
+                            '<br>Veuillez utiliser le modèle fourni.'
+                    ));
+            }
 
 
 
@@ -232,23 +238,22 @@ class StagiaireController extends Controller
                     }
 
                     // On arrête une fois qu'on a 8 valeurs non vides
-                    if (count($data) === 8) {
+                    if (count($data) === 9) {
                         break;
                     }
                 }
-
                 // Si moins de 8 valeurs, on complète avec des chaînes vides
-                while (count($data) < 8) {
+                while (count($data) < 9) {
                     $data[] = '';
                 }
 
                 // // Vérifier que la ligne contient exactement 8 colonnes comme dans l'en-tête
-                if (count($data) !== 8) {
+                if (count($data) !== 9) {
                     $invalidRows[] = 'Ligne ' . $row->getRowIndex() . ': Nombre de colonnes incorrect';
                     continue;
                 }
 
-                list($civilite, $tiers, $email, $telephone, $ville, $codePostal, $adresse, $dateNaissance) = $data;
+                list($civilite, $tiers, $email, $telephone, $ville, $codePostal, $adresse, $dateNaissance, $formation) = $data;
                 // Validation des champs obligatoires
                 if (empty($email) || empty($tiers) || empty($civilite)) {
                     $invalidRows[] = 'Ligne ' . $row->getRowIndex() . ': Champs obligatoires manquants';
@@ -295,7 +300,7 @@ class StagiaireController extends Controller
                         'role' => 'stagiaire',
                     ]);
 
-                    Stagiaire::create([
+                    $stagiaire = Stagiaire::create([
                         'civilite' => $civilite,
                         'prenom' => $np['prenom'],
                         'nom' => $np['nom'],
@@ -311,6 +316,24 @@ class StagiaireController extends Controller
                         'date_inscription' => now(),
                     ]);
 
+                    // Si une formation est spécifiée, on l'associe
+                    if (!empty(trim($data[8]))) {
+                        // On supprime les espaces superflus et on cherche la formation
+                        $formationTitre = trim($data[8]);
+                        $formation = CatalogueFormation::where('titre', $formationTitre)->first();
+
+                        DB::table('stagiaire_catalogue_formations')->insert([
+                            'stagiaire_id' => $stagiaire->id,
+                            'catalogue_formation_id' => $formation->id ?? null,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ]);
+                        if (!$formation) {
+                            $invalidRows[] = 'Ligne ' . $row->getRowIndex() . ': Formation "' . $formationTitre . '" non trouvée';
+                            DB::rollBack();
+                            continue;
+                        }
+                    }
                     DB::commit();
                     $importedCount++;
                 } catch (\Exception $e) {
@@ -327,10 +350,12 @@ class StagiaireController extends Controller
             }
 
             if (count($ignoredEmails) > 0) {
-                $message .= "<br>" . count($ignoredEmails) . " doublons ignorés";
+                \Log::info('Emails ignorés : ' . implode(', ', $ignoredEmails));
+                $message .= "<br>" . count($ignoredEmails) . " doublons ignorés : " . implode(', ', $ignoredEmails);
             }
 
             if (count($invalidRows) > 0) {
+
                 $message .= "<br>" . count($invalidRows) . ' ' . (count($invalidRows) === 1 ? 'erreur' : 'erreurs');
             }
 
@@ -338,12 +363,13 @@ class StagiaireController extends Controller
             // Retour avec le statut approprié
             if ($importedCount > 0) {
                 return redirect()->route('stagiaires.index')
-                    ->with('success', $message);
+                    ->with('success', new HtmlString($message));
             } else {
                 return redirect()->route('stagiaires.index')
-                    ->with('error', $message);
+                    ->with('error', new HtmlString($message));
             }
         } catch (\Exception $e) {
+            \Log::error('Erreur import ligne ' . $row->getRowIndex() . ': ' . $e->getMessage());
             return redirect()->route('stagiaires.index')
                 ->with('error', 'Erreur lors de l\'import: ' . $e->getMessage());
         }

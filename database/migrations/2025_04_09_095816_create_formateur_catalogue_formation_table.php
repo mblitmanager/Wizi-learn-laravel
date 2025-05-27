@@ -13,7 +13,7 @@ return new class extends Migration {
         Schema::create('formateur_catalogue_formation', function (Blueprint $table) {
             $table->id();
             $table->foreignId('formateur_id')->constrained('formateurs')->onDelete('cascade');
-            $table->foreignId('catalogue_formation_id')->constrained('formations')->onDelete('cascade');
+            $table->foreignId('catalogue_formation_id')->constrained('catalogue_formations')->onDelete('cascade');
             $table->softDeletes();
             $table->timestamps();
         });
