@@ -211,6 +211,23 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
+
+                        <div class="col-md-4">
+                            <label for="poleRelation_id">Pôle relation client</label>
+                            <select name="poleRelation_id[]" id="poleRelation_id" multiple
+                                class="form-control select2 @error('poleRelation_id') is-invalid @enderror">
+                                @foreach ($poleRelations as $poleRelation)
+                                    <option value="{{ $poleRelation->id }}"
+                                        {{ in_array($poleRelation->id, old('poleRelation_id', $stagiaire->poleRelations ? $stagiaire->poleRelations->pluck('id')->toArray() : [])) ? 'selected' : '' }}>
+                                        {{ $poleRelation->user->formatted_name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('poleRelation_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
                         <div class="text-center">
                             <button type="submit" class="btn  btn-sm btn-success px-4"><i
                                     class="lni lni-save"></i>Mettre

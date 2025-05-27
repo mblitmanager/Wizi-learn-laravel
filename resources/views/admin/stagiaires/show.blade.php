@@ -137,12 +137,28 @@
                                             {{ $stagiaire->date_inscription ? \Carbon\Carbon::parse($stagiaire->date_inscription)->format('d/m/Y') : 'Non renseignée' }}
                                         </div>
                                     </div>
+                                    <div class="row mb-3">
+                                        <label class="col-sm-4 ">Pôle Relation Client :</label>
+                                        <div class="col-sm-8">
+                                            @if(!$stagiaire->poleRelationClients->isEmpty())
+                                            <ul class="list-group">
+                                                @foreach($stagiaire->poleRelationClients as $pole)
+                                                <li class="list-group-item">
+                                                    {{ $pole->user->formatted_name ?? $pole->user->name ?? $pole->name }}
+                                                </li>
+                                                @endforeach
+                                            </ul>
+                                            @else
+                                            Non renseigné
+                                            @endif
+                                        </div>
+                                    </div>
 
                                 </div>
                                 <hr>
                                 <div class="container my-4">
                                     <!-- Formations Section -->
-                                    @unless ($stagiaire->formations->isEmpty())
+                                    @unless ($stagiaire->catalogue_formations->isEmpty())
                                     <div class="card mb-4 shadow-sm">
                                         <div class="card-header  text-white">
                                             <h5 class="mb-0"><i class="bx bx-book-reader me-2"></i> Formations
@@ -151,7 +167,7 @@
                                         <div class="card-body"
                                             style="box-shadow: rgba(17, 12, 46, 0.15) 0px 48px 100px 0px;">
                                             <div class="accordion accordion-flush" id="accordionFormation">
-                                                @foreach ($stagiaire->formations as $index => $formation)
+                                                @foreach ($stagiaire->catalogue_formations as $index => $formation)
                                                 @php
                                                 $bgColor = '';
                                                 switch ($formation->categorie) {
@@ -190,15 +206,15 @@
                                                         <div class="accordion-body">
                                                             <ul class="list-group list-group-flush">
                                                                 <li class="list-group-item"><strong>Categorie
-                                                                        :</strong> {{ $formation->categorie }}</li>
+                                                                        :</strong> {{ $catalogue_formations->categorie }}</li>
                                                                 <li class="list-group-item"><strong>Durée
-                                                                        :</strong> {{ $formation->duree }}</li>
+                                                                        :</strong> {{ $catalogueFormation->duree }}</li>
                                                                 <li class="list-group-item"><strong>Description
-                                                                        :</strong> {{ $formation->description }}
+                                                                        :</strong> {{ $catalogueFormation->description }}
                                                                 </li>
                                                                 <li class="list-group-item"><strong>Date de
                                                                         création :</strong>
-                                                                    {{ $formation->created_at->format('d/m/Y à H:i') }}
+                                                                    {{ $catalogueFormation->created_at->format('d/m/Y à H:i') }}
                                                                 </li>
                                                             </ul>
                                                         </div>
@@ -260,7 +276,7 @@
                                                             <hr>
                                                             <h6><strong>Formations proposées :</strong></h6>
                                                             <ul class="list-group">
-                                                                @foreach ($formateur->formations as $row)
+                                                                @foreach ($formateur->catalogueFormation as $row)
                                                                 @php
                                                                 $bgColor = '';
                                                                 switch ($row->categorie) {

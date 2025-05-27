@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\HtmlString;
+use App\Models\PoleRelationClient as PoleRelation;
 
 class StagiaireController extends Controller
 {
@@ -46,7 +47,8 @@ class StagiaireController extends Controller
         $formations = CatalogueFormation::all();
         $formateurs = Formateur::all();
         $commercials = Commercial::all();
-        return view('admin.stagiaires.create', compact('formations', 'formateurs', 'commercials'));
+        $poleRelations = PoleRelation::all();
+        return view('admin.stagiaires.create', compact('formations', 'formateurs', 'commercials', 'poleRelations'));
     }
 
     public function store(StoreStagiaireRequest $request): RedirectResponse
@@ -64,7 +66,8 @@ class StagiaireController extends Controller
         $formations = CatalogueFormation::all();
         $formateurs = Formateur::all();
         $commercials = Commercial::all();
-        return view('admin.stagiaires.edit', compact('formations', 'formateurs', 'commercials', 'stagiaire'));
+        $poleRelations = PoleRelation::all();
+        return view('admin.stagiaires.edit', compact('formations', 'formateurs', 'commercials', 'stagiaire', 'poleRelations'));
     }
 
     public function update(StoreStagiaireRequest $request, $id): RedirectResponse

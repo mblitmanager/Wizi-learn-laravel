@@ -89,9 +89,13 @@
                             <!-- Civilité -->
                             <div class="mb-3">
                                 <label for="civilite">Civilité</label>
-                                <input type="text" name="civilite" id="civilite"
-                                    class="form-control @error('civilite') is-invalid @enderror"
-                                    value="{{ old('civilite', $stagiaire->civilite ?? '') }}">
+                                <select name="civilite" id="civilite" class="form-control @error('civilite') is-invalid @enderror">
+                                    <option value="">Sélectionner</option>
+                                    <option value="M." {{ old('civilite', $stagiaire->civilite ?? '') == 'M.' ? 'selected' : '' }}>M.</option>
+                                    <option value="Mme" {{ old('civilite', $stagiaire->civilite ?? '') == 'Mme' ? 'selected' : '' }}>Mme</option>
+                                    <option value="Mlle" {{ old('civilite', $stagiaire->civilite ?? '') == 'Mlle' ? 'selected' : '' }}>Mlle</option>
+                                    <option value="Autre" {{ old('civilite', $stagiaire->civilite ?? '') == 'Autre' ? 'selected' : '' }}>Autre</option>
+                                </select>
                                 @error('civilite')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -189,6 +193,7 @@
                             </div>
                         </div>
 
+
                         <div class="col-md-12">
                             <div class="accordion mb-3" id="accordionExample">
                                 <div class="accordion-item">
@@ -266,6 +271,21 @@
                                     @endforeach
                                 </select>
                                 @error('commercial_id')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                             <div class="col-md-4">
+                                <label for="poleRelation_id">Pole Relation Client (optionnel)</label>
+                                <select name="poleRelation_id[]" id="poleRelation_id" multiple
+                                    class="form-control select2 @error('commercial_id') is-invalid @enderror">
+                                    @foreach ($poleRelations as $poleRelation)
+                                        <option value="{{ $poleRelation->id }}"
+                                            {{ old('poleRelation_id', $stagiaire->poleRelation_id ?? '') == $poleRelation->id ? 'selected' : '' }}>
+                                            {{ strtoupper($poleRelation->user->formatted_name) }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('poleRelation_id')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
