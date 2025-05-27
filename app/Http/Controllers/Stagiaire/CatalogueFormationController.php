@@ -47,7 +47,7 @@ class CatalogueFormationController extends Controller
     /**
      * Télécharger le PDF du cursus
      */
-    public function downloadPdf($id)
+    public function getCataloguePdf($id)
     {
         try {
             $catalogueFormation = $this->catalogueFormationService->show($id);
@@ -70,11 +70,11 @@ class CatalogueFormationController extends Controller
             }
 
             return response()->json([
-                'success' => true,
-                'data' => [
-                    'url' => asset($catalogueFormation->cursus_pdf),
-                    'filename' => 'cursus_' . strtoupper($catalogueFormation->titre) . '.pdf'
-                ]
+                // 'success' => true,
+                // 'data' => [
+                     asset($catalogueFormation->cursus_pdf)
+                    // 'filename' => 'cursus_' . strtoupper($catalogueFormation->titre) . '.pdf'
+                // ]
             ]);
         } catch (\Exception $e) {
             return response()->json([
