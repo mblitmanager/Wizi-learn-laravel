@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\PoleRelationClientController;
 use App\Http\Controllers\Admin\QuestionController;
 use App\Http\Controllers\Admin\QuizController;
 use App\Http\Controllers\Admin\StagiaireController;
+use App\Http\Controllers\Stagiaire\DashboardController;
 use Illuminate\Support\Facades\Route;
 use PhpOffice\PhpSpreadsheet\Calculation\TextData\Format;
 
@@ -35,6 +36,9 @@ Route::prefix('administrateur')->group(function () {
 
 Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
+    Route::get('dashboard/activity', [AdminController::class, 'getUserActivity'])->name('dashboard.activity');
+    Route::get('dashboard/stats-login', [AdminController::class, 'getLoginStats'])->name('dashboard.stats-login');
+
     Route::get('/logout', [AdminController::class, 'logout'])->name('logout');
     Route::resource('stagiaires', StagiaireController::class);
     Route::patch('/stagiaires/{id}/desactive', [StagiaireController::class, 'desactive'])->name('stagiaires.desactive');

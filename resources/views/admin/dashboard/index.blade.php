@@ -68,60 +68,7 @@
     </div>
 
 
-    <style>
-        .dot {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-        }
 
-        .dot-sm {
-            display: inline-block;
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
-
-        .pulse {
-            animation: pulse-animation 1.5s infinite;
-        }
-
-        @keyframes pulse-animation {
-            0% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0.3;
-            }
-
-            100% {
-                opacity: 1;
-            }
-        }
-
-        .extra-small {
-            font-size: 0.65rem;
-        }
-    </style>
-
-    <style>
-        .thin-scrollbar::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        .thin-scrollbar::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
-        }
-
-        .thin-scrollbar::-webkit-scrollbar-thumb {
-            background: #c1c1c1;
-            border-radius: 10px;
-        }
-    </style>
 
     <div class="row row-cols-1 row-cols-md-2 row-cols-xl-4">
         <div class="col">
@@ -167,79 +114,7 @@
             </div>
         </div>
     </div>
-    <div class="row">
-        <!-- Utilisateurs en ligne -->
-        <div class="col-12 col-md-6 col-xl-3 mb-3">
-            <div class="card shadow-sm border-light">
-                <div class="card-body p-2">
-                    <div class="d-flex align-items-center mb-2">
-                        <span class="dot bg-success me-2 pulse"></span>
-                        <h6 class="mb-0 small fw-bold text-muted">En ligne ({{ count($onlineUsers) }})</h6>
-                    </div>
-                    <ul class="list-unstyled mb-0">
-                        @forelse ($onlineUsers as $user)
-                            <li class="d-flex align-items-center py-1">
-                                <span class="dot-sm bg-success me-2"></span>
-                                <span class="small text-truncate flex-grow-1">{{ $user->name }}</span>
-                                <span class="text-muted extra-small ms-2">{{ $user->role }}</span>
-                            </li>
-                        @empty
-                            <li class="small text-muted fst-italic py-1">Aucun utilisateur</li>
-                        @endforelse
-                    </ul>
-                </div>
-            </div>
-        </div>
 
-        <!-- Récemment connectés -->
-        <div class="col-12 col-md-6 col-xl-3 mb-3">
-            <div class="card shadow-sm border-light">
-                <div class="card-body p-2">
-                    <div class="d-flex align-items-center mb-2">
-                        <span class="dot bg-secondary me-2"></span>
-                        <h6 class="mb-0 small fw-bold text-muted">Récemment ({{ count($recentlyOnlineUsers) }})</h6>
-                    </div>
-                    <ul class="list-unstyled mb-0">
-                        @forelse ($recentlyOnlineUsers as $user)
-                            <li class="d-flex align-items-center py-1">
-                                <span class="dot-sm bg-secondary me-2"></span>
-                                <span class="small text-truncate flex-grow-1">{{ $user->name }}</span>
-                                <span class="text-muted extra-small ms-2">{{ $user->role }}</span>
-                            </li>
-                        @empty
-                            <li class="small text-muted fst-italic py-1">Aucune activité</li>
-                        @endforelse
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <!-- Statistiques -->
-        <div class="col-12 col-md-6 col-xl-3 mb-3">
-            <div class="card shadow-sm border-light">
-                <div class="card-body p-2">
-                    <div class="d-flex align-items-center mb-2">
-                        <span class="dot bg-primary me-2"></span>
-                        <h6 class="mb-0 small fw-bold text-muted">Statistiques</h6>
-                    </div>
-                    <div class="row g-1 text-center">
-                        <div class="col-4">
-                            <div class="small fw-bold text-primary">{{ $loginStats['today'] ?? 0 }}</div>
-                            <div class="extra-small text-muted">Aujourd'hui</div>
-                        </div>
-                        <div class="col-4">
-                            <div class="small fw-bold text-primary">{{ $loginStats['week'] ?? 0 }}</div>
-                            <div class="extra-small text-muted">Semaine</div>
-                        </div>
-                        <div class="col-4">
-                            <div class="small fw-bold text-primary">{{ $loginStats['month'] ?? 0 }}</div>
-                            <div class="extra-small text-muted">Mois</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
     <div class="row mt-5">
         <div class="col-md-6 mb-4">
             <div class="card shadow-sm border-0">

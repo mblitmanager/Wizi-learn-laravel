@@ -21,7 +21,7 @@ class RankingController extends Controller
 
     public function getGlobalRanking()
     {
-       try {
+        try {
             // Récupérer tous les classements avec leurs relations
             $classements = Classement::with(['stagiaire.user', 'quiz'])
                 ->get()
@@ -155,8 +155,8 @@ class RankingController extends Controller
         try {
 
             $user = JWTAuth::parseToken()->authenticate();
-             // Charger la relation stagiaire si elle n'est pas déjà chargée
-             if (!isset($user->relations['stagiaire'])) {
+            // Charger la relation stagiaire si elle n'est pas déjà chargée
+            if (!isset($user->relations['stagiaire'])) {
                 $user->load('stagiaire');
             }
 
@@ -220,7 +220,7 @@ class RankingController extends Controller
                 return $item['stagiaire']['id'] == (string)$stagiaire->id;
             });
             $progress = $this->rankingService->getStagiaireProgress($user->stagiaire->id);
-            $user->stagiaire->load(['user', 'formations', 'formateur', 'commercial']);
+            $user->stagiaire->load(['user', 'catalogue_formations', 'formateur', 'commercial']);
             $response = [
                 'stagiaire' => [
                     'id' => (string)$user->stagiaire->id,

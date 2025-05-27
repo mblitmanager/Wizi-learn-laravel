@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Commercial;
 use App\Models\Formateur;
+use App\Models\LoginHistories;
 use App\Models\PoleRelationClient;
 use App\Models\Stagiaire;
 use App\Models\User;
@@ -98,6 +99,24 @@ class AdminController extends Controller
             ->get();
 
 
+        return view('admin.dashboard.index', compact(
+            'totalStagiaires',
+            'totalFormateurs',
+            'totalCommerciaux',
+            'totalPoleRelationClient',
+            'dailyStats',
+            'monthlyStats',
+            'formateurs',
+            'commerciaux',
+            'poles',
+            'connectedUsers',
+            'recentQuizzes',
+            'activeQuizzes'
+        ));
+    }
+
+    public function getUserActivity()
+    {
         $onlineUsers = User::where('is_online', true)
             ->with(['stagiaire', 'commercial', 'formateur', 'poleRelationClient'])
             ->orderBy('last_activity_at', 'desc')
@@ -115,24 +134,91 @@ class AdminController extends Controller
             'this_week' => User::whereBetween('last_login_at', [now()->startOfWeek(), now()->endOfWeek()])->count(),
             'this_month' => User::whereBetween('last_login_at', [now()->startOfMonth(), now()->endOfMonth()])->count(),
         ];
+        return view('admin.dashboard.activity', compact(
 
-        return view('admin.dashboard.index', compact(
-            'totalStagiaires',
-            'totalFormateurs',
-            'totalCommerciaux',
-            'totalPoleRelationClient',
-            'dailyStats',
-            'monthlyStats',
-            'formateurs',
-            'commerciaux',
-            'poles',
-            'connectedUsers',
-            'recentQuizzes',
-            'activeQuizzes',
             'onlineUsers',
             'recentlyOnlineUsers',
             'loginStats',
         ));
+    }
+
+    public function getLoginStats()
+    {
+        $countriesData = LoginHistories::select([
+            'country',
+            DB::raw('count(*) as total'),
+            DB::raw('MAX(login_at) as last_activity')
+        ])
+            ->whereNotNull('country')
+            ->groupBy('country')
+            ->orderByDesc('total')
+            ->get();
+
+        // Format pour la carte
+        $mapData = $countriesData->map(function ($item) {
+            return [
+                'country' => $item->country,
+                'value' => $item->total,
+                'last_activity' => $item->last_activity,
+                'code' => $this->getCountryCode($item->country)
+            ];
+        });
+
+
+        return response()->json([
+            'map_data' => $mapData,
+            'online_users' => User::where('is_online', true)->count(),
+            'total_logins' => LoginHistories::count()
+        ]);
+    }
+    // Helper pour obtenir les codes pays ISO
+    private function getCountryCode($countryName)
+    {
+        $countries = [
+            'France' => 'FR',
+            'United States' => 'US',
+            'Germany' => 'DE',
+            'United Kingdom' => 'GB',
+            'Spain' => 'ES',
+            'Italy' => 'IT',
+            'Canada' => 'CA',
+            'Australia' => 'AU',
+            'Netherlands' => 'NL',
+            'Belgium' => 'BE',
+            'Switzerland' => 'CH',
+            'Sweden' => 'SE',
+            'Norway' => 'NO',
+            'Denmark' => 'DK',
+            'Finland' => 'FI',
+            'Poland' => 'PL',
+            'Portugal' => 'PT',
+            'Austria' => 'AT',
+            'Ireland' => 'IE',
+            'Russia' => 'RU',
+            'China' => 'CN',
+            'Japan' => 'JP',
+            'India' => 'IN',
+            'Brazil' => 'BR',
+            'Mexico' => 'MX',
+            'South Africa' => 'ZA',
+            'South Korea' => 'KR',
+            'Turkey' => 'TR',
+            'Argentina' => 'AR',
+            'New Zealand' => 'NZ',
+            'Greece' => 'GR',
+            'Czech Republic' => 'CZ',
+            'Hungary' => 'HU',
+            'Romania' => 'RO',
+            'Madagascar' => 'MG',
+            'Algeria' => 'DZ',
+            'Tunisia' => 'TN',
+            'Morocco' => 'MA',
+            'Egypt' => 'EG',
+            'United Arab Emirates' => 'AE',
+            'Saudi Arabia' => 'SA',
+        ];
+
+        return $countries[$countryName] ?? strtoupper(substr($countryName, 0, 2));
     }
 
     public function showRegisterForm()
