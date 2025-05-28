@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\QuizStoreRequest;
+use App\Models\CatalogueFormation;
 use App\Models\CorrespondancePair;
 use App\Models\Formation;
 use App\Models\Questions;
@@ -426,11 +427,11 @@ class QuizController extends Controller
             }
 
             DB::commit();
-               // Envoyer une notification pour le nouveau quiz
-        $this->notificationService->notifyQuizAvailable(
-            $quiz->titre,
-            $quiz->id
-        );
+            // Envoyer une notification pour le nouveau quiz
+            $this->notificationService->notifyQuizAvailable(
+                $quiz->titre,
+                $quiz->id
+            );
 
 
             return redirect()->route('quiz.index')->with('success', 'Quiz, question et réponses créés avec succès.');
@@ -485,7 +486,7 @@ class QuizController extends Controller
             }
 
             // Recherche de la formation
-            $formation = Formation::where('titre', $formationNom)->first();
+            $formation = CatalogueFormation::where('titre', $formationNom)->first();
             if (!$formation) {
                 return back()->with('error', "La formation '$formationNom' n'existe pas dans la base.");
             }
@@ -706,13 +707,13 @@ class QuizController extends Controller
                 }
             }
             DB::commit();
-                      // Envoyer une notification pour le nouveau quiz
-        if ($newQuiz->status === 'actif') {
-            $this->notificationService->notifyQuizAvailable(
-            $newQuiz->titre,
-            $newQuiz->id
-            );
-        }
+            // Envoyer une notification pour le nouveau quiz
+            if ($newQuiz->status === 'actif') {
+                $this->notificationService->notifyQuizAvailable(
+                    $newQuiz->titre,
+                    $newQuiz->id
+                );
+            }
 
             return redirect()->route('quiz.edit', $newQuiz->id)
                 ->with('success', 'Quiz dupliqué avec succès.');
@@ -768,7 +769,7 @@ class QuizController extends Controller
             $quiz = Quiz::findOrFail($id);
 
             // Supprimer les réponses associées
-            QuizParticipationAnswer::whereHas('participation', function($query) use ($id) {
+            QuizParticipationAnswer::whereHas('participation', function ($query) use ($id) {
                 $query->where('quiz_id', $id);
             })->delete();
 

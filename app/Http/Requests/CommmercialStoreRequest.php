@@ -40,7 +40,7 @@ class CommmercialStoreRequest extends FormRequest
                 Rule::in(['commercial']),
             ],
             'telephone' => 'nullable|string',
-            'stagiaire_id' => 'required|exists:stagiaires,id',
+            'stagiaire_id' => 'nullable|exists:stagiaires,id',
         ];
     }
 

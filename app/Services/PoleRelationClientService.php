@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 use App\Models\PoleRelationClient;
@@ -34,7 +35,7 @@ class PoleRelationClientService implements PRCInterface
         // 2. Associer l'utilisateur
         $data['user_id'] = $user->id;
 
-        $stagiaireId = $data['stagiaire_id'];
+        $stagiaireId = $data['stagiaire_id'] ?? [];
         unset($data['stagiaire_id']);
 
 
@@ -45,7 +46,6 @@ class PoleRelationClientService implements PRCInterface
         $prc->stagiaires()->sync($stagiaireId);
 
         return $prc;
-
     }
     public function update(int $id, array $data): bool
     {

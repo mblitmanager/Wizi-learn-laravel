@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 use App\Models\User;
@@ -37,7 +38,7 @@ class CommercialService
         // 2. Associer l'utilisateur
         $data['user_id'] = $user->id;
 
-        $stagiaireId = $data['stagiaire_id'];
+        $stagiaireId = $data['stagiaire_id'] ?? [];
         $commercial = $this->commercialInterface->create($data);
         $commercial = $this->commercialInterface->create($data);
 

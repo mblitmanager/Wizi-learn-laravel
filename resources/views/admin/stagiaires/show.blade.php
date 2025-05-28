@@ -142,7 +142,7 @@
                                 <hr>
                                 <div class="container my-4">
                                     <!-- Formations Section -->
-                                    @unless ($stagiaire->formations->isEmpty())
+                                    @unless ($stagiaire->catalogue_formations->isEmpty())
                                     <div class="card mb-4 shadow-sm">
                                         <div class="card-header  text-white">
                                             <h5 class="mb-0"><i class="bx bx-book-reader me-2"></i> Formations
