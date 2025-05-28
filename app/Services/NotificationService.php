@@ -17,7 +17,7 @@ class NotificationService
             $stagiaire = $user->stagiaire;
             $formation = null;
             if ($stagiaire) {
-                $formation = $stagiaire->formations();//->wherePivot('status', 'active')->first();
+                $formation = $stagiaire->catalogue_formations();//->wherePivot('status', 'active')->first();
             }
             if ($formation) {
             Notification::create([
