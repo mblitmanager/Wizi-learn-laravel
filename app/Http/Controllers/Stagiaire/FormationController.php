@@ -21,7 +21,7 @@ class FormationController extends Controller
         $this->formationService = $formationService;
     }
 
-    public function getFormationsByStagiaireId($id)
+    public function getFormationsByStagiaire($id)
     {
         try {
             // Vérifie d'abord si le stagiaire existe
