@@ -7,16 +7,20 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\MediaRequest;
 use App\Models\Formation;
 use App\Services\MediaAdminService;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use App\Models\User;
 
 class MediaController extends Controller
 {
     protected $mediaService;
+    protected $notificationService;
 
-    public function __construct(MediaAdminService $mediaService)
+    public function __construct(MediaAdminService $mediaService, NotificationService $notificationService)
     {
         $this->mediaService = $mediaService;
+        $this->notificationService = $notificationService;
     }
     /**
      * Display a listing of the resource.
@@ -40,9 +44,7 @@ class MediaController extends Controller
     public function store(MediaRequest $request)
     {
         $validated = $request->validated();
-
         $sourceType = $request->input('source_type', 'file');
-
         if ($sourceType === 'file' && $request->hasFile('url')) {
             $file = $request->file('url');
             $fileName = time() . '.' . $file->getClientOriginalExtension();
@@ -51,14 +53,13 @@ class MediaController extends Controller
         } elseif ($sourceType === 'url' && $request->filled('url')) {
             $validated['url'] = $request->input('url');
         }
-
         $media = $this->mediaService->create($validated);
 
-        // Notification Pusher
-        event(new TestNotification([
-            'author' => (auth()->user() ? auth()->user()->name : 'Admin'),
-            'title' => 'Nouveau média : ' . ($media->titre ?? ''),
-        ]));
+        // Notification à tous les stagiaires
+        $users = \App\Models\User::where('role', 'stagiaire')->get();
+        foreach ($users as $user) {
+            $this->notificationService->notifyMediaCreated($user->id, $media->titre ?? '', $media->id);
+        }
 
         return redirect()->route('medias.index')
             ->with('success', 'Le media a été créé avec succès.');
