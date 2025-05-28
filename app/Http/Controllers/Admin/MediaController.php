@@ -40,11 +40,19 @@ class MediaController extends Controller
     {
         $validated = $request->validated();
 
-        if ($request->hasFile('url')) {
+        $sourceType = $request->input('source_type', 'file');
+
+        if ($sourceType === 'file' && $request->hasFile('url')) {
             $file = $request->file('url');
             $fileName = time() . '.' . $file->getClientOriginalExtension();
             $file->move(public_path('uploads/medias'), $fileName);
             $validated['url'] = 'uploads/medias/' . $fileName;
+        } elseif ($sourceType === 'url' && $request->filled('url')) {
+            $validated['url'] = $request->input('url');
+            // Optionnel : ajouter une validation supplémentaire pour l'URL ici si nécessaire
+        } else {
+            // Gérer le cas où aucune source valide n'est fournie (optionnel, selon la validation dans MediaRequest)
+            // Pour l'instant, on laisse le MediaRequest gérer l'erreur si le champ 'url' est requis
         }
 
         $this->mediaService->create($validated);
@@ -61,11 +69,19 @@ class MediaController extends Controller
     {
 
         $validated = $request->validated();
-        if ($request->hasFile('url')) {
+
+        $sourceType = $request->input('source_type', 'file');
+
+        if ($sourceType === 'file' && $request->hasFile('url')) {
             $file = $request->file('url');
             $fileName = time() . '.' . $file->getClientOriginalExtension();
             $file->move(public_path('uploads/medias'), $fileName);
             $validated['url'] = 'uploads/medias/' . $fileName;
+        } elseif ($sourceType === 'url' && $request->filled('url')) {
+            $validated['url'] = $request->input('url');
+            // Optionnel : ajouter une validation supplémentaire pour l'URL ici si nécessaire
+        } else {
+            // Gérer le cas où aucune source valide n'est fournie (optionnel)
         }
 
         $this->mediaService->update($id, $validated);

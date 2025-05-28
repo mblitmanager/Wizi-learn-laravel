@@ -24,12 +24,35 @@ class MediaRequest extends FormRequest
         return [
             'titre' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'url' => 'nullable|file|mimes:jpg,jpeg,png,gif,mp4,avi,mov,pdf,mp3|max:102400',
+            'url' => [
+                'nullable',
+                function ($attribute, $value, $fail) {
+                    $sourceType = request()->input('source_type');
+                    if ($sourceType === 'file') {
+                        if (!request()->hasFile('url')) {
+                            $fail('Le fichier est requis lorsque vous choisissez de téléverser un fichier.');
+                        }
+                        $file = request()->file('url');
+                        $allowedMimes = ['jpg', 'jpeg', 'png', 'gif', 'mp4', 'avi', 'mov', 'pdf', 'mp3'];
+                        if (!in_array($file->getClientOriginalExtension(), $allowedMimes)) {
+                            $fail('Le fichier doit être au format jpg, jpeg, png, gif, mp4, avi, mov, pdf ou mp3.');
+                        }
+                        if ($file->getSize() > 102400 * 1024) { // 100MB en octets
+                            $fail('Le fichier ne doit pas dépasser 100 Mo.');
+                        }
+                    } elseif ($sourceType === 'url') {
+                        if (!filter_var($value, FILTER_VALIDATE_URL)) {
+                            $fail('L\'URL fournie n\'est pas valide.');
+                        }
+                    }
+                }
+            ],
             'type' => 'required|string|in:video,document,image,audio',
             'categorie' => 'required|string|in:tutoriel,astuce',
             'duree' => 'nullable|integer|min:1',
             'ordre' => 'nullable|integer|min:0',
             'formation_id' => 'required|exists:formations,id',
+            'source_type' => 'required|in:file,url',
         ];
     }
 
@@ -42,13 +65,13 @@ class MediaRequest extends FormRequest
 
             'description.string' => 'La description doit être une chaîne de caractères.',
 
-            'url.mimes' => 'Le fichier doit être au format jpg, jpeg, png, mp4 ou pdf.',
-            'url.max' => 'Le fichier ne doit pas dépasser 10 Mo.',
+            'url.*' => 'Le champ URL n\'est pas valide.',
+            'source_type.required' => 'Le type de source est obligatoire.',
+            'source_type.in' => 'Le type de source doit être soit "file" ou "url".',
 
             'type.required' => 'Le type est obligatoire.',
             'type.string' => 'Le type doit être une chaîne de caractères.',
             'type.in' => 'Le type doit être soit "video", "document" ou "image".',
-
 
             'categorie.string' => 'La catégorie doit être une chaîne de caractères.',
             'categorie.in' => 'La catégorie doit être soit "tutoriel" ou "astuce".',

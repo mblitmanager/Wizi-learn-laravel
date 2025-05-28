@@ -31,36 +31,64 @@
                     <div class="row">
                         <!-- Colonne pour le média -->
                         <div class="col-md-6 d-flex justify-content-center align-items-center">
-                            @if (Str::startsWith($media->type, 'image'))
-                            <img src="{{ asset($media->url) }}" alt="{{ $media->titre }}"
-                                class="img-fluid rounded shadow-lg" style="max-height: 400px; object-fit: cover;">
-                            @elseif (Str::startsWith($media->type, 'video'))
-                            <div class="card p-3 shadow-lg border-0"
-                                style="background: linear-gradient(135deg, #ffb923, #fcde99);">
-                                <div class="position-relative" style="overflow: hidden;">
-                                    <video controls autoplay muted playsinline
-                                        style="width: 100%; height: auto; display: block; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);">
-                                        <source src="{{ asset($media->url) }}" type="video/mp4">
-                                        Votre navigateur ne supporte pas la lecture de vidéos.
-                                    </video>
-                                </div>
-                            </div>
-                            @elseif (Str::startsWith($media->type, 'audio'))
-                            <div class="card p-4 shadow-lg border-0"
-                                style="background: linear-gradient(135deg, #fbdfa1, #ffb923); border-radius: 20px;">
-                                <div class="text-center mb-4">
-                                    <i class="bi bi-music-note-beamed" style="font-size: 4rem; color: #6c63ff;"></i>
-                                </div>
-                                <audio controls
-                                    style="width: 100%; border-radius: 10px; background: #fff; padding: 10px;">
-                                    <source src="{{ asset($media->url) }}" type="audio/mpeg">
-                                    Votre navigateur ne supporte pas la lecture d'audio.
-                                </audio>
-                            </div>
+                            @php
+                                $isExternalUrl = filter_var($media->url, FILTER_VALIDATE_URL);
+                                $isYoutubeUrl = $isExternalUrl && (str_contains($media->url, 'youtube.com') || str_contains($media->url, 'youtu.be'));
+                            @endphp
+
+                            @if ($isExternalUrl)
+                                @if ($isYoutubeUrl)
+                                    <div class="card p-3 shadow-lg border-0" style="background: linear-gradient(135deg, #ffb923, #fcde99);">
+                                        <div class="ratio ratio-16x9">
+                                            <iframe src="{{ str_replace('watch?v=', 'embed/', $media->url) }}"
+                                                    title="{{ $media->titre }}"
+                                                    allowfullscreen
+                                                    style="border-radius: 10px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);">
+                                            </iframe>
+                                        </div>
+                                    </div>
+                                @else
+                                    <div class="card p-4 shadow-lg border-0" style="background: linear-gradient(135deg, #fbdfa1, #ffb923); border-radius: 20px;">
+                                        <div class="text-center mb-4">
+                                            <i class="bi bi-link-45deg" style="font-size: 4rem; color: #6c63ff;"></i>
+                                        </div>
+                                        <a href="{{ $media->url }}" target="_blank" class="btn btn-primary btn-lg w-100">
+                                            <i class="bi bi-box-arrow-up-right me-2"></i>Ouvrir le lien
+                                        </a>
+                                    </div>
+                                @endif
                             @else
-                            <a href="{{ asset($media->url) }}" target="_blank" class="btn btn-outline-primary">
-                                Télécharger le média
-                            </a>
+                                @if (Str::startsWith($media->type, 'image'))
+                                    <img src="{{ asset($media->url) }}" alt="{{ $media->titre }}"
+                                        class="img-fluid rounded shadow-lg" style="max-height: 400px; object-fit: cover;">
+                                @elseif (Str::startsWith($media->type, 'video'))
+                                    <div class="card p-3 shadow-lg border-0"
+                                        style="background: linear-gradient(135deg, #ffb923, #fcde99);">
+                                        <div class="position-relative" style="overflow: hidden;">
+                                            <video controls autoplay muted playsinline
+                                                style="width: 100%; height: auto; display: block; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);">
+                                                <source src="{{ asset($media->url) }}" type="video/mp4">
+                                                Votre navigateur ne supporte pas la lecture de vidéos.
+                                            </video>
+                                        </div>
+                                    </div>
+                                @elseif (Str::startsWith($media->type, 'audio'))
+                                    <div class="card p-4 shadow-lg border-0"
+                                        style="background: linear-gradient(135deg, #fbdfa1, #ffb923); border-radius: 20px;">
+                                        <div class="text-center mb-4">
+                                            <i class="bi bi-music-note-beamed" style="font-size: 4rem; color: #6c63ff;"></i>
+                                        </div>
+                                        <audio controls
+                                            style="width: 100%; border-radius: 10px; background: #fff; padding: 10px;">
+                                            <source src="{{ asset($media->url) }}" type="audio/mpeg">
+                                            Votre navigateur ne supporte pas la lecture d'audio.
+                                        </audio>
+                                    </div>
+                                @else
+                                    <a href="{{ asset($media->url) }}" target="_blank" class="btn btn-outline-primary">
+                                        Télécharger le média
+                                    </a>
+                                @endif
                             @endif
                         </div>
 

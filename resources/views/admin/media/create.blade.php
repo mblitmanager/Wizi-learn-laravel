@@ -60,11 +60,37 @@
                                     @enderror
                                 </div>
 
-                                <!-- Fichier -->
+                                <!-- Choix Fichier ou URL -->
                                 <div class="mb-3">
+                                    <label class="form-label">Source du média</label>
+                                    <div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="source_type" id="source_file" value="file" checked>
+                                            <label class="form-check-label" for="source_file">Téléverser un fichier</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="source_type" id="source_url" value="url">
+                                            <label class="form-check-label" for="source_url">Utiliser un lien</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Fichier -->
+                                <div class="mb-3" id="file-upload-field">
                                     <label for="file" class="form-label">Fichier (image, vidéo ou PDF)</label>
                                     <input type="file" name="url" id="file"
                                         class="form-control @error('url') is-invalid @enderror">
+                                    @error('url')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <!-- URL -->
+                                <div class="mb-3" id="url-field" style="display: none;">
+                                    <label for="url" class="form-label">URL du média</label>
+                                    <input type="text" name="url" id="url"
+                                        class="form-control @error('url') is-invalid @enderror"
+                                        value="{{ old('url') }}">
                                     @error('url')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -181,5 +207,26 @@
 </div>
 @endsection
 @section('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const fileUploadField = document.getElementById('file-upload-field');
+        const urlField = document.getElementById('url-field');
+        const sourceFileRadio = document.getElementById('source_file');
+        const sourceUrlRadio = document.getElementById('source_url');
 
+        sourceFileRadio.addEventListener('change', function () {
+            if (this.checked) {
+                fileUploadField.style.display = 'block';
+                urlField.style.display = 'none';
+            }
+        });
+
+        sourceUrlRadio.addEventListener('change', function () {
+            if (this.checked) {
+                fileUploadField.style.display = 'none';
+                urlField.style.display = 'block';
+            }
+        });
+    });
+</script>
 @endsection
