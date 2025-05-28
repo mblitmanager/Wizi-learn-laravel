@@ -18,6 +18,13 @@
                 <div class="btn-group">
                     <a href="{{ route('medias.index') }}" type="button" class="btn btn-sm btn-primary"><i
                             class="fadeIn animated bx bx-chevron-left-circle"></i>Retour</a>
+                    <form action="{{ route('medias.destroy', $media->id) }}" method="POST" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce média ?');" style="display:inline-block; margin-left: 8px;">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-sm btn-danger">
+                            <i class="lni lni-trash"></i> Supprimer
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -49,8 +56,23 @@
                                 @enderror
                             </div>
 
-                            <!-- Fichier -->
+                            <!-- Choix Fichier ou URL -->
                             <div class="mb-3">
+                                <label class="form-label">Source du média</label>
+                                <div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="source_type" id="edit_source_file" value="file" {{ old('source_type', $media->url && !filter_var($media->url, FILTER_VALIDATE_URL) ? 'file' : 'url') == 'file' ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="edit_source_file">Téléverser un fichier</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="source_type" id="edit_source_url" value="url" {{ old('source_type', $media->url && filter_var($media->url, FILTER_VALIDATE_URL) ? 'url' : 'file') == 'url' ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="edit_source_url">Utiliser un lien</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Fichier -->
+                            <div class="mb-3" id="edit-file-upload-field">
                                 <label for="file">Fichier (image, vidéo ou PDF)</label>
                                 <input type="file" name="url" id="file"
                                     class="form-control @error('url') is-invalid @enderror" accept="image/*, video/*">
@@ -64,6 +86,17 @@
                                     <a href="{{ asset($media->url) }}" target="_blank">Voir le fichier</a>
                                 </small>
                                 @endif
+                            </div>
+
+                            <!-- URL -->
+                            <div class="mb-3" id="edit-url-field" style="display: {{ old('source_type', $media->url && filter_var($media->url, FILTER_VALIDATE_URL) ? 'url' : 'file') == 'url' ? 'block' : 'none' }};">
+                                <label for="url">URL du média</label>
+                                <input type="text" name="url" id="edit_url"
+                                    class="form-control @error('url') is-invalid @enderror"
+                                    value="{{ old('url', $media->url && filter_var($media->url, FILTER_VALIDATE_URL) ? $media->url : '') }}">
+                                @error('url')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
                         </div>
 
@@ -184,5 +217,35 @@
 </div>
 @endsection
 @section('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const fileUploadField = document.getElementById('edit-file-upload-field');
+        const urlField = document.getElementById('edit-url-field');
+        const sourceFileRadio = document.getElementById('edit_source_file');
+        const sourceUrlRadio = document.getElementById('edit_source_url');
 
+        // Initial state based on current data
+        if (sourceUrlRadio.checked) {
+            fileUploadField.style.display = 'none';
+            urlField.style.display = 'block';
+        } else {
+            fileUploadField.style.display = 'block';
+            urlField.style.display = 'none';
+        }
+
+        sourceFileRadio.addEventListener('change', function () {
+            if (this.checked) {
+                fileUploadField.style.display = 'block';
+                urlField.style.display = 'none';
+            }
+        });
+
+        sourceUrlRadio.addEventListener('change', function () {
+            if (this.checked) {
+                fileUploadField.style.display = 'none';
+                urlField.style.display = 'block';
+            }
+        });
+    });
+</script>
 @endsection

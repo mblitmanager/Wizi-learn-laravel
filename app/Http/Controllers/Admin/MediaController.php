@@ -2,20 +2,25 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Events\TestNotification;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\MediaRequest;
 use App\Models\Formation;
 use App\Services\MediaAdminService;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use App\Models\User;
 
 class MediaController extends Controller
 {
     protected $mediaService;
+    protected $notificationService;
 
-    public function __construct(MediaAdminService $mediaService)
+    public function __construct(MediaAdminService $mediaService, NotificationService $notificationService)
     {
         $this->mediaService = $mediaService;
+        $this->notificationService = $notificationService;
     }
     /**
      * Display a listing of the resource.
@@ -39,15 +44,22 @@ class MediaController extends Controller
     public function store(MediaRequest $request)
     {
         $validated = $request->validated();
-
-        if ($request->hasFile('url')) {
+        $sourceType = $request->input('source_type', 'file');
+        if ($sourceType === 'file' && $request->hasFile('url')) {
             $file = $request->file('url');
             $fileName = time() . '.' . $file->getClientOriginalExtension();
             $file->move(public_path('uploads/medias'), $fileName);
             $validated['url'] = 'uploads/medias/' . $fileName;
+        } elseif ($sourceType === 'url' && $request->filled('url')) {
+            $validated['url'] = $request->input('url');
         }
+        $media = $this->mediaService->create($validated);
 
-        $this->mediaService->create($validated);
+        // Notification à tous les stagiaires
+        $users = \App\Models\User::where('role', 'stagiaire')->get();
+        foreach ($users as $user) {
+            $this->notificationService->notifyMediaCreated($user->id, $media->titre ?? '', $media->id);
+        }
 
         return redirect()->route('medias.index')
             ->with('success', 'Le media a été créé avec succès.');
@@ -61,11 +73,19 @@ class MediaController extends Controller
     {
 
         $validated = $request->validated();
-        if ($request->hasFile('url')) {
+
+        $sourceType = $request->input('source_type', 'file');
+
+        if ($sourceType === 'file' && $request->hasFile('url')) {
             $file = $request->file('url');
             $fileName = time() . '.' . $file->getClientOriginalExtension();
             $file->move(public_path('uploads/medias'), $fileName);
             $validated['url'] = 'uploads/medias/' . $fileName;
+        } elseif ($sourceType === 'url' && $request->filled('url')) {
+            $validated['url'] = $request->input('url');
+            // Optionnel : ajouter une validation supplémentaire pour l'URL ici si nécessaire
+        } else {
+            // Gérer le cas où aucune source valide n'est fournie (optionnel)
         }
 
         $this->mediaService->update($id, $validated);
@@ -100,7 +120,15 @@ class MediaController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $media = $this->mediaService->show($id);
+        if ($media) {
+            // Supprimer le fichier physique si c'est un upload local
+            if ($media->url && !filter_var($media->url, FILTER_VALIDATE_URL) && file_exists(public_path($media->url))) {
+                @unlink(public_path($media->url));
+            }
+            $this->mediaService->delete($id);
+        }
+        return redirect()->route('medias.index')->with('success', 'Le média a été supprimé avec succès.');
     }
 
     public function stream(Request $request, $filename)

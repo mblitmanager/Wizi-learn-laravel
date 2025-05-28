@@ -21,7 +21,7 @@ class FormationController extends Controller
         $this->formationService = $formationService;
     }
 
-    public function getFormationsByStagiaireId($id)
+    public function getFormationsByStagiaire($id)
     {
         try {
             // Vérifie d'abord si le stagiaire existe
@@ -34,7 +34,7 @@ class FormationController extends Controller
                 ], 404);
             }
 
-            // Récupère les formations à travers les catalogues de formation
+            // Récupère les formations à traverps les catalogues de formation
             $formations = Formation::whereHas('catalogueFormation', function ($query) use ($id) {
                 $query->whereHas('stagiaires', function ($q) use ($id) {
                     $q->where('stagiaires.id', $id);

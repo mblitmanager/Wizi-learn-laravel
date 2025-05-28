@@ -427,11 +427,12 @@ class QuizController extends Controller
             }
 
             DB::commit();
-            // Envoyer une notification pour le nouveau quiz
-            $this->notificationService->notifyQuizAvailable(
-                $quiz->titre,
-                $quiz->id
-            );
+               // Envoyer une notification pour le nouveau quiz
+        $this->notificationService->notifyQuizAvailable(
+            $quiz->titre,
+            $quiz->id,
+            $quiz->formation_id
+        );
 
 
             return redirect()->route('quiz.index')->with('success', 'Quiz, question et réponses créés avec succès.');
