@@ -16,10 +16,13 @@ class TrackUserActivity
     public function handle(Request $request, Closure $next)
     {
         if (auth()->check()) {
-            auth()->user()->update([
-                'last_activity_at' => now(),
-                'is_online' => true
-            ]);
+            // Mettre à jour seulement si la dernière activité date de plus de 5 minutes
+            if (auth()->user()->last_activity_at < now()->subMinutes(5)) {
+                auth()->user()->update([
+                    'last_activity_at' => now(),
+                    'is_online' => true
+                ]);
+            }
         }
 
         return $next($request);

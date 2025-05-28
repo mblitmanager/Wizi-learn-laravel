@@ -42,7 +42,7 @@ class FormateurStoreRequest extends FormRequest
             'telephone' => 'nullable|string',
 
             'catalogue_formation_id' => 'required|exists:catalogue_formations,id',
-            'stagiaire_id' => 'required|exists:stagiaires,id',
+            'stagiaire_id' => 'nullable|exists:stagiaires,id',
         ];
     }
 

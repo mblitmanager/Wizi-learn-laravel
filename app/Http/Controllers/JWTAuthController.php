@@ -2,10 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\LoginHistories;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Jenssegers\Agent\Agent;
+use League\ISO3166\ISO3166;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use OpenApi\Attributes as OA;
@@ -75,6 +80,18 @@ class JWTAuthController extends Controller
         return response()->json(compact('user', 'token'), 201);
     }
 
+    protected function getBrowser()
+    {
+        $agent = new Agent();
+        return $agent->browser();
+    }
+
+    protected function getPlatform()
+    {
+        $agent = new Agent();
+        return $agent->platform();
+    }
+
     #[OA\Post(
         path: "/api/login",
         summary: "Connexion de l'utilisateur",
@@ -112,32 +129,58 @@ class JWTAuthController extends Controller
                 return response()->json(['error' => 'Accès invalide'], 401);
             }
 
-            // Récupérer l'IP client (avec prise en compte des proxies)
-            $ip = $request->header('X-Forwarded-For') ?? $request->ip();
-            // Mettre à jour les informations de connexion
+            $ip = $request->header('X-Client-IP') ?? $request->ip();
             $user = auth()->user();
+            $location = $this->getLocation($ip);
+
+            // Mise à jour utilisateur
             $user->update([
                 'last_login_at' => now(),
                 'last_activity_at' => now(),
                 'last_login_ip' => $ip,
                 'is_online' => true
             ]);
+            $location = $this->getLocation($ip);
+            $countryCode = $location['country'] ?? null;
+            $countryName = $countryCode ? (new ISO3166())->alpha2($countryCode)['name'] : null;
+            // Enregistrement historique
+            LoginHistories::create([
+                'user_id' => $user->id,
+                'ip_address' => $ip,
+                'country' => $countryName,
+                'city' => $location['city'] ?? null,
+                'device' => $request->userAgent(),
+                'login_at' => now(),
+                'browser' => $this->getBrowser(),
+                'platform' => $this->getPlatform(),
+                'login_at' => now()
+            ]);
 
-            // Ajouter le rôle dans le token JWT
             $token = JWTAuth::claims([
                 'role' => $user->role,
-                'ip' => $ip // Optionnel: stocker l'IP dans le token
+                'ip' => $ip
             ])->fromUser($user);
 
             return response()->json([
                 'token' => $token,
-                'user' => $user->load('stagiaire') // Charger la relation stagiaire si nécessaire
+                'user' => $user->load('stagiaire')
             ]);
         } catch (JWTException $e) {
             return response()->json(['error' => 'Impossible de créer le token'], 500);
         }
     }
+    private function getLocation($ip)
+    {
+        if ($ip === '127.0.0.1') return [];
 
+        try {
+            $response = Http::get("https://ipinfo.io/{$ip}/json?token=" . config('services.ipinfo.token'));
+            return $response->json();
+        } catch (\Exception $e) {
+            Log::error("IP location failed: " . $e->getMessage());
+            return [];
+        }
+    }
     #[OA\Get(
         path: "/api/user",
         summary: "Recuperer le profil de l'utilisateur",
@@ -226,16 +269,26 @@ class JWTAuthController extends Controller
     public function logout()
     {
         try {
-            // Mettre à jour le statut avant la déconnexion
-            if ($user = auth()->user()) {
+            $user = auth()->user();
+            $token = JWTAuth::getToken();
+
+            if ($user) {
+                // Mettre à jour le dernier historique de connexion
+                LoginHistories::where('user_id', $user->id)
+                    ->whereNull('logout_at')
+                    ->latest()
+                    ->first()
+                    ?->update([
+                        'logout_at' => now()
+                    ]);
+
                 $user->update([
                     'is_online' => false,
                     'last_activity_at' => now()
                 ]);
             }
 
-            // Invalider le token JWT
-            JWTAuth::invalidate(JWTAuth::getToken());
+            JWTAuth::invalidate($token);
 
             return response()->json([
                 'message' => 'Déconnexion réussie',

@@ -124,4 +124,14 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasMany(Parrainage::class, 'filleul_id');
     }
+
+    public function loginHistories()
+    {
+        return $this->hasMany(LoginHistories::class);
+    }
+
+    public function lastLogin()
+    {
+        return $this->hasOne(LoginHistories::class)->latestOfMany();
+    }
 }

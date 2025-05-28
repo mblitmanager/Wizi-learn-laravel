@@ -12,10 +12,13 @@
             <a href="javascript:;" class="has-arrow">
                 <div class="parent-icon"><i class='bx bx-home-circle'></i>
                 </div>
-                <div class="menu-title">Dashboard</div>
+                <div class="menu-title">Tableau de bord</div>
             </a>
             <ul>
-                <li> <a href="{{ route('dashboard') }}"><i class="bx bx-right-arrow-alt"></i>Dashboard</a>
+                <li> <a href="{{ route('dashboard') }}"><i class="bx bx-right-arrow-alt"></i>Tableau de bord</a>
+                </li>
+                <li> <a href="{{ route('dashboard.activity') }}"><i class="bx bx-right-arrow-alt"></i>Activité des
+                        utilisateurs</a>
                 </li>
             </ul>
         </li>
