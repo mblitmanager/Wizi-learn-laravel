@@ -46,6 +46,7 @@ jobs:
           
           echo "➤ Installing dependencies..."
           php composer.phar install --no-dev --prefer-dist --optimize-autoloader --no-interaction
+          npm install
           echo "✓ Composer dependencies installed"
           
           echo "➤ Optimizing Laravel..."
