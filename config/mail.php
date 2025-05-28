@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Default Mailer
@@ -36,7 +35,6 @@ return [
     */
 
     'mailers' => [
-
         'smtp' => [
             'transport' => 'smtp',
             'scheme' => env('MAIL_SCHEME'),
@@ -94,7 +92,6 @@ return [
                 'postmark',
             ],
         ],
-
     ],
 
     /*
@@ -113,4 +110,6 @@ return [
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
 
+    // Adresse email du pôle relation
+    'pole_relation_email' => env('POLE_RELATION_EMAIL', 'pole-relation@example.com'),
 ];

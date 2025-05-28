@@ -17,6 +17,7 @@ use App\Http\Controllers\Stagiaire\CatalogueFormationController;
 use App\Http\Controllers\Stagiaire\MediaController;
 use App\Http\Controllers\BroadcastingController;
 use App\Http\Controllers\Stagiaire\StagiaireController;
+use App\Http\Controllers\Stagiaire\InscriptionCatalogueFormationController;
 
 Route::post('login', [JWTAuthController::class, 'login']);
 Route::prefix('parrainage')->group(function () {
@@ -57,7 +58,7 @@ Route::middleware(['auth:api'])->group(function () {
         Route::get('/show', [ProfileController::class, 'show']);
         Route::post('/profile/photo', [ProfileController::class, 'uploadAvatar']);
     });
-
+    Route::post('/stagiaire/inscription-catalogue-formation', [InscriptionCatalogueFormationController::class, 'inscrire']);
     // New route for getting responses to a question
     Route::get('/questions/{questionId}/reponses', [ReponseController::class, 'getReponsesByQuestion']);
 
