@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Notification;
 use App\Models\User;
+use App\Events\TestNotification;
 
 class NotificationService
 {
@@ -20,16 +21,24 @@ class NotificationService
                 $formation = $stagiaire->catalogue_formations();//->wherePivot('status', 'active')->first();
             }
             if ($formation) {
-            Notification::create([
-                'user_id' => $user->id,
-                'type' => 'quiz',
-                'message' => "Un nouveau quiz \"{$quizTitle}\" est disponible !",
-                'data' => [
-                'quiz_id' => $quizId,
-                'quiz_title' => $quizTitle
-                ],
-                'read' => false
-            ]);
+                Notification::create([
+                    'user_id' => $user->id,
+                    'type' => 'quiz',
+                    'message' => "Un nouveau quiz \"{$quizTitle}\" est disponible !",
+                    'data' => [
+                        'quiz_id' => $quizId,
+                        'quiz_title' => $quizTitle
+                    ],
+                    'read' => false
+                ]);
+                // Broadcast real-time notification via Pusher
+                event(new TestNotification([
+                    'type' => 'quiz',
+                    'message' => "Un nouveau quiz \"{$quizTitle}\" est disponible !",
+                    'quiz_id' => $quizId,
+                    'quiz_title' => $quizTitle,
+                    'user_id' => $user->id
+                ]));
             }
         }
 
