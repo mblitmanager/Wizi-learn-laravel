@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\QuizStoreRequest;
+use App\Mail\NewQuizNotification;
 use App\Models\CatalogueFormation;
 use App\Models\CorrespondancePair;
 use App\Models\Formation;
@@ -21,6 +22,8 @@ use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use App\Models\QuizParticipationAnswer;
 use App\Models\QuizParticipation;
+use App\Models\Stagiaire;
+use Illuminate\Support\Facades\Mail;
 
 class QuizController extends Controller
 {
@@ -426,6 +429,8 @@ class QuizController extends Controller
                 }
             }
 
+
+
             DB::commit();
             // Envoyer une notification pour le nouveau quiz
             $this->notificationService->notifyQuizAvailable(
@@ -433,11 +438,25 @@ class QuizController extends Controller
                 $quiz->id
             );
 
+            // Envoyer les emails aux stagiaires
+            $this->sendQuizNotificationToTrainees($quiz);
 
             return redirect()->route('quiz.index')->with('success', 'Quiz, question et réponses créés avec succès.');
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->with('error', 'Erreur : ' . $e->getMessage());
+        }
+    }
+
+    protected function sendQuizNotificationToTrainees(Quiz $quiz)
+    {
+        // Récupérer tous les stagiaires avec des catalogues de formation
+        $stagiaires = Stagiaire::whereHas('catalogue_formations')->with('user')->get();
+
+        foreach ($stagiaires as $stagiaire) {
+            if ($stagiaire->user && $stagiaire->user->email) {
+                Mail::to($stagiaire->user->email)->send(new NewQuizNotification($quiz));
+            }
         }
     }
 
@@ -486,7 +505,7 @@ class QuizController extends Controller
             }
 
             // Recherche de la formation
-            $formation = CatalogueFormation::where('titre', $formationNom)->first();
+            $formation = Formation::where('titre', $formationNom)->first();
             if (!$formation) {
                 return back()->with('error', "La formation '$formationNom' n'existe pas dans la base.");
             }
