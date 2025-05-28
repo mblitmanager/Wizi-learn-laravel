@@ -49,7 +49,7 @@ class ContactController extends Controller
     public function getFormateurs()
     {
         try {
-            $formateurs = Formateur::with(['user', 'formations'])
+            $formateurs = Formateur::with(['user', 'catalogue_formations'])
                 ->get()
                 ->map(function ($formateur) {
                     return [
@@ -58,7 +58,7 @@ class ContactController extends Controller
                         'email' => $formateur->user->email,
                         'phone' => $formateur->telephone ?? '',
                         'role' => 'Formateur',
-                        'formations' => $formateur->formations->pluck('titre')->toArray(),
+                        'formations' => $formateur->catalogue_formations->pluck('titre')->toArray(),
                         'avatar' => $formateur->user->image ?? '/images/default-avatar.png',
                         'created_at' => $formateur->created_at->format('d/m/Y')
                     ];
