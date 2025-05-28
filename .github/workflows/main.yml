@@ -58,6 +58,7 @@ jobs:
           
           echo "➤ Running migrations..."
           php artisan migrate --force
+          php artisan queue:restart
           echo "✓ Database updated"
           
           echo "➤ Fixing permissions..."
