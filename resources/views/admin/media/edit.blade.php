@@ -18,6 +18,13 @@
                 <div class="btn-group">
                     <a href="{{ route('medias.index') }}" type="button" class="btn btn-sm btn-primary"><i
                             class="fadeIn animated bx bx-chevron-left-circle"></i>Retour</a>
+                    <form action="{{ route('medias.destroy', $media->id) }}" method="POST" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce média ?');" style="display:inline-block; margin-left: 8px;">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-sm btn-danger">
+                            <i class="lni lni-trash"></i> Supprimer
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>

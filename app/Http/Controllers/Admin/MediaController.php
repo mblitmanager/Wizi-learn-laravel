@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Events\TestNotification;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\MediaRequest;
 use App\Models\Formation;
@@ -49,13 +50,15 @@ class MediaController extends Controller
             $validated['url'] = 'uploads/medias/' . $fileName;
         } elseif ($sourceType === 'url' && $request->filled('url')) {
             $validated['url'] = $request->input('url');
-            // Optionnel : ajouter une validation supplémentaire pour l'URL ici si nécessaire
-        } else {
-            // Gérer le cas où aucune source valide n'est fournie (optionnel, selon la validation dans MediaRequest)
-            // Pour l'instant, on laisse le MediaRequest gérer l'erreur si le champ 'url' est requis
         }
 
-        $this->mediaService->create($validated);
+        $media = $this->mediaService->create($validated);
+
+        // Notification Pusher
+        event(new TestNotification([
+            'author' => (auth()->user() ? auth()->user()->name : 'Admin'),
+            'title' => 'Nouveau média : ' . ($media->titre ?? ''),
+        ]));
 
         return redirect()->route('medias.index')
             ->with('success', 'Le media a été créé avec succès.');
@@ -116,7 +119,15 @@ class MediaController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $media = $this->mediaService->show($id);
+        if ($media) {
+            // Supprimer le fichier physique si c'est un upload local
+            if ($media->url && !filter_var($media->url, FILTER_VALIDATE_URL) && file_exists(public_path($media->url))) {
+                @unlink(public_path($media->url));
+            }
+            $this->mediaService->delete($id);
+        }
+        return redirect()->route('medias.index')->with('success', 'Le média a été supprimé avec succès.');
     }
 
     public function stream(Request $request, $filename)

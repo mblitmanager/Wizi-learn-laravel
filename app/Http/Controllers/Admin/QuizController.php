@@ -429,7 +429,8 @@ class QuizController extends Controller
                // Envoyer une notification pour le nouveau quiz
         $this->notificationService->notifyQuizAvailable(
             $quiz->titre,
-            $quiz->id
+            $quiz->id,
+            $quiz->formation_id
         );
 
 
