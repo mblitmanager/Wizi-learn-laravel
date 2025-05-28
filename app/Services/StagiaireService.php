@@ -56,6 +56,7 @@ class StagiaireService
         $stagiaire->formateurs()->sync($formateurIds);
         // 7. Associer les commerciaux via la table pivot
         $stagiaire->commercials()->sync($commercialIds);
+        $stagiaire->poleRelationClient()->sync($poleRelationClientIds ?? []);
 
         return $stagiaire;
     }
@@ -80,6 +81,7 @@ class StagiaireService
         $formationIds = $data['catalogue_formation_id'] ?? [];
         $formateurIds = $data['formateur_id'] ?? [];
         $commercialIds = $data['commercial_id'] ?? [];
+        $poleRelationClientIds = $data['pole_relation_client_id'] ?? [];
 
         unset($data['name'], $data['email'], $data['password'], $data['catalogue_formation_id']);
 
@@ -97,6 +99,10 @@ class StagiaireService
         // 6. Synchronisation des commerciaux
         if (!empty($commercialIds)) {
             $stagiaire->commercials()->sync($commercialIds);
+        }
+        // 6. Synchronisation des poleRelation
+        if (!empty($poleRelationClientIds)) {
+            $stagiaire->poleRelationClient()->sync($poleRelationClientIds);
         }
 
         return true;

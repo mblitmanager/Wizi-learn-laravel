@@ -26,6 +26,7 @@ class CatalogueFormation extends Model
         'image_url',
         'tarif',
         'formation_id',
+        'cursus_pdf',
     ];
 
     /**
@@ -42,5 +43,13 @@ class CatalogueFormation extends Model
     public function stagiaires()
     {
         return $this->belongsToMany(Stagiaire::class, 'stagiaire_catalogue_formations', 'catalogue_formation_id', 'stagiaire_id');
+    }
+
+    /**
+     * Accesseur pour obtenir l'URL complète du PDF du cursus
+     */
+    public function getCursusPdfUrlAttribute()
+    {
+        return $this->cursus_pdf ? asset('storage/' . $this->cursus_pdf) : null;
     }
 }

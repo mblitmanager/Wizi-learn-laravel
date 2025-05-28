@@ -183,6 +183,25 @@
                             </div>
 
                             <div class="col-md-6">
+                                <label for="cursus_pdf" class="form-label">Cursus PDF</label>
+                                <input type="file" name="cursus_pdf" id="cursus_pdf" accept=".pdf"
+                                    class="form-control mb-2 @error('cursus_pdf') is-invalid @enderror">
+                                @error('cursus_pdf')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+
+                                @if ($catalogueFormation->cursus_pdf)
+                                <div class="mt-2">
+                                    <a href="{{ route('catalogue_formation.download-pdf', $catalogueFormation->id) }}" class="text-blue-600 hover:text-blue-800">
+                                        Voir le PDF actuel
+                                    </a>
+                                </div>
+                                @endif
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
                                 <label for="tarif" class="form-label">Tarif</label>
                                 <input type="number" name="tarif" id="tarif"
                                     class="form-control mb-2 @error('tarif') is-invalid @enderror"
@@ -191,9 +210,7 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
-                        </div>
 
-                        <div class="row">
                             <div class="col-md-6">
                                 <label for="statut" class="form-label">Statut</label>
                                 <select name="statut" id="statut"

@@ -179,46 +179,44 @@ class RankingController extends Controller
     {
         try {
             $user = JWTAuth::parseToken()->authenticate();
+            // Charger la relation stagiaire si elle n'est pas déjà chargée
             if (!isset($user->relations['stagiaire'])) {
                 $user->load('stagiaire');
             }
+
+            // Vérifier si l'utilisateur est bien le stagiaire demandé ou a les droits d'accès
             if ($user->role != 'formateur' && $user->role != 'admin') {
+                // Vérifier si l'utilisateur est associé à ce stagiaire
                 $userStagiaire = $user->stagiaire;
                 if (!$userStagiaire) {
                     return response()->json(['error' => 'non autorisé'], 403);
                 }
             }
-            $stagiaire = $user->stagiaire;
-            // Calculer le classement du stagiaire (même logique que getMyRanking, mais ici en tableau)
+
+            // Récupérer le classement global
             $classements = Classement::with(['stagiaire.user', 'quiz'])
                 ->get()
                 ->groupBy('stagiaire_id')
                 ->map(function ($group) {
-                    $totalPoints = $group->sum('points');
                     return [
                         'stagiaire' => [
                             'id' => (string)$group->first()->stagiaire->id,
                             'prenom' => $group->first()->stagiaire->prenom,
                             'image' => $group->first()->stagiaire->user->image ?? null
                         ],
-                        'totalPoints' => $totalPoints,
+                        'totalPoints' => $group->sum('points'),
                         'quizCount' => $group->count(),
-                        'averageScore' => $group->avg('points'),
+                        'averageScore' => $group->avg('points')
                     ];
                 })
                 ->sortByDesc('totalPoints')
                 ->values();
-            $classements = $classements->map(function ($item, $index) {
-                $level = $this->rankingService->calculateLevel($item['totalPoints']);
-                return [
-                    ...$item,
-                    'rang' => $index + 1,
-                    'level' => $level
-                ];
+
+            // Trouver le classement de l'utilisateur connecté
+            $myClassement = $classements->first(function ($item) use ($user) {
+                return $item['stagiaire']['id'] == (string)$user->stagiaire->id;
             });
-            $myClassement = $classements->first(function ($item) use ($stagiaire) {
-                return $item['stagiaire']['id'] == (string)$stagiaire->id;
-            });
+
             $progress = $this->rankingService->getStagiaireProgress($user->stagiaire->id);
             $user->stagiaire->load(['user', 'catalogue_formations', 'formateur', 'commercial']);
             $response = [

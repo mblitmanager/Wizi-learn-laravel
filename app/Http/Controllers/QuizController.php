@@ -33,14 +33,15 @@ class QuizController extends Controller
     {
         try {
             // Récupérer les quizzes des formations ayant la catégorie spécifiée et qui ont des stagiaires
-            $quizzes = Quiz::with(['questions.reponses', 'formation'])
-                ->where('status', 'actif')
-                ->whereHas('formation', function ($query) use ($category) {
-                    $query->where('categorie', $category)
-                        ->whereHas('stagiaires', function ($query) {
-                            $query->where('role', 'stagiaire');
-                        });
-                })
+            $quizzes = Quiz::select('quizzes.*')
+                ->join('formations', 'formations.id', '=', 'quizzes.formation_id')
+                ->join('catalogue_formations', 'catalogue_formations.formation_id', '=', 'formations.id')
+                ->join('stagiaire_catalogue_formations', 'stagiaire_catalogue_formations.catalogue_formation_id', '=', 'catalogue_formations.id')
+                ->join('stagiaires', 'stagiaires.id', '=', 'stagiaire_catalogue_formations.stagiaire_id')
+                ->where('formations.categorie', $category)
+                ->where('stagiaires.role', 'stagiaire')
+                ->where('quizzes.status', 'actif')
+                ->with(['questions.reponses', 'formation'])
                 ->get();
 
             // Transformer les données pour correspondre au format TypeScript
@@ -168,11 +169,12 @@ class QuizController extends Controller
             }
 
             // Récupérer les catégories uniques depuis les formations associées aux quizzes du stagiaire
-            $categories = Quiz::with('formation')
-                ->whereHas('formation.stagiaires', function ($query) use ($stagiaire) {
-                    $query->where('stagiaires.id', $stagiaire->id);
-                })
-                ->select('formation_id')
+            $categories = Quiz::select('quizzes.*')
+                ->join('formations', 'formations.id', '=', 'quizzes.formation_id')
+                ->join('catalogue_formations', 'catalogue_formations.formation_id', '=', 'formations.id')
+                ->join('stagiaire_catalogue_formations', 'stagiaire_catalogue_formations.catalogue_formation_id', '=', 'catalogue_formations.id')
+                ->where('stagiaire_catalogue_formations.stagiaire_id', $stagiaire->id)
+                ->with(['formation'])
                 ->distinct()
                 ->get()
                 ->map(function ($quiz) use ($stagiaire) {
@@ -182,10 +184,12 @@ class QuizController extends Controller
                         'color' => $this->getCategoryColor($quiz->formation->categorie ?? 'Non catégorisé'),
                         'icon' => $this->getCategoryIcon($quiz->formation->categorie ?? 'Non catégorisé'),
                         'description' => $this->getCategoryDescription($quiz->formation->categorie ?? 'Non catégorisé'),
-                        'quizCount' => Quiz::where('formation_id', $quiz->formation_id)
-                            ->whereHas('formation.stagiaires', function ($query) use ($stagiaire) {
-                                $query->where('stagiaires.id', $stagiaire->id);
-                            })
+                        'quizCount' => Quiz::select('quizzes.*')
+                            ->join('formations', 'formations.id', '=', 'quizzes.formation_id')
+                            ->join('catalogue_formations', 'catalogue_formations.formation_id', '=', 'formations.id')
+                            ->join('stagiaire_catalogue_formations', 'stagiaire_catalogue_formations.catalogue_formation_id', '=', 'catalogue_formations.id')
+                            ->where('stagiaire_catalogue_formations.stagiaire_id', $stagiaire->id)
+                            ->where('quizzes.formation_id', $quiz->formation_id)
                             ->count(),
                         'colorClass' => 'category-' . strtolower(str_replace(' ', '-', $quiz->formation->categorie ?? 'non-categorise'))
                     ];
@@ -649,7 +653,7 @@ class QuizController extends Controller
                     empty(array_diff($correctAnswers, $selectedAnswers))
             ];
         }
-         // Traitement pour "banque de mots"
+        // Traitement pour "banque de mots"
         if ($question->type === 'banque de mots') {
             $correctAnswers = $question->reponses
                 ->where('is_correct', true)
@@ -665,7 +669,7 @@ class QuizController extends Controller
                     empty(array_diff($correctAnswers, $selectedAnswers))
             ];
         }
-         // Traitement pour "vrai/faux"
+        // Traitement pour "vrai/faux"
         if ($question->type === 'vrai/faux') {
             $correctAnswers = $question->reponses
                 ->where('is_correct', true)

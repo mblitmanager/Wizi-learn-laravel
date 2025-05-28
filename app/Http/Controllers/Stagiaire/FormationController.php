@@ -10,6 +10,7 @@ use App\Models\Stagiaire;
 use App\Services\FormationService;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
+use Illuminate\Support\Facades\Log;
 
 class FormationController extends Controller
 {
@@ -33,21 +34,28 @@ class FormationController extends Controller
                 ], 404);
             }
 
-            // Récupère les formations avec les relations éventuellement nécessaires
-            $formations = Formation::whereHas('stagiaires', function ($query) use ($id) {
-                $query->where('stagiaire_id', $id);
+            // Récupère les formations à travers les catalogues de formation
+            $formations = Formation::whereHas('catalogueFormation', function ($query) use ($id) {
+                $query->whereHas('stagiaires', function ($q) use ($id) {
+                    $q->where('stagiaires.id', $id);
+                });
             })
-                ->with('medias') // Relations supplémentaires si besoin
-                ->get();
+            ->with(['medias', 'catalogueFormation'])
+            ->get();
 
             return response()->json([
                 'success' => true,
                 'data' => $formations
             ]);
         } catch (\Exception $e) {
+            Log::error('Erreur dans getFormationsByStagiaireId', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
             return response()->json([
                 'success' => false,
-                'error' => $e->getMessage()
+                'error' => 'Une erreur est survenue lors de la récupération des formations'
             ], 500);
         }
     }

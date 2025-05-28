@@ -16,6 +16,8 @@ use App\Http\Controllers\Admin\ReponseController;
 use App\Http\Controllers\Stagiaire\CatalogueFormationController;
 use App\Http\Controllers\Stagiaire\MediaController;
 use App\Http\Controllers\BroadcastingController;
+use App\Http\Controllers\Stagiaire\StagiaireController;
+use App\Http\Controllers\Stagiaire\InscriptionCatalogueFormationController;
 
 Route::post('login', [JWTAuthController::class, 'login']);
 Route::prefix('parrainage')->group(function () {
@@ -29,7 +31,8 @@ Route::middleware(['auth:api'])->group(function () {
     Route::get('/formation/categories/', [FormationStagiaireController::class, 'getCategories']);
     Route::get('/formations/categories/{categoryId}', [FormationStagiaireController::class, 'getFormationsByCategory']);
     Route::get('/stagiaire/formations', [FormationStagiaireController::class, 'getFormations']);
-    Route::get('/stagiaire/{id}/formations', [FormationController::class, 'getFormationsByStagiaireId']);
+    Route::get('/stagiaire/{id}/formations', [FormationController::class, 'getFormationsByStagiaire']);
+    Route::get('/stagiaire/{id}/catalogueFormations', [StagiaireController::class, 'getFormationsByStagiaire']);
     Route::get('/formations/{stagiaireId}/quizzes', [QuizStagiaireController::class, 'getQuizzesByStagiaire']);
     Route::get('/quiz/categories', [QuizController::class, 'getCategories']);
     Route::get('/quiz/{quizId}/questions', [QuizStagiaireController::class, 'getQuestionsByQuizId']);
@@ -55,7 +58,7 @@ Route::middleware(['auth:api'])->group(function () {
         Route::get('/show', [ProfileController::class, 'show']);
         Route::post('/profile/photo', [ProfileController::class, 'uploadAvatar']);
     });
-
+    Route::post('/stagiaire/inscription-catalogue-formation', [InscriptionCatalogueFormationController::class, 'inscrire']);
     // New route for getting responses to a question
     Route::get('/questions/{questionId}/reponses', [ReponseController::class, 'getReponsesByQuestion']);
 
@@ -76,6 +79,7 @@ Route::middleware(['auth:api'])->group(function () {
         Route::get('formations', [CatalogueFormationController::class, 'getAllCatalogueFormations']);
         Route::get('stagiaire/{id}', [CatalogueFormationController::class, 'getFormationsAndCatalogues']);
         Route::get('/formations/{id}', [CatalogueFormationController::class, 'getCatalogueFormationById']);
+        Route::get('/formations/{id}/pdf', [CatalogueFormationController::class, 'getCataloguePdf']);
     });
 
     Route::prefix('formation')->group(function () {
