@@ -20,7 +20,7 @@ class NotificationService
             $formation = null;
             if ($stagiaire) {
                 // Récupérer la formation active du stagiaire
-                $formation = $stagiaire->catalogue_formations()//->wherePivot('status', 'active')->first();
+                $formation = $stagiaire->catalogue_formations();//->wherePivot('status', 'active')->first();
             }
             if ($formation && isset($formation->id)) {
                 // Supposons que le quiz a une relation 'formation_id'
