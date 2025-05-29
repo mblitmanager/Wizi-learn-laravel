@@ -726,7 +726,7 @@ class QuizController extends Controller
                     $newReponse->push();
                 }
             }
-            DB::commit();
+        
             // Envoyer une notification pour le nouveau quiz
             if ($newQuiz->status === 'actif') {
                 $this->notificationService->notifyQuizAvailable(
@@ -734,7 +734,7 @@ class QuizController extends Controller
                     $newQuiz->id
                 );
             }
-
+            DB::commit();
             return redirect()->route('quiz.edit', $newQuiz->id)
                 ->with('success', 'Quiz dupliqué avec succès.');
         } catch (\Exception $e) {

@@ -13,16 +13,18 @@ class NotificationService
     {
         // Créer une notification pour tous les utilisateurs
         $users = User::where('role', 'stagiaire')->get();
-
+    
         foreach ($users as $user) {
             // Récupérer la formation active du stagiaire via la relation Stagiaire
             $stagiaire = $user->stagiaire;
             $formation = null;
             if ($stagiaire) {
                 // Récupérer la formation active du stagiaire
-                $formation = $stagiaire->catalogue_formations();//->wherePivot('status', 'active')->first();
+                $formation = $stagiaire->catalogue_formations()->get();//->wherePivot('status', 'active')->first();
             }
+            dd($stagiaire->catalogue_formations());
             if ($formation && isset($formation->id)) {
+                
                 // Supposons que le quiz a une relation 'formation_id'
                 $quizFormationId = \App\Models\Quiz::find($quizId)?->formation_id;
                 if ($quizFormationId && $quizFormationId == $formation->id) {
@@ -36,6 +38,8 @@ class NotificationService
                         ],
                         'read' => false
                     ]);
+
+                 
                     // Broadcast real-time notification via Pusher
                     event(new TestNotification([
                         'type' => 'quiz',
