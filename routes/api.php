@@ -104,6 +104,12 @@ Route::middleware(['auth:api'])->group(function () {
         Route::get('/{quizId}/statistics', [QuizController::class, 'getQuizStatistics']);
         Route::get('/classement/global', [QuizController::class, 'getGlobalClassement']);
         Route::get('/{quizId}/user-participations', [QuizController::class, 'getUserParticipations']);
+        
+        // Nouvelles routes pour les statistiques détaillées
+        Route::get('/stats/categories', [QuizController::class, 'getCategoryStats']);
+        Route::get('/stats/progress', [QuizController::class, 'getProgressStats']);
+        Route::get('/stats/trends', [QuizController::class, 'getQuizTrends']);
+        Route::get('/stats/performance', [QuizController::class, 'getPerformanceStats']);
     });
     // Routes pour les tutoriels et astuce
     Route::prefix('medias')->group(function () {
