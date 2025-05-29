@@ -31,7 +31,7 @@ Route::middleware(['auth:api'])->group(function () {
     Route::get('/formation/categories/', [FormationStagiaireController::class, 'getCategories']);
     Route::get('/formations/categories/{categoryId}', [FormationStagiaireController::class, 'getFormationsByCategory']);
     Route::get('/stagiaire/formations', [FormationStagiaireController::class, 'getFormations']);
-    Route::get('/stagiaire/{id}/formations', [FormationController::class, 'getFormationsByStagiaireId']);
+    Route::get('/stagiaire/{id}/formations', [FormationController::class, 'getFormationsByStagiaire']);
     Route::get('/stagiaire/{id}/catalogueFormations', [StagiaireController::class, 'getFormationsByStagiaire']);
     Route::get('/formations/{stagiaireId}/quizzes', [QuizStagiaireController::class, 'getQuizzesByStagiaire']);
     Route::get('/quiz/categories', [QuizController::class, 'getCategories']);
