@@ -68,11 +68,31 @@
                         <!-- catalogue_formations Section with Accordion -->
                         <div class="accordion" id="catalogue_formationsAccordion">
                             @foreach ($formateur->catalogue_formations as $key => $formation)
+                                @php
+                                    $bgColor = '';
+                                    switch ($formation->formation->categorie) {
+                                        case 'Bureautique':
+                                            $bgColor = '#3D9BE9';
+                                            break;
+                                        case 'Langues':
+                                            $bgColor = '#A55E6E';
+                                            break;
+                                        case 'Internet':
+                                            $bgColor = '#FFC533';
+                                            break;
+                                        case 'Création':
+                                            $bgColor = '#9392BE';
+                                            break;
+                                        default:
+                                            $bgColor = 'bg-success';
+                                    }
+                                @endphp
                                 <div class="accordion-item">
                                     <h2 class="accordion-header" id="heading{{ $key }}">
                                         <button
-                                            class="accordion-button d-flex justify-content-between align-items-center shadow-sm p-3 collapsed"
+                                            class="accordion-button d-flex justify-content-between align-items-center shadow-sm p-3 collapsed text-white"
                                             type="button" data-bs-toggle="collapse"
+                                            style="background: {{ $bgColor }}"
                                             data-bs-target="#collapse{{ $key }}" aria-expanded="true"
                                             aria-controls="collapse{{ $key }}">
                                             <i class="bx bx-book-open me-2"></i>{{ $formation->titre }}
@@ -83,8 +103,14 @@
                                         aria-labelledby="heading{{ $key }}"
                                         data-bs-parent="#catalogue_formationsAccordion">
                                         <div class="accordion-body">
-                                            <strong>Description:</strong> {{ $formation->description }} <br>
-                                            <strong>Durée:</strong> {{ $formation->duree }}
+                                            <div>
+                                                <h6 class="font-weight-bold">Categorie: <badge
+                                                        style="background: {{ $bgColor }}; color: #fff;border-radius: 5px; padding: 5px">
+                                                        {{ $formation->formation->categorie }}</badge>
+                                                </h6>
+                                            </div>
+                                            <h6 class="font-weight-bold">Description:</h6> {!! $formation->description !!}
+                                            <h6 class="font-weight-bold">Durée:</> {{ $formation->duree }}
                                         </div>
                                     </div>
                                 </div>
