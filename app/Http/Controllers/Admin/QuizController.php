@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\QuizStoreRequest;
 use App\Mail\NewQuizNotification;
-use App\Models\CatalogueFormation;
 use App\Models\CorrespondancePair;
 use App\Models\Formation;
 use App\Models\Questions;
@@ -18,7 +17,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Response;
-use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use App\Models\QuizParticipationAnswer;
 use App\Models\QuizParticipation;
@@ -99,12 +97,26 @@ class QuizController extends Controller
         return view('admin.quizzes.edit', compact('quiz', 'formations', 'questions'));
     }
 
+
+
+    /**
+     * Mise à jour d'un quiz existant.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  string  $id
+     * @return \Illuminate\Http\Response
+     */
     public function update(Request $request, $id)
     {
         $request->validate([
-            // Validation des champs
+            'quiz_id' => 'required|exists:quizzes,id',
+            'text' => 'required|string',
+            'question.type' => 'required|string',
+            'points' => 'required|integer|min:1',
+            'reponses' => 'required|array|min:1',
+            'reponses.*.text' => 'required|string',
+            'reponses.*.bank_group' => 'required_if:question.type,correspondance',
         ]);
-
         DB::beginTransaction();
 
         try {
@@ -154,14 +166,11 @@ class QuizController extends Controller
                 } else {
                     $question = $quiz->questions()->create($questionInput);
                 }
-
                 if (!$question) continue;
-
                 $reponsesInput = $questionInput['reponses'] ?? [];
                 $reponseIds = [];
                 $leftItems = [];
                 $rightItems = [];
-
                 // Création ou mise à jour des réponses
                 foreach ($reponsesInput as $reponseInput) {
                     if (!empty($reponseInput['id'])) {
@@ -188,7 +197,6 @@ class QuizController extends Controller
                         ]);
                         $reponseIds[] = $reponse->id;
                     }
-
                     if ($question->type === 'correspondance') {
                         if ($reponseInput['bank_group'] === 'left') {
                             $leftItems[] = $reponseInput;
@@ -235,12 +243,12 @@ class QuizController extends Controller
             return redirect()->back()->with('error', 'Erreur : ' . $e->getMessage());
         }
     }
-
-
-
-
-
-
+    /**
+     * Crée une nouvelle question dans un quiz existant.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function storeNewQuestion(Request $request)
     {
         $request->validate([
@@ -336,15 +344,21 @@ class QuizController extends Controller
     }
 
 
+
+
+    /**
+     * Crée un nouveau quiz, une nouvelle question et les réponses associées.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function storeAll(Request $request)
     {
         $request->validate([
             'quiz.titre' => 'required|string|max:255',
             'quiz.description' => 'nullable|string',
-
             'question.type' => 'required|string',
             'question.media_url' => 'nullable|file|mimes:jpg,jpeg,png,gif,pdf,doc,docx,xls,xlsx,mp3,mp4|max:102400',
-
             'reponse.text' => 'required|array',
             'reponse.text.*' => 'required|string|max:1000',
             'reponse.is_correct' => 'nullable|array',
@@ -428,9 +442,6 @@ class QuizController extends Controller
                     }
                 }
             }
-
-
-
             DB::commit();
                // Envoyer une notification pour le nouveau quiz
         $this->notificationService->notifyQuizAvailable(
@@ -449,6 +460,14 @@ class QuizController extends Controller
         }
     }
 
+    /**
+     * Envoie un email de notification à tous les stagiaires
+     * qui ont des catalogues de formation, pour leur signaler
+     * qu'un nouveau quiz est disponible.
+     *
+     * @param \App\Models\Quiz $quiz
+     * @return void
+     */
     protected function sendQuizNotificationToTrainees(Quiz $quiz)
     {
         // Récupérer tous les stagiaires avec des catalogues de formation
@@ -461,6 +480,27 @@ class QuizController extends Controller
         }
     }
 
+    /**
+     * Importe un fichier Excel (.xlsx ou .xls) contenant des questions pour un quiz.
+     * Le fichier doit contenir les colonnes suivantes:
+     *   - A: Niveau du quiz
+     *   - B: Durée du quiz
+     *   - C: Nombre de points total pour le quiz
+     *   - D: Titre du quiz
+     *   - E: Nom de la formation
+     *   - F: Type de question (QCM, ouvert, etc.)
+     *   - G: Texte de la question
+     *   - H: Réponse A
+     *   - I: Réponse B
+     *   - J: Réponse C
+     *   - K: Bonnes lettres (séparées par des virgules)
+     *
+     * Les colonnes peuvent être dans n'importe quel ordre, mais doivent être présentes.
+     * Si une colonne est vide, la ligne est ignorée.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
     public function import(Request $request)
     {
         set_time_limit(0);
@@ -615,6 +655,16 @@ class QuizController extends Controller
     }
 
 
+    /**
+     * Importe des questions et leurs réponses à partir d'un fichier Excel
+     * Le fichier Excel doit avoir les colonnes suivantes:
+     *  - B: Texte de la question
+     *  - C, D, E: Textes des réponses
+     *  - F: Lettres des réponses correctes (séparées par des virgules)
+     * Les questions et réponses sont créées pour le quiz dont l'ID est fourni en paramètre
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function importQuestionReponseForQuiz(Request $request)
     {
         set_time_limit(0);
@@ -743,6 +793,13 @@ class QuizController extends Controller
         }
     }
 
+    /**
+     * Désactive un quiz.
+     *
+     * @param int $id ID du quiz à désactiver
+     *
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function disable($id)
     {
         try {
