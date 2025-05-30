@@ -77,6 +77,7 @@
                 <form action="{{ route('quiz.update', $quiz->id) }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
+                    <input type="hidden" name="quiz_id" value="{{ $quiz->id }}">
                     {{-- QUIZ --}}
                     <div class=" mb-4 px-2" id="quiz-form">
                         <div class="card-body">
@@ -262,6 +263,14 @@
                                                         </option>
                                                         @endforeach
                                                     </select>
+                                                </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <label class="form-label">Points</label>
+                                                    <input type="number"
+                                                        name="questions[{{ $qIndex }}][points]"
+                                                        class="form-control"
+                                                        value="{{ old("questions.$qIndex.points", $question->points ?: 2) }}"
+                                                        min="1">
                                                 </div>
                                                 <div class="col-md-6 mb-3">
                                                     <label class="form-label">Réponse correcte</label>
@@ -674,7 +683,7 @@
         if (file) {
             const fileType = file.type;
 
-            // Afficher uniquement un aperçu si c’est une image
+            // Afficher uniquement un aperçu si c'est une image
             if (fileType.startsWith('image/')) {
                 const reader = new FileReader();
 
