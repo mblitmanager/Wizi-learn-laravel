@@ -309,7 +309,7 @@ class QuizController extends Controller
             'totalQuizzes' => Progression::where('stagiaire_id', $stagiaire->id)->count(),
             'averageScore' => Progression::where('stagiaire_id', $stagiaire->id)->avg('score'),
             'totalPoints' => Progression::where('stagiaire_id', $stagiaire->id)->sum('score'),
-            'categoryStats' => $this->getCategoryStats($stagiaire->id),
+            'categoryStats' => $this->getCategoryStatsForStagiaire($stagiaire->id),
             'levelProgress' => $this->getLevelProgress($stagiaire->id)
         ];
 
@@ -371,7 +371,7 @@ class QuizController extends Controller
         }
     }
 
-    private function getCategoryStats($stagiaireId)
+    private function getCategoryStatsForStagiaire($stagiaireId)
     {
         // Récupérer toutes les progressions du stagiaire
         $progressions = Progression::where('stagiaire_id', $stagiaireId)
@@ -1433,7 +1433,7 @@ class QuizController extends Controller
         foreach ($categories as $category) {
             $quizzes = Quiz::where('category_id', $category->id)->get();
             $totalQuizzes = $quizzes->count();
-            
+
             $completedQuizzes = QuizParticipation::where('stagiaire_id', $user->stagiaire->id)
                 ->whereIn('quiz_id', $quizzes->pluck('id'))
                 ->where('status', 'completed')
