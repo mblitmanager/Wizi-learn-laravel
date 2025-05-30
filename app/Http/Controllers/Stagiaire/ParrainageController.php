@@ -10,7 +10,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Controllers\Controller;
+use App\Mail\FilleulInscriptionConfirmation;
+use App\Models\CatalogueFormation;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class ParrainageController extends Controller
 {
@@ -124,9 +127,18 @@ class ParrainageController extends Controller
             'updated_at' => now(),
         ]);
 
+        $parrain = User::find($request->parrain_id);
+        $formation = CatalogueFormation::find($request->catalogue_formation_id);
+
+
+        // Envoyer l'email de confirmation
+        if ($user->email) {
+            Mail::to($user->email)->send(new FilleulInscriptionConfirmation($user, $parrain, $formation));
+        }
+
         return response()->json([
             'success' => true,
-            'message' => 'Inscription réussie!',
+            'message' => 'Inscription réussie! Un email de confirmation a été envoyé.',
             'data' => [
                 'user' => $user,
                 'stagiaire' => $stagiaire
