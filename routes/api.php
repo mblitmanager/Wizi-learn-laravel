@@ -31,7 +31,7 @@ Route::middleware(['auth:api'])->group(function () {
     Route::get('/formation/categories/', [FormationStagiaireController::class, 'getCategories']);
     Route::get('/formations/categories/{categoryId}', [FormationStagiaireController::class, 'getFormationsByCategory']);
     Route::get('/stagiaire/formations', [FormationStagiaireController::class, 'getFormations']);
-    Route::get('/stagiaire/{id}/formations', [FormationController::class, 'getFormationsByStagiaireId']);
+    Route::get('/stagiaire/{id}/formations', [FormationController::class, 'getFormationsByStagiaire']);
     Route::get('/stagiaire/{id}/catalogueFormations', [StagiaireController::class, 'getFormationsByStagiaire']);
     Route::get('/formations/{stagiaireId}/quizzes', [QuizStagiaireController::class, 'getQuizzesByStagiaire']);
     Route::get('/quiz/categories', [QuizController::class, 'getCategories']);
@@ -104,6 +104,12 @@ Route::middleware(['auth:api'])->group(function () {
         Route::get('/{quizId}/statistics', [QuizController::class, 'getQuizStatistics']);
         Route::get('/classement/global', [QuizController::class, 'getGlobalClassement']);
         Route::get('/{quizId}/user-participations', [QuizController::class, 'getUserParticipations']);
+        
+        // Nouvelles routes pour les statistiques détaillées
+        Route::get('/stats/categories', [QuizController::class, 'getCategoryStats']);
+        Route::get('/stats/progress', [QuizController::class, 'getProgressStats']);
+        Route::get('/stats/trends', [QuizController::class, 'getQuizTrends']);
+        Route::get('/stats/performance', [QuizController::class, 'getPerformanceStats']);
     });
     // Routes pour les tutoriels et astuce
     Route::prefix('medias')->group(function () {

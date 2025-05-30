@@ -19,6 +19,7 @@ use App\Models\CorrespondancePair;
 use App\Models\QuizParticipation;
 use App\Models\QuizParticipationAnswer;
 use Illuminate\Support\Facades\DB;
+use App\Models\QuizCategory;
 
 class QuizController extends Controller
 {
@@ -1421,5 +1422,221 @@ class QuizController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Erreur lors de l\'exportation des quiz : ' . $e->getMessage());
         }
+    }
+
+    public function getCategoryStats()
+    {
+        $user = auth()->user();
+        $categories = QuizCategory::all();
+        $stats = [];
+
+        foreach ($categories as $category) {
+            $quizzes = Quiz::where('category_id', $category->id)->get();
+            $totalQuizzes = $quizzes->count();
+            
+            $completedQuizzes = QuizParticipation::where('stagiaire_id', $user->stagiaire->id)
+                ->whereIn('quiz_id', $quizzes->pluck('id'))
+                ->where('status', 'completed')
+                ->count();
+
+            $scores = QuizParticipation::where('stagiaire_id', $user->stagiaire->id)
+                ->whereIn('quiz_id', $quizzes->pluck('id'))
+                ->where('status', 'completed')
+                ->pluck('score')
+                ->toArray();
+
+            $averageScore = count($scores) > 0 ? array_sum($scores) / count($scores) : 0;
+            $successRate = $totalQuizzes > 0 ? ($completedQuizzes / $totalQuizzes) * 100 : 0;
+
+            $lastActivity = QuizParticipation::where('stagiaire_id', $user->stagiaire->id)
+                ->whereIn('quiz_id', $quizzes->pluck('id'))
+                ->latest()
+                ->first();
+
+            $stats[] = [
+                'category_id' => $category->id,
+                'category_name' => $category->name,
+                'total_quizzes' => $totalQuizzes,
+                'completed_quizzes' => $completedQuizzes,
+                'average_score' => round($averageScore, 2),
+                'success_rate' => round($successRate, 2),
+                'last_activity' => $lastActivity ? $lastActivity->created_at : null,
+            ];
+        }
+
+        return response()->json($stats);
+    }
+
+    public function getProgressStats()
+    {
+        $user = auth()->user();
+        $now = now();
+        $thirtyDaysAgo = $now->copy()->subDays(30);
+
+        // Progression quotidienne
+        $dailyProgress = QuizParticipation::where('stagiaire_id', $user->stagiaire->id)
+            ->where('status', 'completed')
+            ->where('created_at', '>=', $thirtyDaysAgo)
+            ->get()
+            ->groupBy(function ($participation) {
+                return $participation->created_at->format('Y-m-d');
+            })
+            ->map(function ($participations) {
+                return [
+                    'date' => $participations->first()->created_at->format('Y-m-d'),
+                    'completed_quizzes' => $participations->count(),
+                    'average_score' => round($participations->avg('score'), 2),
+                ];
+            })
+            ->values();
+
+        // Progression hebdomadaire
+        $weeklyProgress = QuizParticipation::where('stagiaire_id', $user->stagiaire->id)
+            ->where('status', 'completed')
+            ->where('created_at', '>=', $now->copy()->subWeeks(4))
+            ->get()
+            ->groupBy(function ($participation) {
+                return $participation->created_at->format('Y-W');
+            })
+            ->map(function ($participations) {
+                return [
+                    'week' => $participations->first()->created_at->format('Y-W'),
+                    'completed_quizzes' => $participations->count(),
+                    'average_score' => round($participations->avg('score'), 2),
+                ];
+            })
+            ->values();
+
+        // Progression mensuelle
+        $monthlyProgress = QuizParticipation::where('stagiaire_id', $user->stagiaire->id)
+            ->where('status', 'completed')
+            ->where('created_at', '>=', $now->copy()->subMonths(6))
+            ->get()
+            ->groupBy(function ($participation) {
+                return $participation->created_at->format('Y-m');
+            })
+            ->map(function ($participations) {
+                return [
+                    'month' => $participations->first()->created_at->format('Y-m'),
+                    'completed_quizzes' => $participations->count(),
+                    'average_score' => round($participations->avg('score'), 2),
+                ];
+            })
+            ->values();
+
+        return response()->json([
+            'daily_progress' => $dailyProgress,
+            'weekly_progress' => $weeklyProgress,
+            'monthly_progress' => $monthlyProgress,
+        ]);
+    }
+
+    public function getQuizTrends()
+    {
+        $user = auth()->user();
+        $categories = QuizCategory::all();
+        $thirtyDaysAgo = now()->subDays(30);
+
+        // Tendances par catégorie
+        $categoryTrends = $categories->map(function ($category) use ($user, $thirtyDaysAgo) {
+            $trendData = QuizParticipation::where('stagiaire_id', $user->stagiaire->id)
+                ->whereHas('quiz', function ($query) use ($category) {
+                    $query->where('category_id', $category->id);
+                })
+                ->where('status', 'completed')
+                ->where('created_at', '>=', $thirtyDaysAgo)
+                ->get()
+                ->groupBy(function ($participation) {
+                    return $participation->created_at->format('Y-m-d');
+                })
+                ->map(function ($participations) {
+                    return [
+                        'date' => $participations->first()->created_at->format('Y-m-d'),
+                        'score' => round($participations->avg('score'), 2),
+                    ];
+                })
+                ->values();
+
+            return [
+                'category_id' => $category->id,
+                'category_name' => $category->name,
+                'trend_data' => $trendData,
+            ];
+        });
+
+        // Tendance globale
+        $overallTrend = QuizParticipation::where('stagiaire_id', $user->stagiaire->id)
+            ->where('status', 'completed')
+            ->where('created_at', '>=', $thirtyDaysAgo)
+            ->get()
+            ->groupBy(function ($participation) {
+                return $participation->created_at->format('Y-m-d');
+            })
+            ->map(function ($participations) {
+                return [
+                    'date' => $participations->first()->created_at->format('Y-m-d'),
+                    'average_score' => round($participations->avg('score'), 2),
+                ];
+            })
+            ->values();
+
+        return response()->json([
+            'category_trends' => $categoryTrends,
+            'overall_trend' => $overallTrend,
+        ]);
+    }
+
+    public function getPerformanceStats()
+    {
+        $user = auth()->user();
+        $categories = QuizCategory::all();
+        $stats = [];
+
+        foreach ($categories as $category) {
+            $scores = QuizParticipation::where('stagiaire_id', $user->stagiaire->id)
+                ->whereHas('quiz', function ($query) use ($category) {
+                    $query->where('category_id', $category->id);
+                })
+                ->where('status', 'completed')
+                ->pluck('score')
+                ->toArray();
+
+            if (count($scores) > 0) {
+                $averageScore = array_sum($scores) / count($scores);
+                $stats[] = [
+                    'category_id' => $category->id,
+                    'category_name' => $category->name,
+                    'score' => round($averageScore, 2),
+                ];
+            }
+        }
+
+        // Trier les scores pour identifier les forces et faiblesses
+        usort($stats, function ($a, $b) {
+            return $b['score'] <=> $a['score'];
+        });
+
+        $strengths = array_slice($stats, 0, 3);
+        $weaknesses = array_slice($stats, -3);
+
+        // Identifier les domaines d'amélioration (scores < 70%)
+        $improvementAreas = array_filter($stats, function ($stat) {
+            return $stat['score'] < 70;
+        });
+
+        $improvementAreas = array_map(function ($area) {
+            return [
+                'category_id' => $area['category_id'],
+                'category_name' => $area['category_name'],
+                'current_score' => $area['score'],
+                'target_score' => 70,
+            ];
+        }, $improvementAreas);
+
+        return response()->json([
+            'strengths' => $strengths,
+            'weaknesses' => $weaknesses,
+            'improvement_areas' => array_values($improvementAreas),
+        ]);
     }
 }
