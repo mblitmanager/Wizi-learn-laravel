@@ -19,6 +19,8 @@ use App\Models\CorrespondancePair;
 use App\Models\QuizParticipation;
 use App\Models\QuizParticipationAnswer;
 use Illuminate\Support\Facades\DB;
+use App\Models\QuizCategory;
+use App\Models\Formation;
 
 class QuizController extends Controller
 {
@@ -160,7 +162,7 @@ class QuizController extends Controller
             $user = Auth::user();
 
             // Récupérer le stagiaire associé à l'utilisateur
-            $stagiaire = Stagiaire::where('user_id', $user->id)->first();
+            $stagiaire = Stagiaire::where('user_id', $user->getKey())->first();
 
             if (!$stagiaire) {
                 return response()->json([
@@ -308,7 +310,7 @@ class QuizController extends Controller
             'totalQuizzes' => Progression::where('stagiaire_id', $stagiaire->id)->count(),
             'averageScore' => Progression::where('stagiaire_id', $stagiaire->id)->avg('score'),
             'totalPoints' => Progression::where('stagiaire_id', $stagiaire->id)->sum('score'),
-            'categoryStats' => $this->getCategoryStats($stagiaire->id),
+            'categoryStats' => $this->getCategoryStatsForStagiaire($stagiaire->id),
             'levelProgress' => $this->getLevelProgress($stagiaire->id)
         ];
 
@@ -370,7 +372,7 @@ class QuizController extends Controller
         }
     }
 
-    private function getCategoryStats($stagiaireId)
+    private function getCategoryStatsForStagiaire($stagiaireId)
     {
         // Récupérer toutes les progressions du stagiaire
         $progressions = Progression::where('stagiaire_id', $stagiaireId)
@@ -726,7 +728,7 @@ class QuizController extends Controller
                 'request_data' => $request->all(),
                 'request_answers' => $request->answers,
                 'quiz_id' => $id,
-                'user_id' => $user->id
+                'user_id' => $user->getKey()
             ]);
 
             // Validation des données
@@ -736,10 +738,10 @@ class QuizController extends Controller
             ]);
 
             // Récupérer le stagiaire associé à l'utilisateur
-            $stagiaire = Stagiaire::where('user_id', $user->id)->firstOrFail();
+            $stagiaire = Stagiaire::where('user_id', $user->getKey())->firstOrFail();
 
             // Récupérer la participation en cours pour l'utilisateur et le quiz
-            $participation = QuizParticipation::where('user_id', $user->id)
+            $participation = QuizParticipation::where('user_id', $user->getKey())
                 ->where('quiz_id', $quiz->id)
                 ->where('status', 'in_progress')
                 ->first();
@@ -747,7 +749,7 @@ class QuizController extends Controller
             if (!$participation) {
                 // Si aucune participation en cours, on peut en créer une ou retourner une erreur
                 $participation = QuizParticipation::create([
-                    'user_id' => $user->id,
+                    'user_id' => $user->getKey(),
                     'quiz_id' => $quiz->id,
                     'status' => 'in_progress',
                     'started_at' => now(),
@@ -891,7 +893,7 @@ class QuizController extends Controller
             Log::error('Erreur dans submitQuizResult', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
-                'user_id' => $user?->id,
+                'user_id' => $user?->getKey(),
                 'quiz_id' => $id,
                 'formation_id' => $quiz->formation->id ?? null,
                 'request_data' => $request->all(),
@@ -958,7 +960,7 @@ class QuizController extends Controller
             $user = Auth::user();
 
             // Récupérer le stagiaire associé à l'utilisateur
-            $stagiaire = Stagiaire::where('user_id', $user->id)->first();
+            $stagiaire = Stagiaire::where('user_id', $user->getKey())->first();
 
             if (!$stagiaire) {
                 return response()->json([
@@ -1103,7 +1105,7 @@ class QuizController extends Controller
             }
 
             // Vérifier si l'utilisateur a déjà une participation en cours
-            $existingParticipation = QuizParticipation::where('user_id', auth()->id())
+            $existingParticipation = QuizParticipation::where('user_id', auth()->user()->getKey())
                 ->where('quiz_id', $quizId)
                 ->where('status', 'in_progress')
                 ->first();
@@ -1117,7 +1119,7 @@ class QuizController extends Controller
 
             // Créer une nouvelle participation
             $participation = QuizParticipation::create([
-                'user_id' => auth()->id(),
+                'user_id' => auth()->user()->getKey(),
                 'quiz_id' => $quizId,
                 'status' => 'in_progress',
                 'started_at' => now(),
@@ -1141,7 +1143,7 @@ class QuizController extends Controller
     public function getCurrentParticipation($quizId)
     {
         try {
-            $participation = QuizParticipation::where('user_id', auth()->id())
+            $participation = QuizParticipation::where('user_id', auth()->user()->getKey())
                 ->where('quiz_id', $quizId)
                 ->where('status', 'in_progress')
                 ->first();
@@ -1172,7 +1174,7 @@ class QuizController extends Controller
                 'time_spent' => 'required|integer|min:0'
             ]);
 
-            $participation = QuizParticipation::where('user_id', auth()->id())
+            $participation = QuizParticipation::where('user_id', auth()->user()->getKey())
                 ->where('quiz_id', $quizId)
                 ->where('status', 'in_progress')
                 ->firstOrFail();
@@ -1288,7 +1290,7 @@ class QuizController extends Controller
             $quiz = Quiz::findOrFail($quizId);
 
             // Récupérer les participations de l'utilisateur pour ce quiz
-            $participations = QuizParticipation::where('user_id', $user->id)
+            $participations = QuizParticipation::where('user_id', $user->getKey())
                 ->where('quiz_id', $quizId)
                 ->orderBy('created_at', 'desc')
                 ->get()
@@ -1420,6 +1422,273 @@ class QuizController extends Controller
             return response()->download($filePath)->deleteFileAfterSend(true);
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Erreur lors de l\'exportation des quiz : ' . $e->getMessage());
+        }
+    }
+
+    public function getGlobalCategoryStats()
+    {
+        try {
+            $user = Auth::user();
+            if (!$user) {
+                return response()->json([
+                    'error' => 'Utilisateur non authentifié'
+                ], 401);
+            }
+
+            $categories = Formation::select('categorie as name')
+                ->distinct()
+                ->get();
+            $stats = [];
+
+            foreach ($categories as $category) {
+                $quizCount = Quiz::whereHas('formation', function ($query) use ($category) {
+                    $query->where('categorie', $category->name);
+                })->count();
+
+                $completedQuizzes = Quiz::whereHas('formation', function ($query) use ($category) {
+                    $query->where('categorie', $category->name);
+                })
+                ->whereHas('quiz_participations', function ($query) use ($user) {
+                    $query->where('user_id', $user->getKey())
+                        ->where('status', 'completed');
+                })
+                ->count();
+
+                $stats[] = [
+                    'category' => $category->name,
+                    'totalQuizzes' => $quizCount,
+                    'completedQuizzes' => $completedQuizzes,
+                    'completionRate' => $quizCount > 0 ? ($completedQuizzes / $quizCount) * 100 : 0
+                ];
+            }
+
+            return response()->json($stats);
+        } catch (\Exception $e) {
+            Log::error('Erreur dans getGlobalCategoryStats', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'error' => 'Une erreur est survenue lors de la récupération des statistiques par catégorie',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getProgressStats()
+    {
+        try {
+            $user = auth()->user();
+            if (!$user || !$user->stagiaire) {
+                return response()->json([
+                    'daily_progress' => [],
+                    'weekly_progress' => [],
+                    'monthly_progress' => [],
+                ]);
+            }
+
+            $now = now();
+            $thirtyDaysAgo = $now->copy()->subDays(30);
+
+            // Progression quotidienne
+            $dailyProgress = QuizParticipation::where('user_id', $user->getKey())
+                ->where('status', 'completed')
+                ->where('created_at', '>=', $thirtyDaysAgo)
+                ->get()
+                ->groupBy(function ($participation) {
+                    return $participation->created_at->format('Y-m-d');
+                })
+                ->map(function ($participations) {
+                    return [
+                        'date' => $participations->first()->created_at->format('Y-m-d'),
+                        'completed_quizzes' => $participations->count(),
+                        'average_score' => round($participations->avg('score'), 2),
+                    ];
+                })
+                ->values();
+
+            // Progression hebdomadaire
+            $weeklyProgress = QuizParticipation::where('user_id', $user->getKey())
+                ->where('status', 'completed')
+                ->where('created_at', '>=', $now->copy()->subWeeks(4))
+                ->get()
+                ->groupBy(function ($participation) {
+                    return $participation->created_at->format('Y-W');
+                })
+                ->map(function ($participations) {
+                    return [
+                        'week' => $participations->first()->created_at->format('Y-W'),
+                        'completed_quizzes' => $participations->count(),
+                        'average_score' => round($participations->avg('score'), 2),
+                    ];
+                })
+                ->values();
+
+            // Progression mensuelle
+            $monthlyProgress = QuizParticipation::where('user_id', $user->getKey())
+                ->where('status', 'completed')
+                ->where('created_at', '>=', $now->copy()->subMonths(6))
+                ->get()
+                ->groupBy(function ($participation) {
+                    return $participation->created_at->format('Y-m');
+                })
+                ->map(function ($participations) {
+                    return [
+                        'month' => $participations->first()->created_at->format('Y-m'),
+                        'completed_quizzes' => $participations->count(),
+                        'average_score' => round($participations->avg('score'), 2),
+                    ];
+                })
+                ->values();
+
+            return response()->json([
+                'daily_progress' => $dailyProgress,
+                'weekly_progress' => $weeklyProgress,
+                'monthly_progress' => $monthlyProgress,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Erreur dans getProgressStats', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json(['error' => 'Une erreur est survenue lors de la récupération des statistiques de progression'], 500);
+        }
+    }
+
+    public function getQuizTrends()
+    {
+        try {
+            $user = auth()->user();
+            if (!$user || !$user->stagiaire) {
+                return response()->json([
+                    'category_trends' => [],
+                    'overall_trend' => [],
+                ]);
+            }
+
+            $categories = Formation::select('categorie as name')
+                ->distinct()
+                ->get();
+            $thirtyDaysAgo = now()->subDays(30);
+
+            // Tendances par catégorie
+            $categoryTrends = $categories->map(function ($category) use ($user, $thirtyDaysAgo) {
+                $trendData = QuizParticipation::where('user_id', $user->getKey())
+                    ->whereHas('quiz.formation', function ($query) use ($category) {
+                        $query->where('categorie', $category->name);
+                    })
+                    ->where('status', 'completed')
+                    ->where('created_at', '>=', $thirtyDaysAgo)
+                    ->get()
+                    ->groupBy(function ($participation) {
+                        return $participation->created_at->format('Y-m-d');
+                    })
+                    ->map(function ($participations) {
+                        return [
+                            'date' => $participations->first()->created_at->format('Y-m-d'),
+                            'score' => round($participations->avg('score'), 2),
+                        ];
+                    })
+                    ->values();
+
+                return [
+                    'category_id' => $category->name,
+                    'category_name' => $category->name,
+                    'trend_data' => $trendData,
+                ];
+            });
+
+            // Tendance globale
+            $overallTrend = QuizParticipation::where('user_id', $user->getKey())
+                ->where('status', 'completed')
+                ->where('created_at', '>=', $thirtyDaysAgo)
+                ->get()
+                ->groupBy(function ($participation) {
+                    return $participation->created_at->format('Y-m-d');
+                })
+                ->map(function ($participations) {
+                    return [
+                        'date' => $participations->first()->created_at->format('Y-m-d'),
+                        'average_score' => round($participations->avg('score'), 2),
+                    ];
+                })
+                ->values();
+
+            return response()->json([
+                'category_trends' => $categoryTrends,
+                'overall_trend' => $overallTrend,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Erreur dans getQuizTrends', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json(['error' => 'Une erreur est survenue lors de la récupération des tendances des quiz'], 500);
+        }
+    }
+
+    public function getPerformanceStats()
+    {
+        try {
+            $user = Auth::user();
+            if (!$user || !$user->stagiaire) {
+                return response()->json([
+                    'strengths' => [],
+                    'weaknesses' => [],
+                    'improvement_areas' => [],
+                ]);
+            }
+
+            $categories = Formation::select('categorie as name')
+                ->distinct()
+                ->get();
+
+            $stats = [];
+
+            foreach ($categories as $category) {
+                $scores = QuizParticipation::where('user_id', $user->getKey())
+                    ->whereHas('quiz.formation', function ($query) use ($category) {
+                        $query->where('categorie', $category->name);
+                    })
+                    ->where('status', 'completed')
+                    ->pluck('score')
+                    ->toArray();
+
+                if (count($scores) > 0) {
+                    $averageScore = array_sum($scores) / count($scores);
+                    $stats[] = [
+                        'category_id' => $category->name,
+                        'category_name' => $category->name,
+                        'score' => round($averageScore, 2),
+                    ];
+                }
+            }
+
+            // Trier les scores pour identifier les forces et faiblesses
+            usort($stats, function ($a, $b) {
+                return $b['score'] <=> $a['score'];
+            });
+
+            $strengths = array_slice($stats, 0, 3);
+            $weaknesses = array_slice($stats, -3);
+            $improvementAreas = array_slice($stats, 3, -3);
+
+            return response()->json([
+                'strengths' => $strengths,
+                'weaknesses' => $weaknesses,
+                'improvement_areas' => $improvementAreas,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Erreur dans getPerformanceStats', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'error' => 'Une erreur est survenue lors de la récupération des statistiques de performance',
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 }

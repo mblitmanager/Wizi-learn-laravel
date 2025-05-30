@@ -110,12 +110,20 @@ class QuizController extends Controller
     {
         $request->validate([
             'quiz_id' => 'required|exists:quizzes,id',
-            'text' => 'required|string',
-            'question.type' => 'required|string',
-            'points' => 'required|integer|min:1',
-            'reponses' => 'required|array|min:1',
-            'reponses.*.text' => 'required|string',
-            'reponses.*.bank_group' => 'required_if:question.type,correspondance',
+            'quiz' => 'required|array',
+            'quiz.titre' => 'required|string',
+            'quiz.description' => 'nullable|string',
+            'quiz.niveau' => 'nullable|string',
+            'quiz.duree' => 'nullable|integer',
+            'quiz.formation_id' => 'required|exists:formations,id',
+            'questions' => 'nullable|array',
+            'questions.*.id' => 'nullable|exists:questions,id',
+            'questions.*.text' => 'required|string',
+            'questions.*.type' => 'required|string',
+            'questions.*.points' => 'required|integer|min:1',
+            'questions.*.reponses' => 'required|array|min:1',
+            'questions.*.reponses.*.text' => 'required|string',
+            'questions.*.reponses.*.bank_group' => 'required_if:questions.*.type,correspondance',
         ]);
         DB::beginTransaction();
 
@@ -443,11 +451,12 @@ class QuizController extends Controller
                 }
             }
             DB::commit();
-            // Envoyer une notification pour le nouveau quiz
-            $this->notificationService->notifyQuizAvailable(
-                $quiz->titre,
-                $quiz->id
-            );
+               // Envoyer une notification pour le nouveau quiz
+        $this->notificationService->notifyQuizAvailable(
+            $quiz->titre,
+            $quiz->id,
+            $quiz->formation_id
+        );
 
             // Envoyer les emails aux stagiaires
             $this->sendQuizNotificationToTrainees($quiz);
@@ -775,7 +784,7 @@ class QuizController extends Controller
                     $newReponse->push();
                 }
             }
-            DB::commit();
+
             // Envoyer une notification pour le nouveau quiz
             if ($newQuiz->status === 'actif') {
                 $this->notificationService->notifyQuizAvailable(
@@ -783,7 +792,7 @@ class QuizController extends Controller
                     $newQuiz->id
                 );
             }
-
+            DB::commit();
             return redirect()->route('quiz.edit', $newQuiz->id)
                 ->with('success', 'Quiz dupliqué avec succès.');
         } catch (\Exception $e) {

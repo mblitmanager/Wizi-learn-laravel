@@ -46,6 +46,8 @@ jobs:
           
           echo "➤ Installing dependencies..."
           php composer.phar install --no-dev --prefer-dist --optimize-autoloader --no-interaction
+          npm install
+          npm run build
           echo "✓ Composer dependencies installed"
           
           echo "➤ Optimizing Laravel..."
@@ -57,6 +59,7 @@ jobs:
           
           echo "➤ Running migrations..."
           php artisan migrate --force
+          php artisan queue:restart
           echo "✓ Database updated"
           
           echo "➤ Fixing permissions..."

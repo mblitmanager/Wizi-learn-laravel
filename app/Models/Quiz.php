@@ -25,9 +25,18 @@ class Quiz extends Model
         'status', // Ajout du champ status
     ];
 
+    protected $attributes = [
+        'status' => 'actif'
+    ];
+
     public function participations()
     {
         return $this->hasMany(Participation::class);
+    }
+
+    public function quiz_participations()
+    {
+        return $this->hasMany(QuizParticipation::class);
     }
 
     public function formation()
