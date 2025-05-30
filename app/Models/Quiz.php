@@ -30,6 +30,11 @@ class Quiz extends Model
         return $this->hasMany(Participation::class);
     }
 
+    public function quiz_participations()
+    {
+        return $this->hasMany(QuizParticipation::class);
+    }
+
     public function formation()
     {
         return $this->belongsTo(Formation::class);
