@@ -1575,8 +1575,8 @@ class QuizController extends Controller
             // Tendances par catégorie
             $categoryTrends = $categories->map(function ($category) use ($user, $thirtyDaysAgo) {
                 $trendData = QuizParticipation::where('user_id', $user->getKey())
-                    ->whereHas('quiz', function ($query) use ($category) {
-                        $query->where('category_id', $category->id);
+                    ->whereHas('quiz.formation', function ($query) use ($category) {
+                        $query->where('categorie', $category->name);
                     })
                     ->where('status', 'completed')
                     ->where('created_at', '>=', $thirtyDaysAgo)
@@ -1593,7 +1593,7 @@ class QuizController extends Controller
                     ->values();
 
                 return [
-                    'category_id' => $category->id,
+                    'category_id' => $category->name,
                     'category_name' => $category->name,
                     'trend_data' => $trendData,
                 ];
