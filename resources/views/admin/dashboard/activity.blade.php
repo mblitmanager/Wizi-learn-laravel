@@ -133,13 +133,52 @@
                 <div class="card shadow-sm border-light">
                     <div class="card-body">
                         <h6 class="mb-3 small fw-bold text-muted">Carte des connexions par pays</h6>
-                        <canvas id="loginMap" width="800" height="400"></canvas>
-
+                        <canvas id="myChart"></canvas>
                     </div>
                 </div>
             </div>
         </div>
     @endsection
     @section('scripts')
-        @vite(['resources/js/loginMap.js'])
+        {{-- @vite(['resources/js/loginMap.js']) --}}
+        {{-- <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-geo@3.5.2/build/index.umd.min.js"></script>
+
+        <script>
+            const url = 'https://unpkg.com/world-atlas@2.0.2/countries-50m.json';
+            fetch(url)
+                .then(response => response.json())
+                .then((datapoint) => {
+                    const countries = ChartGeo.topojson.feature(datapoint, datapoint.objects.countries).features;
+                    // setup 
+                    const data = {
+                        labels: countries.map((d) => d.properties.name),
+                        datasets: [{
+                            label: 'Weekly Sales',
+                            data: countries.map((d) => Math.round(Math.random() * 100)),
+
+                        }]
+                    };
+
+                    // config 
+                    const config = {
+                        type: 'choropleth',
+                        data: data,
+                        options: {
+
+                        }
+                    };
+
+                    // render init block
+                    const myChart = new Chart(
+                        document.getElementById('myChart'),
+                        config
+                    );
+                })
+
+
+            // Instantly assign Chart.js version
+            const chartVersion = document.getElementById('chartVersion');
+            chartVersion.innerText = Chart.version;
+        </script> --}}
     @endsection
