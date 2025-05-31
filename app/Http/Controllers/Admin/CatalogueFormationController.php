@@ -44,9 +44,8 @@ class CatalogueFormationController extends Controller
         if ($request->hasFile('image_url')) {
             $file = $request->file('image_url');
             $filename = time() . '_' . $file->getClientOriginalName();
-            $path = $file->storeAs('media', $filename, 'public');
-
-            $validated['image_url'] = $path;
+            $file->move(public_path('media'), $filename);
+            $validated['image_url'] = 'media/' . $filename;
             $validated['file_type'] = $file->getClientMimeType();
         }
 
@@ -93,9 +92,8 @@ class CatalogueFormationController extends Controller
         if ($request->hasFile('image_url')) {
             $file = $request->file('image_url');
             $filename = time() . '_' . $file->getClientOriginalName();
-            $path = $file->storeAs('media', $filename, 'public');
-
-            $validated['image_url'] = $path;
+            $file->move(public_path('media'), $filename);
+            $validated['image_url'] = 'media/' . $filename;
             $validated['file_type'] = $file->getClientMimeType();
         }
 

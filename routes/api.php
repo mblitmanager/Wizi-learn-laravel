@@ -24,6 +24,8 @@ Route::prefix('parrainage')->group(function () {
     Route::get('/get-data/{token}', [ParrainageController::class, 'getParrainData']);
     Route::post('/register-filleul', [ParrainageController::class, 'registerFilleul']);
 });
+Route::get('formationParrainage', [CatalogueFormationController::class, 'getAllCatalogueFormations']);
+// Cette route est déjà en dehors du groupe Route::middleware(['auth:api']), donc elle est publique.
 Route::middleware(['auth:api'])->group(function () {
     Route::post('logout', [JWTAuthController::class, 'logout']);
     Route::get('user', [JWTAuthController::class, 'getUser']);
