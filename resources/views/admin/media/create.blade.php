@@ -64,11 +64,11 @@
                                 <div class="mb-3">
                                     <label class="form-label">Source du média</label>
                                     <div>
-                                        <div class="form-check form-check-inline">
+                                        <div class="form-check form-check-inline" id="source-file-radio">
                                             <input class="form-check-input" type="radio" name="source_type" id="source_file" value="file" checked>
                                             <label class="form-check-label" for="source_file">Téléverser un fichier</label>
                                         </div>
-                                        <div class="form-check form-check-inline">
+                                        <div class="form-check form-check-inline" id="source-url-radio">
                                             <input class="form-check-input" type="radio" name="source_type" id="source_url" value="url">
                                             <label class="form-check-label" for="source_url">Utiliser un lien</label>
                                         </div>
@@ -208,25 +208,55 @@
 @endsection
 @section('scripts')
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function() {
         const fileUploadField = document.getElementById('file-upload-field');
         const urlField = document.getElementById('url-field');
         const sourceFileRadio = document.getElementById('source_file');
         const sourceUrlRadio = document.getElementById('source_url');
 
-        sourceFileRadio.addEventListener('change', function () {
+        sourceFileRadio.addEventListener('change', function() {
             if (this.checked) {
                 fileUploadField.style.display = 'block';
                 urlField.style.display = 'none';
             }
         });
 
-        sourceUrlRadio.addEventListener('change', function () {
+        sourceUrlRadio.addEventListener('change', function() {
             if (this.checked) {
                 fileUploadField.style.display = 'none';
                 urlField.style.display = 'block';
             }
         });
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const typeSelect = document.getElementById('type');
+        const sourceFileRadioDiv = document.getElementById('source-file-radio');
+        const sourceUrlRadioDiv = document.getElementById('source-url-radio');
+        const fileUploadField = document.getElementById('file-upload-field');
+        const urlField = document.getElementById('url-field');
+
+        function updateSourceOptions() {
+            if (typeSelect.value === 'video') {
+                sourceFileRadioDiv.style.display = 'none';
+                sourceUrlRadioDiv.style.display = 'inline-block';
+                // Sélectionne automatiquement "Utiliser un lien"
+                document.getElementById('source_url').checked = true;
+                fileUploadField.style.display = 'none';
+                urlField.style.display = 'block';
+            } else {
+                sourceFileRadioDiv.style.display = 'inline-block';
+                sourceUrlRadioDiv.style.display = 'none';
+                // Sélectionne automatiquement "Téléverser un fichier"
+                document.getElementById('source_file').checked = true;
+                fileUploadField.style.display = 'block';
+                urlField.style.display = 'none';
+            }
+        }
+
+        typeSelect.addEventListener('change', updateSourceOptions);
+        updateSourceOptions(); // Initialisation au chargement
     });
 </script>
 @endsection
