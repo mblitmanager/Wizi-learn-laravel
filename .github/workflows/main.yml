@@ -57,7 +57,7 @@ jobs:
           php artisan route:cache
           php artisan view:cache
           echo "✓ Application optimized"
-          php artisan queue:work
+          
           
           echo "➤ Running migrations..."
           php artisan migrate --force
