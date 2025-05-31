@@ -38,6 +38,7 @@ jobs:
           set -e
           cd ~/www
           echo "➤ Pulling changes from Git..."
+          git reset --hard origin/main
           git pull origin main
           echo "✓ Code updated"
           curl -sS https://getcomposer.org/installer | php
@@ -56,6 +57,7 @@ jobs:
           php artisan route:cache
           php artisan view:cache
           echo "✓ Application optimized"
+          php artisan queue:work
           
           echo "➤ Running migrations..."
           php artisan migrate --force
