@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use OpenApi\Attributes as OA;
+use Illuminate\Support\Facades\Log;
 
 #[OA\Info(
     title: "JWT Authentication API",
@@ -110,11 +111,15 @@ class FormationStagiaireController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:102400',
+                'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             ]);
 
             if ($validator->fails()) {
-                return response()->json(['errors' => $validator->errors()], 422);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
             }
 
             $user = User::findOrFail($id);
@@ -122,23 +127,39 @@ class FormationStagiaireController extends Controller
             // Vérifie si l'utilisateur a déjà une image
             if ($user->image && file_exists(public_path($user->image))) {
                 unlink(public_path($user->image));  // Supprime l'ancienne image
-                $user->image = null;  // Réinitialise le chemin
             }
 
             if ($request->hasFile('image')) {
                 $imageName = time() . '.' . $request->image->extension();
                 $request->image->move(public_path('uploads/users'), $imageName);
                 $user->image = 'uploads/users/' . $imageName;
+                $user->save();
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Image mise à jour avec succès',
+                    'data' => [
+                        'image' => $user->image,
+                        'image_url' => asset($user->image)
+                    ]
+                ]);
             }
 
-            $user->save();
+            return response()->json([
+                'success' => false,
+                'message' => 'Aucune image n\'a été fournie'
+            ], 400);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de la mise à jour de l\'image', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
 
             return response()->json([
-                'message' => 'Image mise à jour avec succès',
-                'image' => $user->image,
-            ]);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+                'success' => false,
+                'message' => 'Une erreur est survenue lors de la mise à jour de l\'image'
+            ], 500);
         }
     }
 

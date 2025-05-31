@@ -77,6 +77,7 @@ Route::middleware(['auth:api'])->group(function () {
     // Routes de gestion des catalogue de formation
     Route::prefix('catalogueFormations')->group(function () {
         Route::get('formations', [CatalogueFormationController::class, 'getAllCatalogueFormations']);
+        Route::get('with-formations', [CatalogueFormationController::class, 'getCataloguesWithFormations']);
         Route::get('stagiaire/{id}', [CatalogueFormationController::class, 'getFormationsAndCatalogues']);
         Route::get('/formations/{id}', [CatalogueFormationController::class, 'getCatalogueFormationById']);
         Route::get('/formations/{id}/pdf', [CatalogueFormationController::class, 'getCataloguePdf']);

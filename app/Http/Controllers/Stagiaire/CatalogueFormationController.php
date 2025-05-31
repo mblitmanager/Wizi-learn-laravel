@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CatalogueFormation;
 use App\Services\CatalogueFormationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class CatalogueFormationController extends Controller
 {
@@ -70,16 +71,82 @@ class CatalogueFormationController extends Controller
             }
 
             return response()->json([
-                // 'success' => true,
-                // 'data' => [
-                     asset($catalogueFormation->cursus_pdf)
-                    // 'filename' => 'cursus_' . strtoupper($catalogueFormation->titre) . '.pdf'
-                // ]
+                asset($catalogueFormation->cursus_pdf)
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Une erreur est survenue lors du téléchargement du PDF.'
+            ], 500);
+        }
+    }
+
+    /**
+     * Récupérer tous les catalogues avec leurs formations associées
+     */
+    public function getCataloguesWithFormations()
+    {
+        try {
+            $catalogues = CatalogueFormation::with(['formation', 'formateurs', 'stagiaires'])->get();
+
+            if ($catalogues->isEmpty()) {
+                return response()->json([
+                    '@context' => '/api/contexts/CatalogueFormation',
+                    '@id' => '/api/catalogue_formations',
+                    '@type' => 'Collection',
+                    'totalItems' => 0,
+                    'member' => []
+                ]);
+            }
+
+            $formattedCatalogues = $catalogues->map(function ($catalogue) {
+                return [
+                    '@id' => "/api/catalogue_formations/{$catalogue->id}",
+                    '@type' => 'CatalogueFormation',
+                    'id' => $catalogue->id,
+                    'titre' => $catalogue->titre,
+                    'description' => $catalogue->description,
+                    'prerequis' => $catalogue->prerequis,
+                    'imageUrl' => $catalogue->image_url,
+                    'cursusPdf' => $catalogue->cursus_pdf,
+                    'tarif' => $catalogue->tarif,
+                    'certification' => $catalogue->certification,
+                    'statut' => $catalogue->statut,
+                    'duree' => $catalogue->duree,
+                    'createdAt' => $catalogue->created_at,
+                    'updatedAt' => $catalogue->updated_at,
+                    'cursusPdfUrl' => $catalogue->cursus_pdf ? asset('storage/' . $catalogue->cursus_pdf) : null,
+                    'formation' => $catalogue->formation ? [
+                        '@id' => "/api/formations/{$catalogue->formation->id}",
+                        '@type' => 'Formation',
+                        'id' => $catalogue->formation->id,
+                        'titre' => $catalogue->formation->titre,
+                        'description' => $catalogue->formation->description,
+                        'categorie' => $catalogue->formation->categorie,
+                        'duree' => $catalogue->formation->duree,
+                        'image_url' => $catalogue->formation->image_url,
+                        'video_url' => $catalogue->formation->video_url,
+                        'statut' => $catalogue->formation->statut
+                    ] : null,
+                    'formateurs' => $catalogue->formateurs->map(fn($formateur) => "/api/formateurs/{$formateur->id}")->toArray(),
+                    'stagiaires' => $catalogue->stagiaires->map(fn($stagiaire) => "/api/stagiaires/{$stagiaire->id}")->toArray()
+                ];
+            });
+
+            return response()->json([
+                '@context' => '/api/contexts/CatalogueFormation',
+                '@id' => '/api/catalogue_formations',
+                '@type' => 'Collection',
+                'totalItems' => $catalogues->count(),
+                'member' => $formattedCatalogues
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de la récupération des catalogues: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Une erreur est survenue lors de la récupération des catalogues.',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
