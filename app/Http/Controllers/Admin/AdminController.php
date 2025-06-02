@@ -135,15 +135,16 @@ class AdminController extends Controller
             'this_month' => User::whereBetween('last_login_at', [now()->startOfMonth(), now()->endOfMonth()])->count(),
         ];
         return view('admin.dashboard.activity', compact(
-
             'onlineUsers',
             'recentlyOnlineUsers',
             'loginStats',
         ));
     }
 
-    public function getLoginStats()
+
+    public function showLoginStats()
     {
+        // Statistiques par pays
         $countriesData = LoginHistories::select([
             'country',
             DB::raw('count(*) as total'),
@@ -154,7 +155,6 @@ class AdminController extends Controller
             ->orderByDesc('total')
             ->get();
 
-        // Format pour la carte
         $mapData = $countriesData->map(function ($item) {
             return [
                 'country' => $item->country,
@@ -164,13 +164,26 @@ class AdminController extends Controller
             ];
         });
 
+        // Utilisateurs en ligne
+        $onlineUsers = User::where('is_online', true)
+            ->with(['stagiaire', 'commercial', 'formateur', 'poleRelationClient'])
+            ->orderBy('last_activity_at', 'desc')
+            ->get();
 
-        return response()->json([
+        // Statistiques générales
+        $stats = [
             'map_data' => $mapData,
             'online_users' => User::where('is_online', true)->count(),
-            'total_logins' => LoginHistories::count()
-        ]);
+            'total_logins' => LoginHistories::where('country', '!=', null)->count(),
+            'today_logins' => User::whereDate('last_login_at', today())->count(),
+            'week_logins' => User::whereBetween('last_login_at', [now()->startOfWeek(), now()->endOfWeek()])->count(),
+            'month_logins' => User::whereBetween('last_login_at', [now()->startOfMonth(), now()->endOfMonth()])->count(),
+        ];
+
+        return view('admin.dashboard.activity', compact('stats', 'onlineUsers'));
     }
+
+
     // Helper pour obtenir les codes pays ISO
     private function getCountryCode($countryName)
     {
