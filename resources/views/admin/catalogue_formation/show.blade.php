@@ -89,12 +89,12 @@
 
                         <div class="d-flex justify-content-center mt-4">
                             @if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp']))
-                            <img src="{{ asset('storage/' . $catalogueFormations->image_url) }}"
+                            <img src="{{ asset(  $catalogueFormations->image_url) }}"
                                 alt="Image de la formation" class="img-fluid rounded shadow-lg"
                                 style="max-height: 250px;">
                             @elseif (in_array($extension, ['mp4', 'webm', 'ogg']))
                             <video controls class="rounded shadow-lg" style="max-height: 250px; width: auto;">
-                                <source src="{{ asset('storage/' . $catalogueFormations->image_url) }}"
+                                <source src="{{ asset(  $catalogueFormations->image_url) }}"
                                     type="video/{{ $extension }}">
                                 Votre navigateur ne supporte pas la lecture de vidéos.
                             </video>
@@ -106,13 +106,13 @@
                                         style="font-size: 2rem; color: #4a4a4a;"></i>
                                 </div>
                                 <audio controls>
-                                    <source src="{{ asset('storage/' . $catalogueFormations->image_url) }}"
+                                    <source src="{{ asset( $catalogueFormations->image_url) }}"
                                         type="audio/{{ $extension }}">
                                     Votre navigateur ne supporte pas la lecture d'audio.
                                 </audio>
                             </div>
                             @else
-                            <a href="{{ asset('storage/' . $catalogueFormations->image_url) }}" target="_blank"
+                            <a href="{{ asset($catalogueFormations->image_url) }}" target="_blank"
                                 class="btn btn-outline-primary">
                                 Télécharger le fichier
                             </a>
