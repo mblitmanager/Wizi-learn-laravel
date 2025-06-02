@@ -1,184 +1,337 @@
-    @extends('admin.layout')
-    @section('content')
-        <style>
-            .dot {
-                display: inline-block;
-                width: 8px;
-                height: 8px;
-                border-radius: 50%;
-            }
+@extends('admin.layout')
 
-            .dot-sm {
-                display: inline-block;
-                width: 6px;
-                height: 6px;
-                border-radius: 50%;
-                flex-shrink: 0;
-            }
+@section('styles')
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icons/6.6.6/css/flag-icons.min.css" />
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" />
+<style>
+    .progress {
+        background-color: #e9ecef;
+        border-radius: 4px;
+    }
 
-            .pulse {
-                animation: pulse-animation 1.5s infinite;
-            }
+    .progress-bar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 0.8rem;
+    }
 
-            @keyframes pulse-animation {
-                0% {
-                    opacity: 1;
-                }
+    .fi {
+        font-size: 1.5em;
+        box-shadow: 0 0 3px rgba(0, 0, 0, 0.2);
+    }
 
-                50% {
-                    opacity: 0.3;
-                }
+    .stat-card {
+        transition: transform 0.3s ease;
+    }
 
-                100% {
-                    opacity: 1;
-                }
-            }
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+</style>
+@endsection
 
-            .extra-small {
-                font-size: 0.65rem;
-            }
-        </style>
+@section('content')
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Tableau de bord des connexions</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Tableau de bord</a></li>
+        <li class="breadcrumb-item active">Statistiques des connexions</li>
+    </ol>
 
-        <style>
-            .thin-scrollbar::-webkit-scrollbar {
-                width: 4px;
-            }
-
-            .thin-scrollbar::-webkit-scrollbar-track {
-                background: #f1f1f1;
-                border-radius: 10px;
-            }
-
-            .thin-scrollbar::-webkit-scrollbar-thumb {
-                background: #c1c1c1;
-                border-radius: 10px;
-            }
-        </style>
-        <div class="row">
-            <!-- Utilisateurs en ligne -->
-            <div class="col-12 col-md-6 col-xl-3 mb-3">
-                <div class="card shadow-sm border-light">
-                    <div class="card-body p-2">
-                        <div class="d-flex align-items-center mb-2">
-                            <span class="dot bg-success me-2 pulse"></span>
-                            <h6 class="mb-0 small fw-bold text-muted">En ligne ({{ count($onlineUsers) }})</h6>
+    <!-- Cartes de statistiques -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-primary text-white mb-4 stat-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="card-title">En ligne maintenant</h5>
+                            <p class="card-text display-6">{{ $stats['online_users'] }}</p>
                         </div>
-                        <ul class="list-unstyled mb-0">
-                            @forelse ($onlineUsers as $user)
-                                <li class="d-flex align-items-center py-1">
-                                    <span class="dot-sm bg-success me-2"></span>
-                                    <span class="small text-truncate flex-grow-1">{{ $user->name }}</span>
-                                    <span class="text-muted extra-small ms-2">{{ $user->role }}</span>
-                                </li>
-                            @empty
-                                <li class="small text-muted fst-italic py-1">Aucun utilisateur</li>
-                            @endforelse
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Récemment connectés -->
-            <div class="col-12 col-md-6 col-xl-3 mb-3">
-                <div class="card shadow-sm border-light">
-                    <div class="card-body p-2">
-                        <div class="d-flex align-items-center mb-2">
-                            <span class="dot bg-secondary me-2"></span>
-                            <h6 class="mb-0 small fw-bold text-muted">Récemment ({{ count($recentlyOnlineUsers) }})</h6>
-                        </div>
-                        <ul class="list-unstyled mb-0">
-                            @forelse ($recentlyOnlineUsers as $user)
-                                <li class="d-flex align-items-center py-1">
-                                    <span class="dot-sm bg-secondary me-2"></span>
-                                    <span class="small text-truncate flex-grow-1">{{ $user->name }}</span>
-                                    <span class="text-muted extra-small ms-2">{{ $user->role }}</span>
-                                </li>
-                            @empty
-                                <li class="small text-muted fst-italic py-1">Aucune activité</li>
-                            @endforelse
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Statistiques -->
-            <div class="col-12 col-md-6 col-xl-3 mb-3">
-                <div class="card shadow-sm border-light">
-                    <div class="card-body p-2">
-                        <div class="d-flex align-items-center mb-2">
-                            <span class="dot bg-primary me-2"></span>
-                            <h6 class="mb-0 small fw-bold text-muted">Statistiques</h6>
-                        </div>
-                        <div class="row g-1 text-center">
-                            <div class="col-4">
-                                <div class="small fw-bold text-primary">{{ $loginStats['today'] ?? 0 }}</div>
-                                <div class="extra-small text-muted">Aujourd'hui</div>
-                            </div>
-                            <div class="col-4">
-                                <div class="small fw-bold text-primary">{{ $loginStats['week'] ?? 0 }}</div>
-                                <div class="extra-small text-muted">Semaine</div>
-                            </div>
-                            <div class="col-4">
-                                <div class="small fw-bold text-primary">{{ $loginStats['month'] ?? 0 }}</div>
-                                <div class="extra-small text-muted">Mois</div>
-                            </div>
-                        </div>
+                        <i class="fas fa-users fa-3x opacity-50"></i>
                     </div>
                 </div>
             </div>
         </div>
-        <div>
-            <!-- Carte du monde des connexions -->
-            <div class="col-12">
-                <div class="card shadow-sm border-light">
-                    <div class="card-body">
-                        <h6 class="mb-3 small fw-bold text-muted">Carte des connexions par pays</h6>
-                        <canvas id="myChart"></canvas>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-success text-white mb-4 stat-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="card-title">Connexions aujourd'hui</h5>
+                            <p class="card-text display-6">{{ $stats['today_logins'] }}</p>
+                        </div>
+                        <i class="fas fa-calendar-day fa-3x opacity-50"></i>
                     </div>
                 </div>
             </div>
         </div>
-    @endsection
-    @section('scripts')
-        {{-- @vite(['resources/js/loginMap.js']) --}}
-        {{-- <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-geo@3.5.2/build/index.umd.min.js"></script>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-info text-white mb-4 stat-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="card-title">Cette semaine</h5>
+                            <p class="card-text display-6">{{ $stats['week_logins'] }}</p>
+                        </div>
+                        <i class="fas fa-calendar-week fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-warning text-dark mb-4 stat-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="card-title">Ce mois</h5>
+                            <p class="card-text display-6">{{ $stats['month_logins'] }}</p>
+                        </div>
+                        <i class="fas fa-calendar-alt fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        <script>
-            const url = 'https://unpkg.com/world-atlas@2.0.2/countries-50m.json';
-            fetch(url)
-                .then(response => response.json())
-                .then((datapoint) => {
-                    const countries = ChartGeo.topojson.feature(datapoint, datapoint.objects.countries).features;
-                    // setup 
-                    const data = {
-                        labels: countries.map((d) => d.properties.name),
-                        datasets: [{
-                            label: 'Weekly Sales',
-                            data: countries.map((d) => Math.round(Math.random() * 100)),
+    <!-- Tableau des connexions par pays -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <i class="fas fa-globe-europe me-1"></i>
+                    Connexions par pays
+                </div>
+                <span class="badge bg-primary">
+                    <i class="fas fa-sign-in-alt"></i> Total: {{ $stats['total_logins'] }}
+                </span>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" id="loginStatsTable">
+                    <thead class="table-dark">
+                        <tr>
+                            <th width="50px">#</th>
+                            <th>Pays</th>
+                            <th width="70px">Drapeau</th>
+                            <th>Connexions</th>
+                            <th>Pourcentage</th>
+                            <th>Dernière activité</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($stats['map_data'] as $index => $country)
+                        <tr>
+                            <td>{{ $index + 1 }}</td>
+                            <td>
+                                <strong>{{ $country['country'] }}</strong>
+                            </td>
+                            <td class="text-center">
+                                @if($country['code'])
+                                <span class="fi fi-{{ strtolower($country['code']) }}"></span>
+                                @else
+                                <i class="fas fa-globe"></i>
+                                @endif
+                            </td>
+                            <td>
+                                <div class="progress" style="height: 25px;">
+                                    <div class="progress-bar bg-info" role="progressbar"
+                                        style="width: {{ ($country['value'] / $stats['total_logins']) * 100 }}%"
+                                        aria-valuenow="{{ $country['value'] }}"
+                                        aria-valuemin="0"
+                                        aria-valuemax="{{ $stats['total_logins'] }}">
+                                        {{ $country['value'] }}
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                {{ number_format(($country['value'] / $stats['total_logins']) * 100, 2) }}%
+                            </td>
+                            <td>
+                                {{ \Carbon\Carbon::parse($country['last_activity'])->diffForHumans() }}
+                                <small class="text-muted d-block">
+                                    {{ \Carbon\Carbon::parse($country['last_activity'])->format('d/m/Y H:i') }}
+                                </small>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
-                        }]
-                    };
+    <!-- Utilisateurs en ligne -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <i class="fas fa-users me-1"></i>
+                    Utilisateurs actuellement en ligne
+                </div>
+                <span class="badge bg-success">
+                    <i class="fas fa-circle"></i> {{ $stats['online_users'] }} en ligne
+                </span>
+            </div>
+        </div>
+        <div class="card-body">
+            @if($onlineUsers->count() > 0)
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr class="table-primary">
+                            <th>Nom</th>
+                            <th>Rôle</th>
+                            <th>Dernière activité</th>
+                            <th>Depuis</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($onlineUsers as $user)
+                        <tr>
+                            <td>{{ $user->name }}</td>
+                            <td>
+                                <span class="badge bg-{{ [
+                                    'administrateur' => 'danger',
+                                    'formateur' => 'info',
+                                    'stagiaire' => 'success',
+                                    'commercial' => 'warning'
+                                ][$user->role] ?? 'secondary' }}">
+                                    {{ ucfirst($user->role) }}
+                                </span>
+                            </td>
+                            <td> {{ \Carbon\Carbon::parse($user->last_activity)->diffForHumans() }}
+                            </td>
+                            <td> {{ \Carbon\Carbon::parse($user->last_activity_at)->diffForHumans() }}</td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            @else
+            <div class="alert alert-info mb-0">
+                <i class="fas fa-info-circle me-2"></i> Aucun utilisateur en ligne actuellement
+            </div>
+            @endif
+        </div>
+    </div>
+</div>
 
-                    // config 
-                    const config = {
-                        type: 'choropleth',
-                        data: data,
-                        options: {
+<!-- Modal pour afficher les utilisateurs par pays -->
+<div class="modal fade" id="usersModal" tabindex="-1" aria-labelledby="usersModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="usersModalLabel">Utilisateurs de <span id="modalCountryName"></span></h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-sm" id="usersTable">
+                        <thead>
+                            <tr>
+                                <th>Nom</th>
+                                <th>Email</th>
+                                <th>Dernière connexion</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Les données seront chargées via AJAX -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="loadingSpinner" class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Chargement...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
 
-                        }
-                    };
+@section('scripts')
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Initialisation de DataTable
+        $('#loginStatsTable').DataTable({
+            order: [
+                [3, 'desc']
+            ],
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/fr-FR.json'
+            },
+            dom: '<"top"lf>rt<"bottom"ip>',
+            pageLength: 25
+        });
 
-                    // render init block
-                    const myChart = new Chart(
-                        document.getElementById('myChart'),
-                        config
+        // Gestion du modal pour afficher les utilisateurs par pays
+        $('#usersModal').on('show.bs.modal', function(event) {
+            var button = $(event.relatedTarget);
+            var country = button.data('country');
+
+            $('#modalCountryName').text(country);
+            $('#usersTable tbody').empty();
+            $('#loadingSpinner').show();
+
+            // Requête AJAX pour charger les utilisateurs
+            $.ajax({
+                url: '{{ route("dashboard.activity-user") }}',
+                method: 'GET',
+                data: {
+                    country: country
+                },
+                success: function(response) {
+                    $('#loadingSpinner').hide();
+
+                    if (response.users.length > 0) {
+                        $.each(response.users, function(index, user) {
+                            var statusBadge = user.is_online ?
+                                '<span class="badge bg-success">En ligne</span>' :
+                                '<span class="badge bg-secondary">Hors ligne</span>';
+
+                            var lastLogin = user.last_login_at ?
+                                new Date(user.last_login_at).toLocaleString('fr-FR') :
+                                'Jamais';
+
+                            $('#usersTable tbody').append(
+                                '<tr>' +
+                                '<td>' + user.name + '</td>' +
+                                '<td>' + user.email + '</td>' +
+                                '<td>' + lastLogin + '</td>' +
+                                '<td>' + statusBadge + '</td>' +
+                                '</tr>'
+                            );
+                        });
+                    } else {
+                        $('#usersTable tbody').append(
+                            '<tr><td colspan="4" class="text-center">Aucun utilisateur trouvé pour ce pays</td></tr>'
+                        );
+                    }
+                },
+                error: function() {
+                    $('#loadingSpinner').hide();
+                    $('#usersTable tbody').append(
+                        '<tr><td colspan="4" class="text-center text-danger">Erreur lors du chargement des données</td></tr>'
                     );
-                })
+                }
+            });
+        });
 
-
-            // Instantly assign Chart.js version
-            const chartVersion = document.getElementById('chartVersion');
-            chartVersion.innerText = Chart.version;
-        </script> --}}
-    @endsection
+        // Réinitialiser le modal quand il est fermé
+        $('#usersModal').on('hidden.bs.modal', function() {
+            $('#usersTable tbody').empty();
+        });
+    });
+</script>
+@endsection

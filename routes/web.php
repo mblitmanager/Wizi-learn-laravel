@@ -36,8 +36,10 @@ Route::prefix('administrateur')->group(function () {
 
 Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
-    Route::get('dashboard/activity', [AdminController::class, 'getUserActivity'])->name('dashboard.activity');
-    Route::get('dashboard/stats-login', [AdminController::class, 'getLoginStats'])->name('dashboard.stats-login');
+    Route::get('dashboard/activity-user', [AdminController::class, 'getUserActivity'])->name('dashboard.activity-user');
+
+    Route::get('dashboard/activity', [AdminController::class, 'showLoginStats'])->name('dashboard.activity');
+
 
     Route::get('/logout', [AdminController::class, 'logout'])->name('logout');
     Route::resource('stagiaires', StagiaireController::class);

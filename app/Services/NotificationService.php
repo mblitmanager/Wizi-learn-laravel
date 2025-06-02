@@ -3,55 +3,45 @@
 namespace App\Services;
 
 use App\Models\Notification;
-use App\Models\User;
 use App\Events\TestNotification;
-use Carbon\Carbon;
+use App\Models\Stagiaire;
 
 class NotificationService
 {
     public function notifyQuizAvailable(string $quizTitle, int $quizId): void
     {
-        // Créer une notification pour tous les utilisateurs
-        $users = User::where('role', 'stagiaire')->get();
+        // Récupérer le quiz avec sa formation
+        $quiz = \App\Models\Quiz::with('formation')->find($quizId);
 
-        foreach ($users as $user) {
-            // Récupérer la formation active du stagiaire via la relation Stagiaire
-            $stagiaire = $user->stagiaire;
-            $formation = null;
-            if ($stagiaire) {
-                // Récupérer la formation active du stagiaire
-                $formation = $stagiaire->catalogue_formations()->get();//->wherePivot('status', 'active')->first();
-            }
-
-            if ($formation && isset($formation->id)) {
-
-                // Supposons que le quiz a une relation 'formation_id'
-                $quizFormationId = \App\Models\Quiz::find($quizId)?->formation_id;
-                if ($quizFormationId && $quizFormationId == $formation->id) {
-                    Notification::create([
-                        'user_id' => $user->id,
-                        'type' => 'quiz',
-                        'message' => "Un nouveau quiz \"{$quizTitle}\" est disponible !",
-                        'data' => [
-                            'quiz_id' => $quizId,
-                            'quiz_title' => $quizTitle
-                        ],
-                        'read' => false
-                    ]);
-
-
-                    // Broadcast real-time notification via Pusher
-                    event(new TestNotification([
-                        'type' => 'quiz',
-                        'message' => "Un nouveau quiz \"{$quizTitle}\" est disponible !",
-                        // 'quiz_id' => $quizId,
-                        'quiz_title' => $quizTitle,
-                        // 'user_id' => $user->id
-                    ]));
-                }
-            }
+        if (!$quiz || !$quiz->formation) {
+            return;
         }
 
+        // Récupérer tous les stagiaires qui ont une catalogue de formation liée à cette formation
+        $stagiaires = Stagiaire::whereHas('catalogue_formations', function ($query) use ($quiz) {
+            $query->where('formation_id', $quiz->formation->id);
+        })->with('user')->get();
+
+        foreach ($stagiaires as $stagiaire) {
+            if ($stagiaire->user) {
+                Notification::create([
+                    'user_id' => $stagiaire->user->id,
+                    'type' => 'quiz',
+                    'message' => "Un nouveau quiz \"{$quizTitle}\" est disponible !",
+                    'data' => [
+                        'quiz_id' => $quizId,
+                        'quiz_title' => $quizTitle
+                    ],
+                    'read' => false
+                ]);
+
+                event(new TestNotification([
+                    'type' => 'quiz',
+                    'message' => "Un nouveau quiz \"{$quizTitle}\" est disponible !",
+                    'quiz_title' => $quizTitle,
+                ]));
+            }
+        }
     }
 
     public function notifyQuizCompleted(int $userId, int $quizId, int $score, int $totalQuestions): void

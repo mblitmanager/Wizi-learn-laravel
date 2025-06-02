@@ -34,7 +34,7 @@ class TestNotification implements ShouldBroadcastNow
      */
     public function broadcastOn()
     {
-        return new Channel('notification');
+        return new Channel('notifications');
     }
 
     /**
@@ -44,7 +44,7 @@ class TestNotification implements ShouldBroadcastNow
      */
     public function broadcastAs()
     {
-        return 'test.notification';
+        return 'quiz.notification';
     }
 
     /**
