@@ -9,9 +9,17 @@ use App\Models\Stagiaire;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\InscriptionCatalogueFormation;
+use App\Services\NotificationService;
 
 class InscriptionCatalogueFormationController extends Controller
 {
+    protected $notificationService;
+
+    public function __construct(NotificationService $notificationService)
+    {
+        $this->notificationService = $notificationService;
+    }
+
     public function inscrire(Request $request)
     {
         $request->validate([
@@ -34,6 +42,13 @@ class InscriptionCatalogueFormationController extends Controller
         // Envoi du mail au pôle relation (message personnalisé)
         Mail::to(config('mail.pole_relation_email', 'mblitmanager@gmail.com'))->send(new InscriptionCatalogueFormation($stagiaire, $catalogueFormation, true));
 
-        return response()->json(['success' => true, 'message' => 'Inscription réussie et mails envoyés.']);
+        // Ajout de la notification pour le stagiaire
+        $this->notificationService->notifyCustom(
+            $user->id,
+            'inscription',
+            "Nous avons bien reçu votre demande d'inscription, votre conseiller/conseillère va prendre contact avec vous."
+        );
+
+        return response()->json(['success' => true, 'message' => 'Inscription réussie, mails et notification envoyés.']);
     }
 }

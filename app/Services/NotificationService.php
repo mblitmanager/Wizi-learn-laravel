@@ -122,4 +122,21 @@ class NotificationService
             // 'user_id' => $userId
         ]));
     }
+
+    public function notifyCustom(int $userId, string $type, string $message): void
+    {
+        \App\Models\Notification::create([
+            'user_id' => $userId,
+            'type' => $type,
+            'message' => $message,
+            'data' => [],
+            'read' => false
+        ]);
+        // Optionnel : broadcast Pusher
+        event(new \App\Events\TestNotification([
+            'type' => $type,
+            'message' => $message,
+            'user_id' => $userId
+        ]));
+    }
 }
