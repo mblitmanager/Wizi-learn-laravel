@@ -79,6 +79,12 @@ class ParrainageController extends Controller
             'statut' => 'nullable|string',
             'parrain_id' => 'required|exists:users,id',
             'catalogue_formation_id' => 'required|exists:catalogue_formations,id',
+        ], [
+            'parrain_id.required' => 'Le parrain est requis',
+            'catalogue_formation_id.required' => 'Le catalogue de formation est requis',
+            'email.unique' => 'Cette adresse e-mail est deja utilisée.',
+            'email.email' => 'Veuillez fournir une adresse e-mail valide.',
+            'email.required' => 'Veuillez fournir une adresse e-mail.',
         ]);
 
         if ($validator->fails()) {
