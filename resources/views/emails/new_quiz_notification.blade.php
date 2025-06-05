@@ -323,17 +323,15 @@
     <div class="container">
         <div class="header">
             <!-- Logo du site -->
-            <img src={{ asset('assets/logo_wizi.png') }} alt="Logo QuizPro" class="logo-img" />
+            <img src="data:image/png;base64,{{ $logoData }}" alt="Logo" class="logo-img" />
+
         </div>
 
         <div class="tagline">Développez vos compétences</div>
 
         <!-- Image professionnelle -->
         <div class="img-container">
-            <img
-                src={{ asset('assets/online.png') }}
-                alt="Professionnels en formation"
-                class="hero-image" />
+            <img src="cid:online" alt="Professionnels en formation" class="hero-image" />
         </div>
 
         <div class="content">
