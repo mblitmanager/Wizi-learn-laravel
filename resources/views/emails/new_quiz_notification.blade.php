@@ -1,383 +1,221 @@
-<!-- <!DOCTYPE html>
+<!DOCTYPE html>
 <html>
-
 <head>
-    <title>Nouveau quiz disponible</title>
+    <title>NOUVEAU QUIZ EXCLUSIF</title>
     <style>
+        @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&family=Poppins:wght@600;700&display=swap");
+
         body {
-            font-family: 'Arial', sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 600px;
-            margin: 0 auto;
+            font-family: "Poppins", sans-serif;
+            margin: 0;
             padding: 0;
-            background-color: #f5f5f5;
+            background-color: #f0f2f5;
         }
 
         .container {
-            background: white;
-            border-radius: 8px;
+            max-width: 650px;
+            margin: 20px auto;
             overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: relative;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         }
 
-        .header {
-            background-color: #3D9BE9;
-            padding: 25px;
+        .sale-banner {
+            background: linear-gradient(135deg, #fb3402, #f9790c);
+            padding: 31px 15px;
             text-align: center;
+            position: relative;
+            overflow: hidden;
         }
 
-        .logo {
-            font-size: 28px;
-            font-weight: bold;
-            color: white;
-            margin-bottom: 5px;
+        .sale-banner::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 8px;
+            background: linear-gradient(90deg, #ffcc00, #ff4e4e, #f96c0a);
         }
 
-        .tagline {
-            font-size: 16px;
-            color: white;
-            opacity: 0.9;
+        .sale-sticker {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #011f43;
+            color: #ffcc00;
+            padding: 10px 15px;
+            font-size: 1.2rem;
+            font-weight: 900;
+            transform: rotate(15deg);
+            border-radius: 5px;
+            font-family: "Montserrat", sans-serif;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .main-headline {
+            font-family: "Montserrat", sans-serif;
+            font-size: 4.5rem;
+            font-weight: 900;
+            color: #fff;
+            margin: 10px 0;
+            line-height: 1;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            text-shadow: 3px 3px 0 rgba(0, 0, 0, 0.2);
+            letter-spacing: -2px;
         }
 
-        .hero-image {
+        .sub-headline {
+            font-size: 2.8rem;
+            font-weight: 800;
+            color: #ffcc00;
+            margin: 5px 0 20px;
+            text-transform: uppercase;
+            text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
+        }
+
+        .offer-text {
+            font-size: 1.8rem;
+            color: #fff;
+            font-weight: 700;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            display: inline-block;
+            border-radius: 8px;
+        }
+
+        .quiz-image {
             width: 100%;
-            max-height: 250px;
-            object-fit: cover;
-            border-bottom: 4px solid #FEB823;
+            max-height: 300px;
+            object-fit: contain;
+            border-bottom: 8px solid #ffcc00;
         }
 
         .content {
-            padding: 25px;
+            padding: 30px;
+            background: #fff;
+            text-align: center;
         }
 
-        .main-title {
-            font-size: 22px;
-            color: #A55E6E;
-            text-align: center;
-            margin: 0 0 20px 0;
+        .quiz-title {
+            font-size: 3rem;
+            color: #f60707;
+            font-weight: 800;
+            margin: 0 0 15px;
+            text-transform: uppercase;
+            line-height: 1;
+        }
+
+        .quiz-description {
+            font-size: 1.2rem;
+            color: #555;
+            margin-bottom: 30px;
+            line-height: 1.6;
         }
 
         .cta-button {
-            display: block;
-            background-color: #FEB823;
+            display: inline-block;
+            background: linear-gradient(to right, #ff4e4e, #f60707);
             color: white !important;
-            padding: 14px 28px;
+            padding: 6px 15px;
+            font-size: 1rem;
+            font-weight: 700;
             text-decoration: none;
-            border-radius: 30px;
-            font-weight: bold;
-            text-align: center;
-            margin: 30px auto;
-            width: fit-content;
-            font-size: 16px;
-            box-shadow: 0 4px 8px rgba(254, 184, 35, 0.3);
+            border-radius: 50px;
+            margin: 20px 0;
+            box-shadow: 0 8px 20px rgba(246, 7, 7, 0.4);
+            border: none;
+            cursor: pointer;
+            text-transform: uppercase;
             transition: all 0.3s ease;
         }
 
         .cta-button:hover {
-            background-color: #e6a520;
-            transform: translateY(-2px);
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(246, 7, 7, 0.5);
+        }
+
+        .duration-badge {
+            display: inline-block;
+            background: #011f43;
+            color: #ffcc00;
+            padding: 8px 25px;
+            border-radius: 50px;
+            font-weight: 700;
+            margin-top: 15px;
+            font-size: 1.1rem;
         }
 
         .footer {
-            text-align: center;
             padding: 20px;
-            background-color: #f9f9f9;
-            font-size: 14px;
-            color: #9392BE;
-        }
-
-        .social {
-            color: #3D9BE9;
-            font-weight: bold;
-            margin: 15px 0;
-        }
-
-        .address {
-            font-size: 12px;
-            margin-top: 15px;
-            line-height: 1.4;
-        }
-
-        .unsubscribe {
-            font-size: 12px;
-            margin-top: 20px;
-        }
-
-        .unsubscribe a {
-            color: #9392BE;
-        }
-    </style>
-</head>
-
-<body>
-    <div class="container">
-        <div class="header">
-            <div class="logo">QuizFormation</div>
-            <div class="tagline">Apprendre en s'amusant</div>
-        </div>
-
-        <img src="https://images.unsplash.com/photo-1588072432836-e10032774350?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80"
-            alt="Étudiante souriante devant son ordinateur"
-            class="hero-image">
-
-        <div class="content">
-            <h2 class="main-title">Nouveau défi disponible !</h2>
-
-            <p>Bonjour,</p>
-
-            <p>Nous venons de publier un nouveau quiz passionnant :</p>
-
-            <h3 style="color: #A55E6E; text-align: center; margin: 20px 0;">« {{ $quiz->titre }} »</h3>
-
-            <p style="text-align: center; font-style: italic;">"{{ $quiz->description }}"</p>
-
-            <p>Comme notre étudiante en photo, relevez le défi et testez vos connaissances !</p>
-
-            <a href="{{ route('quiz.show', $quiz->id) }}" class="cta-button">
-                ▶ Commencer le quiz maintenant
-            </a>
-
-            <p style="text-align: center;">
-                <small>Temps estimé : seulement 5 minutes</small>
-            </p>
-        </div>
-
-        <div class="footer">
-            <div class="social">Rejoignez 10,000 apprenants satisfaits</div>
-            <div>#QuizFormation #Apprentissage</div>
-
-            <div class="address">
-                © 2023 QuizFormation<br>
-                123 Rue du Savoir, Paris 75000
-            </div>
-
-            <div class="unsubscribe">
-                <a href="#">Se désabonner</a> | <a href="#">Préférences</a>
-            </div>
-        </div>
-    </div>
-</body>
-
-</html> -->
-
-<!DOCTYPE html>
-<html>
-
-<head>
-    <title>Nouveau quiz disponible</title>
-    <style>
-        body {
-            font-family: sans-serif;
-            line-height: 1.6;
-            color: #333333;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 0;
-            background-color: #f5f5f5;
-        }
-
-        .container {
-            border-radius: 4px;
-            overflow: hidden;
-            background: linear-gradient(135deg, #4b6cb7, #182848);
-            position: relative;
-            overflow: hidden;
-            color: white;
-            padding: 40px;
-            box-sizing: border-box;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        }
-
-        .container::before {
-            content: "";
-            position: absolute;
-            top: -50px;
-            right: -50px;
-            width: 200px;
-            height: 200px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-        }
-
-        .container::after {
-            content: "";
-            position: absolute;
-            bottom: -100px;
-            left: -100px;
-            width: 300px;
-            height: 300px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 50%;
-        }
-
-        .header {
-            padding: 0;
-            text-align: left;
-        }
-
-        .logo-img {
-            height: 50px;
-            width: auto;
-            margin-bottom: 10px;
-        }
-
-        .tagline {
-            font-size: 3rem;
-            color: #f9f9f9;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            transform: rotate(-5deg);
-            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-            padding: 5px 10px;
-            font-weight: bold;
-            text-align: center;
-        }
-
-        .hero-image {
-            width: 60%;
-            object-fit: cover;
-        }
-
-        .content {
-            padding: 25px;
-        }
-
-        .main-title {
-            font-size: 20px;
+            background: #000;
             color: #fff;
             text-align: center;
-            margin: 0 0 20px 0;
-            font-weight: 600;
+            font-size: 0.9rem;
         }
 
-        .cta-button {
-            display: block;
-            background-color: #ffc100;
-            color: white !important;
-            padding: 12px 24px;
+        .footer a {
+            color: #ffcc00;
             text-decoration: none;
-            border-radius: 4px;
-            font-weight: 500;
-            text-align: center;
-            margin: 30px auto;
-            width: fit-content;
-            font-size: 15px;
-            transition: background-color 0.3s ease;
+            margin: 0 10px;
         }
 
-        .cta-button:hover {
-            background-color: #d3a007;
+        .burst {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            background: rgba(255, 204, 0, 0.2);
+            border-radius: 50%;
+            top: -75px;
+            right: -75px;
         }
 
-        .footer {
-            text-align: center;
-            padding: 20px;
-            background-color: #f9f9f9;
-            font-size: 12px;
-            color: #666666;
-            border-top: 1px solid #eeeeee;
-        }
-
-        .social {
-            color: #3d9be9;
-            margin: 15px 0;
-            font-size: 13px;
-        }
-
-        .address {
-            margin-top: 15px;
-            line-height: 1.5;
-            color: #9392be;
-        }
-
-        .unsubscribe {
-            margin-top: 20px;
-            font-size: 11px;
-        }
-
-        .unsubscribe a {
-            color: #9392be;
-            text-decoration: none;
-        }
-
-        .quiz-title {
-            color: #f5a904;
-            text-align: center;
-            margin: 10px 0;
-            font-size: 50px;
-            font-weight: 800;
-        }
-
-        .img-container {
-            height: 330px;
-            width: 530px;
-            text-align: center;
+        .burst::before {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 204, 0, 0.15);
+            border-radius: 50%;
+            transform: scale(0.7);
         }
     </style>
 </head>
 
 <body>
-    <div class="container">
-        <div class="header">
-            <!-- Logo du site -->
-            <img src="data:image/png;base64,{{ $logoData }}" alt="Logo" class="logo-img" />
+<div class="container">
+    <div class="burst"></div>
 
-        </div>
-
-        <div class="tagline">Développez vos compétences</div>
-
-        <!-- Image professionnelle -->
-        <div class="img-container">
-            <img src="cid:online" alt="Professionnels en formation" class="hero-image" />
-        </div>
-
-        <div class="content">
-            <h2 class="main-title">Nouveau Quiz disponible</h2>
-
-            <p>Bonjour,</p>
-
-            <p>
-                Une nouvelle évaluation de compétences vient d'être publiée dans votre
-                espace de formation :
-            </p>
-
-            <h3 class="quiz-title">{{ $quiz->titre }}</h3>
-
-            <p style="text-align: center; color: #ffc100">
-                {{ $quiz->description }}
-            </p>
-
-            <p>
-                Cette évaluation vous permettra de mesurer vos acquis et progresser
-                dans votre parcours professionnel.
-            </p>
-
-            <a href="{{ route('quiz.show', $quiz->id) }}" class="cta-button">
-                Accéder à l'évaluation
-            </a>
-
-            <p style="text-align: center; font-size: 13px; color: #d3a007">
-                Durée estimée : {{ $quiz->duree }}
-            </p>
-        </div>
-
-        <div class="footer">
-            <div class="social">Développez vos compétences avec QuizPro</div>
-
-            <div class="address">
-                © 2025 Wizi-learn - Tous droits réservés<br />
-                123 Avenue des Professionnels, 75000 Paris<br />
-                <a href="https://votre-domaine.com" style="color: #3d9be9">www.votre-domaine.com</a>
-            </div>
-
-            <div class="unsubscribe">
-                <a href="#">Gérer vos préférences</a> | <a href="#">Se désabonner</a>
-            </div>
-        </div>
+    <div class="sale-banner">
+        <div class="sale-sticker">EXCLUSIF</div>
+        <div class="main-headline">Nouveau</div>
+        <div class="sub-headline">Quiz Disponible</div>
     </div>
-</body>
 
+    <img src="{{$message->embed($onlineImagePath)}}" alt="Illustration du quiz" class="quiz-image"/>
+
+    <div class="content">
+        <h2 class="quiz-title">{{ $quiz->titre }}</h2>
+
+        <p class="quiz-description">
+            {{ $quiz->description }}<br/>
+            Un défi passionnant vous attend pour évaluer vos compétences et
+            connaissances.
+        </p>
+
+        <a href="{{ route('quiz.show', $quiz->id) }}" class="cta-button">
+            Commencer le quiz
+        </a>
+
+        <div class="duration-badge">Durée: {{ $quiz->duree }}</div>
+    </div>
+
+    <div class="footer">
+        <a href="#">Conditions</a> | <a href="#">Confidentialité</a> |
+        <a href="#">Désabonnement</a>
+    </div>
+</div>
+</body>
 </html>
