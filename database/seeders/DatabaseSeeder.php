@@ -16,10 +16,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             UserSeeder::class,
             StagiaireSeeder::class,
-            FormationSeeder::class
-        ]);
-
-        $this->call([
+            FormationSeeder::class,
             NotificationSeeder::class,
         ]);
     }
