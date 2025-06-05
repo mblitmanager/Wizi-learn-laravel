@@ -20,10 +20,18 @@ class NewQuizNotification extends Mailable
 
     public function build()
     {
+        // Pour le logo principal (petit), utiliser base64
+        $logoData = base64_encode(file_get_contents(public_path('assets/logo_wizi.png')));
+
+        // Pour la grande image, utiliser pièce jointe
         return $this->subject('Nouveau quiz disponible - ' . $this->quiz->titre)
-            ->view('emails.new_quiz_notification')
-            ->with([
+            ->view('emails.new_quiz_notification', [
                 'quiz' => $this->quiz,
+                'logoData' => $logoData
+            ])
+            ->attach(public_path('assets/online.png'), [
+                'as' => 'online.png',
+                'mime' => 'image/png',
             ]);
     }
 }
