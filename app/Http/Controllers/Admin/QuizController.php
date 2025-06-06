@@ -452,10 +452,10 @@ class QuizController extends Controller
             // dd($quiz->formation_id);
             DB::commit();
             // Envoyer une notification pour le nouveau quiz
-            $this->notificationService->notifyQuizAvailable(
-                $quiz->titre,
-                $quiz->formation_id
-            );
+//            $this->notificationService->notifyQuizAvailable(
+//                $quiz->titre,
+//                $quiz->formation_id
+//            );
 
             // Envoyer les emails aux stagiaires
             $this->sendQuizNotificationToTrainees($quiz);

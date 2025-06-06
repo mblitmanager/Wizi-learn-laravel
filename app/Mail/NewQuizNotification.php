@@ -21,9 +21,10 @@ class NewQuizNotification extends Mailable
     public function build()
     {
         return $this->subject('Nouveau quiz disponible - ' . $this->quiz->titre)
-            ->view('emails.new_quiz_notification')
-            ->with([
+            ->view('emails.new_quiz_notification', [
                 'quiz' => $this->quiz,
+                'logo' => public_path('assets/logo_wizi.png'),
+                'onlineImagePath' => public_path('assets/online.png')
             ]);
     }
 }
