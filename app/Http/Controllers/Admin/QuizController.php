@@ -121,9 +121,10 @@ class QuizController extends Controller
             'questions.*.type' => 'required|string',
             'questions.*.points' => 'required|integer|min:1',
             'questions.*.reponses' => 'required|array|min:1',
+            'questions.*.reponses.*.id' => 'nullable|exists:reponses,id',
             'questions.*.reponses.*.text' => 'required|string',
-            'questions.*.reponses.*.bank_group' => 'required_if:questions.*.type,correspondance',
         ]);
+
         DB::beginTransaction();
 
         try {
@@ -146,10 +147,11 @@ class QuizController extends Controller
             unset($questionInput);
 
             foreach ($questionData as $questionInput) {
-                // Logique de suppression des questions et réponses existantes
+                // Suppression des questions marquées pour suppression
                 if (!empty($questionInput['id']) && !empty($questionInput['_delete'])) {
                     $question = $quiz->questions()->find($questionInput['id']);
                     if ($question) {
+                        $question->correspondancePairs()->delete();
                         $question->reponses()->delete();
                         if ($question->media_url && file_exists(public_path($question->media_url))) {
                             @unlink(public_path($question->media_url));
@@ -160,94 +162,96 @@ class QuizController extends Controller
                 }
 
                 // Mise à jour ou création de la question
-                if (!empty($questionInput['id'])) {
-                    $question = $quiz->questions()->find($questionInput['id']);
-                    if ($question) {
-                        if (!empty($questionInput['media_url']) && $question->media_url !== $questionInput['media_url']) {
-                            if ($question->media_url && file_exists(public_path($question->media_url))) {
-                                @unlink(public_path($question->media_url));
-                            }
-                        }
-                        $question->update($questionInput);
-                    }
-                } else {
-                    $question = $quiz->questions()->create($questionInput);
-                }
+                $question = !empty($questionInput['id'])
+                    ? $quiz->questions()->find($questionInput['id'])
+                    : $quiz->questions()->create($questionInput);
+
                 if (!$question) continue;
+
+                if (!empty($questionInput['id'])) {
+                    if (!empty($questionInput['media_url']) && $question->media_url !== $questionInput['media_url']) {
+                        if ($question->media_url && file_exists(public_path($question->media_url))) {
+                            @unlink(public_path($question->media_url));
+                        }
+                    }
+                    $question->update($questionInput);
+                }
+
                 $reponsesInput = $questionInput['reponses'] ?? [];
                 $reponseIds = [];
                 $leftItems = [];
                 $rightItems = [];
-                // Création ou mise à jour des réponses
+
+                // Supprimer les anciennes paires de correspondance si nécessaire
+                if ($question->type === 'correspondance') {
+                    $question->correspondancePairs()->delete();
+                }
+
+                // Gestion des réponses
                 foreach ($reponsesInput as $reponseInput) {
-                    if (!empty($reponseInput['id'])) {
-                        $reponse = $question->reponses()->find($reponseInput['id']);
-                        if ($reponse) {
-                            $reponse->update([
-                                'text' => $reponseInput['text'] ?? '',
-                                'is_correct' => $reponseInput['is_correct'] ?? 0,
-                                'position' => $reponseInput['position'] ?? null,
-                                'match_pair' => $reponseInput['match_pair'] ?? null,
-                                'bank_group' => $reponseInput['bank_group'] ?? null,
-                                'flashcard_back' => $reponseInput['flashcard_back'] ?? null,
-                            ]);
-                            $reponseIds[] = $reponse->id;
-                        }
-                    } elseif (!empty($reponseInput['text'])) {
-                        $reponse = $question->reponses()->create([
-                            'text' => $reponseInput['text'],
-                            'is_correct' => $reponseInput['is_correct'] ?? 0,
-                            'position' => $reponseInput['position'] ?? null,
-                            'match_pair' => $reponseInput['match_pair'] ?? null,
-                            'bank_group' => $reponseInput['bank_group'] ?? null,
-                            'flashcard_back' => $reponseInput['flashcard_back'] ?? null,
-                        ]);
-                        $reponseIds[] = $reponse->id;
+                    $reponseData = [
+                        'text' => $reponseInput['text'],
+                        'is_correct' => $question->type === 'correspondance' ? null : ($reponseInput['is_correct'] ?? 0),
+                        'position' => $reponseInput['position'] ?? null,
+                        'match_pair' => $reponseInput['match_pair'] ?? null,
+                        'bank_group' => $reponseInput['bank_group'] ?? null,
+                        'flashcard_back' => $reponseInput['flashcard_back'] ?? null,
+                    ];
+
+                    $reponse = !empty($reponseInput['id'])
+                        ? $question->reponses()->find($reponseInput['id'])
+                        : $question->reponses()->create($reponseData);
+
+                    if ($reponse && !empty($reponseInput['id'])) {
+                        $reponse->update($reponseData);
                     }
+
+                    $reponseIds[] = $reponse->id;
+
+                    // Préparation des items pour correspondance
                     if ($question->type === 'correspondance') {
-                        if ($reponseInput['bank_group'] === 'left') {
-                            $leftItems[] = $reponseInput;
-                        } elseif ($reponseInput['bank_group'] === 'right') {
-                            $rightItems[] = $reponseInput;
+                        $itemData = [
+                            'id' => $reponse->id,
+                            'text' => $reponse->text,
+                            'bank_group' => $reponse->bank_group,
+                        ];
+
+                        if ($reponse->match_pair === 'left') {
+                            $leftItems[] = $itemData;
+                        } elseif ($reponse->match_pair === 'right') {
+                            $rightItems[] = $itemData;
                         }
                     }
                 }
 
+                // Suppression des réponses non incluses
                 $question->reponses()->whereNotIn('id', $reponseIds)->delete();
 
                 // Création des paires de correspondance
                 if ($question->type === 'correspondance') {
                     foreach ($leftItems as $leftItem) {
-                        $matchingRightItems = collect($rightItems)->filter(fn($item) => $item['match_pair'] === $leftItem['match_pair']);
-                        foreach ($matchingRightItems as $rightItem) {
-                            $existingPair = CorrespondancePair::where('question_id', $question->id)
-                                ->where('left_text', $leftItem['text'])
-                                ->where('right_text', $rightItem['text'])
-                                ->first();
+                        $rightItem = collect($rightItems)->firstWhere('bank_group', $leftItem['bank_group']);
 
-                            // Corriger la logique pour associer les IDs aux items
-                            $leftItem['id'] = $question->reponses()->where('text', $leftItem['text'])->first()->id;
-                            $rightItem['id'] = $question->reponses()->where('text', $rightItem['text'])->first()->id;
-
-                            if (!$existingPair) {
-                                CorrespondancePair::create([
-                                    'question_id' => $question->id,
-                                    'left_text' => $leftItem['text'],
-                                    'right_text' => $rightItem['text'],
-                                    'left_id' => $leftItem['id'],
-                                    'right_id' => $rightItem['id']
-                                ]);
-                            }
+                        if ($rightItem) {
+                            CorrespondancePair::create([
+                                'question_id' => $question->id,
+                                'left_text' => $leftItem['text'],
+                                'right_text' => $rightItem['text'],
+                                'left_id' => $leftItem['id'],
+                                'right_id' => $rightItem['id']
+                            ]);
                         }
                     }
                 }
             }
 
             DB::commit();
-            return redirect()->route('quiz.index')->with('success', 'Quiz, questions et réponses mis à jour avec succès.');
+            return redirect()->route('quiz.index')->with('success', 'Quiz mis à jour avec succès.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Erreur : ' . $e->getMessage());
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Erreur lors de la mise à jour : ' . $e->getMessage());
         }
     }
     /**
@@ -265,8 +269,11 @@ class QuizController extends Controller
             'points' => 'required|integer|min:1',
             'reponses' => 'required|array|min:1',
             'reponses.*.text' => 'required|string',
-            'reponses.*.bank_group' => 'required_if:question.type,correspondance',
+            'reponses.*.match_pair' => 'required_if:question.type,correspondance|in:left,right',
+            'reponses.*.bank_group' => 'required_if:question.type,correspondance|string',
         ]);
+
+        DB::beginTransaction();
 
         try {
             $quiz = Quiz::findOrFail($request->input('quiz_id'));
@@ -275,8 +282,8 @@ class QuizController extends Controller
                 'quiz_id' => $quiz->id,
                 'text' => $request->input('text'),
                 'type' => $request->input('question')['type'],
-                'explication' => $request->input('explication'),
-                'astuce' => $request->input('astuce'),
+                'explication' => $request->input('explication') ?? null,
+                'astuce' => $request->input('astuce') ?? null,
                 'points' => $request->input('points') ?? 1,
             ];
 
@@ -295,7 +302,7 @@ class QuizController extends Controller
             foreach ($request->input('reponses', []) as $reponseInput) {
                 $reponse = $question->reponses()->create([
                     'text' => $reponseInput['text'],
-                    'is_correct' => $reponseInput['is_correct'] ?? 0,
+                    'is_correct' => $reponseInput['is_correct'] ?? ($question->type === 'correspondance' ? null : 0),
                     'position' => $reponseInput['position'] ?? null,
                     'match_pair' => $reponseInput['match_pair'] ?? null,
                     'bank_group' => $reponseInput['bank_group'] ?? null,
@@ -304,30 +311,31 @@ class QuizController extends Controller
 
                 if ($question->type === 'correspondance') {
                     $itemData = [
-                        'id' => $reponse->id, // On ajoute l'ID généré
+                        'id' => $reponse->id,
                         'text' => $reponse->text,
-                        'match_pair' => $reponse->match_pair,
+                        'bank_group' => $reponse->bank_group,
                     ];
 
-                    if ($reponseInput['bank_group'] === 'left') {
+                    if ($reponse->match_pair === 'left') {
                         $leftItems[] = $itemData;
-                    } elseif ($reponseInput['bank_group'] === 'right') {
+                    } elseif ($reponse->match_pair === 'right') {
                         $rightItems[] = $itemData;
                     }
                 }
             }
 
-
+            // Création des paires de correspondance
             if ($question->type === 'correspondance') {
                 foreach ($leftItems as $leftItem) {
-                    $matchingRightItems = collect($rightItems)->filter(function ($rightItem) use ($leftItem) {
-                        return $rightItem['match_pair'] === $leftItem['match_pair'];
-                    });
+                    // Trouver l'élément right avec le même bank_group
+                    $rightItem = collect($rightItems)->firstWhere('bank_group', $leftItem['bank_group']);
 
-                    foreach ($matchingRightItems as $rightItem) {
+                    if ($rightItem) {
                         $existingPair = CorrespondancePair::where('question_id', $question->id)
-                            ->where('left_text', $leftItem['text'])
-                            ->where('right_text', $rightItem['text'])
+                            ->where(function ($query) use ($leftItem, $rightItem) {
+                                $query->where('left_id', $leftItem['id'])
+                                    ->orWhere('right_id', $rightItem['id']);
+                            })
                             ->first();
 
                         if (!$existingPair) {
@@ -343,10 +351,14 @@ class QuizController extends Controller
                 }
             }
 
+            DB::commit();
 
             return redirect()->route('quiz.edit', $quiz)->with('success', 'Nouvelle question créée avec succès.');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Erreur lors de la création de la question : ' . $e->getMessage());
+            DB::rollBack();
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Erreur lors de la création de la question : ' . $e->getMessage());
         }
     }
 
@@ -370,8 +382,8 @@ class QuizController extends Controller
             'reponse.text.*' => 'required|string|max:1000',
             'reponse.is_correct' => 'nullable|array',
             'reponse.position' => 'nullable|array',
-            'reponse.match_pair' => 'nullable|array',
-            'reponse.bank_group' => 'nullable|array',
+            'reponse.match_pair' => 'required|array', // Changé à required
+            'reponse.bank_group' => 'required|array', // Changé à required
             'reponse.flashcard_back' => 'nullable|array',
         ]);
 
@@ -397,43 +409,47 @@ class QuizController extends Controller
             $leftItems = [];
             $rightItems = [];
 
+            // Première passe: créer toutes les réponses
             foreach ($reponses['text'] as $index => $text) {
                 $reponse = Reponse::create([
                     'question_id' => $question->id,
                     'text' => $text,
                     'is_correct' => $reponses['is_correct'][$index] ?? null,
                     'position' => $reponses['position'][$index] ?? null,
-                    'match_pair' => $reponses['match_pair'][$index] ?? null,
-                    'bank_group' => $reponses['bank_group'][$index] ?? null,
+                    'match_pair' => $reponses['match_pair'][$index],
+                    'bank_group' => $reponses['bank_group'][$index],
                     'flashcard_back' => $reponses['flashcard_back'][$index] ?? null,
                 ]);
 
+                // Stocker les éléments pour la correspondance
                 if ($questionData['type'] === 'correspondance') {
-                    if (isset($reponses['bank_group'][$index])) {
-                        if ($reponses['bank_group'][$index] === 'left') {
-                            $leftItems[] = [
-                                'text' => $text,
-                                'match_pair' => $reponses['match_pair'][$index] ?? null
-                            ];
-                        } elseif ($reponses['bank_group'][$index] === 'right') {
-                            $rightItems[] = [
-                                'text' => $text,
-                                'match_pair' => $reponses['match_pair'][$index] ?? null
-                            ];
-                        }
+                    if ($reponses['match_pair'][$index] === 'left') {
+                        $leftItems[] = [
+                            'id' => $reponse->id, // Utiliser l'ID réel de la réponse
+                            'text' => $text,
+                            'bank_group' => $reponses['bank_group'][$index]
+                        ];
+                    } elseif ($reponses['match_pair'][$index] === 'right') {
+                        $rightItems[] = [
+                            'id' => $reponse->id, // Utiliser l'ID réel de la réponse
+                            'text' => $text,
+                            'bank_group' => $reponses['bank_group'][$index]
+                        ];
                     }
                 }
             }
 
-            // Création des paires de correspondance
+            // Deuxième passe: créer les paires de correspondance
             if ($questionData['type'] === 'correspondance') {
                 foreach ($leftItems as $leftItem) {
-                    $rightItem = collect($rightItems)->firstWhere('match_pair', $leftItem['match_pair']);
+                    // Trouver l'élément right avec le même bank_group
+                    $rightItem = collect($rightItems)->firstWhere('bank_group', $leftItem['bank_group']);
+
                     if ($rightItem) {
                         // Vérifier si la paire existe déjà
                         $existingPair = CorrespondancePair::where('question_id', $question->id)
-                            ->where('left_text', $leftItem['text'])
-                            ->where('right_text', $rightItem['text'])
+                            ->where('left_id', $leftItem['id'])
+                            ->orWhere('right_id', $rightItem['id'])
                             ->first();
 
                         if (!$existingPair) {
@@ -443,22 +459,22 @@ class QuizController extends Controller
                                 'right_text' => $rightItem['text'],
                                 'left_id' => $leftItem['id'],
                                 'right_id' => $rightItem['id']
-
                             ]);
                         }
                     }
                 }
             }
-            // dd($quiz->formation_id);
+
             DB::commit();
+
             // Envoyer une notification pour le nouveau quiz
-//            $this->notificationService->notifyQuizAvailable(
-//                $quiz->titre,
-//                $quiz->formation_id
-//            );
+            $this->notificationService->notifyQuizAvailable(
+                $quiz->titre,
+                $quiz->formation_id
+            );
 
             // Envoyer les emails aux stagiaires
-            $this->sendQuizNotificationToTrainees($quiz);
+            // $this->sendQuizNotificationToTrainees($quiz);
 
             return redirect()->route('quiz.index')->with('success', 'Quiz, question et réponses créés avec succès.');
         } catch (\Exception $e) {
