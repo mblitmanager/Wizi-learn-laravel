@@ -826,24 +826,24 @@ class QuizController extends Controller
                     $newPairs = [];
 
                     foreach ($answerValue as $leftId => $rightText) {
-                        // $leftAnswer = $question->reponses->firstWhere('id', $leftId);
+                        $leftAnswer = $question->reponses->firstWhere('id', $leftId);
 
-                        // $leftText = $leftAnswer ? $leftAnswer->text : 'unknown';
-                        // $answerPairs[] = ['left' => $leftText, 'right' => $rightText];
+                        $leftText = $leftAnswer ? $leftAnswer->text : 'unknown';
+                        $answerPairs[] = ['left' => $leftText, 'right' => $rightText];
 
-                        // Vérifie si la paire existe déjà
-                        // $exists = CorrespondancePair::where('question_id', $questionId)
-                        //     ->where('left_text', $leftText)
-                        //     ->where('right_text', $rightText)
-                        //     ->exists();
+                        //Vérifie si la paire existe déjà
+                        $exists = CorrespondancePair::where('question_id', $questionId)
+                            ->where('left_text', $leftText)
+                            ->where('right_text', $rightText)
+                            ->exists();
 
-                        // if (!$exists) {
-                        //     $newPairs[] = [
-                        //         'question_id' => $questionId,
-                        //         'left_text' => $leftText,
-                        //         'right_text' => $rightText
-                        //     ];
-                        // }
+                        if (!$exists) {
+                            $newPairs[] = [
+                                'question_id' => $questionId,
+                                'left_text' => $leftText,
+                                'right_text' => $rightText
+                            ];
+                        }
                     }
 
                     Log::info('Paires pour la question :', [
