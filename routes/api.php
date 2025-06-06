@@ -18,6 +18,7 @@ use App\Http\Controllers\Stagiaire\MediaController;
 use App\Http\Controllers\BroadcastingController;
 use App\Http\Controllers\Stagiaire\StagiaireController;
 use App\Http\Controllers\Stagiaire\InscriptionCatalogueFormationController;
+use App\Http\Controllers\UserController;
 
 Route::post('login', [JWTAuthController::class, 'login']);
 Route::prefix('parrainage')->group(function () {
@@ -140,6 +141,16 @@ Route::middleware(['auth:api'])->group(function () {
 
     Route::get('/parrainage/stats/{parrain_id}', [ParrainageController::class, 'getStatsParrain']);
     Route::get('/user-status', [ProfileController::class, 'onlineUsers'])->middleware('auth:api');
+
+    // Route pour sauvegarder le token FCM
+    Route::post('/save-fcm-token', [UserController::class, 'saveFcmToken']);
+
+    // Routes de test pour les notifications
+    Route::post('/notify-quiz-created', [UserController::class, 'notifyQuizCreated']);
+    Route::post('/notify-media-created', [UserController::class, 'notifyMediaCreated']);
+    Route::post('/notify-new-filleul', [UserController::class, 'notifyNewFilleul']);
+    Route::post('/notify-catalogue-formation-updated', [UserController::class, 'notifyCatalogueFormationUpdated']);
+    Route::post('/notify-classement-reset', [UserController::class, 'notifyClassementReset']);
 });
 
 Route::get('/media/stream/{path}', [MediaController::class, 'stream'])
