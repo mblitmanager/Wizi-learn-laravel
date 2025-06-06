@@ -6,16 +6,22 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\CatalogueFormationRequest;
 use App\Models\Formation;
 use App\Services\CatalogueFormationService;
+use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 
 class CatalogueFormationController extends Controller
 {
-
     protected $catalogueFormationService;
-    public function __construct(CatalogueFormationService $catalogueFormationService)
-    {
+    protected $userController;
+
+    public function __construct(
+        CatalogueFormationService $catalogueFormationService,
+        UserController $userController
+    ) {
         $this->catalogueFormationService = $catalogueFormationService;
+        $this->userController = $userController;
     }
+
     /**
      * Display a listing of the resource.
      */
@@ -56,7 +62,10 @@ class CatalogueFormationController extends Controller
             $validated['cursus_pdf'] = 'pdfs/' . $pdfName;
         }
 
-        $this->catalogueFormationService->create($validated);
+        $catalogueFormation = $this->catalogueFormationService->create($validated);
+
+        // Envoyer une notification pour la nouvelle formation
+        $this->userController->notifyCatalogueFormationUpdated($catalogueFormation);
 
         return redirect()->route('catalogue_formation.index')
             ->with('success', 'Le catalogue de formation a été créé avec succès.');
@@ -104,7 +113,11 @@ class CatalogueFormationController extends Controller
             $validated['cursus_pdf'] = 'pdfs/' . $pdfName;
         }
 
-        $this->catalogueFormationService->update($id, $validated);
+        $catalogueFormation = $this->catalogueFormationService->update($id, $validated);
+
+        // Envoyer une notification pour la mise à jour de la formation
+        $this->userController->notifyCatalogueFormationUpdated($catalogueFormation);
+
         return redirect()->route('catalogue_formation.index')
             ->with('success', 'Le catalogue de formation a été mis à jour avec succès.');
     }

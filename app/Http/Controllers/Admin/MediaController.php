@@ -11,16 +11,23 @@ use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use App\Models\User;
+use App\Http\Controllers\UserController;
+use App\Models\Media;
 
 class MediaController extends Controller
 {
     protected $mediaService;
     protected $notificationService;
+    protected $userController;
 
-    public function __construct(MediaAdminService $mediaService, NotificationService $notificationService)
-    {
+    public function __construct(
+        MediaAdminService $mediaService,
+        NotificationService $notificationService,
+        UserController $userController
+    ) {
         $this->mediaService = $mediaService;
         $this->notificationService = $notificationService;
+        $this->userController = $userController;
     }
     /**
      * Display a listing of the resource.
@@ -61,6 +68,9 @@ class MediaController extends Controller
             $this->notificationService->notifyMediaCreated($user->id, $media->titre ?? '', $media->id);
         }
 
+        // Envoyer une notification pour le nouveau média
+        $this->userController->notifyMediaCreated($media);
+
         return redirect()->route('medias.index')
             ->with('success', 'Le media a été créé avec succès.');
     }
@@ -71,27 +81,24 @@ class MediaController extends Controller
 
     public function update(MediaRequest $request, string $id)
     {
-
         $validated = $request->validated();
 
-        $sourceType = $request->input('source_type', 'file');
-
-        if ($sourceType === 'file' && $request->hasFile('url')) {
-            $file = $request->file('url');
-            $fileName = time() . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('uploads/medias'), $fileName);
-            $validated['url'] = 'uploads/medias/' . $fileName;
-        } elseif ($sourceType === 'url' && $request->filled('url')) {
-            $validated['url'] = $request->input('url');
-            // Optionnel : ajouter une validation supplémentaire pour l'URL ici si nécessaire
-        } else {
-            // Gérer le cas où aucune source valide n'est fournie (optionnel)
+        if ($request->hasFile('file')) {
+            $file = $request->file('file');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('media'), $filename);
+            $validated['file_path'] = 'media/' . $filename;
+            $validated['file_type'] = $file->getClientMimeType();
         }
 
-        $this->mediaService->update($id, $validated);
+        $media = Media::findOrFail($id);
+        $media->update($validated);
 
-        return redirect()->route('medias.index')
-            ->with('success', 'Le media a été mis à jour avec succès.');
+        // Envoyer une notification pour la mise à jour du média
+        $this->userController->notifyMediaCreated($media);
+
+        return redirect()->route('media.index')
+            ->with('success', 'Le média a été mis à jour avec succès.');
     }
 
 

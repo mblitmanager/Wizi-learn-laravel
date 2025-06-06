@@ -12,6 +12,7 @@ use App\Models\Quiz;
 use App\Models\Reponse;
 use App\Services\QuizService;
 use App\Services\NotificationService;
+use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -25,15 +26,20 @@ use Illuminate\Support\Facades\Mail;
 
 class QuizController extends Controller
 {
-
     protected $quizeService;
     protected $notificationService;
+    protected $userController;
 
-    public function __construct(QuizService $quizeService, NotificationService $notificationService)
-    {
+    public function __construct(
+        QuizService $quizeService,
+        NotificationService $notificationService,
+        UserController $userController
+    ) {
         $this->quizeService = $quizeService;
         $this->notificationService = $notificationService;
+        $this->userController = $userController;
     }
+
     /**
      * Display a listing of the resource.
      */
@@ -65,10 +71,8 @@ class QuizController extends Controller
         $quiz = $this->quizeService->create($request->validated());
 
         // Envoyer une notification pour le nouveau quiz
-        $this->notificationService->notifyQuizAvailable(
-            $quiz->titre,
-            $quiz->id
-        );
+        $this->userController->notifyQuizCreated($quiz);
+
         return redirect()->route('quiz.index')
             ->with('success', 'Le quiz a été créé avec succès.');
     }
@@ -95,8 +99,6 @@ class QuizController extends Controller
         $questions = $quiz->questions;
         return view('admin.quizzes.edit', compact('quiz', 'formations', 'questions'));
     }
-
-
 
     /**
      * Mise à jour d'un quiz existant.
@@ -244,6 +246,9 @@ class QuizController extends Controller
             }
 
             DB::commit();
+            // Envoyer une notification pour la mise à jour du quiz
+            $this->userController->notifyQuizCreated($quiz);
+
             return redirect()->route('quiz.index')->with('success', 'Quiz, questions et réponses mis à jour avec succès.');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -571,6 +576,9 @@ class QuizController extends Controller
                 'nb_points_total' => $nbPoints ?? 0, // Valeur par défaut si null
                 'formation_id' => $formation->id,
             ]);
+
+            // Envoyer une notification pour le nouveau quiz importé
+            $this->userController->notifyQuizCreated($quiz);
 
             $importedQuestions = 0;
             $errors = [];

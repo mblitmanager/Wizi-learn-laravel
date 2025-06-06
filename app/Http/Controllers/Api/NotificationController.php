@@ -60,7 +60,7 @@ class NotificationController extends Controller
     public function getUnreadCount()
     {
         $count = Notification::where('user_id', Auth::id())
-            ->where('read', false)
+            ->where('is_read', 0)
             ->count();
 
         return response()->json([
