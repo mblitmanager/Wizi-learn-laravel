@@ -34,7 +34,7 @@ class TestNotification implements ShouldBroadcastNow
      */
     public function broadcastOn()
     {
-        return new Channel('notifications');
+        return new PrivateChannel('notifications');
     }
 
     /**

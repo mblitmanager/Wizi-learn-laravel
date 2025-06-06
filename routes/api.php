@@ -163,3 +163,5 @@ Route::middleware(['auth:api'])->group(function () {
     Route::delete('/notifications/{id}', [App\Http\Controllers\Api\NotificationController::class, 'delete']);
     Route::get('/notifications/unread-count', [App\Http\Controllers\Api\NotificationController::class, 'getUnreadCount']);
 });
+
+Route::get('/test-firebase', [App\Http\Controllers\TestFirebaseController::class, 'test']);
