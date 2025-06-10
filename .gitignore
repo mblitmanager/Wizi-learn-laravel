@@ -28,3 +28,4 @@ routes.txt
 .env
 *.pdf
 /public/firebase-credentials.json
+.firebase-credentials.json
