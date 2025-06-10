@@ -12,6 +12,7 @@
         "php": "^8.2",
         "api-platform/laravel": "^4.1",
         "darkaonline/l5-swagger": "^9.0",
+        "google/apiclient": "*",
         "jenssegers/agent": "^2.6",
         "kreait/laravel-firebase": "^5.8",
         "laravel/framework": "^11.31",

@@ -19,6 +19,7 @@ use App\Http\Controllers\BroadcastingController;
 use App\Http\Controllers\Stagiaire\StagiaireController;
 use App\Http\Controllers\Stagiaire\InscriptionCatalogueFormationController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\EventController;
 
 Route::post('login', [JWTAuthController::class, 'login']);
 Route::prefix('parrainage')->group(function () {
@@ -153,6 +154,9 @@ Route::middleware(['auth:api'])->group(function () {
     Route::post('/notify-classement-reset', [UserController::class, 'notifyClassementReset']);
 });
 
+// Endpoint de test pour la notification Firebase
+Route::middleware(['auth:api'])->post('/test-firebase-notification', [App\Http\Controllers\ExampleController::class, 'sendNotification']);
+
 Route::get('/media/stream/{path}', [MediaController::class, 'stream'])
     ->withoutMiddleware([JwtMiddleware::class])
     ->middleware('throttle:60,1')
@@ -176,3 +180,25 @@ Route::middleware(['auth:api'])->group(function () {
 });
 
 Route::get('/test-firebase', [App\Http\Controllers\TestFirebaseController::class, 'test']);
+
+Route::middleware('auth:api')->group(function () {
+    Route::get('/events/listen', [EventController::class, 'listen']);
+});
+
+// Routes pour Event Whisperer
+Route::prefix('events')->group(function () {
+    // Point d'entrée principal pour récupérer les événements
+    Route::get('/listen', [EventController::class, 'listen']);
+
+    // Créer un nouvel événement
+    Route::post('/', [EventController::class, 'create']);
+
+    // Test de connexion
+    Route::get('/test-connection', [EventController::class, 'testConnection']);
+});
+
+// Middleware d'authentification recommandé
+Route::middleware(['auth:api'])->prefix('events')->group(function () {
+    Route::get('/listen', [EventController::class, 'listen']);
+    Route::post('/', [EventController::class, 'create']);
+});
