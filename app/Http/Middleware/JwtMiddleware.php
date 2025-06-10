@@ -20,6 +20,10 @@ class JwtMiddleware
             'api/parrainage/get-data/*', // Utilisation du wildcard pour toutes les URLs sous ce path
             'api/parrainage/register-filleul',
             'api/formationParrainage',
+            'api/events',
+            'api/events/test-notification',
+            'api/events/listen',
+            'api/events/create',
         ];
 
         // Vérifier si la route actuelle correspond à une route exemptée

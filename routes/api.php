@@ -197,8 +197,8 @@ Route::prefix('events')->group(function () {
     Route::get('/test-connection', [EventController::class, 'testConnection']);
 });
 
-// Middleware d'authentification recommandé
-Route::middleware(['auth:api'])->prefix('events')->group(function () {
-    Route::get('/listen', [EventController::class, 'listen']);
-    Route::post('/', [EventController::class, 'create']);
-});
+// // Middleware d'authentification recommandé
+// Route::middleware(['auth:api'])->prefix('events')->group(function () {
+//     Route::get('/listen', [EventController::class, 'listen']);
+//     Route::post('/', [EventController::class, 'create']);
+// });

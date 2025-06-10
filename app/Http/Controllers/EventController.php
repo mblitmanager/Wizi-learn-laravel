@@ -87,6 +87,7 @@ class EventController extends Controller
      */
     public function testConnection(): JsonResponse
     {
+
         return response()->json([
             'status' => 'success',
             'message' => 'API Laravel connectée',
