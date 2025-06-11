@@ -63,17 +63,32 @@ class MediaController extends Controller
         }
         $media = $this->mediaService->create($validated);
 
-        // Notification à tous les stagiaires
-        $users = \App\Models\User::where('role', 'stagiaire')->get();
-        foreach ($users as $user) {
-            $this->notificationService->notifyMediaCreated($user->id, $media->titre ?? '', $media->id);
-        }
+        // Déclencher un event après la création du média
+        event(new MediaEvent($media));
+
+        // Créer un événement pour EventController
+        \App\Models\Event::create([
+            'title' => 'Nouveau média',
+            'message' => 'Un nouveau média a été ajouté : ' . ($media->titre ?? ''),
+            'topic' => 'media',
+            'data' => [
+                'media_id' => $media->id,
+                'media_title' => $media->titre ?? '',
+                'media_url' => $media->url ?? '',
+            ],
+            'status' => 'pending',
+            'created_at' => now(),
+        ]);
+
+        // // Notification à tous les stagiaires
+        // $users = \App\Models\User::where('role', 'stagiaire')->get();
+        // foreach ($users as $user) {
+        //     $this->notificationService->notifyMediaCreated($user->id, $media->titre ?? '', $media->id);
+        // }
 
         // Envoyer une notification pour le nouveau média
         $this->userController->notifyMediaCreated($media);
 
-        // Déclencher l'événement Laravel pour le broadcast
-        event(new MediaEvent($media));
 
         return redirect()->route('medias.index')
             ->with('success', 'Le media a été créé avec succès.');

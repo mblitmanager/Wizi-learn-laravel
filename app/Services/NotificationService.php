@@ -27,19 +27,20 @@ class NotificationService
                 Notification::create([
                     'user_id' => $stagiaire->user->id,
                     'type' => 'quiz',
+                    'title' => $quizTitle,
                     'message' => "Un nouveau quiz \"{$quizTitle}\" est disponible !",
                     'data' => [
                         'quiz_id' => $quizId,
                         'quiz_title' => $quizTitle
                     ],
-                    'read' => false
+                    'is_read' => 0
                 ]);
 
-                event(new TestNotification([
-                    'type' => 'quiz',
-                    'message' => "Un nouveau quiz \"{$quizTitle}\" est disponible !",
-                    'quiz_title' => $quizTitle,
-                ]));
+                // event(new TestNotification([
+                //     'type' => 'quiz',
+                //     'message' => "Un nouveau quiz \"{$quizTitle}\" est disponible !",
+                //     'quiz_title' => $quizTitle,
+                // ]));
             }
         }
     }
@@ -49,13 +50,14 @@ class NotificationService
         Notification::create([
             'user_id' => $userId,
             'type' => 'quiz',
+            'title' => 'Quiz terminé',
             'message' => "Vous avez obtenu {$score}/{$totalQuestions} points au quiz !",
             'data' => [
                 // 'quiz_id' => $quizId,
                 'score' => $score,
                 'total_questions' => $totalQuestions
             ],
-            'read' => false
+            'is_read' => 0
         ]);
     }
 
@@ -64,12 +66,13 @@ class NotificationService
         Notification::create([
             'user_id' => $userId,
             'type' => 'badge',
+            'title' => 'Récompense',
             'message' => "Vous avez gagné {$points} points" . ($rewardType ? " et un {$rewardType}" : "") . " !",
             'data' => [
                 'points' => $points,
                 'reward_type' => $rewardType
             ],
-            'read' => false
+            'is_read' => 0
         ]);
     }
 
@@ -81,23 +84,24 @@ class NotificationService
         Notification::create([
             'user_id' => $userId,
             'type' => 'formation',
+            'title' => $formationTitle,
             'message' => $message,
             'data' => [
                 'formation_id' => $formationId,
                 'formation_title' => $formationTitle,
                 'date_debut' => $dateDebut
             ],
-            'read' => false
+            'is_read' => 0
         ]);
-        // Optionnel : broadcast Pusher
-        event(new \App\Events\TestNotification([
-            'type' => 'formation',
-            'message' => $message,
-            // 'formation_id' => $formationId,
-            'formation_title' => $formationTitle,
-            'date_debut' => $dateDebut,
-            // 'user_id' => $userId
-        ]));
+        // // Optionnel : broadcast Pusher
+        // event(new \App\Events\TestNotification([
+        //     'type' => 'formation',
+        //     'message' => $message,
+        //     // 'formation_id' => $formationId,
+        //     'formation_title' => $formationTitle,
+        //     'date_debut' => $dateDebut,
+        //     // 'user_id' => $userId
+        // ]));
     }
 
     public function notifyMediaCreated(int $userId, string $mediaTitle, int $mediaId): void
@@ -106,22 +110,22 @@ class NotificationService
         Notification::create([
             'user_id' => $userId,
             'type' => 'media',
-            // 'message' => $message,
-            'message' => [
-                'message' => $message,
+             'title' => 'Nouveau média ajouté', // <-- AJOUTER CE CHAMP
+            'message' => $message,
+            'data' => [
                 'media_id' => $mediaId,
                 'media_title' => $mediaTitle
             ],
-            'read' => false
+            'is_read' => 0
         ]);
-        // Broadcast temps réel Pusher
-        event(new \App\Events\TestNotification([
-            'type' => 'media',
-            'message' => $message,
-            // 'media_id' => $mediaId,
-            'media_title' => $mediaTitle,
-            // 'user_id' => $userId
-        ]));
+        // // Broadcast temps réel Pusher
+        // event(new \App\Events\TestNotification([
+        //     'type' => 'media',
+        //     'message' => $message,
+        //     // 'media_id' => $mediaId,
+        //     'media_title' => $mediaTitle,
+        //     // 'user_id' => $userId
+        // ]));
     }
 
     public function notifyCustom(int $userId, string $type, string $message): void
@@ -129,15 +133,16 @@ class NotificationService
         \App\Models\Notification::create([
             'user_id' => $userId,
             'type' => $type,
+            'title' => ucfirst($type),
             'message' => $message,
             'data' => [],
-            'read' => false
+            'is_read' => 0
         ]);
-        // Optionnel : broadcast Pusher
-        event(new \App\Events\TestNotification([
-            'type' => $type,
-            'message' => $message,
-            'user_id' => $userId
-        ]));
+        // // Optionnel : broadcast Pusher
+        // event(new \App\Events\TestNotification([
+        //     'type' => $type,
+        //     'message' => $message,
+        //     'user_id' => $userId
+        // ]));
     }
 }

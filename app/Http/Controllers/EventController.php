@@ -96,6 +96,42 @@ class EventController extends Controller
         ]);
     }
 
+    /**
+     * Récupérer les logs et messages récents pour Event Whisperer
+     */
+    public function recent(Request $request): JsonResponse
+    {
+        // Exemple : à adapter selon votre logique de stockage des logs/messages
+        $logs = [];
+        $messages = [];
+
+        // Récupérer les 50 derniers événements (messages)
+        $events = \App\Models\Event::orderBy('created_at', 'desc')->limit(50)->get();
+        foreach ($events as $event) {
+            $messages[] = [
+                'id' => $event->id,
+                'created_at' => $event->created_at,
+                'type' => $event->type ?? 'message',
+                'title' => $event->title,
+                'subject' => $event->title, // pour compatibilité
+                'body' => $event->message,
+                'content' => $event->message, // pour compatibilité
+                'recipient' => $event->topic ?? null,
+                'status' => $event->status ?? 'sent',
+                'data' => $event->data,
+            ];
+        }
+
+        // (Optionnel) Récupérer les logs Laravel si vous avez une table/log dédiée
+        // $logs = LogModel::orderBy('created_at', 'desc')->limit(50)->get();
+
+        return response()->json([
+            'logs' => $logs,
+            'messages' => $messages,
+            'timestamp' => now()->toISOString()
+        ]);
+    }
+
     private function getPendingEvents(): array
     {
         return Event::where('status', 'pending')

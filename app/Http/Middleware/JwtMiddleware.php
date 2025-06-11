@@ -24,6 +24,7 @@ class JwtMiddleware
             'api/events/test-notification',
             'api/events/listen',
             'api/events/create',
+            'api/events/recent',
             'api/events/test-connection'
         ];
 

@@ -196,6 +196,9 @@ Route::prefix('events')->group(function () {
 
     // Test de connexion
     Route::get('/test-connection', [EventController::class, 'testConnection']);
+    Route::get('/notifications', [App\Http\Controllers\Api\NotificationController::class, 'index']);
+
+    Route::get('/recent', [EventController::class, 'recent']);
 });
 
 // // Middleware d'authentification recommandé
