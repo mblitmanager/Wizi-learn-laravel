@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Events\MediaEvent;
 use App\Events\TestNotification;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\MediaRequest;
@@ -70,6 +71,9 @@ class MediaController extends Controller
 
         // Envoyer une notification pour le nouveau média
         $this->userController->notifyMediaCreated($media);
+
+        // Déclencher l'événement Laravel pour le broadcast
+        event(new MediaEvent($media));
 
         return redirect()->route('medias.index')
             ->with('success', 'Le media a été créé avec succès.');

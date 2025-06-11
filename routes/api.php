@@ -192,6 +192,7 @@ Route::prefix('events')->group(function () {
 
     // Créer un nouvel événement
     Route::post('/', [EventController::class, 'create']);
+    Route::post('/test-notification', [App\Http\Controllers\ExampleController::class, 'sendNotification']);
 
     // Test de connexion
     Route::get('/test-connection', [EventController::class, 'testConnection']);

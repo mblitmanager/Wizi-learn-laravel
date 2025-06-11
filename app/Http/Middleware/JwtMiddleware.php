@@ -24,6 +24,7 @@ class JwtMiddleware
             'api/events/test-notification',
             'api/events/listen',
             'api/events/create',
+            'api/events/test-connection'
         ];
 
         // Vérifier si la route actuelle correspond à une route exemptée

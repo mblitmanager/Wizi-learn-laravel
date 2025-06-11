@@ -106,8 +106,9 @@ class NotificationService
         Notification::create([
             'user_id' => $userId,
             'type' => 'media',
-            'message' => $message,
-            'data' => [
+            // 'message' => $message,
+            'message' => [
+                'message' => $message,
                 'media_id' => $mediaId,
                 'media_title' => $mediaTitle
             ],
