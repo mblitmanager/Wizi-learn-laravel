@@ -35,11 +35,11 @@ class NotificationService
                     'read' => false
                 ]);
 
-                event(new TestNotification([
-                    'type' => 'quiz',
-                    'message' => "Un nouveau quiz \"{$quizTitle}\" est disponible !",
-                    'quiz_title' => $quizTitle,
-                ]));
+                // event(new TestNotification([
+                //     'type' => 'quiz',
+                //     'message' => "Un nouveau quiz \"{$quizTitle}\" est disponible !",
+                //     'quiz_title' => $quizTitle,
+                // ]));
             }
         }
     }
@@ -114,12 +114,12 @@ class NotificationService
             'read' => false
         ]);
         // Broadcast temps réel Pusher
-        event(new \App\Events\TestNotification([
-            'type' => 'media',
-            'message' => $message,
-            // 'media_id' => $mediaId,
-            'media_title' => $mediaTitle,
-            // 'user_id' => $userId
-        ]));
+        // event(new \App\Events\TestNotification([
+        //     'type' => 'media',
+        //     'message' => $message,
+        //     // 'media_id' => $mediaId,
+        //     'media_title' => $mediaTitle,
+        //     // 'user_id' => $userId
+        // ]));
     }
 }

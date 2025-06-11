@@ -23,27 +23,19 @@
             </ul>
         </li>
         <li>
-            <a href="javascript:;" class="has-arrow">
+            <a href="{{ route('stagiaires.index') }}">
                 <div class="parent-icon"><i class='lni lni-users'></i>
                 </div>
                 <div class="menu-title">Stagiaire</div>
             </a>
-            <ul>
-                <li> <a href="{{ route('stagiaires.index') }}"><i class="bx bx-right-arrow-alt"></i>Listes</a>
-                </li>
-
-            </ul>
         </li>
         <li>
-            <a href="javascript:;" class="has-arrow">
+            <a href="{{ route('quiz.index') }}">
                 <div class="parent-icon"><i class='fadeIn animated bx bx-brain'></i>
                 </div>
                 <div class="menu-title">Quiz</div>
             </a>
-            <ul>
-                <li> <a href="{{ route('quiz.index') }}"><i class="bx bx-right-arrow-alt"></i>Listes</a>
-                </li>
-            </ul>
+
         </li>
         <li>
             <a href="javascript:;" class="has-arrow">
@@ -62,15 +54,12 @@
             </ul>
         </li>
         <li>
-            <a href="javascript:;" class="has-arrow">
+            <a href="javascript:;">
                 <div class="parent-icon"><i class='fadeIn animated bx bx-list-ol'></i>
                 </div>
                 <div class="menu-title">Classement</div>
             </a>
-            <ul>
-                <li> <a href="#"><i class="bx bx-right-arrow-alt"></i>Listes</a>
-                </li>
-            </ul>
+
         </li>
         <li>
             <a href="javascript:;" class="has-arrow">
@@ -88,73 +77,52 @@
             </ul>
         </li>
         <li>
-            <a href="javascript:;" class="has-arrow">
+            <a href="{{ route('parrainage.index') }}">
                 <div class="parent-icon"><i class='fadeIn animated bx bx-git-branch'></i>
                 </div>
                 <div class="menu-title">Parrainage</div>
             </a>
-            <ul>
-                <li> <a href="{{ route('parrainage.index') }}"><i class="bx bx-right-arrow-alt"></i>Listes</a>
-                </li>
-            </ul>
+
         </li>
         <li>
-            <a href="javascript:;" class="has-arrow">
+            <a href="{{ route('medias.index') }}">
                 <div class="parent-icon"><i class='fadeIn animated bx bx-play-circle'></i>
                 </div>
                 <div class="menu-title">Media</div>
             </a>
-            <ul>
-                <li> <a href="{{ route('medias.index') }}"><i class="bx bx-right-arrow-alt"></i>Listes</a>
-                </li>
-            </ul>
+
         </li>
         <li>
-            <a href="javascript:;" class="has-arrow">
+            <a href="javascript:;">
                 <div class="parent-icon"><i class='fadeIn animated bx bx-target-lock'></i>
                 </div>
                 <div class="menu-title">Défis</div>
             </a>
-            <ul>
-                <li> <a href="#"><i class="bx bx-right-arrow-alt"></i>Listes</a>
-                </li>
-            </ul>
+
         </li>
         <li>
-            <a href="javascript:;" class="has-arrow">
+            <a href="javascript:;">
                 <div class="parent-icon"><i class='fadeIn animated bx bx-calendar'></i>
                 </div>
                 <div class="menu-title">Planning</div>
             </a>
-            <ul>
-                <li> <a href="#"><i class="bx bx-right-arrow-alt"></i>Listes</a>
-                </li>
-            </ul>
+
         </li>
         <li>
-            <a href="javascript:;" class="has-arrow">
+            <a href="{{ route('admin.parametre.reset-data') }}">
                 <div class="parent-icon"><i class='fadeIn animated bx bx-line-chart'></i>
                 </div>
                 <div class="menu-title">Statistiques</div>
             </a>
-            <ul>
-                <li> <a href="#"><i class="bx bx-right-arrow-alt"></i>Listes</a>
-                </li>
-                <li> <a href="{{ route('admin.parametre.reset-data') }}"><i
-                            class="bx bx-right-arrow-alt"></i>Réinitialisation des données</a>
-                </li>
-            </ul>
+
         </li>
         <li>
-            <a href="javascript:;" class="has-arrow">
+            <a href="{{ route('parametre.index') }}">
                 <div class="parent-icon"><i class='bx bx-cog bx-spin'></i>
                 </div>
                 <div class="menu-title">Paramètres</div>
             </a>
-            <ul>
-                <li> <a href="{{ route('parametre.index') }}"><i class="bx bx-right-arrow-alt"></i>Listes</a>
-                </li>
-            </ul>
+
         </li>
 
     </ul>
