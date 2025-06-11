@@ -269,8 +269,7 @@ class QuizController extends Controller
             'points' => 'required|integer|min:1',
             'reponses' => 'required|array|min:1',
             'reponses.*.text' => 'required|string',
-            'reponses.*.match_pair' => 'required_if:question.type,correspondance|in:left,right',
-            'reponses.*.bank_group' => 'required_if:question.type,correspondance|string',
+
         ]);
 
         DB::beginTransaction();
