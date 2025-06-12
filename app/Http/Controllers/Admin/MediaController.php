@@ -11,6 +11,7 @@ use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use App\Models\User;
+use Illuminate\Support\Facades\Http;
 
 class MediaController extends Controller
 {
@@ -59,6 +60,24 @@ class MediaController extends Controller
         $users = \App\Models\User::where('role', 'stagiaire')->get();
         foreach ($users as $user) {
             $this->notificationService->notifyMediaCreated($user->id, $media->titre ?? '', $media->id);
+
+            try {
+                $response = Http::post('http://localhost:3001/send-notification', [
+                    'userId' => $user->id,
+                    'message' => "Un nouveau média \"{$media->titre}\" a été ajouté",
+                    'data' => [
+                        'media_id' => $media->id,
+                        'media_title' => $media->titre
+                    ]
+                ]);
+
+                \Log::info("Notification sent to user {$user->id}", [
+                    'status' => $response->status(),
+                    'response' => $response->body()
+                ]);
+            } catch (\Exception $e) {
+                \Log::error("Failed to send notification to user {$user->id}: " . $e->getMessage());
+            }
         }
 
         return redirect()->route('medias.index')

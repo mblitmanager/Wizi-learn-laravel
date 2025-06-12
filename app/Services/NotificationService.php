@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Notification;
 use App\Events\TestNotification;
 use App\Models\Stagiaire;
+use Illuminate\Support\Facades\Http;
 
 class NotificationService
 {
@@ -102,11 +103,11 @@ class NotificationService
 
     public function notifyMediaCreated(int $userId, string $mediaTitle, int $mediaId): void
     {
-        $message = "Un nouveau média \"{$mediaTitle}\" a été ajouté !";
+        // Enregistre la notification dans ta base Laravel
         Notification::create([
             'user_id' => $userId,
             'type' => 'media',
-            'message' => $message,
+            'message' => "Un nouveau média \"$mediaTitle\" a été ajouté !",
             'data' => [
                 'media_id' => $mediaId,
                 'media_title' => $mediaTitle
