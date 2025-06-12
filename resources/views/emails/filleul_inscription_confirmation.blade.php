@@ -106,7 +106,7 @@
             <img src="{{ $message->embed($logo) }}" alt="Logo" width="100">
             <h1>Bienvenue {{ $filleul->stagiaire->prenom }} !</h1>
         </div>
-
+        <!-- test -->
         <div class="content">
             <p>Nous confirmons votre inscription à la formation <strong>{{ $formation->titre }}</strong> grâce au parrainage de {{ $parrain->name }}.</p>
 
