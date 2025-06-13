@@ -199,7 +199,7 @@
                                                                             </li>
                                                                             <li class="list-group-item"><strong>Date de
                                                                                     création :</strong>
-                                                                                {{ $formation->created_at->format('d/m/Y à H:i') }}
+                                                                                {{ $formation->created_at ? $formation->created_at->format('d/m/Y à H:i') : 'Non renseignée' }}
                                                                             </li>
                                                                         </ul>
                                                                     </div>
@@ -261,32 +261,37 @@
                                                                         <hr>
                                                                         <h6><strong>Formations proposées :</strong></h6>
                                                                         <ul class="list-group">
-                                                                            @foreach ($formateur->formations as $row)
-                                                                                @php
-                                                                                    $bgColor = '';
-                                                                                    switch ($row->categorie) {
-                                                                                        case 'Bureautique':
-                                                                                            $bgColor = '#3D9BE9';
-                                                                                            break;
-                                                                                        case 'Langues':
-                                                                                            $bgColor = '#A55E6E';
-                                                                                            break;
-                                                                                        case 'Internet':
-                                                                                            $bgColor = '#FFC533';
-                                                                                            break;
-                                                                                        case 'Création':
-                                                                                            $bgColor = '#9392BE';
-                                                                                            break;
-                                                                                        default:
-                                                                                            $bgColor = 'bg-success';
-                                                                                    }
-                                                                                @endphp
-                                                                                <li class="list-group-item text-white"
-                                                                                    style="background: {{ $bgColor }}">
-                                                                                    <strong>{{ $row->titre }}</strong> -
-                                                                                    {{ $row->categorie }}
-                                                                                </li>
-                                                                            @endforeach
+                                                                            @if ($formateur->formations && $formateur->formations->count())
+                                                                                @foreach ($formateur->formations as $row)
+                                                                                    @php
+                                                                                        $bgColor = '';
+                                                                                        switch ($row->categorie) {
+                                                                                            case 'Bureautique':
+                                                                                                $bgColor = '#3D9BE9';
+                                                                                                break;
+                                                                                            case 'Langues':
+                                                                                                $bgColor = '#A55E6E';
+                                                                                                break;
+                                                                                            case 'Internet':
+                                                                                                $bgColor = '#FFC533';
+                                                                                                break;
+                                                                                            case 'Création':
+                                                                                                $bgColor = '#9392BE';
+                                                                                                break;
+                                                                                            default:
+                                                                                                $bgColor = 'bg-success';
+                                                                                        }
+                                                                                    @endphp
+                                                                                    <li class="list-group-item text-white"
+                                                                                        style="background: {{ $bgColor }}">
+                                                                                        <strong>{{ $row->titre }}</strong> -
+                                                                                        {{ $row->categorie }}
+                                                                                    </li>
+                                                                                @endforeach
+                                                                            @else
+                                                                                <li class="list-group-item">Aucune formation
+                                                                                    associée</li>
+                                                                            @endif
                                                                         </ul>
                                                                     </div>
                                                                 </div>
