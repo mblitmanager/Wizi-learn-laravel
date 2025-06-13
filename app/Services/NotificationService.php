@@ -128,6 +128,7 @@ class NotificationService
     {
         \App\Models\Notification::create([
             'user_id' => $userId,
+            'title' => 'Nouvelle notification',
             'type' => $type,
             'message' => $message,
             'data' => [],
