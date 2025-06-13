@@ -18,6 +18,7 @@ use App\Http\Controllers\Stagiaire\MediaController;
 use App\Http\Controllers\BroadcastingController;
 use App\Http\Controllers\Stagiaire\StagiaireController;
 use App\Http\Controllers\Stagiaire\InscriptionCatalogueFormationController;
+use App\Events\TestNotification;
 
 Route::post('login', [JWTAuthController::class, 'login']);
 Route::prefix('parrainage')->group(function () {
@@ -140,6 +141,17 @@ Route::middleware(['auth:api'])->group(function () {
 
     Route::get('/parrainage/stats/{parrain_id}', [ParrainageController::class, 'getStatsParrain']);
     Route::get('/user-status', [ProfileController::class, 'onlineUsers'])->middleware('auth:api');
+    Route::get('/test-notif', function () {
+        $data = [
+            'title' => 'Nouvelle notification',
+            'message' => 'Une notification vient d’être envoyée !',
+        ];
+
+        event(new TestNotification($data));
+
+        return 'Notification envoyée !';
+    });
+
 });
 
 Route::get('/media/stream/{path}', [MediaController::class, 'stream'])

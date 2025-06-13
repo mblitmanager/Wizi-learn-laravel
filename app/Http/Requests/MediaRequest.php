@@ -74,6 +74,7 @@ class MediaRequest extends FormRequest
             'type.in' => 'Le type doit être soit "video", "document" ou "image".',
 
             'categorie.string' => 'La catégorie doit être une chaîne de caractères.',
+            'categorie.required' => 'La catégorie est obligatoire.',
             'categorie.in' => 'La catégorie doit être soit "tutoriel" ou "astuce".',
 
             'duree.integer' => 'La durée doit être un nombre entier.',

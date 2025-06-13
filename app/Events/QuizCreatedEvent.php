@@ -8,15 +8,18 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class NotificationEvent implements ShouldBroadcast
+class QuizCreatedEvent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
+    public $quiz;
     public $message;
 
-    public function __construct($message)
+    public function __construct($quiz)
     {
-        $this->message = $message;
+        $this->quiz = $quiz;
+        $title = is_array($quiz) ? $quiz['title'] : $quiz->title;
+        $this->message = "Un nouveau quiz '{$title}' a été créé";
     }
 
     public function broadcastOn()
@@ -26,6 +29,6 @@ class NotificationEvent implements ShouldBroadcast
 
     public function broadcastAs()
     {
-        return 'notification';
+        return 'quiz.created';
     }
 }

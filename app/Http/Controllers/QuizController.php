@@ -826,24 +826,24 @@ class QuizController extends Controller
                     $newPairs = [];
 
                     foreach ($answerValue as $leftId => $rightText) {
-                        // $leftAnswer = $question->reponses->firstWhere('id', $leftId);
+                        $leftAnswer = $question->reponses->firstWhere('id', $leftId);
 
-                        // $leftText = $leftAnswer ? $leftAnswer->text : 'unknown';
-                        // $answerPairs[] = ['left' => $leftText, 'right' => $rightText];
+                        $leftText = $leftAnswer ? $leftAnswer->text : 'unknown';
+                        $answerPairs[] = ['left' => $leftText, 'right' => $rightText];
 
-                        // Vérifie si la paire existe déjà
-                        // $exists = CorrespondancePair::where('question_id', $questionId)
-                        //     ->where('left_text', $leftText)
-                        //     ->where('right_text', $rightText)
-                        //     ->exists();
+                        //Vérifie si la paire existe déjà
+                        $exists = CorrespondancePair::where('question_id', $questionId)
+                            ->where('left_text', $leftText)
+                            ->where('right_text', $rightText)
+                            ->exists();
 
-                        // if (!$exists) {
-                        //     $newPairs[] = [
-                        //         'question_id' => $questionId,
-                        //         'left_text' => $leftText,
-                        //         'right_text' => $rightText
-                        //     ];
-                        // }
+                        if (!$exists) {
+                            $newPairs[] = [
+                                'question_id' => $questionId,
+                                'left_text' => $leftText,
+                                'right_text' => $rightText
+                            ];
+                        }
                     }
 
                     Log::info('Paires pour la question :', [
@@ -1449,17 +1449,17 @@ class QuizController extends Controller
                 $completedQuizzes = Quiz::whereHas('formation', function ($query) use ($category) {
                     $query->where('categorie', $category->name);
                 })
-                ->whereHas('quiz_participations', function ($query) use ($user) {
-                    $query->where('user_id', $user->getKey())
-                        ->where('status', 'completed');
-                })
-                ->count();
+                    ->whereHas('quiz_participations', function ($query) use ($user) {
+                        $query->where('user_id', $user->getKey())
+                            ->where('status', 'completed');
+                    })
+                    ->count();
 
                 $stats[] = [
                     'category' => $category->name,
                     'totalQuizzes' => $quizCount,
                     'completedQuizzes' => $completedQuizzes,
-                    'completionRate' => $quizCount > 0 ? ($completedQuizzes / $quizCount) * 100 : 0
+                    'completionRate' => $quizCount > 0 ? round(($completedQuizzes / $quizCount) * 100, 2) : 0
                 ];
             }
 
@@ -1493,52 +1493,49 @@ class QuizController extends Controller
             $thirtyDaysAgo = $now->copy()->subDays(30);
 
             // Progression quotidienne
-            $dailyProgress = QuizParticipation::where('user_id', $user->getKey())
-                ->where('status', 'completed')
+            $dailyProgress = Classement::where('stagiaire_id', $user->stagiaire->id)
                 ->where('created_at', '>=', $thirtyDaysAgo)
                 ->get()
-                ->groupBy(function ($participation) {
-                    return $participation->created_at->format('Y-m-d');
+                ->groupBy(function ($classement) {
+                    return $classement->created_at->format('Y-m-d');
                 })
-                ->map(function ($participations) {
+                ->map(function ($classements) {
                     return [
-                        'date' => $participations->first()->created_at->format('Y-m-d'),
-                        'completed_quizzes' => $participations->count(),
-                        'average_score' => round($participations->avg('score'), 2),
+                        'date' => $classements->first()->created_at->format('Y-m-d'),
+                        'completed_quizzes' => $classements->count(),
+                        'average_points' => round($classements->avg('points'), 2),
                     ];
                 })
                 ->values();
 
             // Progression hebdomadaire
-            $weeklyProgress = QuizParticipation::where('user_id', $user->getKey())
-                ->where('status', 'completed')
+            $weeklyProgress = Classement::where('stagiaire_id', $user->stagiaire->id)
                 ->where('created_at', '>=', $now->copy()->subWeeks(4))
                 ->get()
-                ->groupBy(function ($participation) {
-                    return $participation->created_at->format('Y-W');
+                ->groupBy(function ($classement) {
+                    return $classement->created_at->format('Y-W');
                 })
-                ->map(function ($participations) {
+                ->map(function ($classements) {
                     return [
-                        'week' => $participations->first()->created_at->format('Y-W'),
-                        'completed_quizzes' => $participations->count(),
-                        'average_score' => round($participations->avg('score'), 2),
+                        'week' => $classements->first()->created_at->format('Y-W'),
+                        'completed_quizzes' => $classements->count(),
+                        'average_points' => round($classements->avg('points'), 2),
                     ];
                 })
                 ->values();
 
             // Progression mensuelle
-            $monthlyProgress = QuizParticipation::where('user_id', $user->getKey())
-                ->where('status', 'completed')
+            $monthlyProgress = Classement::where('stagiaire_id', $user->stagiaire->id)
                 ->where('created_at', '>=', $now->copy()->subMonths(6))
                 ->get()
-                ->groupBy(function ($participation) {
-                    return $participation->created_at->format('Y-m');
+                ->groupBy(function ($classement) {
+                    return $classement->created_at->format('Y-m');
                 })
-                ->map(function ($participations) {
+                ->map(function ($classements) {
                     return [
-                        'month' => $participations->first()->created_at->format('Y-m'),
-                        'completed_quizzes' => $participations->count(),
-                        'average_score' => round($participations->avg('score'), 2),
+                        'month' => $classements->first()->created_at->format('Y-m'),
+                        'completed_quizzes' => $classements->count(),
+                        'average_points' => round($classements->avg('points'), 2),
                     ];
                 })
                 ->values();
@@ -1556,7 +1553,6 @@ class QuizController extends Controller
             return response()->json(['error' => 'Une erreur est survenue lors de la récupération des statistiques de progression'], 500);
         }
     }
-
     public function getQuizTrends()
     {
         try {

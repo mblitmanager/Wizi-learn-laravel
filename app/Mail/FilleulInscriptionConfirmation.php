@@ -37,6 +37,8 @@ class FilleulInscriptionConfirmation extends Mailable
     public function build()
     {
         return $this->subject('Confirmation de votre inscription')
-            ->view('emails.filleul_inscription_confirmation');
+            ->view('emails.filleul_inscription_confirmation', [
+                'logo' => public_path('assets/logo_wizi.png'),
+            ]);
     }
 }

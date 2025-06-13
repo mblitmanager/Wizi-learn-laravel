@@ -8,15 +8,17 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class NotificationEvent implements ShouldBroadcast
+class MediaCreatedEvent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
+    public $media;
     public $message;
 
-    public function __construct($message)
+    public function __construct($media)
     {
-        $this->message = $message;
+        $this->media = $media;
+        $this->message = "Un nouveau média '{$media->title}' a été ajouté";
     }
 
     public function broadcastOn()
@@ -26,6 +28,6 @@ class NotificationEvent implements ShouldBroadcast
 
     public function broadcastAs()
     {
-        return 'notification';
+        return 'media.created';
     }
 }

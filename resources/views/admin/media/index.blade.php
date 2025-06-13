@@ -65,7 +65,7 @@
                                                     <img src="{{ asset('assets/images/mp3.png') }}" alt="Audio"
                                                         style="max-width: 50px;">
                                                 @elseif ($row->type === 'document')
-                                                    <img src="{{ asset('images/icons/doc-icon.png') }}" alt="Document"
+                                                    <img src="{{ asset('assets/images/des-documents.png') }}" alt="Document"
                                                         style="max-width: 50px;">
                                                 @elseif($row->type = 'video')
                                                     <img src="{{ asset('assets/images/mp4.png') }}" alt="Document"
