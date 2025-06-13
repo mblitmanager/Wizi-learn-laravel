@@ -31,5 +31,16 @@ class QuizStoreRequest extends FormRequest
         ];
     }
 
-
+    public function messages()
+    {
+        return [
+            'titre.required' => 'Le titre est obligatoire.',
+            'description.max' => 'La description ne doit pas dépasser 1000 caractères.',
+            'niveau.required' => 'Le niveau est obligatoire.',
+            'duree.required' => 'La duree est obligatoire.',
+            'nb_points_total.required' => 'Le nombre de points total est obligatoire.',
+            'formation_id.required' => 'La formation est obligatoire.',
+            'formation_id.exists' => 'La formation choisie est invalide.',
+        ];
+    }
 }

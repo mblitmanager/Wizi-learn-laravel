@@ -48,6 +48,8 @@ class PoleRelationClientRequest extends FormRequest
     {
         return [
             'name.required' => 'Le nom est obligatoire.',
+            'prenom.required' => 'Le prénom est obligatoire.',
+
             'name.string' => 'Le nom doit être une chaîne de caractères.',
             'prenom.string' => 'Le prenom doit être une chaîne de caractères.',
             'name.max' => 'Le nom ne doit pas dépasser 255 caractères.',

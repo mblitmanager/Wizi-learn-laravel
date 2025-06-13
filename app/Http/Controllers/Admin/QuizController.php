@@ -123,6 +123,15 @@ class QuizController extends Controller
             'questions.*.reponses' => 'required|array|min:1',
             'questions.*.reponses.*.id' => 'nullable|exists:reponses,id',
             'questions.*.reponses.*.text' => 'required|string',
+        ], [
+            'quiz_id.required' => 'L\'ID du quiz est obligatoire.',
+            'quiz_id.exists' => 'Le quiz spécifié n\'existe pas.',
+            'quiz.titre.required' => 'Le titre du quiz est obligatoire.',
+            'quiz.formation_id.required' => 'La formation associée au quiz est obligatoire.',
+            'questions.*.text.required' => 'Le texte de la question est obligatoire.',
+            'questions.*.type.required' => 'Le type de question est obligatoire.',
+            'questions.*.points.required' => 'Le nombre de points pour la question est obligatoire.',
+            'questions.*.reponses.required' => 'Les réponses à la question sont obligatoires.',
         ]);
 
         DB::beginTransaction();
@@ -384,6 +393,13 @@ class QuizController extends Controller
             'reponse.match_pair' => 'required|array', // Changé à required
             'reponse.bank_group' => 'required|array', // Changé à required
             'reponse.flashcard_back' => 'nullable|array',
+        ], [
+            'quiz.titre.required' => 'Le titre du quiz est obligatoire.',
+            'question.type.required' => 'Le type de question est obligatoire.',
+            'reponse.text.required' => 'Les réponses sont obligatoires.',
+            'reponse.text.*.required' => 'Chaque réponse doit être renseignée.',
+            'reponse.match_pair.required' => 'Le type de correspondance est obligatoire.',
+            'reponse.bank_group.required' => 'Le groupe de banque est obligatoire.',
         ]);
 
         DB::beginTransaction();
