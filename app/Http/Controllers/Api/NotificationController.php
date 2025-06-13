@@ -26,7 +26,7 @@ class NotificationController extends Controller
             ->where('id', $id)
             ->firstOrFail();
 
-        $notification->update(['read' => true]);
+        $notification->update(['is_read' => 1]);
 
         return response()->json([
             'message' => 'Notification marquée comme lue'
@@ -36,8 +36,8 @@ class NotificationController extends Controller
     public function markAllAsRead()
     {
         Notification::where('user_id', Auth::id())
-            ->where('read', false)
-            ->update(['read' => true]);
+            ->where('is_read', 0)
+            ->update(['is_read' => 1]);
 
         return response()->json([
             'message' => 'Toutes les notifications ont été marquées comme lues'
@@ -60,7 +60,7 @@ class NotificationController extends Controller
     public function getUnreadCount()
     {
         $count = Notification::where('user_id', Auth::id())
-            ->where('read', false)
+            ->where('is_read', 0)
             ->count();
 
         return response()->json([

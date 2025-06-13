@@ -32,14 +32,14 @@ class NotificationService
                         'quiz_id' => $quizId,
                         'quiz_title' => $quizTitle
                     ],
-                    'read' => false
+                    'is_read' => 0
                 ]);
 
-                // event(new TestNotification([
-                //     'type' => 'quiz',
-                //     'message' => "Un nouveau quiz \"{$quizTitle}\" est disponible !",
-                //     'quiz_title' => $quizTitle,
-                // ]));
+                event(new TestNotification([
+                    'type' => 'quiz',
+                    'message' => "Un nouveau quiz \"{$quizTitle}\" est disponible !",
+                    'quiz_title' => $quizTitle,
+                ]));
             }
         }
     }
@@ -55,7 +55,7 @@ class NotificationService
                 'score' => $score,
                 'total_questions' => $totalQuestions
             ],
-            'read' => false
+            'is_read' => 0
         ]);
     }
 
@@ -69,7 +69,7 @@ class NotificationService
                 'points' => $points,
                 'reward_type' => $rewardType
             ],
-            'read' => false
+            'is_read' => 0
         ]);
     }
 
@@ -87,7 +87,7 @@ class NotificationService
                 'formation_title' => $formationTitle,
                 'date_debut' => $dateDebut
             ],
-            'read' => false
+            'is_read' => 0
         ]);
         // Optionnel : broadcast Pusher
         event(new \App\Events\TestNotification([
@@ -106,21 +106,22 @@ class NotificationService
         Notification::create([
             'user_id' => $userId,
             'type' => 'media',
+            'title' => 'un nouveau média a été ajouté',
             'message' => $message,
             'data' => [
                 'media_id' => $mediaId,
                 'media_title' => $mediaTitle
             ],
-            'read' => false
+            'is_read' => 0
         ]);
         // Broadcast temps réel Pusher
-        // event(new \App\Events\TestNotification([
-        //     'type' => 'media',
-        //     'message' => $message,
-        //     // 'media_id' => $mediaId,
-        //     'media_title' => $mediaTitle,
-        //     // 'user_id' => $userId
-        // ]));
+        event(new \App\Events\TestNotification([
+            'type' => 'media',
+            'message' => $message,
+            // 'media_id' => $mediaId,
+            'media_title' => $mediaTitle,
+            // 'user_id' => $userId
+        ]));
     }
 
     public function notifyCustom(int $userId, string $type, string $message): void
@@ -130,7 +131,7 @@ class NotificationService
             'type' => $type,
             'message' => $message,
             'data' => [],
-            'read' => false
+            'is_read' => 0
         ]);
         // Optionnel : broadcast Pusher
         event(new \App\Events\TestNotification([
