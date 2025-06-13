@@ -11,6 +11,7 @@ use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use App\Models\User;
+use Illuminate\Support\Facades\Http;
 
 class MediaController extends Controller
 {
