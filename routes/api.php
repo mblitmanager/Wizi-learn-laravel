@@ -19,6 +19,7 @@ use App\Http\Controllers\BroadcastingController;
 use App\Http\Controllers\Stagiaire\StagiaireController;
 use App\Http\Controllers\Stagiaire\InscriptionCatalogueFormationController;
 use App\Events\TestNotification;
+use App\Http\Controllers\DailyNotificationController;
 
 Route::post('login', [JWTAuthController::class, 'login']);
 Route::prefix('parrainage')->group(function () {
@@ -151,7 +152,7 @@ Route::middleware(['auth:api'])->group(function () {
 
         return 'Notification envoyée !';
     });
-
+    Route::get('/send-daily-notification', [DailyNotificationController::class, 'send']);
 });
 
 Route::get('/media/stream/{path}', [MediaController::class, 'stream'])
