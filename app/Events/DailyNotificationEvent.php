@@ -30,7 +30,7 @@ class DailyNotificationEvent implements ShouldBroadcast
     public function broadcastWith()
     {
         return [
-            'message' => 'Notification quotidienne',
+            'message' => 'Votre formation commence bientôt !',
             'user_id' => $this->user->id,
         ];
     }

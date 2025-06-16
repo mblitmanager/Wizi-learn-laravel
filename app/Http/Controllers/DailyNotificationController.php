@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Http\Request;
 use App\Events\DailyNotificationEvent;
 use App\Models\User;
+use App\Models\Stagiaire;
 
 class DailyNotificationController extends Controller
 {
@@ -21,16 +22,23 @@ class DailyNotificationController extends Controller
         $cacheKey = 'daily_notification_sent_' . $today;
 
         // Vérifier si déjà envoyé après 09h
-        if ($now->greaterThanOrEqualTo($targetTime) && !Cache::has($cacheKey)) {
-            // Récupérer les stagiaires (supposons un champ 'role' = 'stagiaire')
-            $stagiaires = User::where('role', 'stagiaire')->get();
+        // if ($now->greaterThanOrEqualTo($targetTime) && !Cache::has($cacheKey)) {
+            // Récupérer les stagiaires dont la date de début de formation est dans 7 jours ou moins
+            $stagiaires = Stagiaire::whereDate('date_debut_formation', '>=', $today)
+                ->whereDate('date_debut_formation', '<=', $now->copy()->addDays(7)->toDateString())
+                ->with('user')
+                ->get();
+                
             foreach ($stagiaires as $stagiaire) {
-                Event::dispatch(new DailyNotificationEvent($stagiaire));
+                if ($stagiaire->user) {
+                    
+                    Event::dispatch(new DailyNotificationEvent($stagiaire->user));
+                }
             }
             // Marquer comme envoyé pour aujourd'hui (expire dans 24h)
             Cache::put($cacheKey, true, now()->addDay());
-            return response()->json(['status' => 'sent']);
-        }
+            return response()->json(['status' => 'sent', 'count' => $stagiaires->count()]);
+        // }
         return response()->json(['status' => 'already_sent_or_too_early']);
     }
 }
