@@ -59,6 +59,7 @@ class CatalogueFormationController extends Controller
                     return response()->json(['error' => 'non autorisé'], 403);
                 }
             }
+            
         $stagiaire = $this->catalogueFormationService->getFormationsAndCatalogues($userStagiaire->id);
         return response()->json($stagiaire);
     }
