@@ -8,6 +8,10 @@ use App\Models\CatalogueFormation;
 use App\Services\CatalogueFormationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Tymon\JWTAuth\Facades\JWTAuth;
+use App\Models\Stagiaire;
+use App\Repositories\Interfaces\CatalogueFormationInterface;
+
 
 class CatalogueFormationController extends Controller
 {
