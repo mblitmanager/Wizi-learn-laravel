@@ -9,3 +9,8 @@ Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
 Broadcast::channel('notifications', function () {
     return true;
 });
+
+Broadcast::channel('private-stagiaire.{stagiaireId}', function ($user, $stagiaireId) {
+    $user->loadMissing('stagiaire');
+    return $user->stagiaire && $user->stagiaire->id == $stagiaireId;
+});
