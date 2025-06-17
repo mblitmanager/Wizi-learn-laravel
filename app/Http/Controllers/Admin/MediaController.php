@@ -56,10 +56,17 @@ class MediaController extends Controller
         }
         $media = $this->mediaService->create($validated);
 
-        // Notification à tous les stagiaires
-        $users = \App\Models\User::where('role', 'stagiaire')->get();
-        foreach ($users as $user) {
-            $this->notificationService->notifyMediaCreated($user->id, $media->titre ?? '', $media->id);
+        // Notification uniquement aux stagiaires rattachés à la formation du média
+        if ($media && $media->formation_id) {
+            $catalogueIds = \App\Models\CatalogueFormation::where('formation_id', $media->formation_id)->pluck('id');
+            $stagiaires = \App\Models\Stagiaire::whereHas('catalogue_formations', function ($q) use ($catalogueIds) {
+                $q->whereIn('catalogue_formation_id', $catalogueIds);
+            })->with('user')->get();
+            foreach ($stagiaires as $stagiaire) {
+                if ($stagiaire->user) {
+                    $this->notificationService->notifyMediaCreated($stagiaire->user->id, $media->titre ?? '', $media->id);
+                }
+            }
         }
 
         return redirect()->route('medias.index')

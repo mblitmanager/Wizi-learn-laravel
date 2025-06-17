@@ -20,6 +20,8 @@ use App\Http\Controllers\Stagiaire\StagiaireController;
 use App\Http\Controllers\Stagiaire\InscriptionCatalogueFormationController;
 use App\Events\TestNotification;
 use App\Http\Controllers\DailyNotificationController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Broadcast;
 
 Route::post('login', [JWTAuthController::class, 'login']);
 Route::prefix('parrainage')->group(function () {
@@ -166,6 +168,7 @@ Route::post('refresh-token', [App\Http\Controllers\Auth\AuthController::class, '
 // Broadcasting Authentication
 Route::post('/broadcasting/auth', [BroadcastingController::class, 'auth'])
     ->middleware(['auth:api']);
+
 // Routes de parrainage sans connection
 
 // Routes pour les notifications
@@ -175,4 +178,8 @@ Route::middleware(['auth:api'])->group(function () {
     Route::post('/notifications/mark-all-read', [App\Http\Controllers\Api\NotificationController::class, 'markAllAsRead']);
     Route::delete('/notifications/{id}', [App\Http\Controllers\Api\NotificationController::class, 'delete']);
     Route::get('/notifications/unread-count', [App\Http\Controllers\Api\NotificationController::class, 'getUnreadCount']);
+});
+
+Route::post('/pusher/auth', function (Request $request) {
+    return Broadcast::auth($request);
 });
