@@ -62,6 +62,8 @@ class MediaController extends Controller
             $stagiaires = \App\Models\Stagiaire::whereHas('catalogue_formations', function ($q) use ($catalogueIds) {
                 $q->whereIn('catalogue_formation_id', $catalogueIds);
             })->with('user')->get();
+
+            // $stagiaires = \App\Models\Stagiaire::with('user')->get();
             foreach ($stagiaires as $stagiaire) {
                 if ($stagiaire->user) {
                     $this->notificationService->sendFcmToUser(

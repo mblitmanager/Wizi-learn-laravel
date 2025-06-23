@@ -156,11 +156,17 @@ class NotificationService
             if (!file_exists($serviceAccountPath) || !$projectId) {
                 throw new \Exception('Service account file or project ID missing');
             }
+
+
             $client = new \Google_Client();
             $client->setAuthConfig($serviceAccountPath);
             $client->addScope('https://www.googleapis.com/auth/firebase.messaging');
             $client->fetchAccessTokenWithAssertion();
             $accessToken = $client->getAccessToken()['access_token'];
+
+            // Convertir toutes les valeurs du data en string pour FCM
+            $data = array_map('strval', $data);
+
             $payload = [
                 'message' => [
                     'token' => $user->fcm_token,
@@ -171,18 +177,36 @@ class NotificationService
                     'data' => $data,
                 ],
             ];
+
+
+
             $httpClient = new \GuzzleHttp\Client();
             $url = "https://fcm.googleapis.com/v1/projects/{$projectId}/messages:send";
-            $httpClient->post($url, [
+            $response = $httpClient->post($url, [
                 'headers' => [
                     'Authorization' => 'Bearer ' . $accessToken,
                     'Content-Type' => 'application/json',
                 ],
                 'json' => $payload,
             ]);
-            return true;
+
+            if ($response->getStatusCode() === 200) {
+                // Succès, notification envoyée
+                $result = json_decode($response->getBody(), true);
+                \Log::info('FCM envoyé avec succès', $result);
+                return true;
+            } else {
+                // Erreur, notification non envoyée
+                \Log::error('Erreur FCM', [
+                    'status' => $response->getStatusCode(),
+                    'body' => (string) $response->getBody()
+                ]);
+                // dd('KO+ FCM', $response->getStatusCode(), (string) $response->getBody());
+                return false;
+            }
         } catch (\Exception $e) {
             \Log::error('Erreur envoi FCM: ' . $e->getMessage());
+            // dd('KO FCM', $e->getMessage());
             return false;
         }
     }
