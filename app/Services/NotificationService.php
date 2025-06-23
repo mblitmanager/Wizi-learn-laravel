@@ -141,4 +141,49 @@ class NotificationService
             'user_id' => $userId
         ]));
     }
+
+    /**
+     * Envoie une notification FCM à un utilisateur (si fcm_token présent)
+     */
+    public function sendFcmToUser($user, $title, $body, $data = [])
+    {
+        if (!$user || !$user->fcm_token) {
+            return false;
+        }
+        try {
+            $serviceAccountPath = storage_path('app/firebase-service-account.json');
+            $projectId = env('FIREBASE_PROJECT_ID');
+            if (!file_exists($serviceAccountPath) || !$projectId) {
+                throw new \Exception('Service account file or project ID missing');
+            }
+            $client = new \Google_Client();
+            $client->setAuthConfig($serviceAccountPath);
+            $client->addScope('https://www.googleapis.com/auth/firebase.messaging');
+            $client->fetchAccessTokenWithAssertion();
+            $accessToken = $client->getAccessToken()['access_token'];
+            $payload = [
+                'message' => [
+                    'token' => $user->fcm_token,
+                    'notification' => [
+                        'title' => $title,
+                        'body' => $body,
+                    ],
+                    'data' => $data,
+                ],
+            ];
+            $httpClient = new \GuzzleHttp\Client();
+            $url = "https://fcm.googleapis.com/v1/projects/{$projectId}/messages:send";
+            $httpClient->post($url, [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $accessToken,
+                    'Content-Type' => 'application/json',
+                ],
+                'json' => $payload,
+            ]);
+            return true;
+        } catch (\Exception $e) {
+            \Log::error('Erreur envoi FCM: ' . $e->getMessage());
+            return false;
+        }
+    }
 }

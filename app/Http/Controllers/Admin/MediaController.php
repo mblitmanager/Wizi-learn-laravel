@@ -64,7 +64,12 @@ class MediaController extends Controller
             })->with('user')->get();
             foreach ($stagiaires as $stagiaire) {
                 if ($stagiaire->user) {
-                    $this->notificationService->notifyMediaCreated($stagiaire->user->id, $media->titre ?? '', $media->id);
+                    $this->notificationService->sendFcmToUser(
+                        $stagiaire->user,
+                        'Nouveau média',
+                        "Un nouveau média \"{$media->titre}\" a été ajouté ou mis à jour.",
+                        ['type' => 'media', 'media_id' => $media->id]
+                    );
                 }
             }
         }

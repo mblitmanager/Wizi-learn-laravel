@@ -6,15 +6,18 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\CatalogueFormationRequest;
 use App\Models\Formation;
 use App\Services\CatalogueFormationService;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 
 class CatalogueFormationController extends Controller
 {
 
     protected $catalogueFormationService;
-    public function __construct(CatalogueFormationService $catalogueFormationService)
+    protected $notificationService;
+    public function __construct(CatalogueFormationService $catalogueFormationService,NotificationService $notificationService)
     {
         $this->catalogueFormationService = $catalogueFormationService;
+        $this->notificationService = $notificationService;
     }
     /**
      * Display a listing of the resource.
@@ -57,6 +60,19 @@ class CatalogueFormationController extends Controller
         }
 
         $this->catalogueFormationService->create($validated);
+
+        // Envoi FCM à tous les stagiaires
+        $stagiaires = \App\Models\Stagiaire::with('user')->get();
+        foreach ($stagiaires as $stagiaire) {
+            if ($stagiaire->user) {
+                $this->notificationService->sendFcmToUser(
+                    $stagiaire->user,
+                    'Catalogue de formation',
+                    'Un nouveau catalogue de formation a été ajouté ou mis à jour.',
+                    ['type' => 'formation']
+                );
+            }
+        }
 
         return redirect()->route('catalogue_formation.index')
             ->with('success', 'Le catalogue de formation a été créé avec succès.');
