@@ -12,20 +12,27 @@ class NotificationEvent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $message;
+    public $userId;
+    public $title;
+    public $body;
 
-    public function __construct($message)
+    public function __construct($userId, $title, $body)
     {
-        $this->message = $message;
+        $this->userId = $userId;
+        $this->title = $title;
+        $this->body = $body;
     }
 
     public function broadcastOn()
     {
-        return new Channel('notifications');
+        return new Channel('user-' . $this->userId);
     }
 
-    public function broadcastAs()
+    public function broadcastWith()
     {
-        return 'notification';
+        return [
+            'title' => $this->title,
+            'body' => $this->body,
+        ];
     }
 }

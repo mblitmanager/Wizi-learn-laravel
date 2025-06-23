@@ -180,6 +180,14 @@ Route::middleware(['auth:api'])->group(function () {
     Route::get('/notifications/unread-count', [App\Http\Controllers\Api\NotificationController::class, 'getUnreadCount']);
 });
 
+
+// Route pour enregistrer le token FCM
+Route::middleware(['auth:api'])->post('/fcm-token', [App\Http\Controllers\FcmTokenController::class, 'store']);
+
+// Route pour envoyer une notification (Pusher + FCM)
+Route::middleware(['auth:api'])->post('/send-notification', [App\Http\Controllers\NotificationController::class, 'send']);
+
+
 Route::post('/pusher/auth', function (Request $request) {
     return Broadcast::auth($request);
 });
