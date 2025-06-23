@@ -64,11 +64,32 @@ class QuizController extends Controller
     {
         $quiz = $this->quizeService->create($request->validated());
 
-        // Envoyer une notification pour le nouveau quiz
-        $this->notificationService->notifyQuizAvailable(
-            $quiz->titre,
-            $quiz->id
-        );
+        // Envoyer une notification FCM aux stagiaires de la formation
+        $formation = $quiz->formation;
+        if ($formation && method_exists($formation, 'stagiaires')) {
+            $stagiaires = $formation->stagiaires()->with('user')->get();
+            foreach ($stagiaires as $stagiaire) {
+                if ($stagiaire->user && $stagiaire->user->fcm_token) {
+                    $title = 'Nouveau quiz disponible';
+                    $body = "Un nouveau quiz \"{$quiz->titre}\" est disponible dans votre formation.";
+                    $data = [
+                        'quiz_id' => (string)$quiz->id,
+                        'formation_id' => (string)$quiz->formation_id,
+                        'type' => 'quiz',
+                        'event' => 'created',
+                    ];
+                    $this->notificationService->sendFcmToUser($stagiaire->user, $title, $body, $data);
+                    \App\Models\Notification::create([
+                        'user_id' => $stagiaire->user->id,
+                        'type' => $data['type'],
+                        'title' => $title,
+                        'message' => $body,
+                        'data' => $data,
+                        'read' => false,
+                    ]);
+                }
+            }
+        }
         return redirect()->route('quiz.index')
             ->with('success', 'Le quiz a été créé avec succès.');
     }
@@ -255,6 +276,33 @@ class QuizController extends Controller
             }
 
             DB::commit();
+
+            // Envoyer une notification FCM aux stagiaires de la formation
+            $formation = $quiz->formation;
+            if ($formation && method_exists($formation, 'stagiaires')) {
+                $stagiaires = $formation->stagiaires()->with('user')->get();
+                foreach ($stagiaires as $stagiaire) {
+                    if ($stagiaire->user && $stagiaire->user->fcm_token) {
+                        $title = 'Quiz mis à jour';
+                        $body = "Le quiz \"{$quiz->titre}\" a été mis à jour dans votre formation.";
+                        $data = [
+                            'quiz_id' => (string)$quiz->id,
+                            'formation_id' => (string)$quiz->formation_id,
+                            'type' => 'quiz',
+                            'event' => 'updated',
+                        ];
+                        $this->notificationService->sendFcmToUser($stagiaire->user, $title, $body, $data);
+                        \App\Models\Notification::create([
+                            'user_id' => $stagiaire->user->id,
+                            'type' => $data['type'],
+                            'title' => $title,
+                            'message' => $body,
+                            'data' => $data,
+                            'read' => false,
+                        ]);
+                    }
+                }
+            }
             return redirect()->route('quiz.index')->with('success', 'Quiz mis à jour avec succès.');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -406,7 +454,6 @@ class QuizController extends Controller
 
         try {
             $quiz = Quiz::create($request->input('quiz'));
-
             $questionData = $request->input('question');
             $questionData['quiz_id'] = $quiz->id;
 
@@ -482,19 +529,35 @@ class QuizController extends Controller
 
             DB::commit();
 
-            // Envoyer une notification pour le nouveau quiz
-            $this->notificationService->notifyQuizAvailable(
-                $quiz->titre,
-                $quiz->formation_id
-            );
-
-            // Envoyer les emails aux stagiaires
-            // $this->sendQuizNotificationToTrainees($quiz);
-
+            // Envoyer une notification FCM uniquement aux stagiaires rattachés à la formation du quiz
+            $formationId = $quiz->formation_id;
+            $stagiaires = \App\Models\Stagiaire::where('formation_id', $formationId)->with('user')->get();
+            foreach ($stagiaires as $stagiaire) {
+                if ($stagiaire->user && $stagiaire->user->fcm_token) {
+                    $title = 'Nouveau quiz disponible';
+                    $body = 'Un nouveau quiz "' . $quiz->titre . '" est disponible.';
+                    $data = [
+                        'quiz_id' => (string)$quiz->id,
+                        'formation_id' => (string)$formationId,
+                        'type' => 'quiz',
+                        'event' => 'created',
+                    ];
+                    $this->notificationService->sendFcmToUser($stagiaire->user, $title, $body, $data);
+                    \App\Models\Notification::create([
+                        'user_id' => $stagiaire->user->id,
+                        'type' => $data['type'],
+                        'title' => $title,
+                        'message' => $body,
+                        'data' => $data,
+                        'read' => false,
+                    ]);
+                }
+            }
             return redirect()->route('quiz.index')->with('success', 'Quiz, question et réponses créés avec succès.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Erreur : ' . $e->getMessage());
+            return redirect()->back()
+                ->with('error', 'Erreur lors de la création du quiz : ' . $e->getMessage());
         }
     }
 
@@ -815,12 +878,31 @@ class QuizController extends Controller
                 }
             }
 
-            // Envoyer une notification pour le nouveau quiz
-            if ($newQuiz->status === 'actif') {
-                $this->notificationService->notifyQuizAvailable(
-                    $newQuiz->titre,
-                    $newQuiz->id
-                );
+            // Envoyer une notification FCM aux stagiaires de la formation
+            $formation = $newQuiz->formation;
+            if ($formation && method_exists($formation, 'stagiaires')) {
+                $stagiaires = $formation->stagiaires()->with('user')->get();
+                foreach ($stagiaires as $stagiaire) {
+                    if ($stagiaire->user && $stagiaire->user->fcm_token) {
+                        $title = 'Quiz dupliqué';
+                        $body = "Un quiz \"{$newQuiz->titre}\" a été dupliqué dans votre formation.";
+                        $data = [
+                            'quiz_id' => (string)$newQuiz->id,
+                            'formation_id' => (string)$newQuiz->formation_id,
+                            'type' => 'quiz',
+                            'event' => 'duplicated',
+                        ];
+                        $this->notificationService->sendFcmToUser($stagiaire->user, $title, $body, $data);
+                        \App\Models\Notification::create([
+                            'user_id' => $stagiaire->user->id,
+                            'type' => $data['type'],
+                            'title' => $title,
+                            'message' => $body,
+                            'data' => $data,
+                            'read' => false,
+                        ]);
+                    }
+                }
             }
             DB::commit();
             return redirect()->route('quiz.edit', $newQuiz->id)

@@ -32,7 +32,7 @@ class NotificationService
                         'quiz_id' => $quizId,
                         'quiz_title' => $quizTitle
                     ],
-                    'is_read' => 0
+                    'read' => false
                 ]);
 
                 event(new TestNotification([
@@ -55,7 +55,7 @@ class NotificationService
                 'score' => $score,
                 'total_questions' => $totalQuestions
             ],
-            'is_read' => 0
+            'read' => false
         ]);
     }
 
@@ -69,7 +69,7 @@ class NotificationService
                 'points' => $points,
                 'reward_type' => $rewardType
             ],
-            'is_read' => 0
+            'read' => false
         ]);
     }
 
@@ -87,7 +87,7 @@ class NotificationService
                 'formation_title' => $formationTitle,
                 'date_debut' => $dateDebut
             ],
-            'is_read' => 0
+            'read' => false
         ]);
         // Optionnel : broadcast Pusher
         event(new \App\Events\TestNotification([
@@ -112,7 +112,7 @@ class NotificationService
                 'media_id' => $mediaId,
                 'media_title' => $mediaTitle
             ],
-            'is_read' => 0
+            'read' => false
         ]);
         // Broadcast temps réel Pusher
         event(new \App\Events\TestNotification([
@@ -132,7 +132,7 @@ class NotificationService
             'type' => $type,
             'message' => $message,
             'data' => [],
-            'is_read' => 0
+            'read' => false
         ]);
         // Optionnel : broadcast Pusher
         event(new \App\Events\TestNotification([
@@ -140,5 +140,74 @@ class NotificationService
             'message' => $message,
             'user_id' => $userId
         ]));
+    }
+
+    /**
+     * Envoie une notification FCM à un utilisateur (si fcm_token présent)
+     */
+    public function sendFcmToUser($user, $title, $body, $data = [])
+    {
+        if (!$user || !$user->fcm_token) {
+            return false;
+        }
+        try {
+            $serviceAccountPath = storage_path('app/firebase-service-account.json');
+            $projectId = env('FIREBASE_PROJECT_ID');
+            if (!file_exists($serviceAccountPath) || !$projectId) {
+                throw new \Exception('Service account file or project ID missing');
+            }
+
+
+            $client = new \Google_Client();
+            $client->setAuthConfig($serviceAccountPath);
+            $client->addScope('https://www.googleapis.com/auth/firebase.messaging');
+            $client->fetchAccessTokenWithAssertion();
+            $accessToken = $client->getAccessToken()['access_token'];
+
+            // Convertir toutes les valeurs du data en string pour FCM
+            $data = array_map('strval', $data);
+
+            $payload = [
+                'message' => [
+                    'token' => $user->fcm_token,
+                    'notification' => [
+                        'title' => $title,
+                        'body' => $body,
+                    ],
+                    'data' => $data,
+                ],
+            ];
+
+
+
+            $httpClient = new \GuzzleHttp\Client();
+            $url = "https://fcm.googleapis.com/v1/projects/{$projectId}/messages:send";
+            $response = $httpClient->post($url, [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $accessToken,
+                    'Content-Type' => 'application/json',
+                ],
+                'json' => $payload,
+            ]);
+
+            if ($response->getStatusCode() === 200) {
+                // Succès, notification envoyée
+                $result = json_decode($response->getBody(), true);
+                \Log::info('FCM envoyé avec succès', $result);
+                return true;
+            } else {
+                // Erreur, notification non envoyée
+                \Log::error('Erreur FCM', [
+                    'status' => $response->getStatusCode(),
+                    'body' => (string) $response->getBody()
+                ]);
+                // dd('KO+ FCM', $response->getStatusCode(), (string) $response->getBody());
+                return false;
+            }
+        } catch (\Exception $e) {
+            \Log::error('Erreur envoi FCM: ' . $e->getMessage());
+            // dd('KO FCM', $e->getMessage());
+            return false;
+        }
     }
 }

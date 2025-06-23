@@ -13,6 +13,8 @@ use App\Http\Controllers\Admin\QuestionController;
 use App\Http\Controllers\Admin\QuizController;
 use App\Http\Controllers\Admin\StagiaireController;
 use App\Http\Controllers\Stagiaire\DashboardController;
+use App\Http\Controllers\FcmTokenController;
+use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 use PhpOffice\PhpSpreadsheet\Calculation\TextData\Format;
 
@@ -95,6 +97,12 @@ Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function
     Route::get('parrainage', [ParrainageController::class, 'index'])->name('parrainage.index');
     Route::get('parrainage/{id}', [ParrainageController::class, 'show'])->name('parrainage.show');
 });
+
+// // Route pour enregistrer le token FCM
+// Route::middleware(['auth'])->post('/fcm-token', [FcmTokenController::class, 'store']);
+
+// Route pour envoyer une notification (Pusher + FCM)
+// Route::middleware(['auth'])->post('/send-notification', [NotificationController::class, 'send']);
 
 Route::fallback(function () {
     return redirect('/');

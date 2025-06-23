@@ -32,7 +32,8 @@ class User extends Authenticatable implements JWTSubject
         'last_login_at',
         'last_activity_at',
         'last_login_ip',
-        'is_online'
+        'is_online',
+        'fcm_token', // Ajout du token FCM
     ];
 
     /**

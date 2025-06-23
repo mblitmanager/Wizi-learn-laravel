@@ -6,15 +6,18 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\CatalogueFormationRequest;
 use App\Models\Formation;
 use App\Services\CatalogueFormationService;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 
 class CatalogueFormationController extends Controller
 {
 
     protected $catalogueFormationService;
-    public function __construct(CatalogueFormationService $catalogueFormationService)
+    protected $notificationService;
+    public function __construct(CatalogueFormationService $catalogueFormationService,NotificationService $notificationService)
     {
         $this->catalogueFormationService = $catalogueFormationService;
+        $this->notificationService = $notificationService;
     }
     /**
      * Display a listing of the resource.
@@ -57,6 +60,38 @@ class CatalogueFormationController extends Controller
         }
 
         $this->catalogueFormationService->create($validated);
+
+        // Notification uniquement aux stagiaires rattachés à la formation du catalogue
+        if (isset($validated['formation_id'])) {
+            $catalogueIds = [null];
+            if (isset($validated['formation_id'])) {
+                $catalogueIds = \App\Models\CatalogueFormation::where('formation_id', $validated['formation_id'])->pluck('id');
+            }
+            $stagiaires = \App\Models\Stagiaire::whereHas('catalogue_formations', function ($q) use ($catalogueIds) {
+                $q->whereIn('catalogue_formation_id', $catalogueIds);
+            })->with('user')->get();
+            foreach ($stagiaires as $stagiaire) {
+                if ($stagiaire->user) {
+                    $title = 'Catalogue de formation';
+                    $body = 'Un nouveau catalogue de formation a été ajouté ou mis à jour.';
+                    $data = ['type' => 'formation'];
+                    $this->notificationService->sendFcmToUser(
+                        $stagiaire->user,
+                        $title,
+                        $body,
+                        $data
+                    );
+                    \App\Models\Notification::create([
+                        'user_id' => $stagiaire->user->id,
+                        'type' => $data['type'],
+                        'title' => $title,
+                        'message' => $body,
+                        'data' => $data,
+                        'read' => false,
+                    ]);
+                }
+            }
+        }
 
         return redirect()->route('catalogue_formation.index')
             ->with('success', 'Le catalogue de formation a été créé avec succès.');
@@ -105,6 +140,39 @@ class CatalogueFormationController extends Controller
         }
 
         $this->catalogueFormationService->update($id, $validated);
+
+        // Notification FCM + historique lors de la mise à jour du catalogue
+        if (isset($validated['formation_id'])) {
+            $catalogueIds = [null];
+            if (isset($validated['formation_id'])) {
+                $catalogueIds = \App\Models\CatalogueFormation::where('formation_id', $validated['formation_id'])->pluck('id');
+            }
+            $stagiaires = \App\Models\Stagiaire::whereHas('catalogue_formations', function ($q) use ($catalogueIds) {
+                $q->whereIn('catalogue_formation_id', $catalogueIds);
+            })->with('user')->get();
+            foreach ($stagiaires as $stagiaire) {
+                if ($stagiaire->user) {
+                    $title = 'Catalogue de formation mis à jour';
+                    $body = 'Un catalogue de formation a été mis à jour.';
+                    $data = ['type' => 'formation'];
+                    $this->notificationService->sendFcmToUser(
+                        $stagiaire->user,
+                        $title,
+                        $body,
+                        $data
+                    );
+                    \App\Models\Notification::create([
+                        'user_id' => $stagiaire->user->id,
+                        'type' => $data['type'],
+                        'title' => $title,
+                        'message' => $body,
+                        'data' => $data,
+                        'read' => false,
+                    ]);
+                }
+            }
+        }
+
         return redirect()->route('catalogue_formation.index')
             ->with('success', 'Le catalogue de formation a été mis à jour avec succès.');
     }

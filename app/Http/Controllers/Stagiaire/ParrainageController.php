@@ -142,6 +142,16 @@ class ParrainageController extends Controller
             Mail::to($user->email)->send(new FilleulInscriptionConfirmation($user, $parrain, $formation));
         }
 
+        // Envoyer une notification au parrain
+        if ($parrain) {
+            app(\App\Services\NotificationService::class)->sendFcmToUser(
+                $parrain,
+                'Nouveau filleul',
+                'Vous avez reçu un nouveau filleul !',
+                ['type' => 'parrainage', 'filleul_id' => $user->id]
+            );
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'Inscription réussie! Un email de confirmation a été envoyé.',
