@@ -61,16 +61,24 @@ class CatalogueFormationController extends Controller
 
         $this->catalogueFormationService->create($validated);
 
-        // Envoi FCM à tous les stagiaires
-        $stagiaires = \App\Models\Stagiaire::with('user')->get();
-        foreach ($stagiaires as $stagiaire) {
-            if ($stagiaire->user) {
-                $this->notificationService->sendFcmToUser(
-                    $stagiaire->user,
-                    'Catalogue de formation',
-                    'Un nouveau catalogue de formation a été ajouté ou mis à jour.',
-                    ['type' => 'formation']
-                );
+        // Notification uniquement aux stagiaires rattachés à la formation du catalogue
+        if (isset($validated['formation_id'])) {
+            $catalogueIds = [null];
+            if (isset($validated['formation_id'])) {
+                $catalogueIds = \App\Models\CatalogueFormation::where('formation_id', $validated['formation_id'])->pluck('id');
+            }
+            $stagiaires = \App\Models\Stagiaire::whereHas('catalogue_formations', function ($q) use ($catalogueIds) {
+                $q->whereIn('catalogue_formation_id', $catalogueIds);
+            })->with('user')->get();
+            foreach ($stagiaires as $stagiaire) {
+                if ($stagiaire->user) {
+                    $this->notificationService->sendFcmToUser(
+                        $stagiaire->user,
+                        'Catalogue de formation',
+                        'Un nouveau catalogue de formation a été ajouté ou mis à jour.',
+                        ['type' => 'formation']
+                    );
+                }
             }
         }
 
