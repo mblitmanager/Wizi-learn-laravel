@@ -79,6 +79,14 @@ class QuizController extends Controller
                         'event' => 'created',
                     ];
                     $this->notificationService->sendFcmToUser($stagiaire->user, $title, $body, $data);
+                    \App\Models\Notification::create([
+                        'user_id' => $stagiaire->user->id,
+                        'type' => $data['type'],
+                        'title' => $title,
+                        'message' => $body,
+                        'data' => $data,
+                        'read' => false,
+                    ]);
                 }
             }
         }
@@ -284,6 +292,14 @@ class QuizController extends Controller
                             'event' => 'updated',
                         ];
                         $this->notificationService->sendFcmToUser($stagiaire->user, $title, $body, $data);
+                        \App\Models\Notification::create([
+                            'user_id' => $stagiaire->user->id,
+                            'type' => $data['type'],
+                            'title' => $title,
+                            'message' => $body,
+                            'data' => $data,
+                            'read' => false,
+                        ]);
                     }
                 }
             }
@@ -518,23 +534,30 @@ class QuizController extends Controller
             $stagiaires = \App\Models\Stagiaire::where('formation_id', $formationId)->with('user')->get();
             foreach ($stagiaires as $stagiaire) {
                 if ($stagiaire->user && $stagiaire->user->fcm_token) {
-                    $this->notificationService->sendFcmToUser(
-                        $stagiaire->user,
-                        [
-                            'title' => 'Nouveau quiz disponible',
-                            'body' => 'Un nouveau quiz "' . $quiz->titre . '" est disponible.',
-                            'type' => 'quiz',
-                            'quiz_id' => (string)$quiz->id,
-                            'formation_id' => (string)$formationId
-                        ]
-                    );
+                    $title = 'Nouveau quiz disponible';
+                    $body = 'Un nouveau quiz "' . $quiz->titre . '" est disponible.';
+                    $data = [
+                        'quiz_id' => (string)$quiz->id,
+                        'formation_id' => (string)$formationId,
+                        'type' => 'quiz',
+                        'event' => 'created',
+                    ];
+                    $this->notificationService->sendFcmToUser($stagiaire->user, $title, $body, $data);
+                    \App\Models\Notification::create([
+                        'user_id' => $stagiaire->user->id,
+                        'type' => $data['type'],
+                        'title' => $title,
+                        'message' => $body,
+                        'data' => $data,
+                        'read' => false,
+                    ]);
                 }
             }
-
             return redirect()->route('quiz.index')->with('success', 'Quiz, question et réponses créés avec succès.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Erreur : ' . $e->getMessage());
+            return redirect()->back()
+                ->with('error', 'Erreur lors de la création du quiz : ' . $e->getMessage());
         }
     }
 
@@ -870,6 +893,14 @@ class QuizController extends Controller
                             'event' => 'duplicated',
                         ];
                         $this->notificationService->sendFcmToUser($stagiaire->user, $title, $body, $data);
+                        \App\Models\Notification::create([
+                            'user_id' => $stagiaire->user->id,
+                            'type' => $data['type'],
+                            'title' => $title,
+                            'message' => $body,
+                            'data' => $data,
+                            'read' => false,
+                        ]);
                     }
                 }
             }

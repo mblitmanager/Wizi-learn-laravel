@@ -32,7 +32,7 @@ class NotificationService
                         'quiz_id' => $quizId,
                         'quiz_title' => $quizTitle
                     ],
-                    'is_read' => 0
+                    'read' => false
                 ]);
 
                 event(new TestNotification([
@@ -55,7 +55,7 @@ class NotificationService
                 'score' => $score,
                 'total_questions' => $totalQuestions
             ],
-            'is_read' => 0
+            'read' => false
         ]);
     }
 
@@ -69,7 +69,7 @@ class NotificationService
                 'points' => $points,
                 'reward_type' => $rewardType
             ],
-            'is_read' => 0
+            'read' => false
         ]);
     }
 
@@ -87,7 +87,7 @@ class NotificationService
                 'formation_title' => $formationTitle,
                 'date_debut' => $dateDebut
             ],
-            'is_read' => 0
+            'read' => false
         ]);
         // Optionnel : broadcast Pusher
         event(new \App\Events\TestNotification([
@@ -112,7 +112,7 @@ class NotificationService
                 'media_id' => $mediaId,
                 'media_title' => $mediaTitle
             ],
-            'is_read' => 0
+            'read' => false
         ]);
         // Broadcast temps réel Pusher
         event(new \App\Events\TestNotification([
@@ -132,7 +132,7 @@ class NotificationService
             'type' => $type,
             'message' => $message,
             'data' => [],
-            'is_read' => 0
+            'read' => false
         ]);
         // Optionnel : broadcast Pusher
         event(new \App\Events\TestNotification([
