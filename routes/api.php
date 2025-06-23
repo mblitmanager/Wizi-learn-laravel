@@ -20,6 +20,7 @@ use App\Http\Controllers\Stagiaire\StagiaireController;
 use App\Http\Controllers\Stagiaire\InscriptionCatalogueFormationController;
 use App\Events\TestNotification;
 use App\Http\Controllers\DailyNotificationController;
+use App\Http\Controllers\Api\DailyFormationNotificationController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Broadcast;
 
@@ -155,6 +156,7 @@ Route::middleware(['auth:api'])->group(function () {
         return 'Notification envoyée !';
     });
     Route::get('/send-daily-notification', [DailyNotificationController::class, 'send']);
+    Route::middleware('auth:api')->post('/notify-daily-formation', [DailyFormationNotificationController::class, 'notify']);
 });
 
 Route::get('/media/stream/{path}', [MediaController::class, 'stream'])
