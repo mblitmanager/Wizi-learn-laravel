@@ -31,12 +31,12 @@ class NotificationAPIController extends Controller
         Log::info('NotificationController@send - Utilisateur trouvé', ['user' => $user->id, 'fcm_token' => $user->fcm_token]);
 
         // 1. Pusher (broadcast Laravel)
-        try {
-            broadcast(new \App\Events\NotificationEvent($user->id, $title, $body))->toOthers();
-            Log::info('NotificationController@send - Pusher broadcast OK');
-        } catch (\Exception $e) {
-            Log::error('NotificationController@send - Erreur Pusher: ' . $e->getMessage());
-        }
+        // try {
+        //     broadcast(new \App\Events\NotificationEvent($user->id, $title, $body))->toOthers();
+        //     Log::info('NotificationController@send - Pusher broadcast OK');
+        // } catch (\Exception $e) {
+        //     Log::error('NotificationController@send - Erreur Pusher: ' . $e->getMessage());
+        // }
 
         // 2. FCM HTTP v1
         $fcmResponse = null;
