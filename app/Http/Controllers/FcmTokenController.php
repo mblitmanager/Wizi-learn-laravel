@@ -16,6 +16,9 @@ class FcmTokenController extends Controller
         ]);
 
         $user = Auth::user();
+        if (!$user) {
+            return response()->json(['error' => 'Utilisateur non authentifié'], 401);
+        }
         $user->fcm_token = $request->token;
         $user->save();
 
