@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             StagiaireSeeder::class,
             FormationSeeder::class,
             NotificationSeeder::class,
+            TeamSeeder::class,
         ]);
     }
 }
