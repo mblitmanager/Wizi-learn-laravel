@@ -53,8 +53,28 @@ class StagiaireController extends Controller
 
     public function store(StoreStagiaireRequest $request): RedirectResponse
     {
-        $this->stagiaireService->create($request->validated());
-
+        $data = $request->validated();
+        $formations = $request->input('formations', []);
+        $selectedFormations = [];
+        foreach ($formations as $formationId => $info) {
+            if (isset($info['selected'])) {
+                $selectedFormations[$formationId] = [
+                    'date_debut' => $info['date_debut'] ?? null,
+                    'date_inscription' => $info['date_inscription'] ?? null,
+                    'date_fin' => $info['date_fin'] ?? null,
+                    'formateur_id' => $info['formateur_id'] ?? null,
+                ];
+            }
+        }
+        $formateurIds = [];
+        foreach ($selectedFormations as $formation) {
+            if (!empty($formation['formateur_id'])) {
+                $formateurIds[] = $formation['formateur_id'];
+            }
+        }
+        $formateurIds = array_unique($formateurIds);
+        $poleRelationClientIds = $request->input('pole_relation_client_id', []);
+        $this->stagiaireService->create($data, $selectedFormations, $poleRelationClientIds, $formateurIds);
         return redirect()->route('stagiaires.index')
             ->with('success', 'Le stagiaire a été créé avec succès.');
     }
@@ -72,8 +92,28 @@ class StagiaireController extends Controller
 
     public function update(StoreStagiaireRequest $request, $id): RedirectResponse
     {
-        $this->stagiaireService->update($id, $request->validated());
-
+        $data = $request->validated();
+        $formations = $request->input('formations', []);
+        $selectedFormations = [];
+        foreach ($formations as $formationId => $info) {
+            if (isset($info['selected'])) {
+                $selectedFormations[$formationId] = [
+                    'date_debut' => $info['date_debut'] ?? null,
+                    'date_inscription' => $info['date_inscription'] ?? null,
+                    'date_fin' => $info['date_fin'] ?? null,
+                    'formateur_id' => $info['formateur_id'] ?? null,
+                ];
+            }
+        }
+        $formateurIds = [];
+        foreach ($selectedFormations as $formation) {
+            if (!empty($formation['formateur_id'])) {
+                $formateurIds[] = $formation['formateur_id'];
+            }
+        }
+        $formateurIds = array_unique($formateurIds);
+        $poleRelationClientIds = $request->input('pole_relation_client_id', []);
+        $this->stagiaireService->update($id, $data, $selectedFormations, $poleRelationClientIds, $formateurIds);
         return redirect()->route('stagiaires.index')
             ->with('success', 'Le stagiaire a été mis à jour avec succès.');
     }
@@ -137,7 +177,7 @@ class StagiaireController extends Controller
                 \PhpOffice\PhpSpreadsheet\Shared\Date::excelToTimestamp($value)
             )->format('Y-m-d');
         } else {
-            // fallback : parser texte si c’est une vraie date genre "12/01/1990"
+            // fallback : parser texte si c'est une vraie date genre "12/01/1990"
             try {
                 return \Carbon\Carbon::parse($value)->format('Y-m-d');
             } catch (\Exception $e) {

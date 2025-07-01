@@ -42,11 +42,24 @@ class StoreStagiaireRequest extends FormRequest
             'code_postal' => 'required|string',
             'role' => 'nullable|string',
             'statut' => 'nullable|string',
-            'catalogue_formation_id' => 'required|exists:catalogue_formations,id',
             'formateur_id' => 'nullable|exists:formateurs,id',
             'commercial_id' => 'nullable|exists:commercials,id',
+            'pole_relation_client_id' => 'nullable|array',
+            'pole_relation_client_id.*' => 'exists:pole_relation_clients,id',
             'date_debut_formation' => 'nullable|date',
             'date_inscription' => 'nullable|date',
+            'formations' => ['required', 'array', function ($attribute, $value, $fail) {
+                $hasSelected = false;
+                foreach ($value as $formation) {
+                    if (isset($formation['selected']) && $formation['selected']) {
+                        $hasSelected = true;
+                        break;
+                    }
+                }
+                if (!$hasSelected) {
+                    $fail('La formation est obligatoire.');
+                }
+            }],
         ];
     }
 
@@ -75,11 +88,9 @@ class StoreStagiaireRequest extends FormRequest
             'ville.required' => 'La ville est obligatoire.',
             'code_postal.required' => 'Le code postal est obligatoire.',
 
-            'catalogue_formation_id.required' => 'La formation est obligatoire.',
-            'formation_id.exists' => 'La formation sélectionnée est invalide.',
-
             'formateur_id.exists' => 'Le formateur sélectionné est invalide.',
             'commercial_id.exists' => 'Le commercial sélectionné est invalide.',
+            'formations.required' => 'La formation est obligatoire.',
         ];
     }
 }
