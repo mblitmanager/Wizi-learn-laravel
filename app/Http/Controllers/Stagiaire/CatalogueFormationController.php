@@ -8,6 +8,10 @@ use App\Models\CatalogueFormation;
 use App\Services\CatalogueFormationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Tymon\JWTAuth\Facades\JWTAuth;
+use App\Models\Stagiaire;
+use App\Repositories\Interfaces\CatalogueFormationInterface;
+
 
 class CatalogueFormationController extends Controller
 {
@@ -39,9 +43,24 @@ class CatalogueFormationController extends Controller
             'formationId' => $formationId,
         ]);
     }
-    public function getFormationsAndCatalogues($stagiaireId)
+    public function getFormationsAndCatalogues()
     {
-        $stagiaire = $this->catalogueFormationService->getFormationsAndCatalogues($stagiaireId);
+        $user = JWTAuth::parseToken()->authenticate();
+            // Charger la relation stagiaire si elle n'est pas déjà chargée
+            if (!isset($user->relations['stagiaire'])) {
+                $user->load('stagiaire');
+            }
+
+            // Vérifier si l'utilisateur est bien le stagiaire demandé ou a les droits d'accès
+            if ($user->role != 'formateur' && $user->role != 'admin') {
+                // Vérifier si l'utilisateur est associé à ce stagiaire
+                $userStagiaire = $user->stagiaire;
+                if (!$userStagiaire) {
+                    return response()->json(['error' => 'non autorisé'], 403);
+                }
+            }
+            
+        $stagiaire = $this->catalogueFormationService->getFormationsAndCatalogues($userStagiaire->id);
         return response()->json($stagiaire);
     }
 

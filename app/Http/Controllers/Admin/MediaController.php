@@ -56,27 +56,33 @@ class MediaController extends Controller
         }
         $media = $this->mediaService->create($validated);
 
-        // Notification à tous les stagiaires
-        $users = \App\Models\User::where('role', 'stagiaire')->get();
-        foreach ($users as $user) {
-            $this->notificationService->notifyMediaCreated($user->id, $media->titre ?? '', $media->id);
+        // Notification uniquement aux stagiaires rattachés à la formation du média
+        if ($media && $media->formation_id) {
+            $catalogueIds = \App\Models\CatalogueFormation::where('formation_id', $media->formation_id)->pluck('id');
+            $stagiaires = \App\Models\Stagiaire::whereHas('catalogue_formations', function ($q) use ($catalogueIds) {
+                $q->whereIn('catalogue_formation_id', $catalogueIds);
+            })->with('user')->get();
 
-            try {
-                $response = Http::post('http://localhost:3001/send-notification', [
-                    'userId' => $user->id,
-                    'message' => "Un nouveau média \"{$media->titre}\" a été ajouté",
-                    'data' => [
-                        'media_id' => $media->id,
-                        'media_title' => $media->titre
-                    ]
-                ]);
-
-                \Log::info("Notification sent to user {$user->id}", [
-                    'status' => $response->status(),
-                    'response' => $response->body()
-                ]);
-            } catch (\Exception $e) {
-                \Log::error("Failed to send notification to user {$user->id}: " . $e->getMessage());
+            foreach ($stagiaires as $stagiaire) {
+                if ($stagiaire->user) {
+                    $title = 'Nouveau média';
+                    $body = "Un nouveau média \"{$media->titre}\" a été ajouté ou mis à jour.";
+                    $data = ['type' => 'media', 'media_id' => (string)$media->id];
+                    $this->notificationService->sendFcmToUser(
+                        $stagiaire->user,
+                        $title,
+                        $body,
+                        $data
+                    );
+                    \App\Models\Notification::create([
+                        'user_id' => $stagiaire->user->id,
+                        'type' => $data['type'],
+                        'title' => $title,
+                        'message' => $body,
+                        'data' => $data,
+                        'read' => false,
+                    ]);
+                }
             }
         }
 
@@ -108,6 +114,36 @@ class MediaController extends Controller
         }
 
         $this->mediaService->update($id, $validated);
+
+        // Notification FCM + historique lors de la mise à jour du média
+        $media = $this->mediaService->show($id);
+        if ($media && $media->formation_id) {
+            $catalogueIds = \App\Models\CatalogueFormation::where('formation_id', $media->formation_id)->pluck('id');
+            $stagiaires = \App\Models\Stagiaire::whereHas('catalogue_formations', function ($q) use ($catalogueIds) {
+                $q->whereIn('catalogue_formation_id', $catalogueIds);
+            })->with('user')->get();
+            foreach ($stagiaires as $stagiaire) {
+                if ($stagiaire->user) {
+                    $title = 'Média mis à jour';
+                    $body = "Le média \"{$media->titre}\" a été mis à jour.";
+                    $data = ['type' => 'media', 'media_id' => (string)$media->id];
+                    $this->notificationService->sendFcmToUser(
+                        $stagiaire->user,
+                        $title,
+                        $body,
+                        $data
+                    );
+                    \App\Models\Notification::create([
+                        'user_id' => $stagiaire->user->id,
+                        'type' => $data['type'],
+                        'title' => $title,
+                        'message' => $body,
+                        'data' => $data,
+                        'read' => false,
+                    ]);
+                }
+            }
+        }
 
         return redirect()->route('medias.index')
             ->with('success', 'Le media a été mis à jour avec succès.');

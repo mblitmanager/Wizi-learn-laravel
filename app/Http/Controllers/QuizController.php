@@ -1487,6 +1487,7 @@ class QuizController extends Controller
                 ->get();
             $stats = [];
 
+
             foreach ($categories as $category) {
                 $quizCount = Quiz::whereHas('formation', function ($query) use ($category) {
                     $query->where('categorie', $category->name);

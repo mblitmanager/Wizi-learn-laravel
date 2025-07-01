@@ -13,6 +13,9 @@ return [
                 'cluster' => env('PUSHER_APP_CLUSTER'),
                 'encrypted' => true,
             ],
+            'auth' => [
+                'guard' => 'api',
+            ],
         ],
 
         'ably' => [

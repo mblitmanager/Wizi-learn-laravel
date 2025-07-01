@@ -18,6 +18,11 @@ use App\Http\Controllers\Stagiaire\MediaController;
 use App\Http\Controllers\BroadcastingController;
 use App\Http\Controllers\Stagiaire\StagiaireController;
 use App\Http\Controllers\Stagiaire\InscriptionCatalogueFormationController;
+use App\Events\TestNotification;
+use App\Http\Controllers\DailyNotificationController;
+use App\Http\Controllers\Api\DailyFormationNotificationController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Broadcast;
 
 Route::post('login', [JWTAuthController::class, 'login']);
 Route::prefix('parrainage')->group(function () {
@@ -80,7 +85,7 @@ Route::middleware(['auth:api'])->group(function () {
     Route::prefix('catalogueFormations')->group(function () {
         Route::get('formations', [CatalogueFormationController::class, 'getAllCatalogueFormations']);
         Route::get('with-formations', [CatalogueFormationController::class, 'getCataloguesWithFormations']);
-        Route::get('stagiaire/{id}', [CatalogueFormationController::class, 'getFormationsAndCatalogues']);
+        Route::get('stagiaire', [CatalogueFormationController::class, 'getFormationsAndCatalogues']);
         Route::get('/formations/{id}', [CatalogueFormationController::class, 'getCatalogueFormationById']);
         Route::get('/formations/{id}/pdf', [CatalogueFormationController::class, 'getCataloguePdf']);
     });
@@ -140,6 +145,18 @@ Route::middleware(['auth:api'])->group(function () {
 
     Route::get('/parrainage/stats/{parrain_id}', [ParrainageController::class, 'getStatsParrain']);
     Route::get('/user-status', [ProfileController::class, 'onlineUsers'])->middleware('auth:api');
+    Route::get('/test-notif', function () {
+        $data = [
+            'title' => 'Nouvelle notification',
+            'message' => 'Une notification vient d’être envoyée !',
+        ];
+
+        event(new TestNotification($data));
+
+        return 'Notification envoyée !';
+    });
+    Route::get('/send-daily-notification', [DailyNotificationController::class, 'send']);
+    Route::middleware('auth:api')->post('/notify-daily-formation', [DailyFormationNotificationController::class, 'notify']);
 });
 
 Route::get('/media/stream/{path}', [MediaController::class, 'stream'])
@@ -153,6 +170,7 @@ Route::post('refresh-token', [App\Http\Controllers\Auth\AuthController::class, '
 // Broadcasting Authentication
 Route::post('/broadcasting/auth', [BroadcastingController::class, 'auth'])
     ->middleware(['auth:api']);
+
 // Routes de parrainage sans connection
 
 // Routes pour les notifications
@@ -162,4 +180,27 @@ Route::middleware(['auth:api'])->group(function () {
     Route::post('/notifications/mark-all-read', [App\Http\Controllers\Api\NotificationController::class, 'markAllAsRead']);
     Route::delete('/notifications/{id}', [App\Http\Controllers\Api\NotificationController::class, 'delete']);
     Route::get('/notifications/unread-count', [App\Http\Controllers\Api\NotificationController::class, 'getUnreadCount']);
+});
+
+
+// Route pour enregistrer le token FCM
+Route::middleware(['auth:api'])->post('/fcm-token', [App\Http\Controllers\FcmTokenController::class, 'store']);
+
+// Route pour envoyer une notification (Pusher + FCM)
+Route::middleware(['auth:api'])->post('/send-notification', [App\Http\Controllers\NotificationAPIController::class, 'send']);
+
+
+Route::post('/pusher/auth', function (Request $request) {
+    return Broadcast::auth($request);
+});
+
+
+Route::get('/test-fcm', function () {
+    $user = \App\Models\User::whereNotNull('fcm_token')->first();
+    return app(\App\Services\NotificationService::class)->sendFcmToUser(
+        $user,
+        'Test FCM',
+        'Ceci est un test FCM via route',
+        ['type' => 'test']
+    ) ? 'OK' : 'Erreur';
 });

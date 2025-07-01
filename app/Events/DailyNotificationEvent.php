@@ -4,35 +4,34 @@ namespace App\Events;
 
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
+use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use App\Models\User;
 
-class NotificationEvent implements ShouldBroadcast
+class DailyNotificationEvent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $userId;
-    public $title;
-    public $body;
+    public $user;
 
-    public function __construct($userId, $title, $body)
+    public function __construct(User $user)
     {
-        $this->userId = $userId;
-        $this->title = $title;
-        $this->body = $body;
+        $this->user = $user;
     }
 
     public function broadcastOn()
     {
-        return new Channel('user-' . $this->userId);
+        // Canal privé pour chaque stagiaire
+        return new PrivateChannel('stagiaire.' . $this->user->id);
     }
 
     public function broadcastWith()
     {
         return [
-            'title' => $this->title,
-            'body' => $this->body,
+            'message' => 'Votre formation commence bientôt !',
+            'user_id' => $this->user->id,
         ];
     }
 }
