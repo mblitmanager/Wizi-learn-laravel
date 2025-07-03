@@ -100,18 +100,18 @@ class FormationStagiaireController extends Controller
             // Charger les formations du stagiaire avec infos du formateur depuis la table pivot
             $formations = $this->formationService->getFormationsByStagiaire($user->stagiaire->id);
 
+
             $formationsWithPivotFormateur = collect($formations)->map(function ($formation) {
-                // On cherche le formateur_id dans la table pivot (stagiaire_catalogue_formations)
-                $pivot = null;
-                if (isset($formation['pivot']) && isset($formation['pivot']['formateur_id'])) {
-                    $pivot = $formation['pivot'];
+                // Récupère le formateur_id depuis la table pivot ou fallback
+                $formateurId = null;
+                if (isset($formation['pivot']['formateur_id'])) {
+                    $formateurId = $formation['pivot']['formateur_id'];
                 } elseif (isset($formation['formateur_id'])) {
-                    // fallback si structure différente
-                    $pivot = ['formateur_id' => $formation['formateur_id']];
+                    $formateurId = $formation['formateur_id'];
                 }
-                if ($pivot && $pivot['formateur_id']) {
-                    // On cherche dans la table formateurs (pas users)
-                    $formateur = \App\Models\Formateur::find($pivot['formateur_id']);
+
+                if ($formateurId) {
+                    $formateur = \App\Models\Formateur::find($formateurId);
                     $formation['formateur'] = $formateur ? [
                         'id' => $formateur->id,
                         'nom' => $formateur->nom ?? $formateur->name ?? null,
@@ -124,7 +124,7 @@ class FormationStagiaireController extends Controller
                 }
                 return $formation;
             });
-
+            // dd($formationsWithPivotFormateur);
             return response()->json([
                 'data' => $formationsWithPivotFormateur
             ]);

@@ -61,7 +61,7 @@ Route::middleware(['auth:api'])->group(function () {
 
     // Routes pour les stagiaires
     Route::prefix('stagiaire')->group(function () {
-        Route::get('/formations', [FormationStagiaireController::class, 'getFormations']);
+        // Route::get('/formations', [FormationStagiaireController::class, 'getFormations']);
         Route::get('/show', [ProfileController::class, 'show']);
         Route::post('/profile/photo', [ProfileController::class, 'uploadAvatar']);
     });
