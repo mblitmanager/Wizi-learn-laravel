@@ -25,22 +25,74 @@ class ContactController extends Controller
     {
         try {
             $user = JWTAuth::parseToken()->authenticate();
-            // Charger la relation stagiaire si elle n'est pas déjà chargée
             if (!isset($user->relations['stagiaire'])) {
                 $user->load('stagiaire');
             }
-
-            // Vérifier si l'utilisateur est bien le stagiaire demandé ou a les droits d'accès
             if ($user->role != 'formateur' && $user->role != 'admin') {
-                // Vérifier si l'utilisateur est associé à ce stagiaire
                 $userStagiaire = $user->stagiaire;
                 if (!$userStagiaire) {
                     return response()->json(['error' => 'non autorisé'], 403);
                 }
             }
 
-            $contacts = $this->contactService->getContactsByStagiaire($user->stagiaire->id);
-            return response()->json($contacts);
+            // --- Construction manuelle des contacts pour le front ---
+            $stagiaireId = $user->stagiaire->id;
+            $formateurs = \App\Models\Formateur::with(['user', 'catalogue_formations' => function($q) use ($stagiaireId) {
+                $q->with(['stagiaires' => function($q2) use ($stagiaireId) {
+                    $q2->where('stagiaire_id', $stagiaireId);
+                }]);
+            }])->get();
+
+            $formateursArr = $formateurs->map(function ($formateur) use ($stagiaireId) {
+                // On ne garde que les formations où ce stagiaire est inscrit (pivot)
+                $formations = [];
+                foreach ($formateur->catalogue_formations as $formation) {
+                    $pivot = $formation->stagiaires->first();
+                    if ($pivot) {
+                        $formations[] = [
+                            'id' => $formation->id,
+                            'titre' => $formation->titre,
+                            'dateDebut' => $pivot->pivot->date_debut ?? null,
+                            'dateFin' => $pivot->pivot->date_fin ?? null,
+                            'formateur' => $formateur->user->name,
+                        ];
+                    }
+                }
+                return [
+                    'id' => $formateur->id,
+                    'type' => 'Formateur',
+                    'name' => $formateur->user->name,
+                    'email' => $formateur->user->email,
+                    'telephone' => $formateur->telephone ?? '',
+                    'formations' => $formations,
+                ];
+            });
+
+            $commerciaux = \App\Models\Commercial::with('user')->get()->map(function ($commercial) {
+                return [
+                    'id' => $commercial->id,
+                    'type' => 'Commercial',
+                    'name' => $commercial->user->name,
+                    'email' => $commercial->user->email,
+                    'telephone' => $commercial->telephone ?? '',
+                ];
+            });
+
+            $poleRelation = \App\Models\PoleRelationClient::with('user')->get()->map(function ($pole) {
+                return [
+                    'id' => $pole->id,
+                    'type' => 'Pôle Relation Client',
+                    'name' => $pole->user->name,
+                    'email' => $pole->user->email,
+                    'telephone' => $pole->telephone ?? '',
+                ];
+            });
+
+            return response()->json([
+                'formateurs' => $formateursArr,
+                'commerciaux' => $commerciaux,
+                'pole_relation' => $poleRelation,
+            ]);
         } catch (JWTException $e) {
             return response()->json(['error' => 'non autorisé'], 401);
         }
