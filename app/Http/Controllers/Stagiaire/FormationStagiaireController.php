@@ -97,10 +97,36 @@ class FormationStagiaireController extends Controller
                     return response()->json(['error' => 'non autorisé'], 403);
                 }
             }
+            // Charger les formations du stagiaire avec infos du formateur depuis la table pivot
             $formations = $this->formationService->getFormationsByStagiaire($user->stagiaire->id);
 
+            $formationsWithPivotFormateur = collect($formations)->map(function ($formation) {
+                // On cherche le formateur_id dans la table pivot (stagiaire_catalogue_formations)
+                $pivot = null;
+                if (isset($formation['pivot']) && isset($formation['pivot']['formateur_id'])) {
+                    $pivot = $formation['pivot'];
+                } elseif (isset($formation['formateur_id'])) {
+                    // fallback si structure différente
+                    $pivot = ['formateur_id' => $formation['formateur_id']];
+                }
+                if ($pivot && $pivot['formateur_id']) {
+                    // On cherche dans la table formateurs (pas users)
+                    $formateur = \App\Models\Formateur::find($pivot['formateur_id']);
+                    $formation['formateur'] = $formateur ? [
+                        'id' => $formateur->id,
+                        'nom' => $formateur->nom ?? $formateur->name ?? null,
+                        'prenom' => $formateur->prenom ?? null,
+                        'email' => $formateur->email ?? null,
+                        'image' => $formateur->image ?? null,
+                    ] : null;
+                } else {
+                    $formation['formateur'] = null;
+                }
+                return $formation;
+            });
+
             return response()->json([
-                'data' => $formations
+                'data' => $formationsWithPivotFormateur
             ]);
         } catch (JWTException $e) {
             return response()->json(['error' => 'Non autorisé'], 401);
