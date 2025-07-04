@@ -521,247 +521,147 @@ class QuizController extends Controller
 
     private function isAnswerCorrect($question, $selectedAnswers)
     {
-        if ($question->type === 'correspondance') {
-            // Récupérer uniquement les paires pays → capitale
-            $correctPairs = CorrespondancePair::where('question_id', $question->id)
-                ->whereIn('left_text', $question->reponses->pluck('text')->toArray())
-                ->get()
-                ->mapWithKeys(fn($pair) => [$pair->left_text => $pair->right_text])
-                ->toArray();
-
-            // Créer le map des réponses
-            $reponsesMap = $question->reponses->pluck('text', 'id')->toArray();
-
-            // Convertir les `selectedAnswers` en utilisant les `left_id` pour obtenir le `left_text`
-            $selectedPairs = [];
-
-            foreach ($selectedAnswers as $leftId => $rightText) {
-                if (isset($reponsesMap[$leftId])) {
-                    $leftText = $reponsesMap[$leftId];
-                    $selectedPairs[$leftText] = $rightText;
-                }
+        // Fonction pour normaliser et filtrer les valeurs
+        $normalize = function ($value) {
+            if (is_array($value)) {
+                return array_filter($value, fn($v) => $v !== null && $v !== '' && $v !== []);
             }
+            return $value !== null && $value !== '' ? $value : null;
+        };
 
-            // Créer le tableau `match_pair`
-            $matchPairs = CorrespondancePair::where('question_id', $question->id)
-                ->whereIn('left_text', $question->reponses->pluck('text')->toArray())
-                ->get()
-                ->map(function ($pair) {
-                    return [
-                        'left' => $pair->left_text,
-                        'right' => $pair->right_text
-                    ];
-                });
+        // Nettoyer les réponses sélectionnées
+        $cleanedSelectedAnswers = $normalize($selectedAnswers);
 
-            $isCorrect = $selectedPairs == $correctPairs;
-
-            return [
-                'selectedAnswers' => $selectedPairs,
-                'correctAnswers' => $correctPairs,
-                'isCorrect' => $isCorrect,
-                'match_pair' => $matchPairs
-            ];
-        }
-
-        // if ($question->type === 'carte flash') {
-        //     $correctAnswers = $question->reponses
-        //         ->where('is_correct', true)
-        //         ->pluck('text')
-        //         ->toArray();
-
-        //     // Gestion du format simple où la réponse est directement envoyée
-        //     $selectedText = is_array($selectedAnswers)
-        //         ? ($selectedAnswers['text'] ?? (count($selectedAnswers) > 0 ? $selectedAnswers[0] : null))
-        //         : (is_object($selectedAnswers) ? $selectedAnswers->text : $selectedAnswers);
-
-        //     return [
-        //         'selectedAnswers' => $selectedText,
-        //         'correctAnswers' => $correctAnswers,
-        //         'isCorrect' => in_array($selectedText, $correctAnswers)
-        //     ];
-        // }
-
-        // Traitement pour "carte flash"
-        // Traitement pour "carte flash"
-        if ($question->type === 'carte flash') {
-            $correctAnswers = $question->reponses
-                ->where('is_correct', true)
-                ->pluck('text')
-                ->toArray();
-
-            // Gestion des différents formats de réponse
-            $selectedText = null;
-
-            if (is_array($selectedAnswers)) {
-                $selectedText = $selectedAnswers['text'] ??
-                    (count($selectedAnswers) > 0 ? $selectedAnswers[0] : null);
-            } elseif (is_object($selectedAnswers)) {
-                $selectedText = $selectedAnswers->text;
-            } else {
-                $selectedText = $selectedAnswers;
-            }
-
-            return [
-                'selectedAnswers' => $selectedText,
-                'correctAnswers' => $correctAnswers,
-                'isCorrect' => !empty($correctAnswers) && in_array($selectedText, $correctAnswers)
-            ];
-        }
-
-        // Traitement pour "question audio"
-        if ($question->type === 'question audio') {
-            $correctAnswers = $question->reponses
-                ->where('is_correct', true)
-                ->pluck('text')
-                ->toArray();
-
-            // Gestion du format {"id": "3", "text": "Arctique"}
-            $selectedText = is_array($selectedAnswers)
-                ? ($selectedAnswers['text'] ?? null)
-                : (is_object($selectedAnswers) ? $selectedAnswers->text : null);
-
-            return [
-                'selectedAnswers' => $selectedText,
-                'correctAnswers' => $correctAnswers,
-                'isCorrect' => in_array($selectedText, $correctAnswers)
-            ];
-        }
-
-        // Traitement pour "remplir le champ vide"
-        if ($question->type === 'remplir le champ vide') {
-            // Préparer la map bank_group => bonne réponse
-            $correctBlanks = [];
-            foreach ($question->reponses as $reponse) {
-                if ($reponse->bank_group && $reponse->is_correct) {
-                    $correctBlanks[$reponse->bank_group] = $reponse->text;
-                }
-            }
-
-            $normalize = function ($v) {
-                return is_string($v) ? mb_strtolower(trim($v)) : $v;
-            };
-
-            $isCorrect = false;
-            $details = [
-                'selectedAnswers' => $selectedAnswers,
-                'correctAnswers' => $correctBlanks,
-                'isCorrect' => false
-            ];
-
-            if (is_array($selectedAnswers) && count($correctBlanks) > 0 && count($selectedAnswers) > 0 && array_keys($selectedAnswers) !== range(0, count($selectedAnswers) - 1)) {
-                // Cas objet: mapping blank ids (bank_group) => réponse
-                $allCorrect = true;
-                // Ne comparer que les clés attendues (blanks de la question)
-                foreach ($correctBlanks as $blankId => $correctText) {
-                    $userText = $selectedAnswers[$blankId] ?? null;
-                    if ($normalize($userText) !== $normalize($correctText)) {
-                        $allCorrect = false;
-                        break;
-                    }
-                }
-                // Vérifier qu'il n'y a pas de réponses en trop pour cette question
-                $userBlanks = array_filter(array_keys($selectedAnswers), function ($k) use ($correctBlanks) {
-                    return array_key_exists($k, $correctBlanks);
-                });
-                if ($allCorrect && count($userBlanks) === count($correctBlanks)) {
-                    $isCorrect = true;
-                }
-                $details['isCorrect'] = $isCorrect;
-                return $details;
-            } else if (is_array($selectedAnswers)) {
-                // Fallback: comparer par ordre (array simple)
-                $correctAnswers = array_values(array_filter($question->reponses->toArray(), function ($r) {
-                    return $r['is_correct'];
-                }));
-                $correctTexts = array_map(function ($r) use ($normalize) {
-                    return $normalize($r['text']);
-                }, $correctAnswers);
-                $userTexts = array_map($normalize, array_values($selectedAnswers));
-                $isCorrect = $userTexts === $correctTexts;
-                $details['correctAnswers'] = $correctTexts;
-                $details['isCorrect'] = $isCorrect;
-                return $details;
-            }
-            // Si aucun format reconnu, faux par défaut
-            return $details;
-        }
-
-        // Traitement pour "choix multiples"
-        if ($question->type === 'choix multiples') {
-            $correctAnswers = $question->reponses
-                ->where('is_correct', true)
-                ->pluck('text')
-                ->toArray();
-
-            $selectedAnswers = is_array($selectedAnswers) ? $selectedAnswers : [];
-
-            return [
-                'selectedAnswers' => $selectedAnswers,
-                'correctAnswers' => $correctAnswers,
-                'isCorrect' => empty(array_diff($selectedAnswers, $correctAnswers)) &&
-                    empty(array_diff($correctAnswers, $selectedAnswers))
-            ];
-        }
-        // Traitement pour "banque de mots"
-        if ($question->type === 'banque de mots') {
-            $correctAnswers = $question->reponses
-                ->where('is_correct', true)
-                ->pluck('text')
-                ->toArray();
-
-            $selectedAnswers = is_array($selectedAnswers) ? $selectedAnswers : [];
-
-            return [
-                'selectedAnswers' => $selectedAnswers,
-                'correctAnswers' => $correctAnswers,
-                'isCorrect' => empty(array_diff($selectedAnswers, $correctAnswers)) &&
-                    empty(array_diff($correctAnswers, $selectedAnswers))
-            ];
-        }
-        // Traitement pour "vrai/faux"
-        if ($question->type === 'vrai/faux') {
-            $correctAnswers = $question->reponses
-                ->where('is_correct', true)
-                ->pluck('text')
-                ->toArray();
-
-            $selectedAnswers = is_array($selectedAnswers) ? $selectedAnswers : [];
-
-            return [
-                'selectedAnswers' => $selectedAnswers,
-                'correctAnswers' => $correctAnswers,
-                'isCorrect' => empty(array_diff($selectedAnswers, $correctAnswers)) &&
-                    empty(array_diff($correctAnswers, $selectedAnswers))
-            ];
-        }
-
-        if ($question->type === 'rearrangement') {
-            // On suppose que selectedAnswers est un tableau d'IDs de réponses dans l'ordre donné
-            $correctAnswers = $question->reponses
-                ->where('is_correct', true)
-                ->sortBy('position')
-                ->pluck('text')
-                ->values()
-                ->toArray();
-
-            $selectedAnswers = is_array($selectedAnswers) ? array_values($selectedAnswers) : [];
-
-            $isCorrect = $selectedAnswers === $correctAnswers;
-
-            return [
-                'selectedAnswers' => $selectedAnswers,
-                'correctAnswers' => $correctAnswers,
-                'isCorrect' => $isCorrect
-            ];
-        }
-
-        // Comparaison standard
+        // Récupérer les bonnes réponses une seule fois pour les types qui l'utilisent
         $correctAnswers = $question->reponses
             ->where('is_correct', true)
             ->pluck('text')
             ->toArray();
-        return empty(array_diff($selectedAnswers, $correctAnswers)) &&
-            empty(array_diff($correctAnswers, $selectedAnswers));
+
+        switch ($question->type) {
+            case 'correspondance':
+                $reponsesMap = $question->reponses->pluck('text', 'id')->toArray();
+                $selectedPairs = [];
+
+                foreach ($selectedAnswers as $leftId => $rightText) {
+                    if (isset($reponsesMap[$leftId]) && !empty($rightText)) {
+                        $selectedPairs[$reponsesMap[$leftId]] = $rightText;
+                    }
+                }
+
+                $correctPairs = CorrespondancePair::where('question_id', $question->id)
+                    ->whereIn('left_text', $question->reponses->pluck('text')->toArray())
+                    ->get()
+                    ->mapWithKeys(fn($pair) => [$pair->left_text => $pair->right_text])
+                    ->toArray();
+
+                $matchPairs = CorrespondancePair::where('question_id', $question->id)
+                    ->whereIn('left_text', $question->reponses->pluck('text')->toArray())
+                    ->get()
+                    ->map(fn($pair) => ['left' => $pair->left_text, 'right' => $pair->right_text]);
+
+                return [
+                    'selectedAnswers' => $selectedPairs,
+                    'correctAnswers' => $correctPairs,
+                    'isCorrect' => $selectedPairs == $correctPairs,
+                    'match_pair' => $matchPairs
+                ];
+
+            case 'carte flash':
+            case 'question audio':
+                $selectedText = is_array($cleanedSelectedAnswers)
+                    ? ($cleanedSelectedAnswers['text'] ?? (count($cleanedSelectedAnswers) > 0 ? $cleanedSelectedAnswers[0] : null))
+                    : (is_object($cleanedSelectedAnswers) ? $cleanedSelectedAnswers->text : $cleanedSelectedAnswers);
+
+                return [
+                    'selectedAnswers' => $selectedText,
+                    'correctAnswers' => $correctAnswers,
+                    'isCorrect' => !empty($selectedText) && in_array($selectedText, $correctAnswers)
+                ];
+
+            case 'remplir le champ vide':
+                $correctBlanks = [];
+                foreach ($question->reponses as $reponse) {
+                    if ($reponse->bank_group && $reponse->is_correct) {
+                        $correctBlanks[$reponse->bank_group] = $normalize($reponse->text);
+                    }
+                }
+
+                $details = [
+                    'selectedAnswers' => $cleanedSelectedAnswers,
+                    'correctAnswers' => $correctBlanks,
+                    'isCorrect' => false
+                ];
+
+                if (is_array($cleanedSelectedAnswers)) {
+                    // Cas avec des bank_groups
+                    if (array_keys($cleanedSelectedAnswers) !== range(0, count($cleanedSelectedAnswers) - 1)) {
+                        $allCorrect = true;
+                        foreach ($correctBlanks as $blankId => $correctText) {
+                            $userText = $normalize($cleanedSelectedAnswers[$blankId] ?? null);
+                            if ($userText !== $correctText) {
+                                $allCorrect = false;
+                                break;
+                            }
+                        }
+                        $details['isCorrect'] = $allCorrect &&
+                            count(array_intersect_key($cleanedSelectedAnswers, $correctBlanks)) === count($correctBlanks);
+                    }
+                    // Cas tableau simple
+                    else {
+                        $correctTexts = array_map($normalize, array_values($correctBlanks));
+                        $userTexts = array_map($normalize, array_values($cleanedSelectedAnswers));
+                        $details['isCorrect'] = $userTexts === $correctTexts;
+                        $details['correctAnswers'] = $correctTexts;
+                    }
+                }
+                return $details;
+
+            case 'choix multiples':
+            case 'banque de mots':
+            case 'vrai/faux':
+                $selected = is_array($cleanedSelectedAnswers)
+                    ? array_values($cleanedSelectedAnswers)
+                    : [$cleanedSelectedAnswers];
+
+                return [
+                    'selectedAnswers' => $selected,
+                    'correctAnswers' => $correctAnswers,
+                    'isCorrect' => empty(array_diff($selected, $correctAnswers)) &&
+                        empty(array_diff($correctAnswers, $selected))
+                ];
+
+            case 'rearrangement':
+                $correctOrder = $question->reponses
+                    ->where('is_correct', true)
+                    ->sortBy('position')
+                    ->pluck('text')
+                    ->values()
+                    ->toArray();
+
+                $userOrder = is_array($cleanedSelectedAnswers) ? array_values($cleanedSelectedAnswers) : [];
+                return [
+                    'selectedAnswers' => $userOrder,
+                    'correctAnswers' => $correctOrder,
+                    'isCorrect' => $userOrder === $correctOrder
+                ];
+
+            default:
+                // Comparaison standard
+                if (is_array($cleanedSelectedAnswers)) {
+                    return [
+                        'selectedAnswers' => $cleanedSelectedAnswers,
+                        'correctAnswers' => $correctAnswers,
+                        'isCorrect' => empty(array_diff($cleanedSelectedAnswers, $correctAnswers)) &&
+                            empty(array_diff($correctAnswers, $cleanedSelectedAnswers))
+                    ];
+                }
+                return [
+                    'selectedAnswers' => $cleanedSelectedAnswers,
+                    'correctAnswers' => $correctAnswers,
+                    'isCorrect' => in_array($cleanedSelectedAnswers, $correctAnswers)
+                ];
+        }
     }
     public function submitQuizResult(Request $request, $id)
     {
@@ -810,6 +710,9 @@ class QuizController extends Controller
             // Préparer les détails des questions et réponses
             $questionsDetails = $quiz->questions->map(function ($question) use ($request) {
                 $selectedAnswers = $request->answers[$question->id] ?? null;
+                //    $selectedAnswers = is_array($request->answers[$question->id] ?? null)
+                // ? array_map(fn($answer) => is_array($answer) ? $answer['text'] : $answer, $request->answers[$question->id])
+                // : [];
 
 
 
