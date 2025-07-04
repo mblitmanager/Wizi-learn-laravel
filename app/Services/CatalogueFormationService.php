@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\CatalogueFormation;
 use App\Models\Stagiaire;
 use App\Repositories\Interfaces\CatalogueFormationInterface;
 
@@ -54,24 +55,29 @@ class CatalogueFormationService
 
     public function getFormationsAndCatalogues(int $stagiaireId)
     {
-        // Récupérer le stagiaire avec ses relations
-        $stagiaire = Stagiaire::with(['catalogue_formations'])->find($stagiaireId);
+
+        // Récupérer le stagiaire avec ses catalogues et formations via la table pivot
+        $stagiaire = Stagiaire::with(['catalogue_formations.formation'])->find($stagiaireId);
 
         if (!$stagiaire) {
-            throw new \Exception("Stagiaire not found");
+            throw new \Exception("Stagiaire introuvable");
         }
 
-        // Récupérer les formations
+        // On récupère tous les catalogues liés au stagiaire (avec formation déjà chargée)
         $catalogues = $stagiaire->catalogue_formations;
 
-        // // Récupérer les catalogues de formation associés aux formations
-        // $catalogues = $formations->map(function ($formation) {
-        //     return $formation->catalogueFormation;
-        // })->filter(); // Filtrer les catalogues non nulls
+        // Structure de retour : chaque entrée contient le pivot, le catalogue et la formation associée
+        $result = $catalogues->map(function ($catalogue) {
+            return [
+                'pivot' => $catalogue->pivot ? $catalogue->pivot->toArray() : null,
+                'catalogue' => $catalogue->toArray(),
+                'formation' => $catalogue->formation ? $catalogue->formation->toArray() : null,
+            ];
+        });
 
         return [
-            'stagiaire' => $stagiaire,
-            'catalogues' => $catalogues,
+            'stagiaire' => $stagiaire->toArray(),
+            'catalogues' => $result,
         ];
     }
 }

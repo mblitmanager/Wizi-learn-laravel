@@ -36,6 +36,15 @@ class CatalogueFormation extends Model
     {
         return $this->belongsTo(Formation::class);
     }
+
+    /**
+     * Relation avec le modèle Formation (One-to-Many, accès via formation_id sur Formation)
+     */
+    public function formations()
+    {
+        return $this->hasMany(Formation::class, 'formation_id', 'id');
+    }
+
     public function formateurs()
     {
         return $this->belongsToMany(Formateur::class, 'formateur_catalogue_formation');
@@ -54,4 +63,5 @@ class CatalogueFormation extends Model
     {
         return $this->cursus_pdf ? asset('storage/' . $this->cursus_pdf) : null;
     }
+
 }
