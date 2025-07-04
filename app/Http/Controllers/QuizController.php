@@ -663,6 +663,7 @@ class QuizController extends Controller
                 ];
         }
     }
+
     public function submitQuizResult(Request $request, $id)
     {
         $user = null;
@@ -670,12 +671,23 @@ class QuizController extends Controller
             $user = Auth::user();
             $quiz = Quiz::with(['formation', 'questions.reponses'])->findOrFail($id);
 
-            // Log de débogage détaillé
+            // Log de débogage détaillé - Payload complet
             Log::info('Requête de soumission de quiz', [
                 'request_data' => $request->all(),
                 'request_answers' => $request->answers,
                 'quiz_id' => $id,
                 'user_id' => $user->getKey()
+            ]);
+
+            // Log de tous les types de questions du quiz
+            Log::info('Types de questions du quiz', [
+                'questions' => $quiz->questions->map(function ($q) {
+                    return [
+                        'id' => $q->id,
+                        'text' => $q->text,
+                        'type' => $q->type
+                    ];
+                })
             ]);
 
             // Validation des données
@@ -687,65 +699,59 @@ class QuizController extends Controller
             // Récupérer le stagiaire associé à l'utilisateur
             $stagiaire = Stagiaire::where('user_id', $user->getKey())->firstOrFail();
 
-            // Récupérer la participation en cours pour l'utilisateur et le quiz
-            $participation = QuizParticipation::where('user_id', $user->getKey())
-                ->where('quiz_id', $quiz->id)
-                ->where('status', 'in_progress')
-                ->first();
-
-            if (!$participation) {
-                // Si aucune participation en cours, on peut en créer une ou retourner une erreur
-                $participation = QuizParticipation::create([
+            // Récupérer ou créer la participation en cours
+            $participation = QuizParticipation::firstOrCreate(
+                [
                     'user_id' => $user->getKey(),
                     'quiz_id' => $quiz->id,
-                    'status' => 'in_progress',
+                    'status' => 'in_progress'
+                ],
+                [
                     'started_at' => now(),
                     'score' => 0,
                     'correct_answers' => 0,
                     'time_spent' => 0
-                ]);
-            }
-
+                ]
+            );
 
             // Préparer les détails des questions et réponses
-            $questionsDetails = $quiz->questions->map(function ($question) use ($request) {
-                $selectedAnswers = $request->answers[$question->id] ?? null;
-                //    $selectedAnswers = is_array($request->answers[$question->id] ?? null)
-                // ? array_map(fn($answer) => is_array($answer) ? $answer['text'] : $answer, $request->answers[$question->id])
-                // : [];
+            $questionsDetails = $quiz->questions
+                ->filter(function ($question) use ($request) {
+                    return isset($request->answers[$question->id]) && $request->answers[$question->id] !== null;
+                })
+                ->map(function ($question) use ($request) {
 
+                    $selectedAnswers = $request->answers[$question->id] ?? null;
+                    $isCorrectResult = $this->isAnswerCorrect($question, $selectedAnswers);
 
-
-                $isCorrectResult = $this->isAnswerCorrect($question, $selectedAnswers);
-
-                return [
-                    'id' => $question->id,
-                    'text' => $question->text,
-                    'type' => $question->type,
-                    'selectedAnswers' => $isCorrectResult['selectedAnswers'] ?? [],
-                    'correctAnswers' => $isCorrectResult['correctAnswers'] ?? [],
-                    'answers' => $question->reponses->map(function ($reponse) {
-                        return [
-                            'id' => $reponse->id,
-                            'text' => $reponse->text,
-                            'isCorrect' => $reponse->is_correct
-                        ];
-                    })->toArray(),
-                    'isCorrect' => $isCorrectResult['isCorrect'] ?? false,
-                    'meta' => $question->type === 'correspondance'
-                        ? [
-                            'selectedAnswers' => $isCorrectResult['selectedAnswers'],
-                            'correctAnswers' => $isCorrectResult['correctAnswers'],
-                            'isCorrect' => $isCorrectResult['isCorrect'],
-                            'match_pair' => $isCorrectResult['match_pair']
-                        ]
-                        : null
-                ];
-            });
+                    return [
+                        'id' => $question->id,
+                        'text' => $question->text,
+                        'type' => $question->type,
+                        'selectedAnswers' => $isCorrectResult['selectedAnswers'] ?? [],
+                        'correctAnswers' => $isCorrectResult['correctAnswers'] ?? [],
+                        'answers' => $question->reponses->map(function ($reponse) {
+                            return [
+                                'id' => $reponse->id,
+                                'text' => $reponse->text,
+                                'isCorrect' => $reponse->is_correct
+                            ];
+                        })->toArray(),
+                        'isCorrect' => $isCorrectResult['isCorrect'] ?? false,
+                        'meta' => $question->type === 'correspondance'
+                            ? [
+                                'selectedAnswers' => $isCorrectResult['selectedAnswers'],
+                                'correctAnswers' => $isCorrectResult['correctAnswers'],
+                                'isCorrect' => $isCorrectResult['isCorrect'],
+                                'match_pair' => $isCorrectResult['match_pair']
+                            ]
+                            : null
+                    ];
+                });
 
             $correctAnswers = $questionsDetails->where('isCorrect', true)->count();
             $totalQuestions = $questionsDetails->count();
-            $score = $correctAnswers * 2; // 2 points par bonne réponse
+            $score = $correctAnswers * 2;
 
             $result = Progression::create([
                 'stagiaire_id' => $stagiaire->id,
@@ -758,63 +764,84 @@ class QuizController extends Controller
                 'completion_time' => now()
             ]);
 
-            // Enregistrer les réponses pour les questions de type "correspondance"
+            // TRAITEMENT DES ANSWERS
             foreach ($request->answers as $questionId => $answerValue) {
-                Log::info('Traitement de la question :', [
+                Log::info('Traitement de la réponse utilisateur', [
                     'question_id' => $questionId,
-                    'answers' => $answerValue
+                    'answer_value' => $answerValue
                 ]);
 
                 $question = $quiz->questions->firstWhere('id', $questionId);
 
-                if (!$question)
+                if (!$question) {
+                    Log::warning('Question non trouvée dans le quiz', [
+                        'question_id' => $questionId
+                    ]);
                     continue;
+                }
 
-                if ($question->type === 'correspondance') {
-                    // Format: [left_id => right_text]
-                    $answerPairs = [];
-                    $newPairs = [];
+                Log::info('Type de la question à traiter', [
+                    'question_id' => $questionId,
+                    'question_type' => $question->type
+                ]);
 
-                    foreach ($answerValue as $leftId => $rightText) {
-                        $leftAnswer = $question->reponses->firstWhere('id', $leftId);
-
-                        $leftText = $leftAnswer ? $leftAnswer->text : 'unknown';
-                        $answerPairs[] = ['left' => $leftText, 'right' => $rightText];
-
-                        //Vérifie si la paire existe déjà
-                        $exists = CorrespondancePair::where('question_id', $questionId)
-                            ->where('left_text', $leftText)
-                            ->where('right_text', $rightText)
-                            ->exists();
-
-                        if (!$exists) {
-                            $newPairs[] = [
+                try {
+                    if ($question->type === 'correspondance') {
+                        if (!is_array($answerValue) && !is_object($answerValue)) {
+                            Log::warning('Réponse de correspondance invalide (non itérable)', [
                                 'question_id' => $questionId,
-                                'left_text' => $leftText,
-                                'right_text' => $rightText
-                            ];
+                                'answer_value' => $answerValue
+                            ]);
+                            continue;
                         }
+
+                        $answerValue = (array) $answerValue;
+                        if (empty($answerValue)) {
+                            Log::warning('Réponse de correspondance vide après cast', [
+                                'question_id' => $questionId,
+                                'answer_value' => $answerValue
+                            ]);
+                            continue;
+                        }
+
+                        $answerPairs = [];
+                        foreach ($answerValue as $leftId => $rightText) {
+                            if ($rightText === null || $rightText === '') {
+                                continue;
+                            }
+
+                            $leftAnswer = $question->reponses->firstWhere('id', $leftId);
+                            $leftText = $leftAnswer ? $leftAnswer->text : 'unknown';
+                            $answerPairs[] = ['left' => $leftText, 'right' => $rightText];
+                        }
+
+                        QuizParticipationAnswer::create([
+                            'participation_id' => $participation->id,
+                            'question_id' => $questionId,
+                            'answer_ids' => array_keys($answerValue),
+                            'answer_texts' => json_encode($answerPairs)
+                        ]);
+                    } else {
+                        $answerToStore = is_array($answerValue) || is_object($answerValue)
+                            ? json_encode((array) $answerValue)
+                            : $answerValue;
+
+                        QuizParticipationAnswer::create([
+                            'participation_id' => $participation->id,
+                            'question_id' => $questionId,
+                            'answer_texts' => $answerToStore
+                        ]);
                     }
-
-                    Log::info('Paires pour la question :', [
+                } catch (\Exception $e) {
+                    Log::error('Erreur lors du traitement de la réponse', [
                         'question_id' => $questionId,
-                        'answerPairs' => $answerPairs,
-                        'newPairs' => $newPairs
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString(),
+                        'answer_value' => $answerValue
                     ]);
-
-                    // if (!empty($newPairs)) {
-                    //     CorrespondancePair::insert($newPairs);
-                    // }
-
-                    QuizParticipationAnswer::create([
-                        'participation_id' => $participation->id,
-                        'question_id' => $questionId,
-                        'answer_ids' => array_keys($answerValue),
-                        'answer_texts' => json_encode($answerPairs),
-                    ]);
+                    continue;
                 }
             }
-
 
             // Marquer la participation comme terminée
             $participation->update([
@@ -826,7 +853,8 @@ class QuizController extends Controller
             ]);
 
             // Mettre à jour le classement
-            $this->updateClassement($quiz->id, $stagiaire->id, ($correctAnswers * 2));
+            $this->updateClassement($quiz->id, $stagiaire->id, $score);
+
             return response()->json([
                 'id' => $result->id,
                 'quizId' => $result->quiz_id,
@@ -837,13 +865,14 @@ class QuizController extends Controller
                 'totalQuestions' => $result->total_questions,
                 'completedAt' => $result->completion_time->toISOString(),
                 'timeSpent' => $result->time_spent,
-                'questions' => $questionsDetails
-            ]);
+                'questions' => $questionsDetails->values()->all()
+            ])->setStatusCode(201, 'Résultat du quiz soumis avec succès');
+
         } catch (\Exception $e) {
             Log::error('Erreur dans submitQuizResult', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
-                'user_id' => $user?->getKey(),
+                'user_id' => $user?->id,
                 'quiz_id' => $id,
                 'formation_id' => $quiz->formation->id ?? null,
                 'request_data' => $request->all(),
@@ -856,6 +885,7 @@ class QuizController extends Controller
             ], 500);
         }
     }
+
 
 
     private function updateClassement($quizId, $stagiaireId, $points)
