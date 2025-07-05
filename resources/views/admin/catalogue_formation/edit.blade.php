@@ -155,7 +155,7 @@
 
                                 <div class="mt-2 text-center">
                                     @if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp']))
-                                    <img src="{{ asset('storage/' . $catalogueFormation->image_url) }}"
+                                    <img src="{{ asset($catalogueFormation->image_url) }}"
                                         alt="Image actuelle" class="img-fluid rounded shadow"
                                         style="max-width: 250px;">
                                     @elseif (in_array($extension, ['mp4', 'webm', 'ogg']))
@@ -167,12 +167,12 @@
                                     </video>
                                     @elseif (in_array($extension, ['mp3', 'wav', 'ogg']))
                                     <audio controls class="rounded shadow mt-2" style="width: 100%;">
-                                        <source src="{{ asset('storage/' . $catalogueFormation->image_url) }}"
+                                        <source src="{{ asset($catalogueFormation->image_url) }}"
                                             type="audio/{{ $extension }}">
                                         Votre navigateur ne supporte pas la lecture d'audio.
                                     </audio>
                                     @else
-                                    <a href="{{ asset('storage/' . $catalogueFormation->image_url) }}"
+                                    <a href="{{ asset($catalogueFormation->image_url) }}"
                                         target="_blank" class="btn btn-outline-primary">
                                         Télécharger le fichier
                                     </a>

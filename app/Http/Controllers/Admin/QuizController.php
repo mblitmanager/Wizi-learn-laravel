@@ -73,8 +73,8 @@ class QuizController extends Controller
                     $title = 'Nouveau quiz disponible';
                     $body = "Un nouveau quiz \"{$quiz->titre}\" est disponible dans votre formation.";
                     $data = [
-                        'quiz_id' => (string)$quiz->id,
-                        'formation_id' => (string)$quiz->formation_id,
+                        'quiz_id' => (string) $quiz->id,
+                        'formation_id' => (string) $quiz->formation_id,
                         'type' => 'quiz',
                         'event' => 'created',
                     ];
@@ -196,7 +196,8 @@ class QuizController extends Controller
                     ? $quiz->questions()->find($questionInput['id'])
                     : $quiz->questions()->create($questionInput);
 
-                if (!$question) continue;
+                if (!$question)
+                    continue;
 
                 if (!empty($questionInput['id'])) {
                     if (!empty($questionInput['media_url']) && $question->media_url !== $questionInput['media_url']) {
@@ -286,8 +287,8 @@ class QuizController extends Controller
                         $title = 'Quiz mis à jour';
                         $body = "Le quiz \"{$quiz->titre}\" a été mis à jour dans votre formation.";
                         $data = [
-                            'quiz_id' => (string)$quiz->id,
-                            'formation_id' => (string)$quiz->formation_id,
+                            'quiz_id' => (string) $quiz->id,
+                            'formation_id' => (string) $quiz->formation_id,
                             'type' => 'quiz',
                             'event' => 'updated',
                         ];
@@ -531,14 +532,16 @@ class QuizController extends Controller
 
             // Envoyer une notification FCM uniquement aux stagiaires rattachés à la formation du quiz
             $formationId = $quiz->formation_id;
-            $stagiaires = \App\Models\Stagiaire::where('formation_id', $formationId)->with('user')->get();
+            $stagiaires = Stagiaire::whereHas('catalogue_formations', function ($query) use ($formationId) {
+                $query->where('formation_id', $formationId);
+            })->with('user')->get();
             foreach ($stagiaires as $stagiaire) {
                 if ($stagiaire->user && $stagiaire->user->fcm_token) {
                     $title = 'Nouveau quiz disponible';
                     $body = 'Un nouveau quiz "' . $quiz->titre . '" est disponible.';
                     $data = [
-                        'quiz_id' => (string)$quiz->id,
-                        'formation_id' => (string)$formationId,
+                        'quiz_id' => (string) $quiz->id,
+                        'formation_id' => (string) $formationId,
                         'type' => 'quiz',
                         'event' => 'created',
                     ];
@@ -555,6 +558,7 @@ class QuizController extends Controller
             }
             return redirect()->route('quiz.index')->with('success', 'Quiz, question et réponses créés avec succès.');
         } catch (\Exception $e) {
+            Log::error($e); // Enregistrer l'erreur dans le journals
             DB::rollBack();
             return redirect()->back()
                 ->with('error', 'Erreur lors de la création du quiz : ' . $e->getMessage());
@@ -704,7 +708,8 @@ class QuizController extends Controller
                     $correctIds = [];
 
                     foreach ($reponses as $lettre => $texte) {
-                        if (empty($texte)) continue;
+                        if (empty($texte))
+                            continue;
 
                         $isCorrect = in_array($lettre, $bonnes);
                         $reponse = Reponse::create([
@@ -795,10 +800,12 @@ class QuizController extends Controller
             $startIndex = 1;
 
             foreach ($rows as $index => $row) {
-                if ($index < $startIndex) continue;
+                if ($index < $startIndex)
+                    continue;
 
                 $questionText = $row['B'] ?? null;
-                if (!$questionText) continue;
+                if (!$questionText)
+                    continue;
 
                 $repA = $row['C'] ?? '';
                 $repB = $row['D'] ?? '';
@@ -822,7 +829,8 @@ class QuizController extends Controller
                 $correctIds = [];
 
                 foreach ($reponses as $lettre => $texte) {
-                    if (empty($texte)) continue;
+                    if (empty($texte))
+                        continue;
 
                     $reponse = Reponse::create([
                         'question_id' => $question->id,
@@ -887,8 +895,8 @@ class QuizController extends Controller
                         $title = 'Quiz dupliqué';
                         $body = "Un quiz \"{$newQuiz->titre}\" a été dupliqué dans votre formation.";
                         $data = [
-                            'quiz_id' => (string)$newQuiz->id,
-                            'formation_id' => (string)$newQuiz->formation_id,
+                            'quiz_id' => (string) $newQuiz->id,
+                            'formation_id' => (string) $newQuiz->formation_id,
                             'type' => 'quiz',
                             'event' => 'duplicated',
                         ];
