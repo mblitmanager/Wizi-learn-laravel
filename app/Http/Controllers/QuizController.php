@@ -671,6 +671,19 @@ class QuizController extends Controller
             $user = Auth::user();
             $quiz = Quiz::with(['formation', 'questions.reponses'])->findOrFail($id);
 
+            // Log complet pour le débogage
+            Log::info('Début du traitement du quiz', [
+                'quiz_id' => $quiz->id,
+                'questions_in_quiz' => $quiz->questions->pluck('id'),
+                'questions_in_request' => array_keys($request->answers)
+            ]);
+
+            // Validation
+            $validated = $request->validate([
+                'answers' => 'required|array',
+                'timeSpent' => 'required|integer|min:0'
+            ]);
+
             // Log de débogage détaillé - Payload complet
             Log::info('Requête de soumission de quiz', [
                 'request_data' => $request->all(),
