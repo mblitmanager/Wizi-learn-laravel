@@ -152,7 +152,7 @@ class CatalogueFormationController extends Controller
             })->with('user')->get();
             foreach ($stagiaires as $stagiaire) {
                 if ($stagiaire->user) {
-                    $formation = \App\Models\Formation::find($validated['formation_id']);
+                    $formation = \App\Models\CatalogueFormation::where('formation_id', $validated['formation_id'])->pluck('id');
                     $formationTitre = $formation ? $formation->titre : '';
                     $title = 'Formation mis à jour : ' . $formationTitre;
                     $body = 'Les détails de la formation "' . $formationTitre . '" a été mis à jour.';
