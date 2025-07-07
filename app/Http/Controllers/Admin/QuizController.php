@@ -74,8 +74,8 @@ class QuizController extends Controller
             })->with('user')->get();
             foreach ($stagiaires as $stagiaire) {
                 if ($stagiaire->user && $stagiaire->user->fcm_token) {
-                    $title = "Nouveau quiz pour la formation \"{$formationTitre}\"";
-                    $body = "Un nouveau quiz \"{$quiz->titre}\" est disponible pour la formation \"{$formationTitre}\".";
+                    $title = "\"{$formationTitre}\": un nouveau quiz est disponible!";
+                    $body = "Un nouveau quiz (niveau : {$quiz->niveau}) \"{$quiz->titre}\" est disponible pour la formation \"{$formationTitre}\".";
                     $data = [
                         'quiz_id' => (string) $quiz->id,
                         'formation_id' => (string) $quiz->formation_id,
@@ -882,24 +882,32 @@ class QuizController extends Controller
             // Dupliquer le quiz (sauf id, timestamps)
             $newQuiz = $quiz->replicate(['id', 'created_at', 'updated_at']);
             $newQuiz->titre = $quiz->titre . ' (copie)';
-            $newQuiz->push();
+            $newQuiz->save();
+
+            // On doit explicitement setter formation_id si la relation est nullable ou non castée
+            if (!$newQuiz->formation_id && $quiz->formation_id) {
+                $newQuiz->formation_id = $quiz->formation_id;
+                $newQuiz->save();
+            }
 
             foreach ($quiz->questions as $question) {
                 $newQuestion = $question->replicate(['id', 'quiz_id', 'created_at', 'updated_at']);
                 $newQuestion->quiz_id = $newQuiz->id;
-                $newQuestion->push();
+                $newQuestion->save();
 
                 foreach ($question->reponses as $reponse) {
                     $newReponse = $reponse->replicate(['id', 'question_id', 'created_at', 'updated_at']);
                     $newReponse->question_id = $newQuestion->id;
-                    $newReponse->push();
+                    $newReponse->save();
                 }
             }
 
-            // Envoyer une notification FCM aux stagiaires de la formation
-            $formation = $newQuiz->formation;
+            // Rafraîchir l'instance pour avoir les relations à jour
+            $newQuiz->refresh();
+            $formation = $newQuiz->formation;            
             $formationTitre = $formation ? $formation->titre : '';
-            if ($formation && method_exists($formation, 'stagiaires')) {
+            if ($formation) {
+                
                 $catalogueIds = \App\Models\CatalogueFormation::where('formation_id', $formation->id)->pluck('id');
                 $stagiaires = \App\Models\Stagiaire::whereHas('catalogue_formations', function ($q) use ($catalogueIds) {
                     $q->whereIn('catalogue_formation_id', $catalogueIds);
@@ -933,6 +941,7 @@ class QuizController extends Controller
             DB::rollBack();
             return redirect()->back()->with('error', 'Erreur lors de la duplication : ' . $e->getMessage());
         }
+        // Suppression de l'accolade superflue
     }
 
     /**
