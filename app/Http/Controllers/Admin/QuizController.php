@@ -67,7 +67,7 @@ class QuizController extends Controller
         // Envoyer une notification FCM aux stagiaires de la formation
         $formation = $quiz->formation;
         $formationTitre = $formation ? $formation->titre : '';
-        if ($formation && method_exists($formation, 'stagiaires')) {
+        if ($formation)) {
             $catalogueIds = \App\Models\CatalogueFormation::where('formation_id', $formation->id)->pluck('id');
             $stagiaires = \App\Models\Stagiaire::whereHas('catalogue_formations', function ($q) use ($catalogueIds) {
                 $q->whereIn('catalogue_formation_id', $catalogueIds);
@@ -285,7 +285,7 @@ class QuizController extends Controller
             // Envoyer une notification FCM aux stagiaires de la formation
             $formation = $quiz->formation;
             $formationTitre = $formation ? $formation->titre : '';
-            if ($formation && method_exists($formation, 'stagiaires')) {
+            if ($formation) {
                 $catalogueIds = \App\Models\CatalogueFormation::where('formation_id', $formation->id)->pluck('id');
                 $stagiaires = \App\Models\Stagiaire::whereHas('catalogue_formations', function ($q) use ($catalogueIds) {
                     $q->whereIn('catalogue_formation_id', $catalogueIds);
