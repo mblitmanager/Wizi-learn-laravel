@@ -47,7 +47,7 @@ class SendDailyFormationNotifications extends Command
                     ->where('data->formation_id', (string)$formation->id)
                     ->exists();
                 if (!$alreadyNotified) {
-                    $title = 'Votre formation commence bientôt !';
+                    $title = "\"{$formation->titre}\: votre formation commence bientôt !";
                     $body = "La formation \"{$formation->titre}\" débute le " . Carbon::parse($dateDebut)->format('d/m/Y');
                     $data = [
                         'type' => 'formation',
