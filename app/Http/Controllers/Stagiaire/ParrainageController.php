@@ -123,7 +123,8 @@ class ParrainageController extends Controller
             'parrain_id' => $request->parrain_id,
             'filleul_id' => $user->id,
             'date_parrainage' => now(),
-            'points' => 2
+            'points' => 2,
+            'gains' => 50.00 // Ajout du gain de 50€
         ]);
 
         DB::table('stagiaire_catalogue_formations')->insert([
@@ -172,7 +173,8 @@ class ParrainageController extends Controller
             'success' => true,
             'parrain_id' => $parrain_id,
             'nombre_filleuls' => $nombreFilleuls,
-            'total_points' => $totalPoints
+            'total_points' => $totalPoints,
+            'gains' => Parrainage::where('parrain_id', $parrain_id)->sum('gains'),
         ]);
     }
 }
