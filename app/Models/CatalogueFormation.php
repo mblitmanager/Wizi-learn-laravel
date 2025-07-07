@@ -36,13 +36,24 @@ class CatalogueFormation extends Model
     {
         return $this->belongsTo(Formation::class);
     }
+
+    /**
+     * Relation avec le modèle Formation (One-to-Many, accès via formation_id sur Formation)
+     */
+    public function formations()
+    {
+        return $this->hasMany(Formation::class, 'formation_id', 'id');
+    }
+
     public function formateurs()
     {
         return $this->belongsToMany(Formateur::class, 'formateur_catalogue_formation');
     }
     public function stagiaires()
     {
-        return $this->belongsToMany(Stagiaire::class, 'stagiaire_catalogue_formations', 'catalogue_formation_id', 'stagiaire_id');
+        return $this->belongsToMany(Stagiaire::class, 'stagiaire_catalogue_formations', 'catalogue_formation_id', 'stagiaire_id')
+            ->withPivot('date_debut', 'date_inscription', 'date_fin', 'formateur_id')
+            ->withTimestamps();
     }
 
     /**
@@ -52,4 +63,5 @@ class CatalogueFormation extends Model
     {
         return $this->cursus_pdf ? asset('storage/' . $this->cursus_pdf) : null;
     }
+
 }

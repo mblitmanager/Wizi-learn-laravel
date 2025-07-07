@@ -12,6 +12,7 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use OpenApi\Attributes as OA;
 use Illuminate\Support\Facades\Log;
+use App\Services\CatalogueFormationService;
 
 #[OA\Info(
     title: "JWT Authentication API",
@@ -22,10 +23,12 @@ use Illuminate\Support\Facades\Log;
 class FormationStagiaireController extends Controller
 {
     protected $formationService;
+    protected $catalogueFormationService;
 
-    public function __construct(FormationService $formationService)
+    public function __construct(FormationService $formationService, CatalogueFormationService $catalogueFormationService)
     {
         $this->formationService = $formationService;
+        $this->catalogueFormationService = $catalogueFormationService;
     }
 
 
@@ -97,10 +100,43 @@ class FormationStagiaireController extends Controller
                     return response()->json(['error' => 'non autorisé'], 403);
                 }
             }
-            $formations = $this->formationService->getFormationsByStagiaire($user->stagiaire->id);
+            // Charger les formations du stagiaire avec infos du formateur depuis la table pivot
 
+            $data = $this->catalogueFormationService->getFormationsAndCatalogues($user->stagiaire->id);
+            $catalogues = $data['catalogues'];
+
+            // $formations = $catalogues->pluck('formation')->filter()->values();
+
+
+            $formationsWithPivotFormateur = collect($catalogues)->map(function ($formation) {
+                // Récupère le formateur_id depuis la table pivot ou fallback
+
+                $formateurId = null;
+                if (isset($formation['pivot']['formateur_id'])) {
+                    $formateurId = $formation['pivot']['formateur_id'];
+                } elseif (isset($formation['formateur_id'])) {
+                    $formateurId = $formation['formateur_id'];
+                }
+
+                if ($formateurId) {
+                    $formateur = \App\Models\Formateur::find($formateurId);
+                    $formation['formateur'] = $formateur ? [
+                        'id' => $formateur->id,
+                        'prenom' => $formateur->prenom ?? null,
+                        'nom' => $formateur->user->nom ?? $formateur->user->name ?? null,
+                        'email' => $formateur->user->email ?? null,
+                        'telephone' => $formateur->telephone ?? null,
+                        'image' => $formateur->user->image ?? null,
+                    ] : null;
+
+                } else {
+                    $formation['formateur'] = null;
+                }
+                return $formation;
+            });
+            // dd($formationsWithPivotFormateur);
             return response()->json([
-                'data' => $formations
+                'data' => $formationsWithPivotFormateur
             ]);
         } catch (JWTException $e) {
             return response()->json(['error' => 'Non autorisé'], 401);

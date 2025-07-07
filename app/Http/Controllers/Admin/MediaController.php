@@ -65,8 +65,10 @@ class MediaController extends Controller
 
             foreach ($stagiaires as $stagiaire) {
                 if ($stagiaire->user) {
-                    $title = 'Nouveau média';
-                    $body = "Un nouveau média \"{$media->titre}\" a été ajouté ou mis à jour.";
+                    $title = "\"{$media->titre}\" ajouté";
+                    $formation = \App\Models\Formation::find($media->formation_id);
+                    $formationTitre = $formation ? $formation->titre : '';
+                    $body = "Une nouvelle vidéo,  \"{$media->titre}\", a été ajouté pour la formation \"{$formationTitre}\".";
                     $data = ['type' => 'media', 'media_id' => (string)$media->id];
                     $this->notificationService->sendFcmToUser(
                         $stagiaire->user,

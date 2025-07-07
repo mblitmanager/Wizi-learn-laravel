@@ -152,8 +152,10 @@ class CatalogueFormationController extends Controller
             })->with('user')->get();
             foreach ($stagiaires as $stagiaire) {
                 if ($stagiaire->user) {
-                    $title = 'Catalogue de formation mis à jour';
-                    $body = 'Un catalogue de formation a été mis à jour.';
+                    $formation = \App\Models\CatalogueFormation::where('formation_id', $validated['formation_id'])->pluck('id');
+                    $formationTitre = $formation ? $formation->titre : '';
+                    $title = 'Formation mis à jour : ' . $formationTitre;
+                    $body = 'Les détails de la formation "' . $formationTitre . '" a été mis à jour.';
                     $data = ['type' => 'formation'];
                     $this->notificationService->sendFcmToUser(
                         $stagiaire->user,

@@ -33,7 +33,9 @@ class Stagiaire extends Model
 
     public function catalogue_formations()
     {
-        return $this->belongsToMany(CatalogueFormation::class, 'stagiaire_catalogue_formations', 'stagiaire_id', 'catalogue_formation_id');
+        return $this->belongsToMany(CatalogueFormation::class, 'stagiaire_catalogue_formations', 'stagiaire_id', 'catalogue_formation_id')
+            ->withPivot('date_debut', 'date_inscription', 'date_fin', 'formateur_id')
+            ->withTimestamps();
     }
 
     public function user()

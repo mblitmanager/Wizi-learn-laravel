@@ -20,6 +20,8 @@
                     <div class="btn-group">
                         <a href="{{ route('stagiaires.index') }}" type="button" class="btn btn-sm btn-primary px-4"> <i
                                 class="fadeIn animated bx bx-log-out"></i> Retour</a>
+                        <a href="{{ route('stagiaires.edit', $stagiaire->id) }}" type="button"
+                            class="btn btn-sm btn-warning px-4 ms-2"> <i class="bx bx-edit"></i> Modifier</a>
                     </div>
                 </div>
             </div>
@@ -126,13 +128,13 @@
                                             </div>
                                         </div>
                                         <div class="row mb-3">
-                                            <label class="col-sm-4 ">Date de début de formation :</label>
+                                            <label class="col-sm-4 ">Date de lancement :</label>
                                             <div class="col-sm-8">
                                                 {{ $stagiaire->date_debut_formation ? \Carbon\Carbon::parse($stagiaire->date_debut_formation)->format('d/m/Y') : 'Non renseignée' }}
                                             </div>
                                         </div>
                                         <div class="row mb-3">
-                                            <label class="col-sm-4 ">Date d'inscription :</label>
+                                            <label class="col-sm-4 ">Date de vente :</label>
                                             <div class="col-sm-8">
                                                 {{ $stagiaire->date_inscription ? \Carbon\Carbon::parse($stagiaire->date_inscription)->format('d/m/Y') : 'Non renseignée' }}
                                             </div>
@@ -170,13 +172,18 @@
                                                                     default:
                                                                         $bgColor = 'bg-success';
                                                                 }
+                                                                $formateur = $formation->pivot->formateur_id
+                                                                    ? \App\Models\Formateur::find(
+                                                                        $formation->pivot->formateur_id,
+                                                                    )
+                                                                    : null;
                                                             @endphp
                                                             <div class="accordion-item  ">
                                                                 <h2 class="accordion-header"
                                                                     id="formation-heading-{{ $index }}">
                                                                     <button class="accordion-button text-white"
-                                                                        style="background: {{ $bgColor }}" type="button"
-                                                                        data-bs-toggle="collapse"
+                                                                        style="background: {{ $bgColor }}"
+                                                                        type="button" data-bs-toggle="collapse"
                                                                         data-bs-target="#formation-collapse-{{ $index }}"
                                                                         aria-expanded="false"
                                                                         aria-controls="formation-collapse-{{ $index }}">
@@ -196,6 +203,22 @@
                                                                                     :</strong> {{ $formation->duree }}</li>
                                                                             <li class="list-group-item"><strong>Description
                                                                                     :</strong> {!! $formation->description !!}
+                                                                            </li>
+                                                                            <li class="list-group-item"><strong>Date de début
+                                                                                    de formation :</strong>
+                                                                                {{ $formation->pivot->date_debut ? \Carbon\Carbon::parse($formation->pivot->date_debut)->format('d/m/Y') : 'Non renseignée' }}
+                                                                            </li>
+                                                                            <li class="list-group-item"><strong>Date
+                                                                                    d'inscription :</strong>
+                                                                                {{ $formation->pivot->date_inscription ? \Carbon\Carbon::parse($formation->pivot->date_inscription)->format('d/m/Y') : 'Non renseignée' }}
+                                                                            </li>
+                                                                            <li class="list-group-item"><strong>Date de fin
+                                                                                    :</strong>
+                                                                                {{ $formation->pivot->date_fin ? \Carbon\Carbon::parse($formation->pivot->date_fin)->format('d/m/Y') : 'Non renseignée' }}
+                                                                            </li>
+                                                                            <li class="list-group-item"><strong>Formateur
+                                                                                    :</strong>
+                                                                                {{ $formateur ? $formateur->user->name : 'Non renseigné' }}
                                                                             </li>
                                                                             <li class="list-group-item"><strong>Date de
                                                                                     création :</strong>
@@ -217,7 +240,6 @@
                                         @endunless
 
                                         <!-- Formateurs Section -->
-
                                         @unless ($stagiaire->formateurs->isEmpty())
                                             <div class="card mb-4 shadow-sm">
                                                 <div class="card-header text-white">
@@ -251,21 +273,27 @@
                                                                     data-bs-parent="#accordionFormateurs">
                                                                     <div class="accordion-body">
                                                                         <ul class="list-group list-group-flush">
+                                                                            <li class="list-group-item"><strong>Nom :</strong>
+                                                                                {{ $formateur->user->name }}</li>
                                                                             <li class="list-group-item"><strong>Prénom
                                                                                     :</strong> {{ $formateur->prenom }}</li>
-                                                                            <li class="list-group-item"><strong>Date de
-                                                                                    création :</strong>
-                                                                                {{ $formateur->created_at->format('d/m/Y à H:i') }}
+                                                                            <li class="list-group-item"><strong>Email
+                                                                                    :</strong> <a
+                                                                                    href="mailto:{{ $formateur->user->email }}">{{ $formateur->user->email }}</a>
                                                                             </li>
+                                                                            <li class="list-group-item"><strong>Téléphone
+                                                                                    :</strong> {{ $formateur->telephone }}</li>
                                                                         </ul>
                                                                         <hr>
                                                                         <h6><strong>Formations proposées :</strong></h6>
                                                                         <ul class="list-group">
-                                                                            @if ($formateur->formations && $formateur->formations->count())
-                                                                                @foreach ($formateur->formations as $row)
+                                                                            @if ($formateur->catalogue_formations && $formateur->catalogue_formations->count())
+                                                                                @foreach ($formateur->catalogue_formations as $row)
                                                                                     @php
                                                                                         $bgColor = '';
-                                                                                        switch ($row->categorie) {
+                                                                                        switch (
+                                                                                            $row->formation->categorie
+                                                                                        ) {
                                                                                             case 'Bureautique':
                                                                                                 $bgColor = '#3D9BE9';
                                                                                                 break;
@@ -285,7 +313,7 @@
                                                                                     <li class="list-group-item text-white"
                                                                                         style="background: {{ $bgColor }}">
                                                                                         <strong>{{ $row->titre }}</strong> -
-                                                                                        {{ $row->categorie }}
+                                                                                        {{ $row->formation->categorie ?? ($row->categorie ?? '') }}
                                                                                     </li>
                                                                                 @endforeach
                                                                             @else
@@ -308,7 +336,6 @@
                                         @endunless
 
                                         <!-- Commerciaux Section -->
-
                                         @unless ($stagiaire->commercials->isEmpty())
                                             <div class="card mb-4 shadow-sm">
                                                 <div class="card-header text-dark">
@@ -320,7 +347,6 @@
                                                     <div class="accordion accordion-flush" id="accordionCommercial">
                                                         @foreach ($stagiaire->commercials as $index => $cormecial)
                                                             <div class="accordion-item">
-
                                                                 <h2 class="accordion-header"
                                                                     id="cormecial-heading-{{ $index }}">
                                                                     <button
@@ -344,12 +370,15 @@
                                                                     <div class="accordion-body">
                                                                         <ul class="list-group list-group-flush">
                                                                             <li class="list-group-item"><strong>Nom :</strong>
-                                                                                {{ $cormecial->prenom }}
+                                                                                {{ $cormecial->user->name }}</li>
+                                                                            <li class="list-group-item"><strong>Prénom
+                                                                                    :</strong> {{ $cormecial->prenom }}</li>
+                                                                            <li class="list-group-item"><strong>Email
+                                                                                    :</strong> <a
+                                                                                    href="mailto:{{ $cormecial->user->email }}">{{ $cormecial->user->email }}</a>
                                                                             </li>
-                                                                            <li class="list-group-item"><strong>Date de
-                                                                                    création :</strong>
-                                                                                {{ $cormecial->created_at->format('d/m/Y à H:i') }}
-                                                                            </li>
+                                                                            <li class="list-group-item"><strong>Téléphone
+                                                                                    :</strong> {{ $cormecial->telephone }}</li>
                                                                         </ul>
                                                                     </div>
                                                                 </div>
@@ -361,6 +390,64 @@
                                         @else
                                             <div class="alert alert-warning mt-4">
                                                 <strong>Aucun commercial associé à ce stagiaire.</strong> <br>
+                                                Stagiaire : <strong>{{ $stagiaire->prenom }}</strong>
+                                            </div>
+                                        @endunless
+
+                                        <!-- Pôles Relation Client Section -->
+                                        @unless ($stagiaire->poleRelationClient->isEmpty())
+                                            <div class="card mb-4 shadow-sm">
+                                                <div class="card-header text-dark">
+                                                    <h5 class="mb-0"><i class="bx bx-user-voice me-2"></i> Pôles Relation
+                                                        Client Associés</h5>
+                                                </div>
+                                                <div class="card-body"
+                                                    style="box-shadow: rgba(17, 12, 46, 0.15) 0px 48px 100px 0px;">
+                                                    <div class="accordion accordion-flush" id="accordionPoleRelationClient">
+                                                        @foreach ($stagiaire->poleRelationClient as $index => $pole)
+                                                            <div class="accordion-item">
+                                                                <h2 class="accordion-header"
+                                                                    id="pole-heading-{{ $index }}">
+                                                                    <button
+                                                                        class="accordion-button d-flex justify-content-between align-items-center shadow-sm p-3 collapsed"
+                                                                        type="button" data-bs-toggle="collapse"
+                                                                        data-bs-target="#pole-collapse-{{ $index }}"
+                                                                        aria-expanded="false"
+                                                                        aria-controls="pole-collapse-{{ $index }}">
+                                                                        <div class="d-flex align-items-center">
+                                                                            <i class="bx bx-user-voice me-3"
+                                                                                style="font-size: 1.5rem;"></i>
+                                                                            <div class=""> {{ $pole->user->name }}</div>
+                                                                        </div>
+                                                                    </button>
+                                                                </h2>
+                                                                <div id="pole-collapse-{{ $index }}"
+                                                                    class="accordion-collapse collapse"
+                                                                    aria-labelledby="pole-heading-{{ $index }}"
+                                                                    data-bs-parent="#accordionPoleRelationClient">
+                                                                    <div class="accordion-body">
+                                                                        <ul class="list-group list-group-flush">
+                                                                            <li class="list-group-item"><strong>Nom :</strong>
+                                                                                {{ $pole->user->name }}</li>
+                                                                            <li class="list-group-item"><strong>Prénom
+                                                                                    :</strong> {{ $pole->prenom }}</li>
+                                                                            <li class="list-group-item"><strong>Email
+                                                                                    :</strong> <a
+                                                                                    href="mailto:{{ $pole->user->email }}">{{ $pole->user->email }}</a>
+                                                                            </li>
+                                                                            <li class="list-group-item"><strong>Téléphone
+                                                                                    :</strong> {{ $pole->telephone }}</li>
+                                                                        </ul>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @else
+                                            <div class="alert alert-warning mt-4">
+                                                <strong>Aucun pôle relation client associé à ce stagiaire.</strong> <br>
                                                 Stagiaire : <strong>{{ $stagiaire->prenom }}</strong>
                                             </div>
                                         @endunless
