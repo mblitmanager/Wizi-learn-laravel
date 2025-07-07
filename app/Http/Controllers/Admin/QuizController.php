@@ -66,12 +66,16 @@ class QuizController extends Controller
 
         // Envoyer une notification FCM aux stagiaires de la formation
         $formation = $quiz->formation;
+        $formationTitre = $formation ? $formation->titre : '';
         if ($formation && method_exists($formation, 'stagiaires')) {
-            $stagiaires = $formation->stagiaires()->with('user')->get();
+            $catalogueIds = \App\Models\CatalogueFormation::where('formation_id', $formation->id)->pluck('id');
+            $stagiaires = \App\Models\Stagiaire::whereHas('catalogue_formations', function ($q) use ($catalogueIds) {
+                $q->whereIn('catalogue_formation_id', $catalogueIds);
+            })->with('user')->get();
             foreach ($stagiaires as $stagiaire) {
                 if ($stagiaire->user && $stagiaire->user->fcm_token) {
-                    $title = 'Nouveau quiz disponible';
-                    $body = "Un nouveau quiz \"{$quiz->titre}\" est disponible dans votre formation.";
+                    $title = "Nouveau quiz pour la formation \"{$formationTitre}\"";
+                    $body = "Un nouveau quiz \"{$quiz->titre}\" est disponible pour la formation \"{$formationTitre}\".";
                     $data = [
                         'quiz_id' => (string) $quiz->id,
                         'formation_id' => (string) $quiz->formation_id,
@@ -280,12 +284,16 @@ class QuizController extends Controller
 
             // Envoyer une notification FCM aux stagiaires de la formation
             $formation = $quiz->formation;
+            $formationTitre = $formation ? $formation->titre : '';
             if ($formation && method_exists($formation, 'stagiaires')) {
-                $stagiaires = $formation->stagiaires()->with('user')->get();
+                $catalogueIds = \App\Models\CatalogueFormation::where('formation_id', $formation->id)->pluck('id');
+                $stagiaires = \App\Models\Stagiaire::whereHas('catalogue_formations', function ($q) use ($catalogueIds) {
+                    $q->whereIn('catalogue_formation_id', $catalogueIds);
+                })->with('user')->get();
                 foreach ($stagiaires as $stagiaire) {
                     if ($stagiaire->user && $stagiaire->user->fcm_token) {
-                        $title = 'Quiz mis à jour';
-                        $body = "Le quiz \"{$quiz->titre}\" a été mis à jour dans votre formation.";
+                        $title = "Quiz mis à jour pour la formation \"{$formationTitre}\"";
+                        $body = "Le quiz \"{$quiz->titre}\" a été mis à jour pour la formation \"{$formationTitre}\".";
                         $data = [
                             'quiz_id' => (string) $quiz->id,
                             'formation_id' => (string) $quiz->formation_id,
@@ -532,13 +540,15 @@ class QuizController extends Controller
 
             // Envoyer une notification FCM uniquement aux stagiaires rattachés à la formation du quiz
             $formationId = $quiz->formation_id;
+            $formation = Formation::find($formationId);
+            $formationTitre = $formation ? $formation->titre : '';
             $stagiaires = Stagiaire::whereHas('catalogue_formations', function ($query) use ($formationId) {
                 $query->where('formation_id', $formationId);
             })->with('user')->get();
             foreach ($stagiaires as $stagiaire) {
                 if ($stagiaire->user && $stagiaire->user->fcm_token) {
-                    $title = 'Nouveau quiz disponible';
-                    $body = 'Un nouveau quiz "' . $quiz->titre . '" est disponible.';
+                    $title = "Nouveau quiz pour la formation \"{$formationTitre}\"";
+                    $body = "Un nouveau quiz \"{$quiz->titre}\" est disponible pour la formation \"{$formationTitre}\".";
                     $data = [
                         'quiz_id' => (string) $quiz->id,
                         'formation_id' => (string) $formationId,
@@ -888,12 +898,16 @@ class QuizController extends Controller
 
             // Envoyer une notification FCM aux stagiaires de la formation
             $formation = $newQuiz->formation;
+            $formationTitre = $formation ? $formation->titre : '';
             if ($formation && method_exists($formation, 'stagiaires')) {
-                $stagiaires = $formation->stagiaires()->with('user')->get();
+                $catalogueIds = \App\Models\CatalogueFormation::where('formation_id', $formation->id)->pluck('id');
+                $stagiaires = \App\Models\Stagiaire::whereHas('catalogue_formations', function ($q) use ($catalogueIds) {
+                    $q->whereIn('catalogue_formation_id', $catalogueIds);
+                })->with('user')->get();
                 foreach ($stagiaires as $stagiaire) {
                     if ($stagiaire->user && $stagiaire->user->fcm_token) {
-                        $title = 'Quiz dupliqué';
-                        $body = "Un quiz \"{$newQuiz->titre}\" a été dupliqué dans votre formation.";
+                        $title = "Quiz dupliqué pour la formation \"{$formationTitre}\"";
+                        $body = "Un quiz \"{$newQuiz->titre}\" a été créé pour la formation \"{$formationTitre}\".";
                         $data = [
                             'quiz_id' => (string) $newQuiz->id,
                             'formation_id' => (string) $newQuiz->formation_id,

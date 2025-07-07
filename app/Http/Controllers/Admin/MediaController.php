@@ -67,8 +67,8 @@ class MediaController extends Controller
                 if ($stagiaire->user) {
                     $title = "\"{$media->titre}\" ajouté";
                     $formation = \App\Models\Formation::find($media->formation_id);
-$formationTitre = $formation ? $formation->titre : '';
-$body = "Une nouvelle vidéo,  \"{$media->titre}\", a été ajouté pour la formation \"{$formationTitre}\".";
+                    $formationTitre = $formation ? $formation->titre : '';
+                    $body = "Une nouvelle vidéo,  \"{$media->titre}\", a été ajouté pour la formation \"{$formationTitre}\".";
                     $data = ['type' => 'media', 'media_id' => (string)$media->id];
                     $this->notificationService->sendFcmToUser(
                         $stagiaire->user,
