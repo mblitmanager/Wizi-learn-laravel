@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Parrainage extends Model
 {
     protected $table = 'parrainages';
-    protected $fillable = ['id', 'filleul_id', 'parrain_id', 'date_parrainage', 'points'];
+    protected $fillable = ['id', 'filleul_id', 'parrain_id', 'date_parrainage', 'points', 'gains'];
 
     public function filleul(): BelongsTo
     {

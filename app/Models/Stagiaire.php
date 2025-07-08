@@ -26,6 +26,7 @@ class Stagiaire extends Model
         'role',
         'statut',
         'user_id',
+        'date_fin_formation'
     ];
 
 

@@ -67,7 +67,7 @@ class QuizController extends Controller
         // Envoyer une notification FCM aux stagiaires de la formation
         $formation = $quiz->formation;
         $formationTitre = $formation ? $formation->titre : '';
-        if ($formation)) {
+        if ($formation) {
             $catalogueIds = \App\Models\CatalogueFormation::where('formation_id', $formation->id)->pluck('id');
             $stagiaires = \App\Models\Stagiaire::whereHas('catalogue_formations', function ($q) use ($catalogueIds) {
                 $q->whereIn('catalogue_formation_id', $catalogueIds);
@@ -904,10 +904,10 @@ class QuizController extends Controller
 
             // Rafraîchir l'instance pour avoir les relations à jour
             $newQuiz->refresh();
-            $formation = $newQuiz->formation;            
+            $formation = $newQuiz->formation;
             $formationTitre = $formation ? $formation->titre : '';
             if ($formation) {
-                
+
                 $catalogueIds = \App\Models\CatalogueFormation::where('formation_id', $formation->id)->pluck('id');
                 $stagiaires = \App\Models\Stagiaire::whereHas('catalogue_formations', function ($q) use ($catalogueIds) {
                     $q->whereIn('catalogue_formation_id', $catalogueIds);

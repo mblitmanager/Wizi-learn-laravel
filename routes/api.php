@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\JWTAuthController;
 use App\Http\Middleware\JwtMiddleware;
 use Illuminate\Support\Facades\Route;
@@ -30,6 +31,10 @@ Route::prefix('parrainage')->group(function () {
     Route::post('/register-filleul', [ParrainageController::class, 'registerFilleul']);
 });
 Route::get('formationParrainage', [CatalogueFormationController::class, 'getAllCatalogueFormations']);
+
+// Demande de réinitialisation
+Route::post('/forgot-password', [JWTAuthController::class, 'sendResetLink']);
+Route::post('/reset-password', [JWTAuthController::class, 'resetPassword']);
 // Cette route est déjà en dehors du groupe Route::middleware(['auth:api']), donc elle est publique.
 Route::middleware(['auth:api'])->group(function () {
     Route::post('logout', [JWTAuthController::class, 'logout']);

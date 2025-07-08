@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\PasswordResetMail;
 use App\Models\Commercial;
 use App\Models\Formateur;
 use App\Models\LoginHistories;
@@ -14,7 +15,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Str;
 
 class AdminController extends Controller
 {
@@ -305,5 +308,70 @@ class AdminController extends Controller
             Auth::logout();
         }
         return redirect()->route('login')->with('success', 'Logged out successfully.');
+    }
+
+    public function showForgotPasswordForm()
+    {
+        return view('admin.auth.forgot-password');
+    }
+
+    public function sendResetLink(Request $request)
+    {
+        $request->validate(['email' => 'required|email']);
+
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            return back()->withErrors(['email' => 'Email non trouvé']);
+        }
+
+        $token = Str::random(60);
+
+        DB::table('password_reset_tokens')->updateOrInsert(
+            ['email' => $user->email],
+            ['token' => Hash::make($token), 'created_at' => now()]
+        );
+
+        $resetLink = url('/reset-password/'.$token.'?email='.urlencode($user->email));
+        Mail::to($user->email)->send(new PasswordResetMail($resetLink));
+
+        return back()->with('status', 'Un lien de réinitialisation a été envoyé à votre adresse email');
+    }
+
+    public function showResetForm(Request $request, $token)
+    {
+        return view('admin.auth.reset-password', [
+            'token' => $token,
+            'email' => $request->email
+        ]);
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'token' => 'required',
+            'email' => 'required|email',
+            'password' => 'required|confirmed|min:8',
+        ]);
+
+        $record = DB::table('password_reset_tokens')
+            ->where('email', $request->email)
+            ->first();
+
+        if (!$record || !Hash::check($request->token, $record->token)) {
+            return back()->withErrors(['email' => 'Token invalide ou expiré']);
+        }
+
+        if (now()->subMinutes(60)->gt($record->created_at)) {
+            return back()->withErrors(['email' => 'Token expiré']);
+        }
+
+        $user = User::where('email', $request->email)->first();
+        $user->password = Hash::make($request->password);
+        $user->save();
+
+        DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+
+        return redirect('/login')->with('status', 'Votre mot de passe a été réinitialisé avec succès');
     }
 }
