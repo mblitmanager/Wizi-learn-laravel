@@ -250,7 +250,8 @@ class ParametreAdminController extends Controller
 
             // Réinitialiser les participations aux quiz
             if (in_array('participations', $resetData)) {
-                \App\Models\Participation::truncate();
+                // Utiliser delete pour éviter les problèmes de clé étrangère
+                \App\Models\Participation::query()->delete();
             }
 
             // Réinitialiser les réponses aux quiz
@@ -261,6 +262,11 @@ class ParametreAdminController extends Controller
             // Réinitialiser les progressions
             if (in_array('progression', $resetData)) {
                 \App\Models\Progression::truncate();
+            }
+
+            // Nettoyer la table challenges si demandé
+            if (in_array('challenges', $resetData)) {
+                \App\Models\Challenge::query()->delete();
             }
 
             $message = 'Les données sélectionnées ont été réinitialisées avec succès.';
