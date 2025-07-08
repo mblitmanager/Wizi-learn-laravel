@@ -28,6 +28,14 @@ Route::get('/admin', function () {
     return redirect()->route('dashboard');
 });
 
+// Demande de réinitialisation
+Route::get('/forgot-password', [AdminController::class, 'showForgotPasswordForm'])->name('password.request');
+Route::post('/forgot-password', [AdminController::class, 'sendResetLink'])->name('password.email');
+
+// Réinitialisation effective
+Route::get('/reset-password/{token}', [AdminController::class, 'showResetForm'])->name('password.reset');
+Route::post('/reset-password', [AdminController::class, 'resetPassword'])->name('password.update');
+
 Route::prefix('administrateur')->group(function () {
     Route::get('/register', [AdminController::class, 'showRegisterForm'])->name('register');
     Route::post('/register', [AdminController::class, 'register'])->name('register.post');
