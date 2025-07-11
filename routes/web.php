@@ -88,6 +88,12 @@ Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function
     Route::post('/catalogue_formation/{id}/duplicate', [CatalogueFormationController::class, 'duplicate'])->name('catalogue_formation.duplicate');
     Route::get('catalogue_formation/{id}/download-pdf', [CatalogueFormationController::class, 'downloadPdf'])->name('catalogue_formation.download-pdf');
 
+
+    // Route pour le manuel interactif admin
+    Route::get('/manual', function() {
+        return view('admin.manual');
+    })->name('admin.manual');
+
     // Routes pour la réinitialisation des données
     Route::get('/parametre/reset-data', [ParametreAdminController::class, 'showResetData'])->name('admin.parametre.reset-data');
     Route::post('/parametre/reset-data', [ParametreAdminController::class, 'resetData'])->name('admin.parametre.reset-data.post');

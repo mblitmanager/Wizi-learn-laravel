@@ -48,15 +48,12 @@
     {{--        crossorigin="anonymous" referrerpolicy="no-referrer" /> --}}
     {{-- @vite(['resources/css/app.css', 'resources/js/app.js']) --}}
 
-    <title>Wize Learn</title>
+    <title>@yield('title', 'Wize Learn')</title>
 </head>
 
 <body>
     <!--wrapper-->
     <div class="wrapper">
-
-
-
         <!--sidebar wrapper -->
         <div class="sidebar-wrapper" data-simplebar="true">
             @include('admin.partials.sidebar')
@@ -83,6 +80,7 @@
         </footer>
     </div>
     <!--end wrapper-->
+    @yield('manual-scripts')
     <!-- Bootstrap JS -->
     @yield('scripts')
     @include('admin.partials.scripts')
