@@ -72,6 +72,7 @@ class QuizController extends Controller
             $stagiaires = \App\Models\Stagiaire::whereHas('catalogue_formations', function ($q) use ($catalogueIds) {
                 $q->whereIn('catalogue_formation_id', $catalogueIds);
             })->with('user')->get();
+            $iconUrl = url('media/wizi.png');
             foreach ($stagiaires as $stagiaire) {
                 if ($stagiaire->user && $stagiaire->user->fcm_token) {
                     $title = "\"{$formationTitre}\": un nouveau quiz est disponible!";
@@ -81,6 +82,7 @@ class QuizController extends Controller
                         'formation_id' => (string) $quiz->formation_id,
                         'type' => 'quiz',
                         'event' => 'created',
+                        'icon' => $iconUrl,
                     ];
                     $this->notificationService->sendFcmToUser($stagiaire->user, $title, $body, $data);
                     \App\Models\Notification::create([
@@ -290,6 +292,7 @@ class QuizController extends Controller
                 $stagiaires = \App\Models\Stagiaire::whereHas('catalogue_formations', function ($q) use ($catalogueIds) {
                     $q->whereIn('catalogue_formation_id', $catalogueIds);
                 })->with('user')->get();
+                $iconUrl = url('media/wizi.png');
                 foreach ($stagiaires as $stagiaire) {
                     if ($stagiaire->user && $stagiaire->user->fcm_token) {
                         $title = "\"{$formationTitre}\"";
@@ -299,6 +302,7 @@ class QuizController extends Controller
                             'formation_id' => (string) $quiz->formation_id,
                             'type' => 'quiz',
                             'event' => 'updated',
+                            'icon' => $iconUrl,
                         ];
                         $this->notificationService->sendFcmToUser($stagiaire->user, $title, $body, $data);
                         \App\Models\Notification::create([

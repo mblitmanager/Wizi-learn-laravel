@@ -74,7 +74,11 @@ class CatalogueFormationController extends Controller
                 if ($stagiaire->user) {
                     $title = 'Catalogue de formation';
                     $body = 'Un nouveau catalogue de formation a été ajouté ou mis à jour.';
-                    $data = ['type' => 'formation'];
+                    $iconUrl = url('media/wizi.png'); // Assure-toi que l'image est bien à cet emplacement
+                    $data = [
+                        'type' => 'formation',
+                        'icon' => $iconUrl
+                    ];
                     $this->notificationService->sendFcmToUser(
                         $stagiaire->user,
                         $title,

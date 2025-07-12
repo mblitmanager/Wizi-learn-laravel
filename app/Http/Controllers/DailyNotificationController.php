@@ -41,12 +41,17 @@ class DailyNotificationController extends Controller
                     $client->addScope('https://www.googleapis.com/auth/firebase.messaging');
                     $client->fetchAccessTokenWithAssertion();
                     $accessToken = $client->getAccessToken()['access_token'];
+                    $iconUrl = url('media/wizi.png');
                     $data = [
                         'message' => [
                             'token' => $stagiaire->user->fcm_token,
                             'notification' => [
                                 'title' => 'Rappel de formation',
                                 'body' => 'Votre formation commence bientôt !',
+                                'icon' => $iconUrl,
+                            ],
+                            'data' => [
+                                'icon' => $iconUrl,
                             ],
                         ],
                     ];

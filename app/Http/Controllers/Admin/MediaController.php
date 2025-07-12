@@ -69,7 +69,8 @@ class MediaController extends Controller
                     $formation = \App\Models\Formation::find($media->formation_id);
                     $formationTitre = $formation ? $formation->titre : '';
                     $body = "Une nouvelle vidéo,  \"{$media->titre}\", a été ajouté pour la formation \"{$formationTitre}\".";
-                    $data = ['type' => 'media', 'media_id' => (string)$media->id];
+                    $iconUrl = url('media/wizi.png');
+                    $data = ['type' => 'media', 'media_id' => (string)$media->id, 'icon' => $iconUrl];
                     $this->notificationService->sendFcmToUser(
                         $stagiaire->user,
                         $title,
@@ -128,7 +129,8 @@ class MediaController extends Controller
                 if ($stagiaire->user) {
                     $title = 'Média mis à jour';
                     $body = "Le média \"{$media->titre}\" a été mis à jour.";
-                    $data = ['type' => 'media', 'media_id' => (string)$media->id];
+                    $iconUrl = url('media/wizi.png');
+                    $data = ['type' => 'media', 'media_id' => (string)$media->id, 'icon' => $iconUrl];
                     $this->notificationService->sendFcmToUser(
                         $stagiaire->user,
                         $title,
