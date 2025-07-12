@@ -292,7 +292,7 @@ class QuizController extends Controller
                 })->with('user')->get();
                 foreach ($stagiaires as $stagiaire) {
                     if ($stagiaire->user && $stagiaire->user->fcm_token) {
-                        $title = "Quiz mis à jour pour la formation \"{$formationTitre}\"";
+                        $title = "\"{$formationTitre}\"";
                         $body = "Le quiz \"{$quiz->titre}\" a été mis à jour pour la formation \"{$formationTitre}\".";
                         $data = [
                             'quiz_id' => (string) $quiz->id,
@@ -914,7 +914,7 @@ class QuizController extends Controller
                 })->with('user')->get();
                 foreach ($stagiaires as $stagiaire) {
                     if ($stagiaire->user && $stagiaire->user->fcm_token) {
-                        $title = "Quiz dupliqué pour la formation \"{$formationTitre}\"";
+                        $title = "\"{$formationTitre}\" : nouveau quiz";
                         $body = "Un quiz \"{$newQuiz->titre}\" a été créé pour la formation \"{$formationTitre}\".";
                         $data = [
                             'quiz_id' => (string) $newQuiz->id,
@@ -936,7 +936,7 @@ class QuizController extends Controller
             }
             DB::commit();
             return redirect()->route('quiz.edit', $newQuiz->id)
-                ->with('success', 'Quiz dupliqué avec succès.');
+                ->with('success', 'Quiz créé avec succès.');
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->with('error', 'Erreur lors de la duplication : ' . $e->getMessage());

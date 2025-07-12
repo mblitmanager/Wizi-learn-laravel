@@ -37,7 +37,8 @@ class ContactController extends Controller
 
             // --- Construction manuelle des contacts pour le front ---
             $stagiaireId = $user->stagiaire->id;
-            $formateurs = \App\Models\Formateur::with(['user', 'catalogue_formations' => function($q) use ($stagiaireId) {
+            // Formateurs liés au stagiaire
+            $formateurs = $user->stagiaire->formateurs()->with(['user', 'catalogue_formations' => function($q) use ($stagiaireId) {
                 $q->whereHas('stagiaires', function($q2) use ($stagiaireId) {
                     $q2->where('stagiaire_id', $stagiaireId);
                 });
@@ -46,7 +47,6 @@ class ContactController extends Controller
             $formateursArr = $formateurs->map(function ($formateur) use ($stagiaireId) {
                 $formations = [];
                 foreach ($formateur->catalogue_formations as $formation) {
-                    // On récupère le pivot pour ce stagiaire uniquement
                     $pivot = $formation->stagiaires()->where('stagiaire_id', $stagiaireId)->first();
                     if ($pivot) {
                         $formations[] = [
@@ -68,7 +68,8 @@ class ContactController extends Controller
                 ];
             });
 
-            $commerciaux = \App\Models\Commercial::with('user')->get()->map(function ($commercial) {
+            // Commerciaux liés au stagiaire
+            $commerciaux = $user->stagiaire->commercials()->with('user')->get()->map(function ($commercial) {
                 return [
                     'id' => $commercial->id,
                     'type' => 'Commercial',
@@ -78,7 +79,8 @@ class ContactController extends Controller
                 ];
             });
 
-            $poleRelation = \App\Models\PoleRelationClient::with('user')->get()->map(function ($pole) {
+            // Pôle Relation Client liés au stagiaire
+            $poleRelation = $user->stagiaire->poleRelationClients()->with('user')->get()->map(function ($pole) {
                 return [
                     'id' => $pole->id,
                     'type' => 'Pôle Relation Client',
@@ -115,35 +117,24 @@ class ContactController extends Controller
 
             // --- Construction manuelle des contacts pour le front ---
             $stagiaireId = $user->stagiaire->id;
-
-            $formateurs = Formateur::with(['user', 'catalogue_formations' => function($q) use ($stagiaireId) {
-                if ($stagiaireId) {
-                    $q->whereHas('stagiaires', function($q2) use ($stagiaireId) {
-                        $q2->where('stagiaire_id', $stagiaireId);
-                    });
-                }
+            // Formateurs liés au stagiaire
+            $formateurs = $user->stagiaire->formateurs()->with(['user', 'catalogue_formations' => function($q) use ($stagiaireId) {
+                $q->whereHas('stagiaires', function($q2) use ($stagiaireId) {
+                    $q2->where('stagiaire_id', $stagiaireId);
+                });
             }])->get();
 
             $formateursArr = $formateurs->map(function ($formateur) use ($stagiaireId) {
                 $formations = [];
                 foreach ($formateur->catalogue_formations as $formation) {
-
-                    if ($stagiaireId) {
-                        $pivot = $formation->stagiaires()->where('stagiaire_id', $stagiaireId)->first();
-
-                        if ($pivot) {
-                            $formations[] = [
-                                'id' => $formation->id,
-                                'titre' => $formation->titre,
-                                'dateDebut' => $pivot->pivot->date_debut ?? null,
-                                'dateFin' => $pivot->pivot->date_fin ?? null,
-                                'formateur' => $formateur->user->name,
-                            ];
-                        }
-                    } else {
+                    $pivot = $formation->stagiaires()->where('stagiaire_id', $stagiaireId)->first();
+                    if ($pivot) {
                         $formations[] = [
                             'id' => $formation->id,
                             'titre' => $formation->titre,
+                            'dateDebut' => $pivot->pivot->date_debut ?? null,
+                            'dateFin' => $pivot->pivot->date_fin ?? null,
+                            'formateur' => $formateur->user->name,
                         ];
                     }
                 }
@@ -168,20 +159,28 @@ class ContactController extends Controller
     public function getCommerciaux()
     {
         try {
-            $commercials = Commercial::with(['user'])
-                ->get()
-                ->map(function ($commercial) {
-                    return [
-                        'id' => $commercial->id,
-                        'name' => $commercial->user->name,
-                        'email' => $commercial->user->email,
-                        'phone' => $commercial->telephone ?? '',
-                        'role' => 'Commercial',
-                        'avatar' => $commercial->user->image ?? '/images/default-avatar.png',
-                        'created_at' => $commercial->created_at->format('d/m/Y')
-                    ];
-                });
-
+            $user = JWTAuth::parseToken()->authenticate();
+            if (!isset($user->relations['stagiaire'])) {
+                $user->load('stagiaire');
+            }
+            if ($user->role != 'formateur' && $user->role != 'admin') {
+                $userStagiaire = $user->stagiaire;
+                if (!$userStagiaire) {
+                    return response()->json(['error' => 'non autorisé'], 403);
+                }
+            }
+            // Commerciaux liés au stagiaire
+            $commercials = $user->stagiaire->commercials()->with('user')->get()->map(function ($commercial) {
+                return [
+                    'id' => $commercial->id,
+                    'name' => $commercial->user->name,
+                    'email' => $commercial->user->email,
+                    'phone' => $commercial->telephone ?? '',
+                    'role' => 'Commercial',
+                    'avatar' => $commercial->user->image ?? '/images/default-avatar.png',
+                    'created_at' => $commercial->created_at->format('d/m/Y')
+                ];
+            });
             $paginate = PaginationHelper::paginate($commercials, 10);
             return response()->json($paginate);
         } catch (\Exception $e) {
@@ -192,19 +191,28 @@ class ContactController extends Controller
     public function getPoleRelation()
     {
         try {
-            $poles   = PoleRelationClient::with(['user'])
-                ->get()
-                ->map(function ($pole) {
-                    return [
-                        'id' => $pole->id,
-                        'name' => $pole->user->name,
-                        'email' => $pole->user->email,
-                        'phone' => $pole->telephone ?? '',
-                        'role' => 'Pôle Relation',
-                        'avatar' => $pole->user->image ?? '/images/default-avatar.png',
-                        'created_at' => $pole->created_at->format('d/m/Y')
-                    ];
-                });
+            $user = JWTAuth::parseToken()->authenticate();
+            if (!isset($user->relations['stagiaire'])) {
+                $user->load('stagiaire');
+            }
+            if ($user->role != 'formateur' && $user->role != 'admin') {
+                $userStagiaire = $user->stagiaire;
+                if (!$userStagiaire) {
+                    return response()->json(['error' => 'non autorisé'], 403);
+                }
+            }
+            // Pôle Relation Client liés au stagiaire
+            $poles = $user->stagiaire->poleRelationClients()->with('user')->get()->map(function ($pole) {
+                return [
+                    'id' => $pole->id,
+                    'name' => $pole->user->name,
+                    'email' => $pole->user->email,
+                    'phone' => $pole->telephone ?? '',
+                    'role' => 'Pôle Relation',
+                    'avatar' => $pole->user->image ?? '/images/default-avatar.png',
+                    'created_at' => $pole->created_at->format('d/m/Y')
+                ];
+            });
             $paginate = PaginationHelper::paginate($poles, 10);
             return response()->json($paginate);
         } catch (\Exception $e) {
