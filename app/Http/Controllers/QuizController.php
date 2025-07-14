@@ -310,7 +310,12 @@ class QuizController extends Controller
 
         $stats = [
             'totalQuizzes' => Progression::where('stagiaire_id', $stagiaire->id)->count(),
-            'averageScore' => Progression::where('stagiaire_id', $stagiaire->id)->avg('score'),
+            // <?php
+            // ...existing code...
+            'averageScore' => Classement::where('stagiaire_id', $stagiaire->id)->count() > 0
+                ? round(Classement::where('stagiaire_id', $stagiaire->id)->sum('points') / Classement::where('stagiaire_id', $stagiaire->id)->count(), 2)
+                : 0,
+            // ...existing code...
             'totalPoints' => Progression::where('stagiaire_id', $stagiaire->id)->sum('score'),
             'categoryStats' => $this->getCategoryStatsForStagiaire($stagiaire->id),
             'levelProgress' => $this->getLevelProgress($stagiaire->id)
@@ -680,8 +685,7 @@ class QuizController extends Controller
 
             // Validation
             $validated = $request->validate([
-                'answers' => 'required|array',
-                'timeSpent' => 'required|integer|min:0'
+                'answers' => 'required|array'
             ]);
 
             // Log de débogage détaillé - Payload complet
@@ -726,6 +730,10 @@ class QuizController extends Controller
                     'time_spent' => 0
                 ]
             );
+
+            // Calculer le temps passé entre started_at et maintenant
+            $startedAt = $participation->started_at ?? now();
+            $timeSpent = $startedAt ? now()->diffInSeconds($startedAt) : 0;
 
             // Préparer les détails des questions et réponses
             $questionsDetails = $quiz->questions
@@ -773,7 +781,7 @@ class QuizController extends Controller
                 'score' => $score,
                 'correct_answers' => $correctAnswers,
                 'total_questions' => $totalQuestions,
-                'time_spent' => $request->timeSpent,
+                'time_spent' => $timeSpent,
                 'completion_time' => now()
             ]);
 
@@ -861,7 +869,7 @@ class QuizController extends Controller
                 'status' => 'completed',
                 'score' => $score,
                 'correct_answers' => $correctAnswers,
-                'time_spent' => $request->timeSpent,
+                'time_spent' => $timeSpent,
                 'completed_at' => now(),
             ]);
 
@@ -880,7 +888,6 @@ class QuizController extends Controller
                 'timeSpent' => $result->time_spent,
                 'questions' => $questionsDetails->values()->all()
             ])->setStatusCode(201, 'Résultat du quiz soumis avec succès');
-
         } catch (\Exception $e) {
             Log::error('Erreur dans submitQuizResult', [
                 'error' => $e->getMessage(),
