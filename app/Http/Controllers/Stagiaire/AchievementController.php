@@ -42,7 +42,14 @@ class AchievementController extends Controller
             if (!$stagiaire) {
                 return response()->json(['error' => 'Stagiaire non trouvé'], 404);
             }
-            $newAchievements = $this->achievementService->checkAchievements($stagiaire);
+
+            // Si un code d'achievement est passé (ex: android_download)
+            $code = $request->input('code');
+            if ($code) {
+                $newAchievements = $this->achievementService->unlockAchievementByCode($stagiaire, $code);
+            } else {
+                $newAchievements = $this->achievementService->checkAchievements($stagiaire);
+            }
             return response()->json(['new_achievements' => $newAchievements]);
         } catch (JWTException $e) {
             return response()->json(['error' => 'Unauthorized'], 401);

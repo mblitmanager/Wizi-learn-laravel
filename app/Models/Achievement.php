@@ -39,4 +39,9 @@ class Achievement extends Model
             ->withPivot('unlocked_at')
             ->withTimestamps();
     }
+    // Pour compatibilité avec withCount('users')
+    public function users()
+    {
+        return $this->belongsToMany(Stagiaire::class, 'stagiaire_achievements', 'achievement_id', 'stagiaire_id');
+    }
 }

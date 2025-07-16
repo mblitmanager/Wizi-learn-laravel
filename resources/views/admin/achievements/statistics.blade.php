@@ -3,8 +3,11 @@
 @section('content')
 <div class="container-fluid">
     <div class="card mt-4">
-        <div class="card-header">
+        <div class="card-header d-flex justify-content-between align-items-center">
             <h4>Statistiques des Succès</h4>
+            <a href="{{ route('admin.achievements.detailed-stats') }}" class="btn btn-info btn-sm">
+                Détails par stagiaire
+            </a>
         </div>
         <div class="card-body">
             <ul class="list-group mb-4">

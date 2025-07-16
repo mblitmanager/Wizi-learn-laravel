@@ -77,7 +77,22 @@ class AchievementController extends Controller
     public function apiStore(Request $request)
     {
         $achievement = Achievement::create($request->all());
+
         return response()->json(['achievement' => $achievement], 201);
+    }
+
+    /**
+     * Affiche les statistiques détaillées des succès par stagiaire et par achievement.
+     */
+    public function detailedStats()
+    {
+        $stagiaires = \App\Models\Stagiaire::with(['achievements' => function($q) {
+            $q->withPivot('created_at');
+        }])->get();
+
+        $achievements = \App\Models\Achievement::withCount('users')->get();
+
+        return view('admin.achievements.detailed_stats', compact('stagiaires', 'achievements'));
     }
 
     // PUT /api/admin/achievements/{id}

@@ -115,6 +115,7 @@ Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function
     Route::get('/achievements', [\App\Http\Controllers\Admin\AchievementController::class, 'index'])->name('admin.achievements.index');
     Route::get('/achievements/create', [\App\Http\Controllers\Admin\AchievementController::class, 'create'])->name('admin.achievements.create');
     Route::post('/achievements', [\App\Http\Controllers\Admin\AchievementController::class, 'store'])->name('admin.achievements.store');
+    Route::get('/achievements/detailed-stats', [\App\Http\Controllers\Admin\AchievementController::class, 'detailedStats'])->name('admin.achievements.detailed-stats');
     Route::get('/achievements/{achievement}/edit', [\App\Http\Controllers\Admin\AchievementController::class, 'edit'])->name('admin.achievements.edit');
     Route::put('/achievements/{achievement}', [\App\Http\Controllers\Admin\AchievementController::class, 'update'])->name('admin.achievements.update');
     Route::delete('/achievements/{achievement}', [\App\Http\Controllers\Admin\AchievementController::class, 'destroy'])->name('admin.achievements.destroy');

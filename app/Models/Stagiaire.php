@@ -96,4 +96,9 @@ class Stagiaire extends Model
     {
         return $this->hasMany(Classement::class);
     }
+
+    public function progressions()
+    {
+        return $this->hasMany(Progression::class);
+    }
 }
