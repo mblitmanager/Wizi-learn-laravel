@@ -22,6 +22,10 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // Génération automatique des achievements streak (connexion_serie)
+        $this->call([
+            AchievementSeeder::class,
+        ]);
+
         \App\Models\Achievement::updateOrCreate([
             'type' => 'connexion_serie',
             'condition' => 5
