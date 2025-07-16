@@ -116,6 +116,34 @@ class MediaController extends Controller
             $status = 200;
         }
 
+        // --- Début ajout pour achievement vidéo ---
+        try {
+            $user = JWTAuth::parseToken()->authenticate();
+            $stagiaire = $user->stagiaire;
+            if ($stagiaire) {
+                // On stocke l'ID de la vidéo vue (si tutoriel)
+                $media = \App\Models\Media::where('url', $path)->first();
+                if ($media && $media->categorie === 'tutoriel') {
+                    $videosVues = [];
+                    if (property_exists($stagiaire, 'videos_vues') && is_array($stagiaire->videos_vues)) {
+                        $videosVues = $stagiaire->videos_vues;
+                    } elseif (isset($stagiaire->videos_vues) && is_string($stagiaire->videos_vues)) {
+                        $videosVues = json_decode($stagiaire->videos_vues, true) ?: [];
+                    }
+                    if (!in_array($media->id, $videosVues)) {
+                        $videosVues[] = $media->id;
+                        $stagiaire->videos_vues = json_encode($videosVues);
+                        $stagiaire->save();
+                    }
+                    // Vérification des achievements
+                    app(\App\Services\StagiaireAchievementService::class)->checkAchievements($stagiaire);
+                }
+            }
+        } catch (\Exception $e) {
+            // On ignore les erreurs d'auth ou autres ici
+        }
+        // --- Fin ajout pour achievement vidéo ---
+
         $response = new StreamedResponse(function () use ($fullPath, $start, $length) {
             $file = fopen($fullPath, 'rb');
             fseek($file, $start);

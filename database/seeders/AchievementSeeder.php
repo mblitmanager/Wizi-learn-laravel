@@ -11,6 +11,13 @@ class AchievementSeeder extends Seeder
     {
         $achievements = [
             [
+                'name' => 'Toutes les vidéos',
+                'type' => 'video',
+                'condition' => null,
+                'description' => 'Regardez toutes les vidéos du catalogue',
+                'icon' => '📺',
+            ],
+            [
                 'name' => 'Série de connexions',
                 'type' => 'connexion_serie',
                 'condition' => 5,
