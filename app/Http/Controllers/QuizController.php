@@ -73,7 +73,7 @@ class QuizController extends Controller
                                         'isCorrect' => (bool) $reponse->is_correct
                                     ];
                                 })->toArray();
-                                break;
+                                // ...existing code...
 
                             case 'rearrangement':
                                 $questionData['answers'] = $question->reponses->map(function ($reponse) {
@@ -123,57 +123,59 @@ class QuizController extends Controller
                                 })->toArray();
                                 break;
 
-                            case 'question audio':
-                                $questionData['audioUrl'] = $question->audio_url ?? $question->media_url ?? null;
-                                $questionData['answers'] = $question->reponses->map(function ($reponse) {
-                                    return [
-                                        'id' => (string) $reponse->id,
-                                        'text' => $reponse->text,
-                                        'isCorrect' => (bool) $reponse->is_correct
-                                    ];
-                                })->toArray();
-                                break;
-                        }
-
-                        return $questionData;
-                    })->toArray(),
-                    'points' => (int) ($quiz->nb_points_total ?? 0)
+            // Progression quotidienne basée sur Classement (meilleurs résultats)
+            $dailyClassements = Classement::where('stagiaire_id', $user->stagiaire->id)
+                ->where('created_at', '>=', $thirtyDaysAgo)
+                ->get()
+                ->groupBy(function ($classement) {
+                    return $classement->created_at->format('Y-m-d');
+                });
+            $dailyProgress = $dailyClassements->map(function ($classements) {
+                $avgPoints = $classements->avg('points');
+                $successRate = $classements->count() > 0 ? round(($classements->where('points', '>', 0)->count() / $classements->count()) * 100, 2) : 0;
+                return [
+                    'date' => $classements->first()->created_at->format('Y-m-d'),
+                    'completed_quizzes' => $classements->count(),
+                    'average_points' => $avgPoints !== null ? round($avgPoints, 2) : 0,
+                    'success_rate' => $successRate
                 ];
-            });
+            })->values();
 
-            return response()->json($formattedQuizzes);
-        } catch (\Exception $e) {
-            Log::error('Erreur dans getQuizzesByCategory', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return response()->json([
-                'error' => 'Une erreur est survenue lors de la récupération des quizzes',
-                'message' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    public function getCategories()
-    {
+            // Progression hebdomadaire basée sur Classement
+            $weeklyClassements = Classement::where('stagiaire_id', $user->stagiaire->id)
+                ->where('created_at', '>=', $now->copy()->subWeeks(4))
+                ->get()
+                ->groupBy(function ($classement) {
+                    return $classement->created_at->format('Y-W');
+                });
+            $weeklyProgress = $weeklyClassements->map(function ($classements) {
+                $avgPoints = $classements->avg('points');
+                $successRate = $classements->count() > 0 ? round(($classements->where('points', '>', 0)->count() / $classements->count()) * 100, 2) : 0;
+                return [
+                    'period' => $classements->first()->created_at->format('Y-W'),
+                    'completed_quizzes' => $classements->count(),
+                    'average_points' => $avgPoints !== null ? round($avgPoints, 2) : 0,
+                    'success_rate' => $successRate
+                ];
+            })->values();
         try {
-            // Récupérer l'utilisateur authentifié
-            $user = Auth::user();
-
-            // Récupérer le stagiaire associé à l'utilisateur
-            $stagiaire = Stagiaire::where('user_id', $user->getKey())->first();
-
-            if (!$stagiaire) {
-                return response()->json([
-                    'error' => 'Aucun stagiaire associé à cet utilisateur',
-                ], 404);
-            }
-
-            // Récupérer les catégories uniques depuis les formations associées aux quizzes du stagiaire
-            $categories = Quiz::select('quizzes.*')
-                ->join('formations', 'formations.id', '=', 'quizzes.formation_id')
-                ->join('catalogue_formations', 'catalogue_formations.formation_id', '=', 'formations.id')
+            // Progression mensuelle basée sur Classement
+            $monthlyClassements = Classement::where('stagiaire_id', $user->stagiaire->id)
+                ->where('created_at', '>=', $now->copy()->subMonths(6))
+                ->get()
+                ->groupBy(function ($classement) {
+                    return $classement->created_at->format('Y-m');
+                });
+            $monthlyProgress = $monthlyClassements->map(function ($classements) {
+                $avgPoints = $classements->avg('points');
+                $successRate = $classements->count() > 0 ? round(($classements->where('points', '>', 0)->count() / $classements->count()) * 100, 2) : 0;
+                return [
+                    'period' => $classements->first()->created_at->format('Y-m'),
+                    'completed_quizzes' => $classements->count(),
+                    'average_points' => $avgPoints !== null ? round($avgPoints, 2) : 0,
+                    'success_rate' => $successRate
+                ];
+            })->values();
                 ->join('stagiaire_catalogue_formations', 'stagiaire_catalogue_formations.catalogue_formation_id', '=', 'catalogue_formations.id')
                 ->where('stagiaire_catalogue_formations.stagiaire_id', $stagiaire->id)
                 ->with(['formation'])
@@ -1500,10 +1502,11 @@ class QuizController extends Controller
                     return $classement->created_at->format('Y-m-d');
                 })
                 ->map(function ($classements) {
+                    $avgPoints = $classements->avg('points');
                     return [
                         'date' => $classements->first()->created_at->format('Y-m-d'),
                         'completed_quizzes' => $classements->count(),
-                        'average_points' => round($classements->avg('points'), 2),
+                        'average_points' => $avgPoints !== null ? round($avgPoints, 2) : 0,
                     ];
                 })
                 ->values();
@@ -1516,10 +1519,11 @@ class QuizController extends Controller
                     return $classement->created_at->format('Y-W');
                 })
                 ->map(function ($classements) {
+                    $avgPoints = $classements->avg('points');
                     return [
-                        'week' => $classements->first()->created_at->format('Y-W'),
+                        'period' => $classements->first()->created_at->format('Y-W'),
                         'completed_quizzes' => $classements->count(),
-                        'average_points' => round($classements->avg('points'), 2),
+                        'average_points' => $avgPoints !== null ? round($avgPoints, 2) : 0,
                     ];
                 })
                 ->values();
@@ -1532,10 +1536,11 @@ class QuizController extends Controller
                     return $classement->created_at->format('Y-m');
                 })
                 ->map(function ($classements) {
+                    $avgPoints = $classements->avg('points');
                     return [
-                        'month' => $classements->first()->created_at->format('Y-m'),
+                        'period' => $classements->first()->created_at->format('Y-m'),
                         'completed_quizzes' => $classements->count(),
-                        'average_points' => round($classements->avg('points'), 2),
+                        'average_points' => $avgPoints !== null ? round($avgPoints, 2) : 0,
                     ];
                 })
                 ->values();

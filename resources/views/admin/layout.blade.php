@@ -56,7 +56,7 @@
     <div class="wrapper">
         <!--sidebar wrapper -->
         <div class="sidebar-wrapper" data-simplebar="true">
-            @include('admin.partials.sidebar')
+
         </div>
         <!--end sidebar wrapper -->
         <!--start header -->

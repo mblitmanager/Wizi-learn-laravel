@@ -110,6 +110,19 @@ Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function
     Route::get('/telecharger-modele-quiz', [QuizController::class, 'downloadQuizModel'])->name('download.quiz.model');
     Route::get('parrainage', [ParrainageController::class, 'index'])->name('parrainage.index');
     Route::get('parrainage/{id}', [ParrainageController::class, 'show'])->name('parrainage.show');
+
+    // Gestion des succès (achievements) en back office
+    Route::get('/achievements', [\App\Http\Controllers\Admin\AdminAchievementController::class, 'index'])->name('admin.achievements.index');
+    Route::get('/achievements/create', [\App\Http\Controllers\Admin\AdminAchievementController::class, 'create'])->name('admin.achievements.create');
+    Route::post('/achievements', [\App\Http\Controllers\Admin\AdminAchievementController::class, 'store'])->name('admin.achievements.store');
+    Route::get('/achievements/{id}/edit', [\App\Http\Controllers\Admin\AdminAchievementController::class, 'edit'])->name('admin.achievements.edit');
+    Route::put('/achievements/{id}', [\App\Http\Controllers\Admin\AdminAchievementController::class, 'update'])->name('admin.achievements.update');
+    Route::delete('/achievements/{id}', [\App\Http\Controllers\Admin\AdminAchievementController::class, 'destroy'])->name('admin.achievements.destroy');
+    Route::post('/achievements/reset', [\App\Http\Controllers\Admin\AdminAchievementController::class, 'resetAchievements'])->name('admin.achievements.reset');
+    Route::get('/achievements/statistics', [\App\Http\Controllers\Admin\AdminAchievementController::class, 'statistics'])->name('admin.achievements.statistics');
+
+    // Vue de gestion des paramètres (ajout lien vers achievements)
+    Route::get('/parametre/achievements', [\App\Http\Controllers\Admin\ParametreAdminController::class, 'achievements'])->name('admin.parametre.achievements');
 });
 
 // // Route pour enregistrer le token FCM

@@ -37,6 +37,9 @@ Route::post('/forgot-password', [JWTAuthController::class, 'sendResetLink']);
 Route::post('/reset-password', [JWTAuthController::class, 'resetPassword']);
 // Cette route est déjà en dehors du groupe Route::middleware(['auth:api']), donc elle est publique.
 Route::middleware(['auth:api'])->group(function () {
+    // Succès et récompenses stagiaire
+    Route::get('/stagiaire/achievements', [App\Http\Controllers\Stagiaire\AchievementController::class, 'getAchievements']);
+    Route::post('/stagiaire/achievements/check', [App\Http\Controllers\Stagiaire\AchievementController::class, 'checkAchievements']);
     Route::post('logout', [JWTAuthController::class, 'logout']);
     Route::get('user', [JWTAuthController::class, 'getUser']);
     Route::get('me', [JWTAuthController::class, 'getMe']);
@@ -162,6 +165,16 @@ Route::middleware(['auth:api'])->group(function () {
     });
     Route::get('/send-daily-notification', [DailyNotificationController::class, 'send']);
     Route::middleware('auth:api')->post('/notify-daily-formation', [DailyFormationNotificationController::class, 'notify']);
+});
+
+// Admin Achievement Management
+Route::prefix('admin/achievements')->middleware(['auth:api', 'admin'])->group(function () {
+    Route::get('/', [\App\Http\Controllers\Admin\AdminAchievementController::class, 'index']);
+    Route::post('/', [\App\Http\Controllers\Admin\AdminAchievementController::class, 'store']);
+    Route::put('/{id}', [\App\Http\Controllers\Admin\AdminAchievementController::class, 'update']);
+    Route::delete('/{id}', [\App\Http\Controllers\Admin\AdminAchievementController::class, 'destroy']);
+    Route::post('/reset', [\App\Http\Controllers\Admin\AdminAchievementController::class, 'resetAchievements']);
+    Route::get('/statistics', [\App\Http\Controllers\Admin\AdminAchievementController::class, 'statistics']);
 });
 
 Route::get('/media/stream/{path}', [MediaController::class, 'stream'])
