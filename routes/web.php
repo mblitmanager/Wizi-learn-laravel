@@ -112,14 +112,14 @@ Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function
     Route::get('parrainage/{id}', [ParrainageController::class, 'show'])->name('parrainage.show');
 
     // Gestion des succès (achievements) en back office
-    Route::get('/achievements', [\App\Http\Controllers\Admin\AdminAchievementController::class, 'index'])->name('admin.achievements.index');
-    Route::get('/achievements/create', [\App\Http\Controllers\Admin\AdminAchievementController::class, 'create'])->name('admin.achievements.create');
-    Route::post('/achievements', [\App\Http\Controllers\Admin\AdminAchievementController::class, 'store'])->name('admin.achievements.store');
-    Route::get('/achievements/{id}/edit', [\App\Http\Controllers\Admin\AdminAchievementController::class, 'edit'])->name('admin.achievements.edit');
-    Route::put('/achievements/{id}', [\App\Http\Controllers\Admin\AdminAchievementController::class, 'update'])->name('admin.achievements.update');
-    Route::delete('/achievements/{id}', [\App\Http\Controllers\Admin\AdminAchievementController::class, 'destroy'])->name('admin.achievements.destroy');
-    Route::post('/achievements/reset', [\App\Http\Controllers\Admin\AdminAchievementController::class, 'resetAchievements'])->name('admin.achievements.reset');
-    Route::get('/achievements/statistics', [\App\Http\Controllers\Admin\AdminAchievementController::class, 'statistics'])->name('admin.achievements.statistics');
+    Route::get('/achievements', [\App\Http\Controllers\Admin\AchievementController::class, 'index'])->name('admin.achievements.index');
+    Route::get('/achievements/create', [\App\Http\Controllers\Admin\AchievementController::class, 'create'])->name('admin.achievements.create');
+    Route::post('/achievements', [\App\Http\Controllers\Admin\AchievementController::class, 'store'])->name('admin.achievements.store');
+    Route::get('/achievements/{achievement}/edit', [\App\Http\Controllers\Admin\AchievementController::class, 'edit'])->name('admin.achievements.edit');
+    Route::put('/achievements/{achievement}', [\App\Http\Controllers\Admin\AchievementController::class, 'update'])->name('admin.achievements.update');
+    Route::delete('/achievements/{achievement}', [\App\Http\Controllers\Admin\AchievementController::class, 'destroy'])->name('admin.achievements.destroy');
+    Route::post('/achievements/reset', [\App\Http\Controllers\Admin\AchievementController::class, 'apiResetAchievements'])->name('admin.achievements.reset');
+    Route::get('/achievements/statistics', [\App\Http\Controllers\Admin\AchievementController::class, 'apiStatistics'])->name('admin.achievements.statistics');
 
     // Vue de gestion des paramètres (ajout lien vers achievements)
     Route::get('/parametre/achievements', [\App\Http\Controllers\Admin\ParametreAdminController::class, 'achievements'])->name('admin.parametre.achievements');
@@ -139,3 +139,8 @@ Route::fallback(function () {
 Route::get('/{any}', function () {
     return view('stagiaire'); // Assurez-vous que la vue correspond à votre build React
 })->where('any', '.*');
+
+// Achievements management (admin)
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
+    Route::resource('achievements', App\Http\Controllers\Admin\AchievementController::class);
+});

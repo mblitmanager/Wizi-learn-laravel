@@ -20,7 +20,19 @@
                 <li> <a href="{{ route('dashboard.activity') }}"><i class="bx bx-right-arrow-alt"></i>Activité des
                         utilisateurs</a>
                 </li>
+                <li class="nav-item">
+                    <a href="{{ route('admin.achievements.index') }}">
+                     <i class="fas fa-trophy me-2"></i> Gestion des Succès
+                    </a>
+                </li>
             </ul>
+             {{-- <ul>
+                <li class="nav-item"><i class="bx bx-right-arrow-alt"></i>
+                    <a href="{{ route('admin.achievements.index') }}">
+                        <i class="fas fa-trophy me-2"></i> Gestion des Succès
+                    </a>
+                </li>
+            </ul> --}}
         </li>
         <li>
             <a href="{{ route('stagiaires.index') }}">
@@ -116,6 +128,7 @@
             </a>
 
         </li>
+
         <li>
             <a href="{{ route('parametre.index') }}">
                 <div class="parent-icon"><i class='bx bx-cog bx-spin'></i>
@@ -124,6 +137,8 @@
             </a>
 
         </li>
+        {{-- @include('admin.partials.sidebar') --}}
+
 
     </ul>
     <!--end navigation-->

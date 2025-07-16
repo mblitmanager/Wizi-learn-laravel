@@ -56,7 +56,14 @@
     <div class="wrapper">
         <!--sidebar wrapper -->
         <div class="sidebar-wrapper" data-simplebar="true">
-
+            @include('admin.partials.sidebar')
+            {{-- <ul class="nav flex-column mt-3">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('admin.achievements.index') }}">
+                        <i class="fas fa-trophy me-2"></i> Gestion des Succès
+                    </a>
+                </li>
+            </ul> --}}
         </div>
         <!--end sidebar wrapper -->
         <!--start header -->
