@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('admin.layout')
 @section('title', 'Gestion des Succès')
 @section('content')
     <div class="container-fluid">
@@ -14,7 +14,9 @@
                 </div>
                 <div class="ms-auto">
                     <div class="btn-group">
-                        <a href="{{ route('admin.achievements.create') }}" class="btn btn-sm btn-primary mx-4"><i class="fadeIn animated bx bx-plus"></i> Ajouter un succès</a>
+                        <a href="{{ route('admin.achievements.create') }}" class="btn btn-sm btn-primary mx-2"><i class="fadeIn animated bx bx-plus"></i> Ajouter un succès</a>
+                        <a href="{{ route('admin.achievements.statistics') }}" class="btn btn-sm btn-info mx-2"><i class="fas fa-chart-bar"></i> Statistiques</a>
+                        <a href="{{ route('admin.achievements.trends') }}" class="btn btn-sm btn-secondary mx-2"><i class="fas fa-chart-line"></i> Tendances</a>
                     </div>
                 </div>
             </div>

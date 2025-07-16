@@ -48,7 +48,7 @@
     {{--        crossorigin="anonymous" referrerpolicy="no-referrer" /> --}}
     {{-- @vite(['resources/css/app.css', 'resources/js/app.js']) --}}
 
-    <title>@yield('title', 'Wize Learn')</title>
+    <title>@yield('title', 'Wizi Learn')</title>
 </head>
 
 <body>

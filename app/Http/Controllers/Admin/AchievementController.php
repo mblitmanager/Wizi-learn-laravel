@@ -52,6 +52,7 @@ class AchievementController extends Controller
         $achievement->delete();
         return redirect()->route('admin.achievements.index')->with('success', 'Succès supprimé.');
     }
+
     // --- API METHODS ---
 
     // GET /api/admin/achievements
@@ -103,5 +104,35 @@ class AchievementController extends Controller
             'total_unlocked' => $totalUnlocked,
             'by_achievement' => $byAchievement,
         ]);
+    }
+
+    // POST /admin/achievements/reset
+    public function resetAchievements(Request $request)
+    {
+        $stagiaireId = $request->input('stagiaire_id');
+        $stagiaire = \App\Models\Stagiaire::findOrFail($stagiaireId);
+        $stagiaire->achievements()->detach();
+        return redirect()->route('admin.achievements.index')->with('success', 'Succès réinitialisés pour le stagiaire.');
+    }
+
+    // GET /admin/achievements/statistics
+    public function statistics()
+    {
+        $totalAchievements = Achievement::count();
+        $totalUnlocked = \App\Models\UserAchievement::count();
+        $byAchievement = Achievement::withCount('users')->get();
+        return view('admin.achievements.statistics', compact('totalAchievements', 'totalUnlocked', 'byAchievement'));
+    }
+
+    // GET /admin/achievements/trends
+    public function trends()
+    {
+        // Example: count unlocked achievements per day for the last 30 days
+        $trends = \App\Models\UserAchievement::selectRaw('DATE(created_at) as date, COUNT(*) as count')
+            ->where('created_at', '>=', now()->subDays(30))
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+        return view('admin.achievements.trends', compact('trends'));
     }
 }

@@ -121,8 +121,9 @@ Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function
     Route::post('/achievements/reset', [\App\Http\Controllers\Admin\AchievementController::class, 'apiResetAchievements'])->name('admin.achievements.reset');
     Route::get('/achievements/statistics', [\App\Http\Controllers\Admin\AchievementController::class, 'apiStatistics'])->name('admin.achievements.statistics');
 
+
     // Vue de gestion des paramètres (ajout lien vers achievements)
-    Route::get('/parametre/achievements', [\App\Http\Controllers\Admin\ParametreAdminController::class, 'achievements'])->name('admin.parametre.achievements');
+    // Route::get('/parametre/achievements', [\App\Http\Controllers\Admin\ParametreAdminController::class, 'achievements'])->name('admin.parametre.achievements');
 });
 
 // // Route pour enregistrer le token FCM
@@ -140,7 +141,4 @@ Route::get('/{any}', function () {
     return view('stagiaire'); // Assurez-vous que la vue correspond à votre build React
 })->where('any', '.*');
 
-// Achievements management (admin)
-Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
-    Route::resource('achievements', App\Http\Controllers\Admin\AchievementController::class);
-});
+

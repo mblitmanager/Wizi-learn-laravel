@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('admin.layout')
 @section('title', 'Ajouter un succès')
 @section('content')
     <div class="container-fluid">
