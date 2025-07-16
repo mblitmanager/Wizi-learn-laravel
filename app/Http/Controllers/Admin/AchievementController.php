@@ -1,9 +1,11 @@
 <?php
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Achievement;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class AchievementController extends Controller
 {
@@ -15,7 +17,8 @@ class AchievementController extends Controller
 
     public function create()
     {
-        return view('admin.achievements.create');
+        $quizzes = \App\Models\Quiz::all();
+        return view('admin.achievements.create', compact('quizzes'));
     }
 
     public function store(Request $request)
@@ -25,6 +28,7 @@ class AchievementController extends Controller
             'type' => 'required|string',
             'condition' => 'required|integer',
             'level' => 'nullable|string',
+            'quiz_id' => 'nullable|exists:quizzes,id',
         ]);
         Achievement::create($request->all());
         return redirect()->route('admin.achievements.index')->with('success', 'Succès créé avec succès.');
@@ -32,7 +36,8 @@ class AchievementController extends Controller
 
     public function edit(Achievement $achievement)
     {
-        return view('admin.achievements.edit', compact('achievement'));
+        $quizzes = \App\Models\Quiz::all();
+        return view('admin.achievements.edit', compact('achievement', 'quizzes'));
     }
 
     public function update(Request $request, Achievement $achievement)
@@ -42,6 +47,7 @@ class AchievementController extends Controller
             'type' => 'required|string',
             'condition' => 'required|integer',
             'level' => 'nullable|string',
+            'quiz_id' => 'nullable|exists:quizzes,id',
         ]);
         $achievement->update($request->all());
         return redirect()->route('admin.achievements.index')->with('success', 'Succès mis à jour.');
@@ -58,7 +64,12 @@ class AchievementController extends Controller
     // GET /api/admin/achievements
     public function apiIndex()
     {
-        $achievements = Achievement::all();
+        $achievements = Achievement::with('quiz')->get()->map(function ($achievement) {
+            return [
+                ...$achievement->toArray(),
+                'quiz_title' => $achievement->quiz ? $achievement->quiz->titre : null,
+            ];
+        });
         return response()->json(['achievements' => $achievements]);
     }
 
@@ -97,8 +108,8 @@ class AchievementController extends Controller
     public function apiStatistics()
     {
         $totalAchievements = Achievement::count();
-        $totalUnlocked = \App\Models\UserAchievement::count();
-        $byAchievement = Achievement::withCount('users')->get();
+        $totalUnlocked = DB::table('stagiaire_achievements')->count();
+        $byAchievement = Achievement::withCount('stagiaires')->get();
         return response()->json([
             'total_achievements' => $totalAchievements,
             'total_unlocked' => $totalUnlocked,
@@ -119,8 +130,8 @@ class AchievementController extends Controller
     public function statistics()
     {
         $totalAchievements = Achievement::count();
-        $totalUnlocked = \App\Models\UserAchievement::count();
-        $byAchievement = Achievement::withCount('users')->get();
+        $totalUnlocked = DB::table('stagiaire_achievements')->count();
+        $byAchievement = Achievement::withCount('stagiaires')->get();
         return view('admin.achievements.statistics', compact('totalAchievements', 'totalUnlocked', 'byAchievement'));
     }
 
@@ -128,7 +139,8 @@ class AchievementController extends Controller
     public function trends()
     {
         // Example: count unlocked achievements per day for the last 30 days
-        $trends = \App\Models\UserAchievement::selectRaw('DATE(created_at) as date, COUNT(*) as count')
+        $trends = DB::table('stagiaire_achievements')
+            ->selectRaw('DATE(created_at) as date, COUNT(*) as count')
             ->where('created_at', '>=', now()->subDays(30))
             ->groupBy('date')
             ->orderBy('date')

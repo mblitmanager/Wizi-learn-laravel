@@ -1,4 +1,5 @@
 <?php
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -11,11 +12,12 @@ class CreateAchievementsTables extends Migration
         Schema::create('achievements', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('type'); // connexion_serie, points_total, palier
+            $table->string('type'); // connexion_serie, points_total, palier, quiz
             $table->integer('condition')->nullable();
             $table->string('description')->nullable();
             $table->string('icon')->nullable();
             $table->string('level')->nullable(); // bronze, silver, gold, etc.
+            $table->unsignedBigInteger('quiz_id')->nullable(); // Lien vers un quiz spécifique
             $table->timestamps();
         });
 

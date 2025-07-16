@@ -7,14 +7,18 @@
                 <div class="ps-3">
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb mb-0 p-0">
-                            <li class="breadcrumb-item"><a href="{{ route('admin.achievements.index') }}"><i class="bx bx-home-alt"></i></a></li>
-                            <li class="breadcrumb-item active text-uppercase fw-bold" aria-current="page">Création d'un succès</li>
+                            <li class="breadcrumb-item"><a href="{{ route('admin.achievements.index') }}"><i
+                                        class="bx bx-home-alt"></i></a></li>
+                            <li class="breadcrumb-item active text-uppercase fw-bold" aria-current="page">Création d'un
+                                succès</li>
                         </ol>
                     </nav>
                 </div>
                 <div class="ms-auto">
                     <div class="btn-group">
-                        <a href="{{ route('admin.achievements.index') }}" type="button" class="btn btn-sm btn-primary mx-4"><i class="fadeIn animated bx bx-chevron-left-circle"></i>Retour</a>
+                        <a href="{{ route('admin.achievements.index') }}" type="button"
+                            class="btn btn-sm btn-primary mx-4"><i
+                                class="fadeIn animated bx bx-chevron-left-circle"></i>Retour</a>
                     </div>
                 </div>
             </div>
@@ -34,7 +38,9 @@
                             <div class="col-md-4">
                                 <div class="mb-3">
                                     <label for="name" class="form-label">Nom</label>
-                                    <input type="text" name="name" id="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name') }}" required>
+                                    <input type="text" name="name" id="name"
+                                        class="form-control @error('name') is-invalid @enderror" value="{{ old('name') }}"
+                                        required>
                                     @error('name')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -52,8 +58,27 @@
                             <div class="col-md-4">
                                 <div class="mb-3">
                                     <label for="tier" class="form-label">Palier</label>
-                                    <input type="text" name="tier" id="tier" class="form-control @error('tier') is-invalid @enderror" value="{{ old('tier') }}">
+                                    <input type="text" name="tier" id="tier"
+                                        class="form-control @error('tier') is-invalid @enderror"
+                                        value="{{ old('tier') }}">
                                     @error('tier')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="quiz_id" class="form-label">Quiz associé (optionnel)</label>
+                                    <select name="quiz_id" id="quiz_id"
+                                        class="form-control @error('quiz_id') is-invalid @enderror">
+                                        <option value="">Aucun</option>
+                                        @foreach ($quizzes as $quiz)
+                                            <option value="{{ $quiz->id }}"
+                                                {{ old('quiz_id') == $quiz->id ? 'selected' : '' }}>{{ $quiz->titre }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    @error('quiz_id')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>

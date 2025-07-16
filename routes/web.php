@@ -119,7 +119,9 @@ Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function
     Route::put('/achievements/{achievement}', [\App\Http\Controllers\Admin\AchievementController::class, 'update'])->name('admin.achievements.update');
     Route::delete('/achievements/{achievement}', [\App\Http\Controllers\Admin\AchievementController::class, 'destroy'])->name('admin.achievements.destroy');
     Route::post('/achievements/reset', [\App\Http\Controllers\Admin\AchievementController::class, 'apiResetAchievements'])->name('admin.achievements.reset');
-    Route::get('/achievements/statistics', [\App\Http\Controllers\Admin\AchievementController::class, 'apiStatistics'])->name('admin.achievements.statistics');
+    // Web views for statistics and trends
+    Route::get('/achievements/statistics', [\App\Http\Controllers\Admin\AchievementController::class, 'statistics'])->name('admin.achievements.statistics');
+    Route::get('/achievements/trends', [\App\Http\Controllers\Admin\AchievementController::class, 'trends'])->name('admin.achievements.trends');
 
 
     // Vue de gestion des paramètres (ajout lien vers achievements)

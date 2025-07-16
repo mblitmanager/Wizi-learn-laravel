@@ -3,26 +3,27 @@
 namespace App\Services;
 
 use App\Models\Achievement;
-use App\Models\UserAchievement;
-use App\Models\User;
+use App\Models\Stagiaire;
+// use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class AchievementService
 {
     /**
-     * Vérifie et met à jour les succès de l'utilisateur
-     * @param User $user
+     * Vérifie et met à jour les succès du stagiaire, y compris ceux liés à la réussite d'un quiz
+     * @param Stagiaire $stagiaire
+     * @param int|null $quizId (optionnel) : ID du quiz qui vient d'être complété
      * @return array Liste des succès nouvellement débloqués
      */
-    public function checkAchievements(User $user)
+    public function checkAchievements(Stagiaire $stagiaire, $quizId = null)
     {
         $newAchievements = [];
         $now = Carbon::now();
 
         // 1. Série de connexions journalières
-        $lastLogin = $user->last_login_at ? Carbon::parse($user->last_login_at) : null;
-        $streak = $user->login_streak ?? 0;
+        $lastLogin = $stagiaire->last_login_at ? Carbon::parse($stagiaire->last_login_at) : null;
+        $streak = $stagiaire->login_streak ?? 0;
         if ($lastLogin) {
             if ($lastLogin->isToday()) {
                 // rien à faire
@@ -35,24 +36,24 @@ class AchievementService
             $streak = 1;
         }
         // Mettre à jour le streak
-        $user->login_streak = $streak;
-        $user->last_login_at = $now;
-        $user->save();
+        $stagiaire->login_streak = $streak;
+        $stagiaire->last_login_at = $now;
+        $stagiaire->save();
 
         // 2. Points totaux
-        $totalPoints = $user->classements()->sum('points');
+        $totalPoints = $stagiaire->classements()->sum('points');
 
         // 3. Palier atteint
         $level = 'bronze';
-        if ($totalPoints >= 3000) {
+        if ($totalPoints >= 200) {
             $level = 'gold';
-        } elseif ($totalPoints >= 1500) {
+        } elseif ($totalPoints >= 150) {
             $level = 'silver';
         }
 
         // Récupérer tous les succès
         $achievements = Achievement::all();
-        $alreadyUnlocked = $user->achievements->pluck('id')->toArray();
+        $alreadyUnlocked = $stagiaire->achievements->pluck('id')->toArray();
 
         foreach ($achievements as $achievement) {
             $unlocked = false;
@@ -72,18 +73,23 @@ class AchievementService
                         $unlocked = true;
                     }
                     break;
+                case 'quiz':
+                    // Succès lié à un quiz spécifique
+                    if ($quizId && $achievement->quiz_id == $quizId) {
+                        $unlocked = true;
+                    }
+                    break;
             }
             if ($unlocked && !in_array($achievement->id, $alreadyUnlocked)) {
-                UserAchievement::create([
-                    'user_id' => $user->id,
-                    'achievement_id' => $achievement->id,
+                // Ajoute le succès au stagiaire via la relation Eloquent (évite les doublons)
+                $stagiaire->achievements()->attach($achievement->id, [
                     'unlocked_at' => $now,
                 ]);
                 $newAchievements[] = $achievement;
             }
         }
         // Mettre à jour la propriété unlockedAchievements (optionnel)
-        $user->unlockedAchievements = $user->achievements()->get();
+        $stagiaire->unlockedAchievements = $stagiaire->achievements()->get();
         return $newAchievements;
     }
 }
