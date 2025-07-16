@@ -88,6 +88,11 @@ class QuizStagiaireController extends Controller
                 $answers[$answer['questionId']] = $answer['reponseId'];
             }
 
+            // Correction : s'assurer que timeSpent n'est jamais négatif
+            $timeSpent = $request->input('timeSpent', 0);
+            $timeSpent = max(0, (int)$timeSpent);
+            $request->merge(['timeSpent' => $timeSpent]);
+
             $result = $this->quizService->submitQuizAnswers($quizId, $stagiaireId, $answers);
             return response()->json($result);
         } catch (JWTException $e) {

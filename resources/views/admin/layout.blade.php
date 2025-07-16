@@ -48,7 +48,7 @@
     {{--        crossorigin="anonymous" referrerpolicy="no-referrer" /> --}}
     {{-- @vite(['resources/css/app.css', 'resources/js/app.js']) --}}
 
-    <title>@yield('title', 'Wize Learn')</title>
+    <title>@yield('title', 'Wizi Learn')</title>
 </head>
 
 <body>
@@ -57,6 +57,13 @@
         <!--sidebar wrapper -->
         <div class="sidebar-wrapper" data-simplebar="true">
             @include('admin.partials.sidebar')
+            {{-- <ul class="nav flex-column mt-3">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('admin.achievements.index') }}">
+                        <i class="fas fa-trophy me-2"></i> Gestion des Succès
+                    </a>
+                </li>
+            </ul> --}}
         </div>
         <!--end sidebar wrapper -->
         <!--start header -->
