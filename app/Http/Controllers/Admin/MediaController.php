@@ -70,7 +70,11 @@ class MediaController extends Controller
                     $formationTitre = $formation ? $formation->titre : '';
                     $body = "Une nouvelle vidéo,  \"{$media->titre}\", a été ajouté pour la formation \"{$formationTitre}\".";
                     $iconUrl = url('media/wizi.png');
-                    $data = ['type' => 'media', 'media_id' => (string)$media->id, 'icon' => $iconUrl];
+                    $data = [
+                        'type' => 'media',
+                        'media_id' => (string)$media->id, // bien présent
+                        'icon' => $iconUrl
+                    ];
                     $this->notificationService->sendFcmToUser(
                         $stagiaire->user,
                         $title,
@@ -82,7 +86,7 @@ class MediaController extends Controller
                         'type' => $data['type'],
                         'title' => $title,
                         'message' => $body,
-                        'data' => $data,
+                        'data' => $data, // data contient bien media_id
                         'read' => false,
                     ]);
                 }
@@ -130,7 +134,11 @@ class MediaController extends Controller
                     $title = 'Média mis à jour';
                     $body = "Le média \"{$media->titre}\" a été mis à jour.";
                     $iconUrl = url('media/wizi.png');
-                    $data = ['type' => 'media', 'media_id' => (string)$media->id, 'icon' => $iconUrl];
+                    $data = [
+                        'type' => 'media',
+                        'media_id' => (string)$media->id, // bien présent
+                        'icon' => $iconUrl
+                    ];
                     $this->notificationService->sendFcmToUser(
                         $stagiaire->user,
                         $title,
@@ -142,7 +150,7 @@ class MediaController extends Controller
                         'type' => $data['type'],
                         'title' => $title,
                         'message' => $body,
-                        'data' => $data,
+                        'data' => $data, // data contient bien media_id
                         'read' => false,
                     ]);
                 }

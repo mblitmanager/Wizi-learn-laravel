@@ -308,10 +308,15 @@ class QuizController extends Controller
             ]);
         }
 
+        // Utiliser Classement pour le calcul du score moyen
+        $classements = Classement::where('stagiaire_id', $stagiaire->id)->get();
+        $totalPoints = $classements->sum('points');
+        $quizCount = $classements->count();
+        $averageScore = $quizCount > 0 ? round($totalPoints / $quizCount, 2) : 0;
         $stats = [
-            'totalQuizzes' => Progression::where('stagiaire_id', $stagiaire->id)->count(),
-            'averageScore' => Progression::where('stagiaire_id', $stagiaire->id)->avg('score'),
-            'totalPoints' => Progression::where('stagiaire_id', $stagiaire->id)->sum('score'),
+            'totalQuizzes' => $quizCount,
+            'averageScore' => $averageScore,
+            'totalPoints' => $totalPoints,
             'categoryStats' => $this->getCategoryStatsForStagiaire($stagiaire->id),
             'levelProgress' => $this->getLevelProgress($stagiaire->id)
         ];
@@ -880,7 +885,6 @@ class QuizController extends Controller
                 'timeSpent' => $result->time_spent,
                 'questions' => $questionsDetails->values()->all()
             ])->setStatusCode(201, 'Résultat du quiz soumis avec succès');
-
         } catch (\Exception $e) {
             Log::error('Erreur dans submitQuizResult', [
                 'error' => $e->getMessage(),
@@ -1054,15 +1058,18 @@ class QuizController extends Controller
                 ->get()
                 ->groupBy('stagiaire_id')
                 ->map(function ($group) {
+                    $totalPoints = $group->sum('points');
+                    $quizCount = $group->count();
+                    $averageScore = $quizCount > 0 ? round($totalPoints / $quizCount, 2) : 0;
                     return [
                         'stagiaire' => [
                             'id' => (string) $group->first()->stagiaire->id,
                             'prenom' => $group->first()->stagiaire->prenom,
                             'image' => $group->first()->stagiaire->user->image ?? null
                         ],
-                        'totalPoints' => $group->sum('points'),
-                        'quizCount' => $group->count(),
-                        'averageScore' => $group->avg('points')
+                        'totalPoints' => $totalPoints,
+                        'quizCount' => $quizCount,
+                        'averageScore' => $averageScore
                     ];
                 })
                 ->sortByDesc('totalPoints')
