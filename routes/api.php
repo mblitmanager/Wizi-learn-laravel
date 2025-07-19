@@ -222,3 +222,5 @@ Route::get('/test-fcm', function () {
         ['type' => 'test']
     ) ? 'OK' : 'Erreur';
 });
+
+Route::middleware('auth:api')->post('/stagiaire/onboarding-seen', [StagiaireController::class, 'setOnboardingSeen']);

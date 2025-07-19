@@ -46,4 +46,14 @@ class StagiaireController extends Controller
             ], 500);
         }
     }
+
+    public function setOnboardingSeen(Request $request)
+    {
+        $user = auth()->user();
+        $stagiaire = $user->stagiaire; // ou autre logique pour récupérer le stagiaire
+        $stagiaire->onboarding_seen = true;
+        $stagiaire->save();
+
+        return response()->json(['success' => true]);
+    }
 }

@@ -26,7 +26,8 @@ class Stagiaire extends Model
         'role',
         'statut',
         'user_id',
-        'date_fin_formation'
+        'date_fin_formation',
+        'onboarding_seen',
     ];
 
 
@@ -86,7 +87,7 @@ class Stagiaire extends Model
         return $this->belongsToMany(PoleRelationClient::class, 'pole_relation_client_stagiaire');
     }
 
-        // Ajout des relations pour les succès
+    // Ajout des relations pour les succès
     public function achievements()
     {
         return $this->belongsToMany(Achievement::class, 'stagiaire_achievements')->withTimestamps();
