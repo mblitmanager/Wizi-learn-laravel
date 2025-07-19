@@ -131,4 +131,17 @@ class QuizStagiaireController extends Controller
         }
     }
 
+    // Ajout d'une méthode pour le score moyen stagiaire (exemple)
+    public function getStagiaireAverageScore($stagiaireId)
+    {
+        $classements = \App\Models\Classement::where('stagiaire_id', $stagiaireId)->get();
+        $totalPoints = $classements->sum('points');
+        $quizCount = $classements->count();
+        $averageScore = $quizCount > 0 ? round($totalPoints / $quizCount, 2) : 0;
+        return response()->json([
+            'totalQuizzes' => $quizCount,
+            'averageScore' => $averageScore,
+            'totalPoints' => $totalPoints
+        ]);
+    }
 }
