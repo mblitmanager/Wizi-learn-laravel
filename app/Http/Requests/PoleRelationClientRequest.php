@@ -35,9 +35,7 @@ class PoleRelationClientRequest extends FormRequest
                     : Rule::unique('users', 'email'),
             ],
             'password' => 'nullable|string|min:8',
-            'role' => [
-                Rule::in(['pole relation client']),
-            ],
+            'role' => 'required|string|max:255',
             'telephone' => 'nullable|string',
 
             'stagiaire_id' => 'nullable|exists:stagiaires,id',

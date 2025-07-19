@@ -115,6 +115,20 @@
                                 </div>
                             </div>
 
+                            {{-- Champ rôle libre --}}
+                            <div class="form-group mb-3">
+                                <label for="role">Rôle</label>
+                                <input type="text" class="form-control" id="role" name="role"
+                                    placeholder="Ex : conseiller, consultant 1er accueil, interlocuteur, autre..."
+                                    value="{{ old('role') }}" list="role-options" required>
+                                <datalist id="role-options">
+                                    <option value="conseiller">
+                                    <option value="consultant 1er accueil">
+                                    <option value="interlocuteur">
+                                    <option value="autre">
+                                </datalist>
+                            </div>
+
                             <div class="col-md-4">
                                 <div class="mb-3">
                                     <label for="stagiaire_id">Stagiaire</label>

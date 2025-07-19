@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\HtmlString;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use Illuminate\Support\Facades\Log;
 
 class PoleRelationClientController extends Controller
 {
@@ -38,7 +39,8 @@ class PoleRelationClientController extends Controller
     public function create()
     {
         $stagiaires = Stagiaire::all();
-        return view('admin.pole_relation_client.create', compact('stagiaires'));
+        $roles = ['Pôle Relation Client', 'Conseiller', 'Consultant 1er accueil', 'Interlocuteur', 'autre'];
+        return view('admin.pole_relation_client.create', compact('stagiaires', 'roles'));
     }
 
     /**
@@ -46,7 +48,10 @@ class PoleRelationClientController extends Controller
      */
     public function store(PoleRelationClientRequest $request)
     {
-        $this->polerelationClientRepository->create($request->validated());
+        $data = $request->validated();
+        // Rôle libre depuis le formulaire
+        $data['role'] = $request->input('role', 'autre');
+        $this->polerelationClientRepository->create($data);
         return redirect()->route('pole_relation_clients.index')
             ->with('success', 'Le pole relation client a été créé avec succès.');
     }
@@ -158,14 +163,18 @@ class PoleRelationClientController extends Controller
             for ($rowIndex = 2; $rowIndex <= $lastRow; $rowIndex++) {
                 $cell = $sheet->getCell('A' . $rowIndex);
                 $consultantsCell = trim($cell->getValue());
+                // Lire le rôle en colonne B si elle existe, sinon 'autre'
+                $roleCell = $sheet->getCell('B' . $rowIndex);
+                $role = $roleCell ? trim($roleCell->getValue()) : '';
+                $role = $role ?: 'autre';
 
                 // Si la cellule est vide, on passe à la ligne suivante
                 if (empty($consultantsCell)) {
-                    \Log::info("Ligne $rowIndex vide - Ignorée.");
+                    Log::info("Ligne $rowIndex vide - Ignorée.");
                     continue;
                 }
 
-                \Log::info("Ligne $rowIndex : $consultantsCell");
+                Log::info("Ligne $rowIndex : $consultantsCell");
 
                 $consultants = $this->splitConsultants($consultantsCell);
 
@@ -189,14 +198,14 @@ class PoleRelationClientController extends Controller
                             continue;
                         }
 
-                        \Log::info("Import - Ligne {$rowIndex}", [
+                        Log::info("Import - Ligne {$rowIndex}", [
                             'consultant' => $consultant,
                             'np' => $np,
                             'email' => $email
                         ]);
 
                         $existingUser = User::where('email', $email)
-                            ->where('role', 'pole relation client')
+                            ->where('role', $role)
                             ->first();
 
                         if ($existingUser) {
@@ -209,21 +218,21 @@ class PoleRelationClientController extends Controller
                             'name' => $np['prenom'] . ' ' . $np['nom'],
                             'email' => $email,
                             'password' => bcrypt('pole123'),
-                            'role' => 'pole relation client',
+                            'role' => $role, // rôle libre
                         ]);
 
                         PoleRelationClient::create([
                             'prenom' => $np['prenom'],
                             'nom' => $np['nom'],
                             'user_id' => $user->id,
-                            'role' => 'pole relation client',
+                            'role' => $role, // rôle libre
                             'statut' => true,
                         ]);
 
                         DB::commit();
                         $importedCount++;
                     } catch (\Exception $e) {
-                        \Log::error("Erreur d'import - Ligne {$rowIndex}", [
+                        Log::error("Erreur d'import - Ligne {$rowIndex}", [
                             'consultant' => $consultant,
                             'np' => $np,
                             'error' => $e->getMessage()

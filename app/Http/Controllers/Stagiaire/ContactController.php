@@ -38,8 +38,8 @@ class ContactController extends Controller
             // --- Construction manuelle des contacts pour le front ---
             $stagiaireId = $user->stagiaire->id;
             // Formateurs liés au stagiaire
-            $formateurs = $user->stagiaire->formateurs()->with(['user', 'catalogue_formations' => function($q) use ($stagiaireId) {
-                $q->whereHas('stagiaires', function($q2) use ($stagiaireId) {
+            $formateurs = $user->stagiaire->formateurs()->with(['user', 'catalogue_formations' => function ($q) use ($stagiaireId) {
+                $q->whereHas('stagiaires', function ($q2) use ($stagiaireId) {
                     $q2->where('stagiaire_id', $stagiaireId);
                 });
             }])->get();
@@ -64,6 +64,7 @@ class ContactController extends Controller
                     'name' => $formateur->user->name,
                     'email' => $formateur->user->email,
                     'telephone' => $formateur->telephone ?? '',
+                    // 'role' => $formateur->role ?? ($formateur->user->role ?? 'formateur'),
                     'formations' => $formations,
                 ];
             });
@@ -76,6 +77,7 @@ class ContactController extends Controller
                     'name' => $commercial->user->name,
                     'email' => $commercial->user->email,
                     'telephone' => $commercial->telephone ?? '',
+                    // 'role' => $commercial->role ?? ($commercial->user->role ?? 'commercial'),
                 ];
             });
 
@@ -83,10 +85,12 @@ class ContactController extends Controller
             $poleRelation = $user->stagiaire->poleRelationClients()->with('user')->get()->map(function ($pole) {
                 return [
                     'id' => $pole->id,
-                    'type' => 'Pôle Relation Client',
+                    // 'type' => 'Pôle Relation Client',
+                    'type' => $pole->role ?? ($pole->user->role ?? 'Pôle Relation Client'),
                     'name' => $pole->user->name,
                     'email' => $pole->user->email,
                     'telephone' => $pole->telephone ?? '',
+                    // 'role' => $pole->role ?? ($pole->user->role ?? 'pole relation client'),
                 ];
             });
 
@@ -104,7 +108,7 @@ class ContactController extends Controller
     {
         try {
             // Si un stagiaire_id est passé en query, on filtre les formations pour ce stagiaire
-             $user = JWTAuth::parseToken()->authenticate();
+            $user = JWTAuth::parseToken()->authenticate();
             if (!isset($user->relations['stagiaire'])) {
                 $user->load('stagiaire');
             }
@@ -118,8 +122,8 @@ class ContactController extends Controller
             // --- Construction manuelle des contacts pour le front ---
             $stagiaireId = $user->stagiaire->id;
             // Formateurs liés au stagiaire
-            $formateurs = $user->stagiaire->formateurs()->with(['user', 'catalogue_formations' => function($q) use ($stagiaireId) {
-                $q->whereHas('stagiaires', function($q2) use ($stagiaireId) {
+            $formateurs = $user->stagiaire->formateurs()->with(['user', 'catalogue_formations' => function ($q) use ($stagiaireId) {
+                $q->whereHas('stagiaires', function ($q2) use ($stagiaireId) {
                     $q2->where('stagiaire_id', $stagiaireId);
                 });
             }])->get();
