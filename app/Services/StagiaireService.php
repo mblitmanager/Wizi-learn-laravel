@@ -41,6 +41,7 @@ class StagiaireService
 
         // 3. Récupérer et retirer les champs non nécessaires
         $commercialIds = $data['commercial_id'] ?? [];
+        // Do not unset partenaire_id so it is saved
         unset($data['formateur_id'], $data['commercial_id'], $data['pole_relation_client_id']);
 
         // 4. Créer le stagiaire
@@ -78,6 +79,7 @@ class StagiaireService
         $commercialIds = $data['commercial_id'] ?? [];
         $formationIds = $data['catalogue_formation_id'] ?? [];
 
+        // Do not unset partenaire_id so it is saved
         unset($data['name'], $data['email'], $data['password'], $data['catalogue_formation_id'], $data['formateur_id'], $data['commercial_id']);
 
         // 3. Mise à jour des champs du stagiaire

@@ -9,6 +9,12 @@ use Illuminate\Http\Request;
 
 class PartenaireController extends Controller
 {
+    public function show($id)
+    {
+        $partenaire = Partenaire::with('stagiaires.user')->findOrFail($id);
+        return view('admin.partenaires.show', compact('partenaire'));
+    }
+
     public function index()
     {
         $partenaires = Partenaire::with('stagiaires')->get();

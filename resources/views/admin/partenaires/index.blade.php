@@ -43,6 +43,7 @@
                     @endforeach
                 </td>
                 <td>
+                    <a href="{{ route('partenaires.show', $partenaire->id) }}" class="btn btn-sm btn-info">Afficher</a>
                     <a href="{{ route('partenaires.edit', $partenaire->id) }}" class="btn btn-sm btn-warning">Modifier</a>
                     <form action="{{ route('partenaires.destroy', $partenaire->id) }}" method="POST" style="display:inline-block;">
                         @csrf

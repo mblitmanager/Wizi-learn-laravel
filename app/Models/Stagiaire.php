@@ -34,6 +34,7 @@ class Stagiaire extends Model
         'user_id',
         'date_fin_formation',
         'onboarding_seen',
+        'partenaire_id',
     ];
 
 
