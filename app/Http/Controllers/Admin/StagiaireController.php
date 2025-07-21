@@ -50,7 +50,8 @@ class StagiaireController extends Controller
         $formateurs = Formateur::all();
         $commercials = Commercial::all();
         $poleRelations = PoleRelation::all();
-        return view('admin.stagiaires.create', compact('formations', 'formateurs', 'commercials', 'poleRelations'));
+        $partenaires = \App\Models\Partenaire::all();
+        return view('admin.stagiaires.create', compact('formations', 'formateurs', 'commercials', 'poleRelations', 'partenaires'));
     }
 
     public function store(StoreStagiaireRequest $request): RedirectResponse
@@ -89,7 +90,8 @@ class StagiaireController extends Controller
         $formateurs = Formateur::all();
         $commercials = Commercial::all();
         $poleRelations = PoleRelation::all();
-        return view('admin.stagiaires.edit', compact('formations', 'formateurs', 'commercials', 'stagiaire', 'poleRelations'));
+        $partenaires = \App\Models\Partenaire::all();
+        return view('admin.stagiaires.edit', compact('formations', 'formateurs', 'commercials', 'stagiaire', 'poleRelations', 'partenaires'));
     }
 
     public function update(StoreStagiaireRequest $request, $id): RedirectResponse

@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\ParametreAdminController;
 use App\Http\Controllers\Admin\ParrainageController;
 use App\Http\Controllers\Admin\PoleRelationClientController;
 use App\Http\Controllers\Admin\QuestionController;
+use App\Http\Controllers\Admin\PartenaireController;
 use App\Http\Controllers\Admin\QuizController;
 use App\Http\Controllers\Admin\StagiaireController;
 use App\Http\Controllers\Stagiaire\DashboardController;
@@ -124,9 +125,7 @@ Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function
     Route::get('/achievements/statistics', [\App\Http\Controllers\Admin\AchievementController::class, 'statistics'])->name('admin.achievements.statistics');
     Route::get('/achievements/trends', [\App\Http\Controllers\Admin\AchievementController::class, 'trends'])->name('admin.achievements.trends');
 
-
-    // Vue de gestion des paramètres (ajout lien vers achievements)
-    // Route::get('/parametre/achievements', [\App\Http\Controllers\Admin\ParametreAdminController::class, 'achievements'])->name('admin.parametre.achievements');
+    Route::resource('partenaires', PartenaireController::class);
 });
 
 // // Route pour enregistrer le token FCM

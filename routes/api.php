@@ -167,15 +167,15 @@ Route::middleware(['auth:api'])->group(function () {
     Route::middleware('auth:api')->post('/notify-daily-formation', [DailyFormationNotificationController::class, 'notify']);
 });
 
-// Admin Achievement Management
-Route::prefix('admin/achievements')->middleware(['auth:api', 'admin'])->group(function () {
-    Route::get('/', [\App\Http\Controllers\Admin\AdminAchievementController::class, 'index']);
-    Route::post('/', [\App\Http\Controllers\Admin\AdminAchievementController::class, 'store']);
-    Route::put('/{id}', [\App\Http\Controllers\Admin\AdminAchievementController::class, 'update']);
-    Route::delete('/{id}', [\App\Http\Controllers\Admin\AdminAchievementController::class, 'destroy']);
-    Route::post('/reset', [\App\Http\Controllers\Admin\AdminAchievementController::class, 'resetAchievements']);
-    Route::get('/statistics', [\App\Http\Controllers\Admin\AdminAchievementController::class, 'statistics']);
-});
+// // Admin Achievement Management
+// Route::prefix('admin/achievements')->middleware(['auth:api', 'admin'])->group(function () {
+//     Route::get('/', [\App\Http\Controllers\Admin\AdminAchievementController::class, 'index']);
+//     Route::post('/', [\App\Http\Controllers\Admin\AdminAchievementController::class, 'store']);
+//     Route::put('/{id}', [\App\Http\Controllers\Admin\AdminAchievementController::class, 'update']);
+//     Route::delete('/{id}', [\App\Http\Controllers\Admin\AdminAchievementController::class, 'destroy']);
+//     Route::post('/reset', [\App\Http\Controllers\Admin\AdminAchievementController::class, 'resetAchievements']);
+//     Route::get('/statistics', [\App\Http\Controllers\Admin\AdminAchievementController::class, 'statistics']);
+// });
 
 Route::get('/media/stream/{path}', [MediaController::class, 'stream'])
     ->withoutMiddleware([JwtMiddleware::class])

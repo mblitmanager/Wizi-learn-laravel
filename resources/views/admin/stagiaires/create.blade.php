@@ -323,6 +323,16 @@
                             </div>
                         </div>
 
+                        <div class="mb-3">
+                            <label for="partenaire_id" class="form-label">Partenaire</label>
+                            <select name="partenaire_id" class="form-select">
+                                <option value="">-- Aucun --</option>
+                                @foreach($partenaires as $partenaire)
+                                    <option value="{{ $partenaire->id }}">{{ $partenaire->identifiant }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
                         <div class="text-center">
                             <button type="submit" class="btn btn-primary btn-sm px-4">
                                 <i class="lni lni-save"></i> Enregistrer

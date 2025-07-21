@@ -13,6 +13,12 @@ use ApiPlatform\Metadata\ApiResource;
 class Stagiaire extends Model
 {
     use HasFactory;
+
+    public function partenaire()
+    {
+        return $this->belongsTo(Partenaire::class, 'partenaire_id');
+    }
+    use HasFactory;
     protected $fillable = [
         'civilite',
         'prenom',

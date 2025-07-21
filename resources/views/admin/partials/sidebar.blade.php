@@ -56,6 +56,8 @@
                 <div class="menu-title">Contact</div>
             </a>
             <ul>
+                <li> <a href="{{ route('partenaires.index') }}"><i class="bx bx-right-arrow-alt"></i>Partenaire</a>
+                </li>
                 <li> <a href="{{ route('formateur.index') }}"><i class="bx bx-right-arrow-alt"></i>Formateur</a>
                 </li>
                 <li> <a href="{{ route('pole_relation_clients.index') }}"><i class="bx bx-right-arrow-alt"></i>Pole

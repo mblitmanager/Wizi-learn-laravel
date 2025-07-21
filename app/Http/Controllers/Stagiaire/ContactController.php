@@ -46,14 +46,20 @@ class ContactController extends Controller
 
             $formateursArr = $formateurs->map(function ($formateur) use ($stagiaireId) {
                 $formations = [];
-                foreach ($formateur->catalogue_formations as $formation) {
-                    $pivot = $formation->stagiaires()->where('stagiaire_id', $stagiaireId)->first();
-                    if ($pivot) {
+                // Récupération directe des formations depuis la table pivot
+                $pivotFormations = \DB::table('stagiaire_catalogue_formations')
+                    ->where('formateur_id', $formateur->id)
+                    ->where('stagiaire_id', $stagiaireId)
+                    ->get();
+                foreach ($pivotFormations as $pivot) {
+                    // On récupère la formation associée à l'ID du pivot
+                    $formation = \DB::table('catalogue_formations')->where('id', $pivot->catalogue_formation_id)->first();
+                    if ($formation) {
                         $formations[] = [
                             'id' => $formation->id,
                             'titre' => $formation->titre,
-                            'dateDebut' => $pivot->pivot->date_debut ?? null,
-                            'dateFin' => $pivot->pivot->date_fin ?? null,
+                            'dateDebut' => $pivot->date_debut ?? null,
+                            'dateFin' => $pivot->date_fin ?? null,
                             'formateur' => $formateur->user->name,
                         ];
                     }
@@ -64,7 +70,6 @@ class ContactController extends Controller
                     'name' => $formateur->user->name,
                     'email' => $formateur->user->email,
                     'telephone' => $formateur->telephone ?? '',
-                    // 'role' => $formateur->role ?? ($formateur->user->role ?? 'formateur'),
                     'formations' => $formations,
                 ];
             });
@@ -130,14 +135,20 @@ class ContactController extends Controller
 
             $formateursArr = $formateurs->map(function ($formateur) use ($stagiaireId) {
                 $formations = [];
-                foreach ($formateur->catalogue_formations as $formation) {
-                    $pivot = $formation->stagiaires()->where('stagiaire_id', $stagiaireId)->first();
-                    if ($pivot) {
+                // Récupération directe des formations depuis la table pivot
+                $pivotFormations = \DB::table('stagiaire_catalogue_formations')
+                    ->where('formateur_id', $formateur->id)
+                    ->where('stagiaire_id', $stagiaireId)
+                    ->get();
+                foreach ($pivotFormations as $pivot) {
+                    // On récupère la formation associée à l'ID du pivot
+                    $formation = \DB::table('catalogue_formations')->where('id', $pivot->catalogue_formation_id)->first();
+                    if ($formation) {
                         $formations[] = [
                             'id' => $formation->id,
                             'titre' => $formation->titre,
-                            'dateDebut' => $pivot->pivot->date_debut ?? null,
-                            'dateFin' => $pivot->pivot->date_fin ?? null,
+                            'dateDebut' => $pivot->date_debut ?? null,
+                            'dateFin' => $pivot->date_fin ?? null,
                             'formateur' => $formateur->user->name,
                         ];
                     }
