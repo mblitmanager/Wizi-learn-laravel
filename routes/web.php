@@ -18,6 +18,8 @@ use App\Http\Controllers\FcmTokenController;
 use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 use PhpOffice\PhpSpreadsheet\Calculation\TextData\Format;
+use App\Http\Controllers\Admin\ParrainageRequestController;
+use App\Http\Controllers\Admin\InscriptionRequestController;
 
 Route::get('/', function () {
     return view('stagiaire');
@@ -142,5 +144,15 @@ Route::fallback(function () {
 Route::get('/{any}', function () {
     return view('stagiaire'); // Assurez-vous que la vue correspond à votre build React
 })->where('any', '.*');
+
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::get('/admin/parrainage-requests', [ParrainageRequestController::class, 'index'])->name('admin.parrainage_requests.index');
+    Route::post('/admin/parrainage-requests/{id}/status', [ParrainageRequestController::class, 'updateStatus'])->name('admin.parrainage_requests.updateStatus');
+    Route::get('/admin/parrainage-requests/export', [ParrainageRequestController::class, 'exportCsv'])->name('admin.parrainage_requests.export');
+
+    Route::get('/admin/inscription-requests', [InscriptionRequestController::class, 'index'])->name('admin.inscription_requests.index');
+    Route::post('/admin/inscription-requests/{id}/status', [InscriptionRequestController::class, 'updateStatus'])->name('admin.inscription_requests.updateStatus');
+    Route::get('/admin/inscription-requests/export', [InscriptionRequestController::class, 'exportCsv'])->name('admin.inscription_requests.export');
+});
 
 
