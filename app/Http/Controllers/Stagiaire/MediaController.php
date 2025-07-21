@@ -133,4 +133,39 @@ class MediaController extends Controller
 
         return $response;
     }
+
+    // App/Http/Controllers/Stagiaire/MediaController.php
+    public function markAsWatched(Request $request, $mediaId)
+    {
+        try {
+            $user = JWTAuth::parseToken()->authenticate();
+            $stagiaire = $user->stagiaire;
+
+            if (!$stagiaire) {
+                return response()->json(['error' => 'Stagiaire not found'], 404);
+            }
+
+            $this->mediaService->markAsWatched($stagiaire->id, $mediaId);
+            return response()->json(['success' => true]);
+        } catch (JWTException $e) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+    }
+
+    public function getFormationsWithWatchedStatus(Request $request)
+    {
+        try {
+            $user = JWTAuth::parseToken()->authenticate();
+            $stagiaire = $user->stagiaire;
+
+            if (!$stagiaire) {
+                return response()->json(['error' => 'Stagiaire not found'], 404);
+            }
+
+            $formations = $this->mediaService->getFormationsWithWatchedStatus($stagiaire->id);
+            return response()->json($formations);
+        } catch (JWTException $e) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+    }
 }

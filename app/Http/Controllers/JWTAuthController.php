@@ -95,7 +95,7 @@ class JWTAuthController extends Controller
         $agent = new Agent();
         return $agent->platform();
     }
-//
+    //
 //    #[OA\Post(
 //        path: "/api/login",
 //        summary: "Connexion de l'utilisateur",
@@ -175,7 +175,8 @@ class JWTAuthController extends Controller
     }
     private function getLocation($ip)
     {
-        if ($ip === '127.0.0.1') return [];
+        if ($ip === '127.0.0.1')
+            return [];
 
         try {
             $response = Http::get("https://ipinfo.io/{$ip}/json?token=" . config('services.ipinfo.token'));
@@ -185,7 +186,7 @@ class JWTAuthController extends Controller
             return [];
         }
     }
-//    #[OA\Get(
+    //    #[OA\Get(
 //        path: "/api/user",
 //        summary: "Recuperer le profil de l'utilisateur",
 //        tags: ["Authentication"],
@@ -216,7 +217,7 @@ class JWTAuthController extends Controller
         return response()->json(compact('user'));
     }
 
-//    #[OA\Get(
+    //    #[OA\Get(
 //        path: "/api/me",
 //        summary: "Récupérer les informations complètes de l'utilisateur connecté",
 //        tags: ["Authentication"],
@@ -253,7 +254,7 @@ class JWTAuthController extends Controller
             return response()->json(['error' => 'Token invalide'], 400);
         }
     }
-//
+    //
 //    #[OA\Post(
 //        path: "/api/logout",
 //        summary: "Déconnexion de l'utilisateur",
@@ -282,7 +283,7 @@ class JWTAuthController extends Controller
                     ->whereNull('logout_at')
                     ->latest()
                     ->first()
-                    ?->update([
+                        ?->update([
                         'logout_at' => now()
                     ]);
 
@@ -335,7 +336,7 @@ class JWTAuthController extends Controller
     {
         $request->validate([
             'email' => 'required|email',
-            'reset_url' => 'required|url' // URL de base du frontend
+            'reset_url' => 'required|url'
         ]);
         $user = User::where('email', $request->email)->first();
 

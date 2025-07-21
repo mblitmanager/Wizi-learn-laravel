@@ -28,4 +28,11 @@ class Media extends Model
     {
         return $this->belongsTo(Formation::class);
     }
+
+    public function stagiaires()
+    {
+        return $this->belongsToMany(Stagiaire::class)
+            ->withPivot('is_watched', 'watched_at')
+            ->withTimestamps();
+    }
 }
