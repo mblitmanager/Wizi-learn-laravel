@@ -224,3 +224,9 @@ Route::get('/test-fcm', function () {
 });
 
 Route::middleware('auth:api')->post('/stagiaire/onboarding-seen', [StagiaireController::class, 'setOnboardingSeen']);
+
+Route::middleware('auth:api')->group(function () {
+    Route::get('avatars', [\App\Http\Controllers\Api\AvatarController::class, 'index']);
+    Route::get('my-avatars', [\App\Http\Controllers\Api\AvatarController::class, 'myAvatars']);
+    Route::post('avatars/{id}/unlock', [\App\Http\Controllers\Api\AvatarController::class, 'unlock']);
+});

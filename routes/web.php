@@ -155,4 +155,10 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/inscription-requests/export', [InscriptionRequestController::class, 'exportCsv'])->name('admin.inscription_requests.export');
 });
 
+Route::middleware('auth:api')->group(function () {
+    Route::get('missions', [\App\Http\Controllers\Api\MissionController::class, 'index']);
+    Route::post('missions/{id}/progress', [\App\Http\Controllers\Api\MissionController::class, 'updateProgress']);
+    Route::post('missions/{id}/complete', [\App\Http\Controllers\Api\MissionController::class, 'complete']);
+});
+
 

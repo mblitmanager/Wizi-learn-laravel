@@ -97,6 +97,13 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasOne(PoleRelationClient::class, 'user_id');
     }
 
+    public function avatars()
+    {
+        return $this->belongsToMany(Avatar::class, 'avatar_user', 'user_id', 'avatar_id')
+            ->withPivot('unlocked_at')
+            ->withTimestamps();
+    }
+
     // Dans app/Models/User.php
     public function getFormattedNameAttribute()
     {

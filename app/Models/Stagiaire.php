@@ -109,4 +109,11 @@ class Stagiaire extends Model
     {
         return $this->hasMany(Progression::class);
     }
+
+    public function missions()
+    {
+        return $this->belongsToMany(Mission::class, 'mission_user', 'stagiaire_id', 'mission_id')
+            ->withPivot('progress', 'completed', 'completed_at')
+            ->withTimestamps();
+    }
 }
