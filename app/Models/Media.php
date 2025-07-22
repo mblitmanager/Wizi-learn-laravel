@@ -22,6 +22,7 @@ class Media extends Model
         'formation_id',
         'duree',
         'ordre',
+
     ];
 
     public function formation()

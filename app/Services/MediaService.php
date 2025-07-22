@@ -7,6 +7,7 @@ use App\Models\Media;
 use App\Models\Stagiaire;
 use App\Repositories\Interfaces\MediaRepositoryInterface;
 use App\Repositories\Interfaces\FormationRepositoryInterface;
+use Illuminate\Support\Facades\DB;
 
 class MediaService
 {
@@ -58,47 +59,40 @@ class MediaService
         });
     }
 
-    // App/Services/MediaService.php
-    public function getFormationsWithWatchedStatus(int $stagiaireId)
+
+
+
+
+
+    public function markAsWatched($stagiaireId, $mediaId)
     {
-        return Formation::with([
-            'medias' => function ($query) use ($stagiaireId) {
-                $query->with([
-                    'stagiaires' => function ($q) use ($stagiaireId) {
-                        $q->where('stagiaire_id', $stagiaireId);
-                    }
-                ]);
-            }
-        ])
-            ->get()
-            ->map(function ($formation) {
-                $formation->medias->each(function ($media) {
-                    $media->is_watched = $media->stagiaires->isNotEmpty()
-                        ? $media->stagiaires->first()->pivot->is_watched
-                        : false;
-                    unset($media->stagiaires);
-                });
-                return $formation;
-            });
+        DB::table('media_stagiaire')->updateOrInsert(
+            [
+                'media_id' => $mediaId,
+                'stagiaire_id' => $stagiaireId,
+            ],
+            [
+                'is_watched' => true,
+                'watched_at' => now(),
+                'updated_at' => now(),
+            ]
+        );
     }
 
-
-    public function markAsWatched(int $stagiaireId, int $mediaId)
+    public function getFormationsWithWatchedStatus($stagiaireId)
     {
-        $stagiaire = Stagiaire::findOrFail($stagiaireId);
-        $stagiaire->medias()->syncWithoutDetaching([
-            $mediaId => ['is_watched' => true, 'watched_at' => now()]
-        ]);
+        return Formation::with(['medias' => function ($query) use ($stagiaireId) {
+            $query->with(['stagiaires' => function ($q) use ($stagiaireId) {
+                $q->where('stagiaire_id', $stagiaireId);
+            }]);
+        }])->get();
     }
 
-    public function getWatchedStatus(int $stagiaireId, array $mediaIds)
+    public function getMediaWatchedStatus($stagiaireId, $mediaId)
     {
-        return Media::whereHas('stagiaires', function ($query) use ($stagiaireId) {
-            $query->where('stagiaire_id', $stagiaireId)
-                ->where('is_watched', true);
-        })
-            ->whereIn('id', $mediaIds)
-            ->pluck('id')
-            ->toArray();
+        return DB::table('media_stagiaire')
+            ->where('media_id', $mediaId)
+            ->where('stagiaire_id', $stagiaireId)
+            ->first(['is_watched', 'watched_at']);
     }
 }

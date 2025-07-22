@@ -10,6 +10,7 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class MediaController extends Controller
@@ -135,6 +136,7 @@ class MediaController extends Controller
     }
 
     // App/Http/Controllers/Stagiaire/MediaController.php
+    // Dans MediaController.php
     public function markAsWatched(Request $request, $mediaId)
     {
         try {
@@ -145,7 +147,29 @@ class MediaController extends Controller
                 return response()->json(['error' => 'Stagiaire not found'], 404);
             }
 
-            $this->mediaService->markAsWatched($stagiaire->id, $mediaId);
+            // Vérifier d'abord si la relation existe déjà
+            $existing = DB::table('media_stagiaire')
+                ->where('media_id', $mediaId)
+                ->where('stagiaire_id', $stagiaire->id)
+                ->first();
+
+            if ($existing && $existing->is_watched) {
+                return response()->json(['success' => false, 'message' => 'Already watched']);
+            }
+
+            // Mettre à jour ou créer la relation
+            DB::table('media_stagiaire')->updateOrInsert(
+                [
+                    'media_id' => $mediaId,
+                    'stagiaire_id' => $stagiaire->id,
+                ],
+                [
+                    'is_watched' => true,
+                    'watched_at' => now(),
+                    'updated_at' => now(),
+                ]
+            );
+
             return response()->json(['success' => true]);
         } catch (JWTException $e) {
             return response()->json(['error' => 'Unauthorized'], 401);
@@ -166,6 +190,8 @@ class MediaController extends Controller
             return response()->json($formations);
         } catch (JWTException $e) {
             return response()->json(['error' => 'Unauthorized'], 401);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 }
