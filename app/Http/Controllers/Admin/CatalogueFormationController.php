@@ -154,10 +154,11 @@ class CatalogueFormationController extends Controller
             $stagiaires = \App\Models\Stagiaire::whereHas('catalogue_formations', function ($q) use ($catalogueIds) {
                 $q->whereIn('catalogue_formation_id', $catalogueIds);
             })->with('user')->get();
+            // Get the catalogue de formation title
+            $catalogue = $this->catalogueFormationService->show($id);
+            $formationTitre = ($catalogue && isset($catalogue->titre)) ? $catalogue->titre : '';
             foreach ($stagiaires as $stagiaire) {
                 if ($stagiaire->user) {
-                    $formation = \App\Models\CatalogueFormation::where('formation_id', $validated['formation_id'])->pluck('id');
-                    $formationTitre = $formation ? $formation->titre : '';
                     $title = 'Formation mis à jour : ' . $formationTitre;
                     $body = 'Les détails de la formation "' . $formationTitre . '" a été mis à jour.';
                     $data = ['type' => 'formation'];
