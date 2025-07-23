@@ -22,10 +22,18 @@ class Media extends Model
         'formation_id',
         'duree',
         'ordre',
+
     ];
 
     public function formation()
     {
         return $this->belongsTo(Formation::class);
+    }
+
+    public function stagiaires()
+    {
+        return $this->belongsToMany(Stagiaire::class)
+            ->withPivot('is_watched', 'watched_at')
+            ->withTimestamps();
     }
 }

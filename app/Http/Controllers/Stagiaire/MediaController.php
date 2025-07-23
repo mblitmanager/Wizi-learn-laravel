@@ -10,6 +10,7 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class MediaController extends Controller
@@ -24,9 +25,13 @@ class MediaController extends Controller
     public function getTutoriels(Request $request)
     {
         try {
-            JWTAuth::parseToken()->authenticate();
+            $user = JWTAuth::parseToken()->authenticate();
             $perPage = $request->get('perPage', 10);
-            $tutoriels = $this->mediaService->getTutoriels($perPage);
+
+            // Récupérer l'ID du stagiaire (supposons que l'utilisateur authentifié est un stagiaire)
+            $stagiaireId = $user->stagiaire->id ?? null;
+
+            $tutoriels = $this->mediaService->getTutoriels($perPage, $stagiaireId);
             return response()->json($tutoriels);
         } catch (JWTException $e) {
             return response()->json(['error' => 'Unauthorized'], 401);
@@ -48,9 +53,11 @@ class MediaController extends Controller
     public function getTutorielsByFormation(Request $request, $formationId)
     {
         try {
-            JWTAuth::parseToken()->authenticate();
+            $user = JWTAuth::parseToken()->authenticate();
             $perPage = $request->get('perPage', 10);
-            $tutoriels = $this->mediaService->getTutorielsByFormation($formationId, $perPage);
+            $stagiaireId = $user->stagiaire->id ?? null;
+
+            $tutoriels = $this->mediaService->getTutorielsByFormation($formationId, $perPage, $stagiaireId);
             return response()->json($tutoriels);
         } catch (JWTException $e) {
             return response()->json(['error' => 'Unauthorized'], 401);
@@ -60,9 +67,11 @@ class MediaController extends Controller
     public function getAstucesByFormation(Request $request, $formationId)
     {
         try {
-            JWTAuth::parseToken()->authenticate();
+            $user = JWTAuth::parseToken()->authenticate();
             $perPage = $request->get('perPage', 10);
-            $astuces = $this->mediaService->getAstucesByFormation($formationId, $perPage);
+            $stagiaireId = $user->stagiaire->id ?? null;
+
+            $astuces = $this->mediaService->getAstucesByFormation($formationId, $perPage, $stagiaireId);
             return response()->json($astuces);
         } catch (JWTException $e) {
             return response()->json(['error' => 'Unauthorized'], 401);
@@ -160,5 +169,65 @@ class MediaController extends Controller
         }, $status, $headers);
 
         return $response;
+    }
+
+    // App/Http/Controllers/Stagiaire/MediaController.php
+    // Dans MediaController.php
+    public function markAsWatched(Request $request, $mediaId)
+    {
+        try {
+            $user = JWTAuth::parseToken()->authenticate();
+            $stagiaire = $user->stagiaire;
+
+            if (!$stagiaire) {
+                return response()->json(['error' => 'Stagiaire not found'], 404);
+            }
+
+            // Vérifier d'abord si la relation existe déjà
+            $existing = DB::table('media_stagiaire')
+                ->where('media_id', $mediaId)
+                ->where('stagiaire_id', $stagiaire->id)
+                ->first();
+
+            if ($existing && $existing->is_watched) {
+                return response()->json(['success' => false, 'message' => 'Already watched']);
+            }
+
+            // Mettre à jour ou créer la relation
+            DB::table('media_stagiaire')->updateOrInsert(
+                [
+                    'media_id' => $mediaId,
+                    'stagiaire_id' => $stagiaire->id,
+                ],
+                [
+                    'is_watched' => true,
+                    'watched_at' => now(),
+                    'updated_at' => now(),
+                ]
+            );
+
+            return response()->json(['success' => true]);
+        } catch (JWTException $e) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+    }
+
+    public function getFormationsWithWatchedStatus(Request $request)
+    {
+        try {
+            $user = JWTAuth::parseToken()->authenticate();
+            $stagiaire = $user->stagiaire;
+
+            if (!$stagiaire) {
+                return response()->json(['error' => 'Stagiaire not found'], 404);
+            }
+
+            $formations = $this->mediaService->getFormationsWithWatchedStatus($stagiaire->id);
+            return response()->json($formations);
+        } catch (JWTException $e) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 }

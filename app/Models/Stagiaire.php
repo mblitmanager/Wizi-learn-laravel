@@ -94,7 +94,13 @@ class Stagiaire extends Model
         return $this->belongsToMany(PoleRelationClient::class, 'pole_relation_client_stagiaire');
     }
 
-    // Ajout des relations pour les succès
+    public function medias()
+    {
+        return $this->belongsToMany(Media::class)
+            ->withPivot('is_watched', 'watched_at')
+            ->withTimestamps();
+    }
+       // Ajout des relations pour les succès
     public function achievements()
     {
         return $this->belongsToMany(Achievement::class, 'stagiaire_achievements')->withTimestamps();

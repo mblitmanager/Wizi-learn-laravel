@@ -134,6 +134,8 @@ Route::middleware(['auth:api'])->group(function () {
         Route::get('formations/{formationId}/tutoriels', [MediaController::class, 'getTutorielsByFormation']);
         Route::get('formations/{formationId}/astuces', [MediaController::class, 'getAstucesByFormation']);
         Route::get('formations/interactives', [MediaController::class, 'getInteractiveFormations']);
+        Route::post('/{mediaId}/watched', [MediaController::class, 'markAsWatched']);
+        Route::get('/formations-with-status', [MediaController::class, 'getFormationsWithWatchedStatus']);
     });
 
 

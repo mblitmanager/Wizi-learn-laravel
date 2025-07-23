@@ -2,8 +2,12 @@
 
 namespace App\Services;
 
+use App\Models\Formation;
+use App\Models\Media;
+use App\Models\Stagiaire;
 use App\Repositories\Interfaces\MediaRepositoryInterface;
 use App\Repositories\Interfaces\FormationRepositoryInterface;
+use Illuminate\Support\Facades\DB;
 
 class MediaService
 {
@@ -18,9 +22,21 @@ class MediaService
         $this->formationRepository = $formationRepository;
     }
 
-    public function getTutoriels($perPage = 10)
+    public function getTutoriels($perPage = 10, $stagiaireId = null)
     {
-        return $this->mediaRepository->getTutorielsQuery()->paginate($perPage);
+        $query = $this->mediaRepository->getTutorielsQuery();
+
+        if ($stagiaireId) {
+            // Charger les données du pivot pour le stagiaire spécifique
+            $query->with([
+                'stagiaires' => function ($q) use ($stagiaireId) {
+                    $q->where('stagiaire_id', $stagiaireId)
+                        ->select('stagiaires.id', 'media_stagiaire.is_watched', 'media_stagiaire.watched_at');
+                }
+            ]);
+        }
+
+        return $query->paginate($perPage);
     }
 
     public function getAstuces($perPage = 10)
@@ -28,16 +44,37 @@ class MediaService
         return $this->mediaRepository->getAstucesQuery()->paginate($perPage);
     }
 
-    public function getTutorielsByFormation($formationId, $perPage = 10)
+    public function getTutorielsByFormation($formationId, $perPage = 10, $stagiaireId = null)
     {
-        return $this->mediaRepository->getTutorielsByFormationQuery($formationId)->paginate($perPage);
+        $query = $this->mediaRepository->getTutorielsByFormationQuery($formationId);
+
+        if ($stagiaireId) {
+            $query->with([
+                'stagiaires' => function ($q) use ($stagiaireId) {
+                    $q->where('stagiaire_id', $stagiaireId)
+                        ->select('stagiaires.id', 'media_stagiaire.is_watched', 'media_stagiaire.watched_at');
+                }
+            ]);
+        }
+
+        return $query->paginate($perPage);
     }
 
-    public function getAstucesByFormation($formationId, $perPage = 10)
+    public function getAstucesByFormation($formationId, $perPage = 10, $stagiaireId = null)
     {
-        return $this->mediaRepository->getAstucesByFormationQuery($formationId)->paginate($perPage);
-    }
+        $query = $this->mediaRepository->getAstucesByFormationQuery($formationId);
 
+        if ($stagiaireId) {
+            $query->with([
+                'stagiaires' => function ($q) use ($stagiaireId) {
+                    $q->where('stagiaire_id', $stagiaireId)
+                        ->select('stagiaires.id', 'media_stagiaire.is_watched', 'media_stagiaire.watched_at');
+                }
+            ]);
+        }
+
+        return $query->paginate($perPage);
+    }
     public function getInteractiveFormations()
     {
         $formations = $this->formationRepository->all();
@@ -53,5 +90,46 @@ class MediaService
                 'astuces' => $this->mediaRepository->getAstucesByFormationQuery($formation->id)->get(),
             ];
         });
+    }
+
+
+
+
+
+
+    public function markAsWatched($stagiaireId, $mediaId)
+    {
+        DB::table('media_stagiaire')->updateOrInsert(
+            [
+                'media_id' => $mediaId,
+                'stagiaire_id' => $stagiaireId,
+            ],
+            [
+                'is_watched' => true,
+                'watched_at' => now(),
+                'updated_at' => now(),
+            ]
+        );
+    }
+
+    public function getFormationsWithWatchedStatus($stagiaireId)
+    {
+        return Formation::with([
+            'medias' => function ($query) use ($stagiaireId) {
+                $query->with([
+                    'stagiaires' => function ($q) use ($stagiaireId) {
+                        $q->where('stagiaire_id', $stagiaireId);
+                    }
+                ]);
+            }
+        ])->get();
+    }
+
+    public function getMediaWatchedStatus($stagiaireId, $mediaId)
+    {
+        return DB::table('media_stagiaire')
+            ->where('media_id', $mediaId)
+            ->where('stagiaire_id', $stagiaireId)
+            ->first(['is_watched', 'watched_at']);
     }
 }
