@@ -64,12 +64,15 @@
                 </div>
             </div>
         </div>
-        @if (session('ignored'))
-            <div class="alert alert-warning border-0 bg-warning alert-dismissible fade show">
+        @if (session('import_errors'))
+            <div class="alert alert-danger border-0 bg-danger alert-dismissible fade show">
                 <div class="text-white">
-                    <ul>
-                        @foreach (session('ignored') as $email)
-                            <li>{{ $email }}</li>
+                    <strong>Erreurs détectées durant l'import :</strong>
+                    <ul class="mt-2 mb-0 ps-4">
+                        @foreach (session('import_errors') as $err)
+                            <li>
+                                <strong>Ligne {{ $err['ligne'] }} :</strong> {{ $err['erreur'] }}
+                            </li>
                         @endforeach
                     </ul>
                 </div>
@@ -77,7 +80,9 @@
             </div>
         @endif
 
-        @if (session('success'))
+
+
+    @if (session('success'))
             <div class="alert alert-success border-0 bg-success alert-dismissible fade show">
                 <div class="text-white"> {{ session('success') }}</div>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>

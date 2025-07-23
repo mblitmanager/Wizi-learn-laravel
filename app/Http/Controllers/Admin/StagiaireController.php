@@ -146,23 +146,37 @@ class StagiaireController extends Controller
 
     function extraireNomPrenom($tiers)
     {
-        // Supprimer les chiffres ou éléments inutiles en début de chaîne
         $parts = preg_split('/\s+/', trim($tiers));
 
-        // Si le premier est un chiffre ou un mot tout en chiffres, on l'enlève
-        if (is_numeric($parts[0])) {
+        if (isset($parts[0]) && is_numeric($parts[0])) {
             array_shift($parts);
         }
 
         $nom = [];
         $prenom = [];
+        $hasUppercaseNom = false;
 
         foreach ($parts as $part) {
             if (mb_strtoupper($part, 'UTF-8') === $part) {
-                $nom[] = ucfirst(strtolower($part)); // pour normaliser
+                $nom[] = mb_strtoupper($part, 'UTF-8');
+                $hasUppercaseNom = true;
             } else {
-                $prenom[] = ucfirst(strtolower($part));
+                $prenom[] = ucfirst(mb_strtolower($part, 'UTF-8'));
             }
+        }
+
+        // Si aucun nom en majuscule détecté, on assume dernier mot = nom
+        if (!$hasUppercaseNom && count($parts) >= 2) {
+            $last = array_pop($parts);
+            $nom = [mb_strtoupper($last, 'UTF-8')];
+            $prenom = array_map(function ($p) {
+                return ucfirst(mb_strtolower($p, 'UTF-8'));
+            }, $parts);
+        }
+
+        // Vérification
+        if (empty($nom) || empty($prenom)) {
+            return ['nom' => null, 'prenom' => null];
         }
 
         return [
@@ -170,6 +184,7 @@ class StagiaireController extends Controller
             'prenom' => implode(' ', $prenom),
         ];
     }
+
 
     private function convertExcelDate($value)
     {
@@ -206,7 +221,7 @@ class StagiaireController extends Controller
             $invalidRows = [];
             $importedCount = 0;
 
-            // Vérifier l'en-tête en ignorant les espaces
+            // Vérifier l'en-tête
             $headerRow = $sheet->getRowIterator()->current();
             $headerCells = $headerRow->getCellIterator();
             $expectedHeaders = [
@@ -251,7 +266,7 @@ class StagiaireController extends Controller
             foreach ($expectedHeadersNormalized as $index => $possibleHeaders) {
                 if (!isset($headerValues[$index]) || !in_array($headerValues[$index], $possibleHeaders)) {
                     $officialHeader = is_array($expectedHeaders[$index]) ? $expectedHeaders[$index][0] : $expectedHeaders[$index];
-                    $headerErrors[] = "Colonne " . ($index + 1) . ": Attendu '{$officialHeader}'";
+                    $headerErrors[] = 'Colonne ' . ($index + 1) . ": Attendu '{$officialHeader}'";
                     $headerIsValid = false;
                 }
             }
@@ -271,9 +286,7 @@ class StagiaireController extends Controller
 
                 foreach ($cellIterator as $cell) {
                     $value = trim($cell->getValue());
-                    if ($value !== '') {
-                        $data[] = $value;
-                    }
+                    $data[] = $value;
                     if (count($data) === 12) {
                         break;
                     }
@@ -283,20 +296,22 @@ class StagiaireController extends Controller
                     $data[] = '';
                 }
 
+                $rowIndex = $row->getRowIndex();
+
                 if (count($data) !== 12) {
-                    $invalidRows[] = 'Ligne ' . $row->getRowIndex() . ': Nombre de colonnes incorrect';
+                    $invalidRows[] = ['ligne' => $rowIndex, 'erreur' => 'Nombre de colonnes incorrect'];
                     continue;
                 }
 
                 list($civilite, $tiers, $email, $telephone, $ville, $codePostal, $adresse, $dateNaissance, $formation, $dateDebutFormation, $dateFinFormation, $dateInscription) = $data;
 
                 if (empty($email) || empty($tiers) || empty($civilite)) {
-                    $invalidRows[] = 'Ligne ' . $row->getRowIndex() . ': Champs obligatoires manquants';
+                    $invalidRows[] = ['ligne' => $rowIndex, 'erreur' => 'Champs obligatoires manquants (civilité, tiers ou email)'];
                     continue;
                 }
 
                 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                    $invalidRows[] = 'Ligne ' . $row->getRowIndex() . ': Email invalide';
+                    $invalidRows[] = ['ligne' => $rowIndex, 'erreur' => 'Email invalide'];
                     continue;
                 }
 
@@ -307,7 +322,7 @@ class StagiaireController extends Controller
 
                 $np = $this->extraireNomPrenom($tiers);
                 if (empty($np['nom']) || empty($np['prenom'])) {
-                    $invalidRows[] = 'Ligne ' . $row->getRowIndex() . ': Format du nom/prénom invalide';
+                    $invalidRows[] = ['ligne' => $rowIndex, 'erreur' => 'Format du nom/prénom invalide'];
                     continue;
                 }
 
@@ -317,14 +332,14 @@ class StagiaireController extends Controller
                     $dateFinFormation = $this->convertExcelDate($dateFinFormation);
                     $dateInscription = $this->convertExcelDate($dateInscription);
                 } catch (\Exception $e) {
-                    $invalidRows[] = 'Ligne ' . $row->getRowIndex() . ': Erreur de date - ' . $e->getMessage();
+                    $invalidRows[] = ['ligne' => $rowIndex, 'erreur' => 'Erreur de conversion de date : ' . $e->getMessage()];
                     continue;
                 }
 
                 DB::beginTransaction();
                 try {
                     $user = User::create([
-                        'name' => $np['prenom'] . ' ' . $np['nom'],
+                        'name' => $np['nom'],
                         'email' => $email,
                         'password' => bcrypt('stagiaire123'),
                         'role' => 'stagiaire',
@@ -349,26 +364,22 @@ class StagiaireController extends Controller
 
                     if (!empty(trim($formation))) {
                         $formationTitre = trim($formation);
-
-                        // récupérer la Formation à partir du titre
                         $formationModel = Formation::where('titre', $formationTitre)->first();
 
                         if (!$formationModel) {
-                            $invalidRows[] = 'Ligne ' . $row->getRowIndex() . ': Formation "' . $formationTitre . '" non trouvée dans la table Formations';
+                            $invalidRows[] = ['ligne' => $rowIndex, 'erreur' => "Formation \"$formationTitre\" non trouvée"];
                             DB::rollBack();
                             continue;
                         }
 
-                        //récupérer le ou les CatalogueFormation liés à cette formation
                         $catalogueFormation = CatalogueFormation::where('formation_id', $formationModel->id)->first();
 
                         if (!$catalogueFormation) {
-                            $invalidRows[] = 'Ligne ' . $row->getRowIndex() . ': Aucun catalogue trouvé pour la formation "' . $formationTitre . '"';
+                            $invalidRows[] = ['ligne' => $rowIndex, 'erreur' => "Aucun catalogue trouvé pour la formation \"$formationTitre\""];
                             DB::rollBack();
                             continue;
                         }
 
-                        // Étape 3 : associer le stagiaire au CatalogueFormation
                         DB::table('stagiaire_catalogue_formations')->insert([
                             'stagiaire_id' => $stagiaire->id,
                             'catalogue_formation_id' => $catalogueFormation->id,
@@ -377,40 +388,39 @@ class StagiaireController extends Controller
                         ]);
                     }
 
-
                     DB::commit();
                     $importedCount++;
                 } catch (\Exception $e) {
                     DB::rollBack();
-                    $invalidRows[] = 'Ligne ' . $row->getRowIndex() . ': Erreur lors de la création - ' . $e->getMessage();
+                    $invalidRows[] = ['ligne' => $rowIndex, 'erreur' => 'Erreur lors de la création : ' . $e->getMessage()];
                 }
             }
 
-            $message = "Importation terminée";
+            $message = 'Importation terminée.';
             if ($importedCount > 0) {
-
-                $message .= ": $importedCount stagiaires importés";
+                $message .= " <strong>$importedCount</strong> stagiaires importés.";
             }
 
             if (count($ignoredEmails) > 0) {
                 Log::info('Emails ignorés : ' . implode(', ', $ignoredEmails));
-                $message .= "<br>" . count($ignoredEmails) . " doublons ignorés : " . implode(', ', $ignoredEmails);
+                $message .= '<br><strong>' . count($ignoredEmails) . '</strong> doublons ignorés : ' . implode(', ', $ignoredEmails);
             }
 
             if (count($invalidRows) > 0) {
-                Log::warning('Erreurs import : ' . implode('; ', $invalidRows));
-                $message .= "<br>" . count($invalidRows) . ' ' . (count($invalidRows) === 1 ? 'erreur' : 'erreurs');
+                Log::warning('Erreurs import : ' . json_encode($invalidRows));
+                $message .= '<br><strong>' . count($invalidRows) . '</strong> erreurs détectées.';
+                session()->flash('import_errors', $invalidRows);
             }
 
             return redirect()->route('stagiaires.index')
                 ->with($importedCount > 0 ? 'success' : 'error', new HtmlString($message));
+
         } catch (\Exception $e) {
             Log::error('Erreur import : ' . $e->getMessage());
             return redirect()->route('stagiaires.index')
                 ->with('error', 'Erreur lors de l\'import: ' . $e->getMessage());
         }
     }
-
 
 
     public function downloadStagiaireModel()

@@ -25,9 +25,13 @@ class MediaController extends Controller
     public function getTutoriels(Request $request)
     {
         try {
-            JWTAuth::parseToken()->authenticate();
+            $user = JWTAuth::parseToken()->authenticate();
             $perPage = $request->get('perPage', 10);
-            $tutoriels = $this->mediaService->getTutoriels($perPage);
+
+            // Récupérer l'ID du stagiaire (supposons que l'utilisateur authentifié est un stagiaire)
+            $stagiaireId = $user->stagiaire->id ?? null;
+
+            $tutoriels = $this->mediaService->getTutoriels($perPage, $stagiaireId);
             return response()->json($tutoriels);
         } catch (JWTException $e) {
             return response()->json(['error' => 'Unauthorized'], 401);
@@ -49,9 +53,11 @@ class MediaController extends Controller
     public function getTutorielsByFormation(Request $request, $formationId)
     {
         try {
-            JWTAuth::parseToken()->authenticate();
+            $user = JWTAuth::parseToken()->authenticate();
             $perPage = $request->get('perPage', 10);
-            $tutoriels = $this->mediaService->getTutorielsByFormation($formationId, $perPage);
+            $stagiaireId = $user->stagiaire->id ?? null;
+
+            $tutoriels = $this->mediaService->getTutorielsByFormation($formationId, $perPage, $stagiaireId);
             return response()->json($tutoriels);
         } catch (JWTException $e) {
             return response()->json(['error' => 'Unauthorized'], 401);
@@ -61,9 +67,11 @@ class MediaController extends Controller
     public function getAstucesByFormation(Request $request, $formationId)
     {
         try {
-            JWTAuth::parseToken()->authenticate();
+            $user = JWTAuth::parseToken()->authenticate();
             $perPage = $request->get('perPage', 10);
-            $astuces = $this->mediaService->getAstucesByFormation($formationId, $perPage);
+            $stagiaireId = $user->stagiaire->id ?? null;
+
+            $astuces = $this->mediaService->getAstucesByFormation($formationId, $perPage, $stagiaireId);
             return response()->json($astuces);
         } catch (JWTException $e) {
             return response()->json(['error' => 'Unauthorized'], 401);
