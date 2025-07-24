@@ -52,7 +52,7 @@ class CatalogueFormation extends Model
     public function stagiaires()
     {
         return $this->belongsToMany(Stagiaire::class, 'stagiaire_catalogue_formations', 'catalogue_formation_id', 'stagiaire_id')
-            ->withPivot('date_debut', 'date_inscription', 'date_fin', 'formateur_id')
+            ->withPivot(['date_debut', 'date_inscription', 'date_fin', 'formateur_id'])
             ->withTimestamps();
     }
 
@@ -63,5 +63,4 @@ class CatalogueFormation extends Model
     {
         return $this->cursus_pdf ? asset('storage/' . $this->cursus_pdf) : null;
     }
-
 }

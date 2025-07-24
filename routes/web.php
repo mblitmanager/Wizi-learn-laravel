@@ -91,7 +91,7 @@ Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function
 
 
     // Route pour le manuel interactif admin
-    Route::get('/manual', function() {
+    Route::get('/manual', function () {
         return view('admin.manual');
     })->name('admin.manual');
 
@@ -126,6 +126,8 @@ Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function
     Route::get('/achievements/trends', [\App\Http\Controllers\Admin\AchievementController::class, 'trends'])->name('admin.achievements.trends');
 
     Route::resource('partenaires', PartenaireController::class);
+    Route::get('partenaires/{partenaire}/classements', [\App\Http\Controllers\Admin\ClassementController::class, 'show'])->name('classements.show');
+    Route::get('classements', [\App\Http\Controllers\Admin\ClassementController::class, 'index'])->name('classement.index');
 });
 
 // // Route pour enregistrer le token FCM
@@ -142,5 +144,3 @@ Route::fallback(function () {
 Route::get('/{any}', function () {
     return view('stagiaire'); // Assurez-vous que la vue correspond à votre build React
 })->where('any', '.*');
-
-
