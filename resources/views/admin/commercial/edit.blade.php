@@ -26,8 +26,21 @@
         @if ($errors->any())
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
                 <strong class="font-bold">Whoops!</strong>
-                <span class="block sm:inline">There were some problems with your input.</span>
-                <ul class="mt-2 list-disc list-inside">
+                    <div class="col-md-4">
+                        <!-- Photo de profil -->
+                        <div class="mb-3">
+                            <label for="photo" class="form-label">Photo de profil</label>
+                            <input type="file" class="form-control" id="photo" name="photo" accept="image/*">
+                            @if(isset($commercial->user->image) && $commercial->user->image)
+                                <div class="mt-2">
+                                    <img src="{{ asset($commercial->user->image) }}" alt="Photo actuelle" style="max-width: 120px; max-height: 120px; object-fit: cover;">
+                                </div>
+                            @endif
+                            @error('photo')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
                     @foreach ($errors->all() as $error)
                         <li>{{ $error }}</li>
                     @endforeach
@@ -42,9 +55,10 @@
                 </div>
             @endif
             <div class="card-body p-4 border rounded">
-                <form class="row g-3" action="{{ route('commercials.update', $commercial->id) }}" method="POST">
+                <form class="row g-3" action="{{ route('commercials.update', $commercial->id) }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
+
                     <div class="col-md-4">
                         <!-- Nom -->
                         <div class="mb-3">
@@ -123,6 +137,21 @@
                             </select>
                             @error('stagiaire_id')
                                 <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                     <div class="col-md-4">
+                        <!-- Photo de profil -->
+                        <div class="mb-3">
+                            <label for="photo" class="form-label">Photo de profil</label>
+                            <input type="file" class="form-control" id="photo" name="photo" accept="image/*">
+                            @if(isset($commercial->user->image) && $commercial->user->image)
+                                <div class="mt-2">
+                                    <img src="{{ asset($commercial->user->image) }}" alt="Photo actuelle" style="max-width: 120px; max-height: 120px; object-fit: cover;">
+                                </div>
+                            @endif
+                            @error('photo')
+                                <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>
                     </div>

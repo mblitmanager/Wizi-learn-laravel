@@ -28,18 +28,21 @@ class CommercialService
     }
     public function create(array $data)
     {
-        $user = User::create([
+        $userData = [
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
             'role' => 'commercial',
-        ]);
+        ];
+        if (isset($data['image'])) {
+            $userData['image'] = $data['image'];
+        }
+        $user = User::create($userData);
 
         // 2. Associer l'utilisateur
         $data['user_id'] = $user->id;
 
         $stagiaireId = $data['stagiaire_id'] ?? [];
-        $commercial = $this->commercialInterface->create($data);
         $commercial = $this->commercialInterface->create($data);
 
         $commercial->stagiaires()->sync($stagiaireId);
@@ -54,11 +57,16 @@ class CommercialService
         if (!$commercial) {
             throw new \Exception("Quiz not found");
         }
-        $commercial->user->update([
+        $userUpdate = [
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => isset($data['password']) ? Hash::make($data['password']) : $commercial->user->password,
-        ]);
+        ];
+        // Ajout de la gestion de l'image
+        if (isset($data['image'])) {
+            $userUpdate['image'] = $data['image'];
+        }
+        $commercial->user->update($userUpdate);
         $stagiaireIds = $data['stagiaire_id'] ?? [];
 
         unset($data['name'], $data['email'], $data['password']);

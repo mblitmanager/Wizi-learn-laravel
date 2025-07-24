@@ -35,7 +35,7 @@
                                 <!-- Profile Image Section -->
                                 <img src="{{ $commercial->user->image ? asset($commercial->user->image) : 'https://ui-avatars.com/api/?name=' . urlencode($commercial->user->name) . '&background=0D8ABC&color=fff&size=128' }}"
                                     class="rounded-circle shadow" width="200" height="200" alt="Avatar"
-                                    style="object-fit: cover">
+                                    style="object-fit: cover; max-width: 160px; max-height: 160px; border-radius: 50%;">
                                 <h3 class="mt-3 mb-1">{{ $commercial->user->name }}</h3>
                                 <span
                                     class="badge bg-info text-dark px-3 py-1">{{ ucfirst($commercial->user->role) }}</span>
