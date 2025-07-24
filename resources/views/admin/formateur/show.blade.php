@@ -29,9 +29,15 @@
                     <div class="card-body p-5">
                         <div class="text-center mb-4">
                             <!-- Profile Image Section -->
-                            <img src="{{ $formateur->user->image ? asset($formateur->user->image) : 'https://ui-avatars.com/api/?name=' . urlencode($formateur->user->name) . '&background=0D8ABC&color=fff&size=128' }}"
-                                class="rounded-circle shadow" width="200" height="200" alt="Avatar"
-                                style="object-fit: cover">
+                            @if(isset($formateur->user->image) && $formateur->user->image)
+                                <img src="{{ asset($formateur->user->image) }}"
+                                    class="rounded-circle shadow" width="200" height="200" alt="Avatar"
+                                    style="object-fit: cover; max-width: 160px; max-height: 160px; border-radius: 50%;">
+                            @else
+                                <img src="https://ui-avatars.com/api/?name={{ urlencode($formateur->user->name) }}&background=0D8ABC&color=fff&size=128"
+                                    class="rounded-circle shadow" width="200" height="200" alt="Avatar"
+                                    style="object-fit: cover; max-width: 160px; max-height: 160px; border-radius: 50%;">
+                            @endif
                             <h3 class="mt-3 mb-1">{{ $formateur->user->name }}</h3>
                             <span class="badge bg-info text-dark px-3 py-1">{{ ucfirst($formateur->user->role) }}</span>
                         </div>

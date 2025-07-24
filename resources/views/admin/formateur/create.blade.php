@@ -34,7 +34,7 @@
             <div class="card-body p-4 border rounded">
                 <div class="px-4 py-3"
                     style="box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;">
-                    <form class="row g-3" action="{{ route('formateur.store') }}" method="POST">
+                    <form class="row g-3" action="{{ route('formateur.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <div class="col-md-4">
                             <!-- Nom -->
@@ -96,6 +96,13 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="photo" class="form-label">Photo de profil</label>
+                            <input type="file" class="form-control" id="photo" name="photo" accept="image/*">
+                            @error('photo')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
                         </div>
 
 

@@ -27,7 +27,7 @@
         @if ($errors->any())
         <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
             <strong class="font-bold">Whoops!</strong>
-            <span class="block sm:inline">There were some problems with your input.</span>
+            <span class="block sm:inline">Erreur avec zone de saisie.</span>
             <ul class="mt-2 list-disc list-inside">
                 @foreach ($errors->all() as $error)
                 <li>{{ $error }}</li>
@@ -43,7 +43,7 @@
             </div>
             @endif
             <div class="card-body p-4 border rounded">
-                <form class="row g-3" action="{{ route('formateur.update', $formateur->id) }}" method="POST">
+                <form class="row g-3" action="{{ route('formateur.update', $formateur->id) }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
                     <div class="col-md-4">
@@ -125,6 +125,23 @@
                             @enderror
                         </div>
                     </div>
+                     <div class="col-md-4">
+                        <!-- Photo de profil -->
+                        <div class="mb-3">
+                            <label for="photo" class="form-label">Photo de profil</label>
+                            <input type="file" class="form-control" id="photo" name="photo" accept="image/*">
+                            @if(isset($formateur->user->image) && $formateur->user->image)
+                                <div class="mt-2">
+                                    <img src="{{ asset($formateur->user->image) }}" alt="Photo actuelle" style="max-width: 120px; max-height: 120px; object-fit: cover;">
+                                </div>
+                            @else
+                                <div class="mt-2 text-muted" style="font-size: 0.9em;">Aucune image enregistrée</div>
+                            @endif
+                            @error('photo')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
                     <div class="col-md-12">
                         <div class="accordion mb-3" id="accordionExample">
                             <div class="accordion-item">
@@ -179,13 +196,13 @@
                             à
                             jour</button>
                     </div>
+
                 </form>
             </div>
         </div>
     </div>
 </div>
 @endsection
-@section('scripts')
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
@@ -196,4 +213,3 @@
         });
     });
 </script>
-@endsection

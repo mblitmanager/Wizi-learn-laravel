@@ -38,6 +38,9 @@
                     </ul>
                 </div>
             @endif
+            {{-- <div class="col-md-4">
+
+            </div> --}}
             <div class="card">
                 @if (session('success'))
                     <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -47,7 +50,7 @@
                 @endif
                 <div class="card-body p-4 border rounded">
                     <form class="row g-3" action="{{ route('pole_relation_clients.update', $poleRelationClient->id) }}"
-                        method="POST">
+                        enctype="multipart/form-data" method="POST">
                         @csrf
                         @method('PUT')
                         <div class="col-md-4">
@@ -147,7 +150,23 @@
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
+                            <!-- Photo de profil -->
+                            <div class="mb-3">
+                                <label for="photo" class="form-label">Photo de profil</label>
+                                <input type="file" class="form-control" id="photo" name="photo"
+                                    accept="image/*">
+                                @if (isset($poleRelationClient->user->image) && $poleRelationClient->user->image)
+                                    <div class="mt-2">
+                                        <img src="{{ asset($poleRelationClient->user->image) }}" alt="Photo actuelle"
+                                            style="max-width: 120px; max-height: 120px; object-fit: cover;">
+                                    </div>
+                                @endif
+                                @error('photo')
+                                    <span class="text-danger">{{ $message }}</span>
+                                @enderror
+                            </div>
                         </div>
+
 
                         <div class="text-center">
                             <button type="submit" class="btn btn-sm btn-primary px-4"> <i class="lni lni-save"></i>

@@ -381,19 +381,19 @@ class QuizController extends Controller
 
     private function getCategoryStatsForStagiaire($stagiaireId)
     {
-        // Récupérer toutes les progressions du stagiaire
-        $progressions = Progression::where('stagiaire_id', $stagiaireId)
+        // Récupérer tous les classements du stagiaire avec quiz et formation
+        $classements = Classement::where('stagiaire_id', $stagiaireId)
             ->with('quiz.formation')
             ->get();
 
-        // Grouper les progressions par catégorie
-        $categoryStats = $progressions->groupBy(function ($progression) {
-            return $progression->quiz->formation->categorie ?? 'Non catégorisé';
+        // Grouper les classements par catégorie de formation
+        $categoryStats = $classements->groupBy(function ($classement) {
+            return $classement->quiz->formation->categorie ?? 'Non catégorisé';
         })->map(function ($group) {
             return [
                 'category' => $group->first()->quiz->formation->categorie ?? 'Non catégorisé',
                 'quizCount' => $group->count(),
-                'averageScore' => $group->avg('score')
+                'averageScore' => $group->avg('points')
             ];
         })->values();
 
@@ -402,7 +402,8 @@ class QuizController extends Controller
 
     private function getLevelProgress($stagiaireId)
     {
-        $progressions = Progression::where('stagiaire_id', $stagiaireId)
+        // Utiliser Classement pour les stats par niveau
+        $classements = Classement::where('stagiaire_id', $stagiaireId)
             ->with('quiz')
             ->get();
 
@@ -410,13 +411,13 @@ class QuizController extends Controller
         $levelStats = [];
 
         foreach ($levels as $level) {
-            $levelQuizzes = $progressions->filter(function ($progression) use ($level) {
-                return $progression->quiz->niveau === $level;
+            $levelClassements = $classements->filter(function ($classement) use ($level) {
+                return $classement->quiz && $classement->quiz->niveau === $level;
             });
 
             $levelStats[$level] = [
-                'completed' => $levelQuizzes->count(),
-                'averageScore' => $levelQuizzes->avg('score')
+                'completed' => $levelClassements->count(),
+                'averageScore' => $levelClassements->avg('points')
             ];
         }
 

@@ -47,7 +47,17 @@ class FormateurController extends Controller
      */
     public function store(FormateurStoreRequest $request)
     {
-        $this->formateurService->create($request->validated());
+        $data = $request->validated();
+
+        // Gestion de l'image de profil
+        if ($request->hasFile('photo')) {
+            $file = $request->file('photo');
+            $filename = uniqid('formateur_') . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('media'), $filename);
+            $data['image'] = 'media/' . $filename;
+        }
+
+        $this->formateurService->create($data);
 
         return redirect()->route('formateur.index')
             ->with('success', 'Le formateur a été créé avec succès.');
@@ -78,7 +88,19 @@ class FormateurController extends Controller
      */
     public function update(FormateurStoreRequest $request, string $id)
     {
-        $this->formateurService->update($id, $request->validated());
+            $data = $request->validated();
+
+        // Gestion de l'image de profil lors de la mise à jour
+        if ($request->hasFile('photo')) {
+            $file = $request->file('photo');
+            $filename = uniqid('formateur_') . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('media'), $filename);
+            $data['image'] = 'media/' . $filename;
+        }
+
+        $this->formateurService->update($id, $data);
+
+        // $this->formateurService->update($id, $request->validated());
 
         return redirect()->route('formateur.index')
             ->with('success', 'Le formateur a été mis à jour avec succès.');

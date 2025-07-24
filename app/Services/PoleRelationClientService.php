@@ -25,12 +25,16 @@ class PoleRelationClientService implements PRCInterface
     }
     public function create(array $data): PoleRelationClient
     {
-        $user = User::create([
+        $userData = [
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
             'role' => 'pole relation client',
-        ]);
+        ];
+        if (isset($data['image'])) {
+            $userData['image'] = $data['image'];
+        }
+        $user = User::create($userData);
 
         // 2. Associer l'utilisateur
         $data['user_id'] = $user->id;

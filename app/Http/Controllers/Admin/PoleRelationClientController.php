@@ -49,6 +49,13 @@ class PoleRelationClientController extends Controller
     public function store(PoleRelationClientRequest $request)
     {
         $data = $request->validated();
+        // Gestion de l'image de profil
+        if ($request->hasFile('photo')) {
+            $file = $request->file('photo');
+            $filename = uniqid('prc_') . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('media'), $filename);
+            $data['image'] = 'media/' . $filename;
+        }
         // Rôle libre depuis le formulaire
         $data['role'] = $request->input('role', 'autre');
         $this->polerelationClientRepository->create($data);
@@ -80,7 +87,17 @@ class PoleRelationClientController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $this->polerelationClientRepository->update($id, $request->all());
+        $data = $request->all();
+
+        // Gestion de l'image de profil lors de la mise à jour
+        if ($request->hasFile('photo')) {
+            $file = $request->file('photo');
+            $filename = uniqid('prc_') . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('media'), $filename);
+            $data['image'] = 'media/' . $filename;
+        }
+
+        $this->polerelationClientRepository->update($id, $data);
         return redirect()->route('pole_relation_clients.index')
             ->with('success', 'Le pole relation client a été mis à jour avec succès.');
     }

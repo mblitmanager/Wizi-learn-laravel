@@ -49,7 +49,7 @@
 
                     <div class="px-4 py-3"
                         style="box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;">
-                        <form class="row g-3" action="{{ route('pole_relation_clients.store') }}" method="POST">
+                        <form class="row g-3" action="{{ route('pole_relation_clients.store') }}" method="POST" enctype="multipart/form-data">
                             @csrf
                             <div class="col-md-4">
                                 <!-- Nom -->
@@ -57,7 +57,7 @@
                                     <label for="name">Nom</label>
                                     <input type="text" name="name" id="name"
                                         class="form-control @error('name') is-invalid @enderror"
-                                        value="{{ old('name', $pole_relation_client->user->name ?? '') }}">
+                                        value="{{ old('name') }}">
                                     @error('name')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -65,12 +65,12 @@
                             </div>
 
                             <div class="col-md-4">
-                                <!-- Nom -->
+                                <!-- Prénom -->
                                 <div class="mb-3">
-                                    <label for="name">Prénom</label>
+                                    <label for="prenom">Prénom</label>
                                     <input type="text" name="prenom" id="prenom"
                                         class="form-control @error('prenom') is-invalid @enderror"
-                                        value="{{ old('name', $pole_relation_client->prenom ?? '') }}">
+                                        value="{{ old('prenom') }}">
                                     @error('prenom')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -83,19 +83,20 @@
                                     <label for="email">Adresse e-mail</label>
                                     <input type="email" name="email" id="email"
                                         class="form-control @error('email') is-invalid @enderror"
-                                        value="{{ old('email', $pole_relation_client->user->email ?? '') }}">
+                                        value="{{ old('email') }}">
                                     @error('email')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
                             </div>
+
                             <div class="col-md-4">
-                                <!-- Mot de passe -->
+                                <!-- Téléphone -->
                                 <div class="mb-3">
                                     <label for="telephone">Téléphone</label>
                                     <input type="text" name="telephone" id="telephone"
                                         class="form-control @error('telephone') is-invalid @enderror"
-                                        value="{{ old('telephone', $pole_relation_client->telephone ?? '') }}">
+                                        value="{{ old('telephone') }}">
                                     @error('telephone')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -108,25 +109,19 @@
                                     <label for="password">Mot de passe</label>
                                     <input type="password" name="password" id="password"
                                         class="form-control @error('password') is-invalid @enderror"
-                                        value="{{ old('password', $pole_relation_client->user->password ?? '') }}">
+                                        value="{{ old('password') }}">
                                     @error('password')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
                             </div>
 
-                            {{-- Champ rôle libre --}}
-                            <div class="form-group mb-3">
-                                <label for="role">Rôle</label>
-                                <input type="text" class="form-control" id="role" name="role"
-                                    placeholder="Ex : conseiller, consultant 1er accueil, interlocuteur, autre..."
-                                    value="{{ old('role') }}" list="role-options" required>
-                                <datalist id="role-options">
-                                    <option value="conseiller">
-                                    <option value="consultant 1er accueil">
-                                    <option value="interlocuteur">
-                                    <option value="autre">
-                                </datalist>
+                            <div class="col-md-6 mb-3">
+                                <label for="photo" class="form-label">Photo de profil</label>
+                                <input type="file" class="form-control" id="photo" name="photo" accept="image/*">
+                                @error('photo')
+                                    <span class="text-danger">{{ $message }}</span>
+                                @enderror
                             </div>
 
                             <div class="col-md-4">
@@ -135,14 +130,35 @@
                                     <select name="stagiaire_id[]" id="stagiaire_id"
                                         class="form-select select2 @error('stagiaire_id') is-invalid @enderror" multiple>
                                         <option value="">Choisir un ou plusieurs stagiaires</option>
-                                        @foreach ($stagiaires as $stagiaire)
-                                            <option value="{{ $stagiaire->id }}"
-                                                {{ in_array($stagiaire->id, old('stagiaire_id', [])) ? 'selected' : '' }}>
-                                                {{ $stagiaire->user->name }}
-                                            </option>
-                                        @endforeach
+                                        @if(isset($stagiaires))
+                                            @foreach ($stagiaires as $stagiaire)
+                                                <option value="{{ $stagiaire->id }}"
+                                                    {{ in_array($stagiaire->id, old('stagiaire_id', [])) ? 'selected' : '' }}>
+                                                    {{ $stagiaire->user->name }}
+                                                </option>
+                                            @endforeach
+                                        @endif
                                     </select>
                                     @error('stagiaire_id')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <!-- Rôle -->
+                                <div class="mb-3">
+                                    <label for="role">Rôle (Pole Relation Client)</label>
+                                    <input type="text" class="form-control @error('role') is-invalid @enderror" id="role" name="role"
+                                        placeholder="Ex : conseiller, consultant 1er accueil, interlocuteur, autre..."
+                                        value="{{ old('role') }}" list="role-options" required>
+                                    <datalist id="role-options">
+                                        <option value="conseiller">
+                                        <option value="consultant 1er accueil">
+                                        <option value="interlocuteur">
+                                        <option value="autre">
+                                    </datalist>
+                                    @error('role')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>

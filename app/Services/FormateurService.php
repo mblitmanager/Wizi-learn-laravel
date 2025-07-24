@@ -30,12 +30,16 @@ class FormateurService
     public function create(array $data)
     {
         // Créer l'utilisateur associé
-        $user = User::create([
+        $userData = [
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
             'role' => 'formateur', // Forcer le rôle à 'formateur'
-        ]);
+        ];
+        if (isset($data['image'])) {
+            $userData['image'] = $data['image'];
+        }
+        $user = User::create($userData);
 
         // Associer l'utilisateur au formateur
         $data['user_id'] = $user->id;
@@ -72,6 +76,12 @@ class FormateurService
                 ? Hash::make($data['password'])
                 : $formateur->user->password,
         ]);
+
+           // Ajout de la gestion de l'image
+        if (isset($data['image'])) {
+            $userUpdate['image'] = $data['image'];
+        }
+        $formateur->user->update($userUpdate);
 
         // Vérifier si les stagiaires et formations sont définis
         $stagiaireIds = $data['stagiaire_id'] ?? [];
