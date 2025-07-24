@@ -277,7 +277,7 @@ class QuizController extends Controller
                 return [
                     'id' => (string) $progression->id,
                     'quiz' => [
-                        'id' => (string) $progression->quiz->id,
+                        'id' => (int) $progression->quiz->id,
                         'title' => $progression->quiz->titre,
                         'category' => $progression->quiz->formation->categorie ?? 'Non catégorisé',
                         'level' => $niveau
