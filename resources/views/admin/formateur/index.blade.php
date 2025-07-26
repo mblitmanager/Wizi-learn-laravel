@@ -62,16 +62,14 @@
                 </div>
             </div>
         </div>
-        @if (session('ignored'))
-            <div class="alert alert-warning border-0 bg-warning alert-dismissible fade show">
-                <div class="text-white">
-                    <ul>
-                        @foreach (session('ignored') as $email)
-                            <li>{{ $email }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        @if (session('import_errors'))
+            <div class="alert alert-danger">
+                <h4>Détails des erreurs :</h4>
+                <ul>
+                    @foreach (session('import_errors') as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
             </div>
         @endif
 
