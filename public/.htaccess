@@ -37,3 +37,9 @@
     php_value max_execution_time 300
     php_value max_input_time 300
 </IfModule>
+
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType application/javascript "access plus 1 hour"
+  ExpiresByType text/css "access plus 1 hour"
+</IfModule>
