@@ -88,7 +88,7 @@ class FormateurController extends Controller
      */
     public function update(FormateurStoreRequest $request, string $id)
     {
-            $data = $request->validated();
+        $data = $request->validated();
 
         // Gestion de l'image de profil lors de la mise à jour
         if ($request->hasFile('photo')) {
@@ -114,42 +114,6 @@ class FormateurController extends Controller
         //
     }
 
-    private function splitConsultants($cellValue)
-    {
-        // Supprime les espaces en trop, puis découpe sur "et" ou ","
-        $cleaned = preg_replace('/\s+et\s+|\s*,\s*/', '|', $cellValue);
-        $parts = array_map('trim', explode('|', $cleaned));
-
-        return array_filter($parts); // filtre les vides
-    }
-
-    private function extraireNomPrenom($fullName)
-    {
-        $fullName = trim(preg_replace('/\s+/', ' ', $fullName)); // Normaliser les espaces
-
-        // Supprimer les numéros en début de ligne si existent
-        $fullName = preg_replace('/^\d+\s*/', '', $fullName);
-
-        $parts = explode(' ', $fullName);
-
-        // Cas simple: 2 parties = prénom + nom
-        if (count($parts) === 2) {
-            return [
-                'prenom' => ucfirst($parts[0]),
-                'nom' => ucfirst($parts[1])
-            ];
-        }
-
-        // Cas complexe: on prend le dernier mot comme nom, le reste comme prénom
-        $nom = array_pop($parts);
-        $prenom = implode(' ', $parts);
-
-        return [
-            'prenom' => ucfirst($prenom),
-            'nom' => ucfirst($nom)
-        ];
-    }
-
 
     public function import(Request $request)
     {
@@ -164,19 +128,21 @@ class FormateurController extends Controller
             $spreadsheet = IOFactory::load($file->getRealPath());
             $sheet = $spreadsheet->getActiveSheet();
 
-            $ignoredEmails = [];
-            $invalidRows = [];
-            $importedCount = 0;
+            $results = [
+                'imported' => 0,
+                'ignored' => [],
+                'errors' => [],
+                'warnings' => []
+            ];
 
-            // Vérification des en-têtes
-            $headerRow = $sheet->getRowIterator()->current();
-            $headerCells = $headerRow->getCellIterator();
-            $headerCells->setIterateOnlyExistingCells(false);
-
-            // Vérification des 2 premières colonnes
+            // Vérification des en-têtes selon votre fichier Excel
             $expectedHeaders = [
-                'A' => 'Consultant Formateur',
-                'B' => 'Formation'
+                'A' => 'email',
+                'B' => 'nom',
+                'C' => 'prenom',
+                'D' => 'tel',
+                'E' => 'adresse',
+                'F' => 'formation'
             ];
 
             $headerErrors = [];
@@ -198,138 +164,177 @@ class FormateurController extends Controller
             $lastRow = $sheet->getHighestDataRow();
 
             for ($rowIndex = 2; $rowIndex <= $lastRow; $rowIndex++) {
-                $consultantCell = trim($sheet->getCell('A' . $rowIndex)->getValue());
-                $formationCell = trim($sheet->getCell('B' . $rowIndex)->getValue());
+                $email = trim($sheet->getCell('A' . $rowIndex)->getValue());
+                $nom = trim($sheet->getCell('B' . $rowIndex)->getValue());
+                $prenom = trim($sheet->getCell('C' . $rowIndex)->getValue());
+                $tel = trim($sheet->getCell('D' . $rowIndex)->getValue());
+                $adresse = trim($sheet->getCell('E' . $rowIndex)->getValue());
+                $formationsInput = trim($sheet->getCell('F' . $rowIndex)->getValue());
 
-                // Si la cellule consultant est vide, on passe à la ligne suivante
-                if (empty($consultantCell)) {
-                    \Log::info("Ligne $rowIndex vide - Ignorée.");
+                // Vérification des champs obligatoires
+                $requiredFields = [
+                    'email' => $email,
+                    'nom' => $nom,
+                    'prenom' => $prenom
+                ];
+
+                $missingFields = [];
+                foreach ($requiredFields as $field => $value) {
+                    if (empty($value)) {
+                        $missingFields[] = $field;
+                    }
+                }
+
+                if (!empty($missingFields)) {
+                    $results['errors'][] = "Ligne $rowIndex: Champs obligatoires manquants: " . implode(', ', $missingFields);
                     continue;
                 }
 
-                \Log::info("Ligne $rowIndex : Consultant: $consultantCell | Formation: $formationCell");
+                // Validation de l'email
+                if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                    $results['errors'][] = "Ligne $rowIndex: Email invalide: '$email'";
+                    continue;
+                }
 
-                $consultants = $this->splitConsultants($consultantCell);
+                DB::beginTransaction();
+                try {
+                    // Vérification des doublons
+                    $existingUser = User::where('email', $email)->where('role', 'Formateur')->first();
+                    if ($existingUser) {
+                        $results['ignored'][] = "Ligne $rowIndex: L'utilisateur $email existe déjà";
+                        DB::rollBack();
+                        continue;
+                    }
 
-                foreach ($consultants as $consultant) {
-                    DB::beginTransaction();
-                    try {
-                        $np = $this->extraireNomPrenom($consultant);
+                    // Création de l'utilisateur
+                    $user = User::create([
+                        'name' => "$prenom $nom",
+                        'email' => $email,
+                        'password' => bcrypt('formateur@123'),
+                        'role' => 'Formateur',
+                        'adresse' => $adresse
+                    ]);
 
-                        if (empty($np['nom']) || empty($np['prenom'])) {
-                            $invalidRows[] = 'Ligne ' . $rowIndex . ': Format du nom/prénom invalide - "' . $consultant . '"';
-                            DB::rollBack();
-                            continue;
-                        }
+                    // Formatage du téléphone
+                    $tel = $this->formatPhoneNumber($tel);
 
-                        $email = trim(strtolower(preg_replace('/[^a-z]/', '', $np['prenom']))) . '.' .
-                            trim(strtolower(preg_replace('/[^a-z]/', '', $np['nom']))) . '@example.com';
+                    // Création du formateur
+                    $formateur = Formateur::create([
+                        'prenom' => $prenom,
+                        'nom' => $nom,
+                        'telephone' => $tel,
+                        'user_id' => $user->id,
+                        'role' => 'Formateur',
+                        'statut' => true,
+                    ]);
 
-                        if ($email === '@example.com') {
-                            $invalidRows[] = 'Ligne ' . $rowIndex . ': Email invalide - "' . $consultant . '"';
-                            DB::rollBack();
-                            continue;
-                        }
+                    // Gestion des formations (sélection multiple)
+                    if (!empty($formationsInput)) {
+                        $formations = array_map('trim', explode(',', $formationsInput));
 
-                        \Log::info("Import - Ligne {$rowIndex}", [
-                            'consultant' => $consultant,
-                            'np' => $np,
-                            'email' => $email
-                        ]);
-
-                        $existingUser = User::where('email', $email)
-                            ->where('role', 'Formateur')
-                            ->first();
-
-                        if ($existingUser) {
-                            $ignoredEmails[] = $email;
-                            DB::rollBack();
-                            continue;
-                        }
-
-                        $user = User::create([
-                            'name' => $np['prenom'] . ' ' . $np['nom'],
-                            'email' => $email,
-                            'password' => bcrypt('pole123'),
-                            'role' => 'pole relation client',
-                        ]);
-
-                        $formateur  = Formateur::create([
-                            'prenom' => $np['prenom'],
-                            'nom' => $np['nom'],
-                            'user_id' => $user->id,
-                            'role' => 'Formateur',
-                            'statut' => true,
-                        ]);
-
-                        if (!empty($formationCell)) {
-                            $formation = CatalogueFormation::where('titre', $formationCell)->first();
+                        foreach ($formations as $formationName) {
+                            // Nettoyage et recherche flexible du nom de formation
+                            $cleanedFormationName = $this->cleanFormationName($formationName);
+                            $formation = CatalogueFormation::where('titre', 'like', "%$cleanedFormationName%")->first();
 
                             if ($formation) {
-                                DB::table('formateur_catalogue_formation')->insert([
-                                    'formateur_id' => $formateur->id,
-                                    'catalogue_formation_id' => $formation->id ?? null,
-                                    'created_at' => now(),
-                                    'updated_at' => now(),
-                                ]);
+                                // Vérification si la relation existe déjà
+                                $existingRelation = DB::table('formateur_catalogue_formation')
+                                    ->where('formateur_id', $formateur->id)
+                                    ->where('catalogue_formation_id', $formation->id)
+                                    ->first();
+
+                                if (!$existingRelation) {
+                                    DB::table('formateur_catalogue_formation')->insert([
+                                        'formateur_id' => $formateur->id,
+                                        'catalogue_formation_id' => $formation->id,
+                                        'created_at' => now(),
+                                        'updated_at' => now(),
+                                    ]);
+                                }
                             } else {
-                                \Log::warning("Formation non trouvée: $formationCell");
-                                // Vous pouvez choisir d'ajouter une erreur ou juste logger
-                                $invalidRows[] = 'Ligne ' . $rowIndex . ': Formation non trouvée - "' . $formationCell . '"';
+                                $results['warnings'][] = "Ligne $rowIndex: Formation '$formationName' non trouvée";
                             }
                         }
-
-                        DB::commit();
-                        $importedCount++;
-                    } catch (\Exception $e) {
-                        \Log::error("Erreur d'import - Ligne {$rowIndex}", [
-                            'consultant' => $consultant,
-                            'np' => $np,
-                            'error' => $e->getMessage()
-                        ]);
-                        DB::rollBack();
-                        $invalidRows[] = 'Ligne ' . $rowIndex . ': Erreur - ' . $e->getMessage();
                     }
+
+                    DB::commit();
+                    $results['imported']++;
+                } catch (\Exception $e) {
+                    DB::rollBack();
+                    $results['errors'][] = "Ligne $rowIndex: Erreur - " . $e->getMessage();
+                    \Log::error("Erreur import ligne $rowIndex", [
+                        'email' => $email,
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
                 }
             }
 
-
-
             // Construction du message de résultat
-            $message = "Importation terminée";
-            if ($importedCount > 0) {
-                $message .= ": $importedCount Formateurs importés";
-            }
-            if (count($ignoredEmails) > 0) {
-                $message .= "<br>" . count($ignoredEmails) . " doublons ignorés : " . implode(', ', $ignoredEmails);
+            $message = "<strong>Résultat de l'importation :</strong><br>";
+            $message .= "- Formateurs importés : {$results['imported']}<br>";
+
+            if (!empty($results['ignored'])) {
+                $message .= "- Doublons ignorés : " . count($results['ignored']) . "<br>";
             }
 
-            if (count($invalidRows) > 0) {
-                $message .= "<br>" . count($invalidRows) . ' ' . (count($invalidRows) === 1 ? 'erreur' : 'erreurs');
+            if (!empty($results['warnings'])) {
+                $message .= "- Avertissements : " . count($results['warnings']) . "<br>";
             }
 
-            // Retour avec le statut approprié
-            $redirect = redirect()->route('formateur.index');
-            if (count($ignoredEmails) > 0) {
-                $message = "<br>" . count($ignoredEmails) . " doublons ignorés";
-                return $redirect->with([
-                    'ignoredEmails' => $ignoredEmails,
-                    'ignoredMessage' => new HtmlString($message)
-                ]);
+            if (!empty($results['errors'])) {
+                $message .= "- Erreurs : " . count($results['errors']) . "<br>";
             }
 
-            if ($importedCount > 0) {
-                return $redirect->with('success', new HtmlString($message));
-            } elseif (count($invalidRows) > 0) {
-                return $redirect->with('error', new HtmlString($message));
-            } else {
-                return $redirect->with('info', 'Aucun Formateur importé (fichier vide ou seulement des doublons)');
+            // Préparation des données pour la vue
+            $redirect = redirect()->route('formateur.index')
+                ->with('import_results', new HtmlString($message));
+
+            if (!empty($results['errors'])) {
+                $redirect->with('import_errors', $results['errors']);
             }
+
+            if (!empty($results['warnings'])) {
+                $redirect->with('import_warnings', $results['warnings']);
+            }
+
+            if (!empty($results['ignored'])) {
+                $redirect->with('import_ignored', $results['ignored']);
+            }
+
+            return $redirect;
         } catch (\Exception $e) {
+            \Log::error("Erreur globale d'import", [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return redirect()->route('formateur.index')
-                ->with('error', 'Erreur lors de l\'import: ' . $e->getMessage());
+                ->with('error', "Erreur lors de l'import: " . $e->getMessage());
         }
     }
+
+    // Fonction pour nettoyer les noms de formation
+    private function cleanFormationName($name)
+    {
+        $name = trim($name);
+        $name = preg_replace('/\s+/', ' ', $name); // Supprime les espaces multiples
+        $name = str_replace(['FORMATION', 'formation'], '', $name); // Enlève le mot "FORMATION"
+        return trim($name);
+    }
+
+    // Fonction pour formater les numéros de téléphone
+    private function formatPhoneNumber($phone)
+    {
+        $phone = preg_replace('/[^0-9]/', '', $phone);
+
+        if (strlen($phone) === 9) {
+            return '0' . $phone; // Ajoute le 0 manquant pour les numéros français
+        }
+
+        return $phone;
+    }
+
 
     public function downloadFormateurModel()
     {

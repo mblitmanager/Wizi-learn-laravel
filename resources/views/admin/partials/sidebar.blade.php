@@ -22,11 +22,11 @@
                 </li>
                 <li class="nav-item">
                     <a href="{{ route('admin.achievements.index') }}">
-                     <i class="fas fa-trophy me-2"></i> Gestion des Succès
+                        <i class="fas fa-trophy me-2"></i> Gestion des Succès
                     </a>
                 </li>
             </ul>
-             {{-- <ul>
+            {{-- <ul>
                 <li class="nav-item"><i class="bx bx-right-arrow-alt"></i>
                     <a href="{{ route('admin.achievements.index') }}">
                         <i class="fas fa-trophy me-2"></i> Gestion des Succès
@@ -68,7 +68,7 @@
             </ul>
         </li>
         <li>
-            <a href="javascript:;">
+            <a href="{{ route('classement.index') }}">
                 <div class="parent-icon"><i class='fadeIn animated bx bx-list-ol'></i>
                 </div>
                 <div class="menu-title">Classement</div>

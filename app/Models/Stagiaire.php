@@ -43,7 +43,7 @@ class Stagiaire extends Model
     public function catalogue_formations()
     {
         return $this->belongsToMany(CatalogueFormation::class, 'stagiaire_catalogue_formations', 'stagiaire_id', 'catalogue_formation_id')
-            ->withPivot('date_debut', 'date_inscription', 'date_fin', 'formateur_id')
+            ->withPivot(['date_debut', 'date_inscription', 'date_fin', 'formateur_id'])
             ->withTimestamps();
     }
 
@@ -100,7 +100,7 @@ class Stagiaire extends Model
             ->withPivot('is_watched', 'watched_at')
             ->withTimestamps();
     }
-       // Ajout des relations pour les succès
+    // Ajout des relations pour les succès
     public function achievements()
     {
         return $this->belongsToMany(Achievement::class, 'stagiaire_achievements')->withTimestamps();

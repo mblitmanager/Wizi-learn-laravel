@@ -168,128 +168,160 @@ class CommercialController extends Controller
             $spreadsheet = IOFactory::load($file->getRealPath());
             $sheet = $spreadsheet->getActiveSheet();
 
-            $ignoredEmails = [];
-            $invalidRows = [];
-            $importedCount = 0;
+            $results = [
+                'imported' => 0,
+                'ignored' => [],
+                'errors' => [],
+                'warnings' => []
+            ];
 
-            // Vérification de l'en-tête
-            $headerRow = $sheet->getRowIterator()->current();
-            $headerCell = $headerRow->getCellIterator()->current();
-            $headerValue = trim($headerCell->getValue());
+            // Vérification des en-têtes selon votre fichier Excel
+            $expectedHeaders = [
+                'A' => 'email',
+                'B' => 'nom',
+                'C' => 'prénom',
+                'D' => 'tel',
+                'E' => 'adresse'
+            ];
 
-            if (strtolower($headerValue) !== 'interlocuteur') {
-                return redirect()->route('commercials.index')
-                    ->with('error', 'En-tête incorrect. La première colonne doit être "Interlocuteur".');
+            $headerErrors = [];
+            foreach ($expectedHeaders as $column => $expectedHeader) {
+                $cellValue = trim($sheet->getCell($column . '1')->getValue() ?? '');
+                if (mb_strtolower($cellValue) !== mb_strtolower($expectedHeader)) {
+                    $headerErrors[] = "Colonne $column: En-tête attendu '$expectedHeader' mais trouvé '$cellValue'";
+                }
             }
 
-            $lastRow = $sheet->getHighestDataRow(); // Dernière ligne contenant des données
+            if (!empty($headerErrors)) {
+                return redirect()->route('formateur.index')
+                    ->with('error', new HtmlString(
+                        'En-têtes incorrects:<br>' . implode('<br>', $headerErrors) .
+                            '<br>Veuillez utiliser le modèle fourni.'
+                    ));
+            }
+
+            $lastRow = $sheet->getHighestDataRow();
 
             for ($rowIndex = 2; $rowIndex <= $lastRow; $rowIndex++) {
-                $cell = $sheet->getCell('A' . $rowIndex);
-                $consultantsCell = trim($cell->getValue());
+                $email = trim($sheet->getCell('A' . $rowIndex)->getValue());
+                $nom = trim($sheet->getCell('B' . $rowIndex)->getValue());
+                $prenom = trim($sheet->getCell('C' . $rowIndex)->getValue());
+                $tel = trim($sheet->getCell('D' . $rowIndex)->getValue());
+                $adresse = trim($sheet->getCell('E' . $rowIndex)->getValue());
 
-                // Si la cellule est vide, on la log et on passe à la ligne suivante
-                if (empty($consultantsCell)) {
-                    \Log::info("Ligne $rowIndex vide - Ignorée.");
+                // Vérification des champs obligatoires
+                $requiredFields = [
+                    'email' => $email,
+                    'nom' => $nom,
+                    'prenom' => $prenom
+                ];
+
+                $missingFields = [];
+                foreach ($requiredFields as $field => $value) {
+                    if (empty($value)) {
+                        $missingFields[] = $field;
+                    }
+                }
+
+                if (!empty($missingFields)) {
+                    $results['errors'][] = "Ligne $rowIndex: Champs obligatoires manquants: " . implode(', ', $missingFields);
                     continue;
                 }
 
-                \Log::info("Ligne $rowIndex : $consultantsCell");
+                // Validation de l'email
+                if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                    $results['errors'][] = "Ligne $rowIndex: Email invalide: '$email'";
+                    continue;
+                }
 
-                $consultants = $this->splitConsultants($consultantsCell);
-
-                foreach ($consultants as $consultant) {
-                    DB::beginTransaction();
-                    try {
-                        $np = $this->extraireNomPrenom($consultant);
-
-                        if (empty($np['nom']) || empty($np['prenom'])) {
-                            $invalidRows[] = 'Ligne ' . $rowIndex . ': Format du nom/prénom invalide - "' . $consultant . '"';
-                            DB::rollBack();
-                            continue;
-                        }
-
-                        // Génération d'email plus robuste
-                        $email = strtolower(preg_replace('/[^a-z]/', '', $np['prenom'])) . '.' .
-                            strtolower(preg_replace('/[^a-z]/', '', $np['nom'])) . '@example.com';
-
-                        if ($email === '@example.com') {
-                            $invalidRows[] = 'Ligne ' . $rowIndex . ': Email invalide - "' . $consultant . '"';
-                            DB::rollBack();
-                            continue;
-                        }
-
-                        \Log::info("Import - Ligne {$rowIndex}", [
-                            'consultant' => $consultant,
-                            'np' => $np,
-                            'email' => $email
-                        ]);
-
-                        if (User::where('email', $email)->exists()) {
-                            $ignoredEmails[] = $email;
-                            DB::rollBack();
-                            continue;
-                        }
-
-                        $user = User::create([
-                            'name' => $np['prenom'] . ' ' . $np['nom'],
-                            'email' => $email,
-                            'password' => bcrypt('consultant123'),
-                            'role' => 'commercial',
-                        ]);
-
-                        Commercial::create([
-                            'prenom' => $np['prenom'],
-                            'nom' => $np['nom'],
-                            'user_id' => $user->id,
-                            'role' => 'commercial',
-                            'statut' => true,
-                        ]);
-
-                        DB::commit();
-                        $importedCount++;
-                    } catch (\Exception $e) {
+                DB::beginTransaction();
+                try {
+                    // Vérification des doublons
+                    $existingUser = User::where('email', $email)->where('role', 'Formateur')->first();
+                    if ($existingUser) {
+                        $results['ignored'][] = "Ligne $rowIndex: L'utilisateur $email existe déjà";
                         DB::rollBack();
-                        $invalidRows[] = 'Ligne ' . $rowIndex . ': Erreur - ' . $e->getMessage();
+                        continue;
                     }
+
+                    // Formatage du téléphone
+                    $tel = $this->formatPhoneNumber($tel);
+
+                    // Création de l'utilisateur
+                    $user = User::create([
+                        'name' => "$prenom $nom",
+                        'email' => $email,
+                        'password' => bcrypt('commercial@123'),
+                        'role' => 'Commercial',
+                        'adresse' => $adresse
+                    ]);
+
+                    // Création du commercial
+                    Commercial::create([
+                        'prenom' => $prenom,
+                        'telephone' => $tel,
+                        'user_id' => $user->id,
+                        'role' => 'Commercial',
+                        'statut' => true,
+                    ]);
+
+                    DB::commit();
+                    $results['imported']++;
+                } catch (\Exception $e) {
+                    DB::rollBack();
+                    $results['errors'][] = "Ligne $rowIndex: Erreur - " . $e->getMessage();
+                    \Log::error("Erreur import ligne $rowIndex", [
+                        'email' => $email,
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
                 }
             }
 
-
             // Construction du message de résultat
-            $message = "Importation terminée";
-            if ($importedCount > 0) {
-                $message .= ": $importedCount commerciaux importés";
-            }
-            if (count($ignoredEmails) > 0) {
-                $message .= "<br>" . count($ignoredEmails) . " doublons ignorés : " . implode(', ', $ignoredEmails);
+            $message = "<strong>Résultat de l'importation :</strong><br>";
+            $message .= "- Commercial importés : {$results['imported']}<br>";
+
+            if (!empty($results['ignored'])) {
+                $message .= "- Doublons ignorés : " . count($results['ignored']) . "<br>";
             }
 
-            if (count($invalidRows) > 0) {
-                $message .= "<br>" . count($invalidRows) . ' ' . (count($invalidRows) === 1 ? 'erreur' : 'erreurs');
+            if (!empty($results['errors'])) {
+                $message .= "- Erreurs : " . count($results['errors']) . "<br>";
             }
 
-            // Retour avec le statut approprié
-            $redirect = redirect()->route('commercials.index');
-            if (count($ignoredEmails) > 0) {
-                $message = "<br>" . count($ignoredEmails) . " doublons ignorés";
-                return $redirect->with([
-                    'ignoredEmails' => $ignoredEmails,
-                    'ignoredMessage' => new HtmlString($message)
-                ]);
+            // Préparation des données pour la vue
+            $redirect = redirect()->route('commercials.index')
+                ->with('import_results', new HtmlString($message));
+
+            if (!empty($results['errors'])) {
+                $redirect->with('import_errors', $results['errors']);
             }
 
-            if ($importedCount > 0) {
-                return $redirect->with('success', new HtmlString($message));
-            } elseif (count($invalidRows) > 0) {
-                return $redirect->with('error', new HtmlString($message));
-            } else {
-                return $redirect->with('info', 'Aucun commercial importé (fichier vide ou seulement des doublons)');
+            if (!empty($results['ignored'])) {
+                $redirect->with('import_ignored', $results['ignored']);
             }
+
+            return $redirect;
         } catch (\Exception $e) {
+            \Log::error("Erreur globale d'import", [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return redirect()->route('commercials.index')
-                ->with('error', 'Erreur lors de l\'import: ' . $e->getMessage());
+                ->with('error', "Erreur lors de l'import: " . $e->getMessage());
         }
+    }
+
+    private function formatPhoneNumber($phone)
+    {
+        $phone = preg_replace('/[^0-9]/', '', $phone);
+
+        if (strlen($phone) === 9) {
+            return '0' . $phone; // Ajoute le 0 manquant pour les numéros français
+        }
+
+        return $phone;
     }
 
 
