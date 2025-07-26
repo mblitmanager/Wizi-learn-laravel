@@ -147,7 +147,7 @@
                                 <label for="tarif" class="form-label">Tarif</label>
                                 <input type="number" name="tarif" id="tarif" placeholder="Tarif"
                                     class="form-control mb-2 @error('tarif') is-invalid @enderror"
-                                    value="{{ old('tarif') }}">
+                                    value="{{ old('tarif') }}" step="1">
                                 @error('tarif')
                                 <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror

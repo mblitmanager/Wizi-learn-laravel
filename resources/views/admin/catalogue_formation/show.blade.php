@@ -128,20 +128,25 @@
                         <label class="block text-sm font-medium text-gray-700">Cursus PDF</label>
                         @if($catalogueFormations->cursus_pdf)
                             <div class="mt-2 space-y-4">
-                                <div class="flex items-center space-x-4">
+                                <div class="d-flex gap-2 flex-wrap align-items-center mb-2">
+                                    <a href="{{ asset($catalogueFormations->cursus_pdf) }}" target="_blank"
+                                        class="btn btn-indigo text-white d-flex align-items-center">
+                                        <i class="bx bx-link-external me-2"></i> Ouvrir le PDF
+                                    </a>
                                     <a href="{{ route('catalogue_formation.download-pdf', $catalogueFormations->id) }}"
-                                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
-                                        <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                        </svg>
-                                        Télécharger le PDF
+                                        class="btn btn-outline-indigo d-flex align-items-center">
+                                        <i class="bx bx-download me-2"></i> Télécharger le PDF
                                     </a>
                                 </div>
                                 <div class="mt-4">
                                     <iframe src="{{ asset($catalogueFormations->cursus_pdf) }}"
-                                        class="w-full h-[600px] border border-gray-200 rounded-lg shadow-sm" title="PDF Viewer">
+                                        style="width:100%;min-height:400px;max-height:600px;border:1px solid #e5e7eb;border-radius:0.5rem;box-shadow:0 2px 8px rgba(0,0,0,0.05);"
+                                        title="PDF Viewer"
+                                        allowfullscreen>
                                     </iframe>
+                                    <div class="text-center text-muted mt-2" style="font-size:0.95em;">
+                                        Si le PDF ne s'affiche pas, <a href="{{ asset($catalogueFormations->cursus_pdf) }}" target="_blank">cliquez ici pour l'ouvrir dans un nouvel onglet</a>.
+                                    </div>
                                 </div>
                             </div>
                         @else
