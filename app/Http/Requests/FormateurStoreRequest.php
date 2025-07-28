@@ -43,7 +43,7 @@ class FormateurStoreRequest extends FormRequest
 
             'catalogue_formation_id' => 'required|exists:catalogue_formations,id',
             'stagiaire_id' => 'nullable|exists:stagiaires,id',
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,ico,webp|max:16096',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,ico,webp|max:16096',
         ];
     }
 
@@ -61,9 +61,9 @@ class FormateurStoreRequest extends FormRequest
             'email.email' => 'L\'adresse e-mail n\'est pas valide.',
             'email.unique' => 'Cette adresse e-mail est déjà utilisée.',
             'password.required' => 'Le mot de passe est obligatoire.',
-            'photo.image' => 'Le fichier doit être une image.',
-            'photo.mimes' => 'L\'image doit être au format jpeg, png, jpg, gif ou webp.',
-            'photo.max' => 'La taille de l\'image ne doit pas dépasser 16 Mo.',
+            'image.image' => 'Le fichier doit être une image.',
+            'image.mimes' => 'L\'image doit être au format jpeg, png, jpg, gif ou webp.',
+            'image.max' => 'La taille de l\'image ne doit pas dépasser 16 Mo.',
         ];
     }
 }

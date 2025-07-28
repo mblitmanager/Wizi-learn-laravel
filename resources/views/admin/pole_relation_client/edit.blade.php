@@ -153,7 +153,7 @@
                             <!-- Photo de profil -->
                             <div class="mb-3">
                                 <label for="photo" class="form-label">Photo de profil</label>
-                                <input type="file" class="form-control" id="photo" name="photo"
+                                <input type="file" class="form-control" id="photo" name="image"
                                     accept="image/*">
                                 @if (isset($poleRelationClient->user->image) && $poleRelationClient->user->image)
                                     <div class="mt-2">
@@ -161,7 +161,7 @@
                                             style="max-width: 120px; max-height: 120px; object-fit: cover;">
                                     </div>
                                 @endif
-                                @error('photo')
+                                @error('image')
                                     <span class="text-danger">{{ $message }}</span>
                                 @enderror
                             </div>

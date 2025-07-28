@@ -100,7 +100,7 @@
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="photo" class="form-label">Photo de profil</label>
-                                <input type="file" class="form-control" id="photo" name="photo" accept="image/*">
+                                <input type="file" class="form-control" id="photo" name="image" accept="image/*">
                                 @error('photo')
                                     <span class="text-danger">{{ $message }}</span>
                                 @enderror
