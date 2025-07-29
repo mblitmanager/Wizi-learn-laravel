@@ -41,55 +41,57 @@
             <div class="card-body">
                 <div class="col-md-12">
                     <div class="card">
-                        <div class="table-responsive px-4 py-4">
-                            <table id="stagiairesTable" class="table table-bordered table-striped table-hover mb-0">
+                        <div class="px-4 py-4">
+                            <table  id="stagiairesTable"  class="table table-bordered table-striped table-hover w-100 text-wrap align-middle">
                                 <thead>
-                                    <tr>
-
-                                        <th>Titre</th>
-                                        <th>Description</th>
-                                        <th>Action</th>
-                                    </tr>
-                                    <tr>
-
-                                        <th><input type="text" placeholder="Filtrer"
-                                                class="form-control form-control-sm" />
-                                        </th>
-                                        <th><input type="text" placeholder="Filtrer"
-                                                class="form-control form-control-sm" />
-                                        </th>
-
-                                        <th></th>
-                                    </tr>
+                                <tr>
+                                    <th>Titre</th>
+                                    <th>Description</th>
+                                    <th>Action</th>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        <input type="text" placeholder="Filtrer" class="form-control form-control-sm" />
+                                    </th>
+                                    <th>
+                                        <input type="text" placeholder="Filtrer" class="form-control form-control-sm" />
+                                    </th>
+                                    <th></th>
+                                </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($catalogueFormations as $row)
-                                        <tr>
-
-                                            <td>{{ $row->titre }}</td>
-                                            <td >{!! $row->description !!}</td>
-
-                                            <td class="text-center">
-                                                <a href="{{ route('catalogue_formation.edit', $row->id) }}"
-                                                    class="btn btn-sm btn-success ">
-                                                    Modifier
-                                                </a>
-                                                <a href="{{ route('catalogue_formation.show', $row->id) }}"
-                                                    class="btn btn-sm btn-info text-white">
-                                                    Afficher
-                                                </a>
-
-                                            </td>
-                                        </tr>
-                                    @endforeach
+                                @foreach ($catalogueFormations as $row)
+                                    <tr>
+                                        <td class="text-break">{{ $row->titre }}</td>
+                                        <td class="text-break">{!! $row->description !!}</td>
+                                        <td class="text-center">
+                                            <a href="{{ route('catalogue_formation.edit', $row->id) }}"
+                                               class="btn btn-sm btn-success mb-1">Modifier</a>
+                                            <a href="{{ route('catalogue_formation.show', $row->id) }}"
+                                               class="btn btn-sm btn-info text-white mb-1">Afficher</a>
+                                        </td>
+                                    </tr>
+                                @endforeach
                                 </tbody>
                             </table>
                         </div>
+
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    <style>
+        td, th {
+            word-break: break-word;
+            vertical-align: middle;
+        }
+
+        table {
+            table-layout: fixed;
+        }
+    </style>
+
 @endsection
 @section('scripts')
     <script>

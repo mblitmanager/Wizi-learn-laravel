@@ -633,13 +633,11 @@ class QuizController extends Controller
             $spreadsheet = IOFactory::load($file->getRealPath());
             $sheet = $spreadsheet->getActiveSheet();
 
-            // [Code de vérification des en-têtes inchangé...]
-
-            // Récupération des données jusqu'à la colonne L seulement
-            $rows = $sheet->rangeToArray('A1:L' . $sheet->getHighestRow(), null, true, true, false);
+            // Récupération des données jusqu'à la colonne Q
+            $rows = $sheet->rangeToArray('A1:Q' . $sheet->getHighestRow(), null, true, true, false);
             $rows = array_values($rows);
 
-            // Suppression des lignes totalement vides
+            // Suppression des lignes vides
             $rows = array_filter($rows, function ($row) {
                 return !empty(array_filter($row, function ($value) {
                     return $value !== null && trim($value) !== '';
@@ -650,29 +648,26 @@ class QuizController extends Controller
                 return back()->with('error', 'Le fichier ne contient pas de données valides.');
             }
 
-            $firstDataRow = $rows[1]; // La première ligne de données (après l'en-tête)
-            $startIndex = 1; // On commence à l'index 1 car nous avons filtré les lignes vides
-
+            // Récupération des données du quiz
+            $firstDataRow = $rows[1];
             $niveau = $firstDataRow[0] ?? null;
             $duree = $firstDataRow[1] ?? null;
             $nbPoints = $firstDataRow[2] ?? null;
             $titreQuiz = $firstDataRow[3] ?? null;
             $formationNom = trim($firstDataRow[4] ?? '');
 
-            // Vérification des données obligatoires
+            // Validation des données obligatoires
             if (empty($formationNom)) {
-                return back()->with('error', "Le nom de la formation est obligatoire dans la première ligne de données.");
+                return back()->with('error', "Le nom de la formation est obligatoire.");
             }
 
-            // Recherche de la formation
             $formation = Formation::where('titre', $formationNom)->first();
             if (!$formation) {
-                return back()->with('error', "La formation '$formationNom' n'existe pas dans la base.");
+                return back()->with('error', "La formation '$formationNom' n'existe pas.");
             }
-            // verification de quiz existant
-            $quiz = Quiz::where('formation_id', $formation->id)->where('titre', $titreQuiz)->first();
-            if ($quiz) {
-                return back()->with('error', "Un quiz avec le titre '$titreQuiz' existe deja pour cette formation.");
+
+            if (Quiz::where('formation_id', $formation->id)->where('titre', $titreQuiz)->exists()) {
+                return back()->with('error', "Un quiz '$titreQuiz' existe déjà pour cette formation.");
             }
 
             // Création du quiz
@@ -680,71 +675,75 @@ class QuizController extends Controller
                 'titre' => $titreQuiz,
                 'niveau' => $niveau,
                 'duree' => $duree,
-                'nb_points_total' => $nbPoints ?? 0, // Valeur par défaut si null
+                'nb_points_total' => $nbPoints ?? 0,
                 'formation_id' => $formation->id,
             ]);
 
             $importedQuestions = 0;
             $errors = [];
+            $processedQuestions = [];
 
-            // Import des questions (en commençant à l'index 1 pour sauter l'en-tête)
+            // Traitement des questions
             for ($i = 1; $i < count($rows); $i++) {
                 $row = $rows[$i];
 
-                $questionText = $row[6] ?? null; // Colonne G (index 6)
-                if (empty($questionText)) {
-                    continue;
-                }
+                $questionText = $row[6] ?? null; // Colonne G
+                $type = strtolower(trim($row[16] ?? 'choix multiples')); // Colonne Q
+                $explication = $row[7] ?? null; // Colonne H
+                $astuce = $row[8] ?? null; // Colonne I
 
-                $repA = $row[7] ?? ''; // Colonne H
-                $repB = $row[8] ?? ''; // Colonne I
-                $repC = $row[9] ?? ''; // Colonne J
-                $bonnesLettres = strtoupper(trim($row[10] ?? '')); // Colonne K
-                $type = $row[11] ?? 'QCM'; // Colonne L
+                if (empty($questionText)) continue;
+
+                $cleanQuestionText = trim($questionText);
+                if (in_array($cleanQuestionText, $processedQuestions)) continue;
+                $processedQuestions[] = $cleanQuestionText;
 
                 try {
                     DB::beginTransaction();
 
-                    $question = Questions::create([
+                    $questionData = [
                         'quiz_id' => $quiz->id,
-                        'text' => $questionText,
-                        'points' => 1,
+                        'text' => $cleanQuestionText,
                         'type' => $type,
-                    ]);
-
-                    $reponses = [
-                        'A' => $repA,
-                        'B' => $repB,
-                        'C' => $repC,
+                        'points' => $row[2] ?? 1,
+                        'explication' => $explication,
+                        'astuce' => $astuce,
                     ];
 
-                    $bonnes = array_filter(array_map('trim', explode(',', $bonnesLettres)));
-                    $correctIds = [];
+                    // Traitement spécifique par type de question
+                    switch ($type) {
+                        case 'choix multiples':
+                        case 'vrai/faux':
+                            $this->processMultipleChoice($questionData, $rows, $i, $cleanQuestionText);
+                            break;
 
-                    foreach ($reponses as $lettre => $texte) {
-                        if (empty($texte))
-                            continue;
+                        case 'correspondance':
+                            $this->processMatching($questionData, $rows, $i, $cleanQuestionText);
+                            break;
 
-                        $isCorrect = in_array($lettre, $bonnes);
-                        $reponse = Reponse::create([
-                            'question_id' => $question->id,
-                            'text' => $texte,
-                            'is_correct' => $isCorrect,
-                            'position' => 1,
-                        ]);
+                        case 'banque de mots':
+                            $this->processWordBank($questionData, $rows, $i, $cleanQuestionText);
+                            break;
 
-                        if ($isCorrect) {
-                            $correctIds[] = $reponse->id;
-                        }
+                        case 'rearrangement':
+                            $this->processRearrangement($questionData, $rows, $i, $cleanQuestionText);
+                            break;
+
+                        case 'question audio':
+                            $this->processAudioQuestion($questionData, $rows, $i, $cleanQuestionText);
+                            break;
+
+                        case 'remplir le champ vide':
+                            $this->processFillBlank($questionData, $rows, $i, $cleanQuestionText);
+                            break;
+
+                        case 'carte flash':
+                            $this->processFlashCard($questionData, $rows, $i, $cleanQuestionText);
+                            break;
+
+                        default:
+                            throw new \Exception("Type de question non supporté: $type");
                     }
-
-                    if (empty($correctIds)) {
-                        throw new \Exception("Aucune réponse correcte définie pour la question");
-                    }
-
-                    $question->update([
-                        'correct_reponses_ids' => json_encode($correctIds)
-                    ]);
 
                     DB::commit();
                     $importedQuestions++;
@@ -754,24 +753,242 @@ class QuizController extends Controller
                 }
             }
 
+            // Gestion des résultats
             if ($importedQuestions === 0) {
-                return back()->with('error', empty($errors)
-                    ? 'Aucune question valide trouvée dans le fichier.'
-                    : 'Importation échouée: ' . implode(', ', $errors));
+                $errorMsg = empty($errors) ? 'Aucune question valide' : implode(', ', $errors);
+                return back()->with('error', "Importation échouée: $errorMsg");
             }
 
-            $message = "Importation réussie: $importedQuestions questions importées";
-            if (!empty($errors)) {
-                $message .= "<br>" . count($errors) . " erreurs";
-            }
+            $message = "$importedQuestions questions importées";
+            if (!empty($errors)) $message .= ", " . count($errors) . " erreurs";
 
-            return back()->with(
-                empty($errors) ? 'success' : 'warning',
-                new \Illuminate\Support\HtmlString($message)
-            );
+            return back()->with(empty($errors) ? 'success' : 'warning', $message);
         } catch (\Exception $e) {
-            return back()->with('error', 'Erreur lors de l\'import: ' . $e->getMessage());
+            return back()->with('error', 'Erreur: ' . $e->getMessage());
         }
+    }
+    private function processRearrangement(&$questionData, $rows, $currentIndex, $questionText)
+    {
+        $question = Questions::create($questionData);
+        $items = [];
+
+        // Récupérer toutes les réponses pour cette question
+        $responses = array_filter($rows, function ($row) use ($questionText) {
+            return trim($row[6] ?? '') === $questionText;
+        });
+
+        foreach ($responses as $row) {
+            $itemText = $row[9] ?? null; // Colonne J
+            $position = (int)($row[11] ?? 0); // Colonne L
+
+            if (empty($itemText)) continue;
+
+            $reponse = Reponse::create([
+                'question_id' => $question->id,
+                'text' => trim($itemText),
+                'position' => $position,
+                'is_correct' => true // Tous les éléments sont corrects, c'est l'ordre qui compte
+            ]);
+        }
+
+        // Pour le rearrangement, on peut stocker l'ordre correct dans correct_reponses_ids
+        $correctOrder = $question->reponses()->orderBy('position')->pluck('id')->toArray();
+        $question->update(['correct_reponses_ids' => json_encode($correctOrder)]);
+    }
+
+    // Méthodes pour les autres types (à implémenter selon vos besoins)
+    private function processAudioQuestion(&$questionData, $rows, $currentIndex, $questionText)
+    {
+        // Trouver toutes les lignes correspondant à cette question
+        $questionRows = array_filter($rows, function ($row) use ($questionText) {
+            return trim($row[6] ?? '') === $questionText; // Colonne G = QUESTION
+        });
+
+        $correctIds = [];
+        $question = null;
+
+        foreach ($questionRows as $row) {
+            if (!$question) {
+                // Créer la question (une seule fois)
+                $question = Questions::create([
+                    'quiz_id' => $questionData['quiz_id'],
+                    'text' => $questionData['text'],
+                    'type' => 'question audio',
+                    'points' => $questionData['points'] ?? 1,
+                    'explication' => $questionData['explication'] ?? null,
+                    'astuce' => $questionData['astuce'] ?? null,
+                    'media_url' => $row[13] ?? null, // Colonne N = RÉPONSE FLASHCARD VERSO (pour l'URL audio)
+                ]);
+            }
+
+            $reponseText = $row[9] ?? null; // Colonne J = RÉPONSE TEXTE
+            $isCorrect = strtolower(trim($row[10] ?? 'non')) === 'oui'; // Colonne K = RÉPONSE CORRECT?
+            $position = (int)($row[11] ?? 0); // Colonne L = RÉPONSE POSITION
+
+            if (!empty($reponseText)) {
+                $reponse = Reponse::create([
+                    'question_id' => $question->id,
+                    'text' => $reponseText,
+                    'is_correct' => $isCorrect,
+                    'position' => $position,
+                    'flashcard_back' => $row[13] ?? null, // Colonne N = audio URL pour cette réponse
+                ]);
+
+                if ($isCorrect) {
+                    $correctIds[] = $reponse->id;
+                }
+            }
+        }
+
+        // Mettre à jour la question avec les IDs des réponses correctes
+        if ($question && !empty($correctIds)) {
+            $question->update([
+                'correct_reponses_ids' => json_encode($correctIds),
+                // Le media_url principal peut être l'audio de la première réponse correcte
+                'media_url' => $question->reponses()->whereIn('id', $correctIds)->first()->flashcard_back ?? null
+            ]);
+        }
+    }
+
+    private function processFillBlank(&$questionData, $rows, $currentIndex, $questionText)
+    {
+        // Trouver toutes les lignes correspondant à cette question
+        $questionRows = array_filter($rows, function ($row) use ($questionText) {
+            return trim($row[6] ?? '') === $questionText; // Colonne G = QUESTION
+        });
+
+        $question = Questions::create([
+            'quiz_id' => $questionData['quiz_id'],
+            'text' => $questionData['text'],
+            'type' => 'remplir le champ vide',
+            'points' => $questionData['points'] ?? 1,
+            'explication' => $questionData['explication'] ?? null,
+            'astuce' => $questionData['astuce'] ?? null,
+        ]);
+
+        $correctIds = [];
+
+        foreach ($questionRows as $row) {
+            $reponseText = $row[9] ?? null; // Colonne J = RÉPONSE TEXTE
+            $isCorrect = strtolower(trim($row[10] ?? 'non')) === 'oui'; // Colonne K = RÉPONSE CORRECT?
+            $bankGroup = $row[14] ?? null; // Colonne O = RÉPONSE GROUPE BANQUE DE MOTS
+
+            if (!empty($reponseText)) {
+                $reponse = Reponse::create([
+                    'question_id' => $question->id,
+                    'text' => $reponseText,
+                    'is_correct' => $isCorrect,
+                    'position' => (int)($row[11] ?? 0), // Colonne L = POSITION
+                    'bank_group' => $bankGroup,
+                ]);
+
+                if ($isCorrect) {
+                    $correctIds[] = $reponse->id;
+                }
+            }
+        }
+
+        if (!empty($correctIds)) {
+            $question->update(['correct_reponses_ids' => json_encode($correctIds)]);
+        }
+    }
+
+    private function processFlashCard(&$questionData, $rows, $currentIndex, $questionText)
+    {
+        // Trouver toutes les lignes correspondant à cette question
+        $questionRows = array_filter($rows, function ($row) use ($questionText) {
+            return trim($row[6] ?? '') === $questionText; // Colonne G = QUESTION
+        });
+
+        $question = Questions::create([
+            'quiz_id' => $questionData['quiz_id'],
+            'text' => $questionData['text'],
+            'type' => 'carte flash',
+            'points' => $questionData['points'] ?? 1,
+            'explication' => $questionData['explication'] ?? null,
+            'astuce' => $questionData['astuce'] ?? null,
+        ]);
+
+        $correctIds = [];
+
+        foreach ($questionRows as $row) {
+            $recto = $row[9] ?? null; // Colonne J = RÉPONSE TEXTE (recto de la carte)
+            $verso = $row[13] ?? null; // Colonne N = RÉPONSE FLASHCARD VERSO
+            $isCorrect = strtolower(trim($row[10] ?? 'non')) === 'oui'; // Colonne K = RÉPONSE CORRECT?
+            $bankGroup = $row[14] ?? null; // Colonne O = RÉPONSE GROUPE BANQUE DE MOTS
+
+            if (!empty($recto)) {
+                $reponse = Reponse::create([
+                    'question_id' => $question->id,
+                    'text' => $recto,
+                    'is_correct' => $isCorrect,
+                    'position' => (int)($row[11] ?? 0), // Colonne L = POSITION
+                    'flashcard_back' => $verso,
+                    'bank_group' => $bankGroup,
+                ]);
+
+                if ($isCorrect) {
+                    $correctIds[] = $reponse->id;
+                }
+            }
+        }
+
+        if (!empty($correctIds)) {
+            $question->update(['correct_reponses_ids' => json_encode($correctIds)]);
+        }
+    }
+    // Méthode pour traiter les questions à choix multiples
+    private function processMultipleChoice(&$questionData, $rows, $currentIndex, $questionText)
+    {
+        $question = Questions::create($questionData);
+        $correctIds = [];
+
+        // Récupérer toutes les réponses pour cette question
+        $responses = array_filter($rows, function ($row) use ($questionText) {
+            return trim($row[6] ?? '') === $questionText;
+        });
+
+        foreach ($responses as $row) {
+            $reponseText = $row[9] ?? null; // Colonne J
+            $isCorrect = strtolower(trim($row[10] ?? 'non')) === 'oui'; // Colonne K
+            $position = (int)($row[11] ?? 0); // Colonne L
+
+            if (empty($reponseText)) continue;
+
+            $reponse = Reponse::create([
+                'question_id' => $question->id,
+                'text' => trim($reponseText),
+                'is_correct' => $isCorrect,
+                'position' => $position,
+            ]);
+
+            if ($isCorrect) $correctIds[] = $reponse->id;
+        }
+
+        // Validation pour QCM/Vrai-Faux
+        if (count($correctIds) !== 1) {
+            throw new \Exception("Doit avoir exactement une réponse correcte");
+        }
+
+        $question->update(['correct_reponses_ids' => json_encode($correctIds)]);
+    }
+
+    // Méthode pour traiter les questions de correspondance
+    private function processMatching(&$questionData, $rows, $currentIndex, $questionText)
+    {
+        $question = Questions::create($questionData);
+
+        // Implémentation spécifique pour les paires de correspondance
+        // ...
+    }
+
+    // Méthode pour traiter les banques de mots
+    private function processWordBank(&$questionData, $rows, $currentIndex, $questionText)
+    {
+        $question = Questions::create($questionData);
+
+        // Implémentation spécifique pour les banques de mots
+        // ...
     }
 
 

@@ -28,6 +28,7 @@
                 <div class="card shadow-lg border-0">
                     <div class="card-body p-5">
                         <div class="text-center mb-4">
+
                             <!-- Profile Image Section -->
                             @if(isset($formateur->user->image) && $formateur->user->image)
                                 <img src="{{ asset($formateur->user->image) }}"

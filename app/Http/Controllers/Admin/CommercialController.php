@@ -48,20 +48,23 @@ class CommercialController extends Controller
      */
     public function store(CommmercialStoreRequest $request)
     {
-        $data = $request->validated();
+        try {
 
-        // Gestion de l'image de profil
-        if ($request->hasFile('photo')) {
-            $file = $request->file('photo');
-            $filename = uniqid('commercial_') . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('media'), $filename);
-            $data['image'] = 'media/' . $filename;
+            // Récupère les données validées
+            $validatedData = $request->validated();
+            // Ajoute manuellement le fichier image s'il existe
+            if ($request->hasFile('image')) {
+                $validatedData['image'] = $request->file('image');
+            }
+
+            $this->commercialsService->create($validatedData);
+
+            return redirect()->route('commercials.index')
+                ->with('success', 'Le commercial a été créé avec succès.');
+        } catch (\Exception $e) {
+            return back()->withInput()
+                ->with('error', 'Erreur: ' . $e->getMessage());
         }
-
-        $this->commercialsService->create($data);
-
-        return redirect()->route('commercials.index')
-            ->with('success', 'Le commercial a été créé avec succès.');
     }
 
     /**
@@ -86,32 +89,17 @@ class CommercialController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    // public function update(CommmercialStoreRequest $request, string $id)
-    // {
-
-    //     $this->commercialsService->update($id, $request->validated());
-
-    //     return redirect()->route('commercials.index')
-    //         ->with('success', 'Le commercial a été mis à jour avec succès.');
-    // }
     public function update(CommmercialStoreRequest $request, string $id)
     {
-        $data = $request->validated();
-
-        // Gestion de l'image de profil lors de la mise à jour
-        if ($request->hasFile('photo')) {
-            $file = $request->file('photo');
-            $filename = uniqid('commercial_') . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('media'), $filename);
-            $data['image'] = 'media/' . $filename;
+        try {
+            $this->commercialsService->update($id, $request->validated());
+            return redirect()->route('commercials.index')
+                ->with('success', 'Le commercial a été mis à jour avec succès.');
+        } catch (\Exception $e) {
+            return back()->withInput()
+                ->with('error', 'Erreur: ' . $e->getMessage());
         }
-
-        $this->commercialsService->update($id, $data);
-
-        return redirect()->route('commercials.index')
-            ->with('success', 'Le commercial a été mis à jour avec succès.');
     }
-
     /**
      * Remove the specified resource from storage.
      */

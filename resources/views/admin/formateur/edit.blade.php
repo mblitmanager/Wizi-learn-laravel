@@ -129,7 +129,7 @@
                         <!-- Photo de profil -->
                         <div class="mb-3">
                             <label for="photo" class="form-label">Photo de profil</label>
-                            <input type="file" class="form-control" id="photo" name="photo" accept="image/*">
+                            <input type="file" class="form-control" id="photo" name="image" accept="image/*">
                             @if(isset($formateur->user->image) && $formateur->user->image)
                                 <div class="mt-2">
                                     <img src="{{ asset($formateur->user->image) }}" alt="Photo actuelle" style="max-width: 120px; max-height: 120px; object-fit: cover;">
