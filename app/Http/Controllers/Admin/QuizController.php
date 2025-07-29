@@ -976,12 +976,79 @@ class QuizController extends Controller
     // Méthode pour traiter les questions de correspondance
     private function processMatching(&$questionData, $rows, $currentIndex, $questionText)
     {
-        $question = Questions::create($questionData);
+        // Filtrer les lignes pour cette question
+        $questionRows = array_filter($rows, function ($row) use ($questionText) {
+            return isset($row[6]) && trim($row[6]) === trim($questionText);
+        });
 
-        // Implémentation spécifique pour les paires de correspondance
-        // ...
+        // Créer la question
+        $question = Questions::create([
+            'quiz_id'     => $questionData['quiz_id'],
+            'text'        => $questionData['text'],
+            'type'        => 'correspondance',
+            'points'      => $questionData['points'] ?? 1,
+            'explication' => $questionData['explication'] ?? null,
+            'astuce'      => $questionData['astuce'] ?? null,
+        ]);
+
+        // Grouper par RÉPONSE PAIRE (colonne M)
+        $groups = [];
+        foreach ($questionRows as $row) {
+            $group = $row[12] ?? null; // Colonne M (index 12) - ex: "MA"
+            $side = strtolower(trim($row[14] ?? '')); // Colonne O (index 14) - "left" ou "right"
+            $text = trim($row[9] ?? ''); // Colonne J (index 9) - texte
+
+            if ($group && in_array($side, ['left', 'right']) && $text !== '') {
+                if (!isset($groups[$group])) {
+                    $groups[$group] = ['left' => null, 'right' => null];
+                }
+                $groups[$group][$side] = $text;
+            }
+        }
+
+        // Créer les paires et réponses
+        foreach ($groups as $group => $pair) {
+            if (!empty($pair['left']) && !empty($pair['right'])) {
+                // Réponse LEFT (expression anglaise)
+                $leftResponse = Reponse::create([
+                    'question_id' => $question->id,
+                    'text'        => $pair['left'],
+                    'is_correct'  => true,
+                    'position'    => 0,
+                    'match_pair'  => 'left', // "left" au lieu du groupe
+                    'bank_group'  => $group, // "MA", "MO", etc.
+                ]);
+
+                // Réponse RIGHT (signification)
+                $rightResponse = Reponse::create([
+                    'question_id' => $question->id,
+                    'text'        => $pair['right'],
+                    'is_correct'  => true,
+                    'position'    => 0,
+                    'match_pair'  => 'right', // "right" au lieu du groupe
+                    'bank_group'  => $group, // même groupe "MA"
+                ]);
+
+                // Créer la paire de correspondance
+                CorrespondancePair::create([
+                    'question_id' => $question->id,
+                    'left_text'   => $pair['left'],
+                    'right_text'  => $pair['right'],
+                    'left_id'     => $leftResponse->id,
+                    'right_id'    => $rightResponse->id,
+                ]);
+            } else {
+                \Log::warning("Paire incomplète pour le groupe $group");
+            }
+        }
+
+        // Mettre à jour les IDs des réponses correctes
+        $correctIds = $question->correspondancePairs->pluck('left_id')
+            ->merge($question->correspondancePairs->pluck('right_id'))
+            ->toArray();
+
+        $question->update(['correct_reponses_ids' => json_encode($correctIds)]);
     }
-
     // Méthode pour traiter les banques de mots
     private function processWordBank(&$questionData, $rows, $currentIndex, $questionText)
     {
