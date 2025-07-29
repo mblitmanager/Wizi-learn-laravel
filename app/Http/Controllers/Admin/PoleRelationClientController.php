@@ -11,10 +11,10 @@ use App\Services\PoleRelationClientService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\HtmlString;
 use PhpOffice\PhpSpreadsheet\IOFactory;
-use Illuminate\Support\Facades\Log;
 
 class PoleRelationClientController extends Controller
 {
@@ -24,6 +24,7 @@ class PoleRelationClientController extends Controller
     {
         $this->polerelationClientRepository = $polerelationClientRepository;
     }
+
     /**
      * Display a listing of the resource.
      */
@@ -48,19 +49,23 @@ class PoleRelationClientController extends Controller
      */
     public function store(PoleRelationClientRequest $request)
     {
-        $data = $request->validated();
-        // Gestion de l'image de profil
-        if ($request->hasFile('photo')) {
-            $file = $request->file('photo');
-            $filename = uniqid('prc_') . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('media'), $filename);
-            $data['image'] = 'media/' . $filename;
+        try {
+
+            // Récupère les données validées
+            $validatedData = $request->validated();
+            // Ajoute manuellement le fichier image s'il existe
+            if ($request->hasFile('image')) {
+                $validatedData['image'] = $request->file('image');
+            }
+
+            $this->polerelationClientRepository->create($validatedData);
+
+            return redirect()->route('pole_relation_clients.index')
+                ->with('success', 'Le pole relation client a été créé avec succès.');
+        } catch (\Exception $e) {
+            return back()->withInput()
+                ->with('error', 'Erreur: ' . $e->getMessage());
         }
-        // Rôle libre depuis le formulaire
-        $data['role'] = $request->input('role', 'autre');
-        $this->polerelationClientRepository->create($data);
-        return redirect()->route('pole_relation_clients.index')
-            ->with('success', 'Le pole relation client a été créé avec succès.');
     }
 
     /**
@@ -85,21 +90,16 @@ class PoleRelationClientController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(PoleRelationClientRequest $request, string $id)
     {
-        $data = $request->all();
-
-        // Gestion de l'image de profil lors de la mise à jour
-        if ($request->hasFile('photo')) {
-            $file = $request->file('photo');
-            $filename = uniqid('prc_') . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('media'), $filename);
-            $data['image'] = 'media/' . $filename;
+        try {
+            $this->polerelationClientRepository->update($id, $request->validated());
+            return redirect()->route('pole_relation_clients.index')
+                ->with('success', 'Le pole relation client a été mis à jour avec succès.');
+        } catch (\Exception $e) {
+            return back()->withInput()
+                ->with('error', 'Erreur: ' . $e->getMessage());
         }
-
-        $this->polerelationClientRepository->update($id, $data);
-        return redirect()->route('pole_relation_clients.index')
-            ->with('success', 'Le pole relation client a été mis à jour avec succès.');
     }
 
     /**
@@ -259,7 +259,6 @@ class PoleRelationClientController extends Controller
                     }
                 }
             }
-
 
 
             // Construction du message de résultat

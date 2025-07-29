@@ -22,24 +22,26 @@ class PoleRelationClientRequest extends FormRequest
      */
     public function rules(): array
     {
-        $prcid = $this->route('pole_relation_clients');
-        $userId = \App\Models\PoleRelationClient::find($prcid)?->user_id;
+        // Récupérez l'ID du PRC depuis la route
+        $prcId = $this->route('pole_relation_client'); // Notez le singulier
+
+        // Trouvez le PRC et son utilisateur associé
+        $prc = $prcId ? \App\Models\PoleRelationClient::find($prcId) : null;
+        $userId = $prc ? $prc->user_id : null;
+
         return [
             'name' => 'required|string|max:255',
             'prenom' => 'required|string',
             'email' => [
                 'required',
                 'email',
-                $userId
-                    ? Rule::unique('users', 'email')->ignore($userId)
-                    : Rule::unique('users', 'email'),
+                Rule::unique('users', 'email')->ignore($userId),
             ],
             'password' => 'nullable|string|min:8',
             'role' => 'required|string|max:255',
             'telephone' => 'nullable|string',
-
             'stagiaire_id' => 'nullable|exists:stagiaires,id',
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:16096',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,ico,webp|max:16096',
         ];
     }
 
@@ -55,9 +57,9 @@ class PoleRelationClientRequest extends FormRequest
 
             'email.required' => 'L\'adresse e-mail est obligatoire.',
             'email.email' => 'L\'adresse e-mail n\'est pas valide.',
-            'photo.image' => 'Le fichier doit être une image.',
-            'photo.mimes' => 'L\'image doit être au format jpeg, png, jpg, gif ou webp.',
-            'photo.max' => 'La taille de l\'image ne doit pas dépasser 2 Mo.',
+            'image.image' => 'Le fichier doit être une image.',
+            'image.mimes' => 'L\'image doit être au format jpeg, png, jpg, gif ou webp.',
+            'image.max' => 'La taille de l\'image ne doit pas dépasser 16 Mo.',
         ];
     }
 }

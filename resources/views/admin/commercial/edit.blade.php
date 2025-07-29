@@ -144,13 +144,13 @@
                         <!-- Photo de profil -->
                         <div class="mb-3">
                             <label for="photo" class="form-label">Photo de profil</label>
-                            <input type="file" class="form-control" id="photo" name="photo" accept="image/*">
+                            <input type="file" class="form-control" id="photo" name="image" accept="image/*">
                             @if(isset($commercial->user->image) && $commercial->user->image)
                                 <div class="mt-2">
                                     <img src="{{ asset($commercial->user->image) }}" alt="Photo actuelle" style="max-width: 120px; max-height: 120px; object-fit: cover;">
                                 </div>
                             @endif
-                            @error('photo')
+                            @error('image')
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>

@@ -41,7 +41,7 @@ class CommmercialStoreRequest extends FormRequest
             ],
             'telephone' => 'nullable|string',
             'stagiaire_id' => 'nullable|exists:stagiaires,id',
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:16096',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:16096',
         ];
     }
 
@@ -56,9 +56,9 @@ class CommmercialStoreRequest extends FormRequest
 
             'email.required' => 'L\'adresse e-mail est obligatoire.',
             'email.email' => 'L\'adresse e-mail n\'est pas valide.',
-            'photo.image' => 'Le fichier doit être une image.',
-            'photo.mimes' => 'L\'image doit être au format jpeg, png, jpg, gif ou webp.',
-            'photo.max' => 'La taille de l\'image ne doit pas dépasser 2 Mo.',
+            'image.image' => 'Le fichier doit être une image.',
+            'image.mimes' => 'L\'image doit être au format jpeg, png, jpg, gif ou webp.',
+            'image.max' => 'La taille de l\'image ne doit pas dépasser 2 Mo.',
         ];
     }
 }
