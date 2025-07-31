@@ -130,6 +130,14 @@
             </a>
 
         </li>
+        <li>
+            <a href="{{ route('demande.historique.index') }}">
+                <div class="parent-icon"><i class='bx bx-cog bx-spin'></i>
+                </div>
+                <div class="menu-title">Historique des demandes</div>
+            </a>
+
+        </li>
 
         <li>
             <a href="{{ route('parametre.index') }}">
