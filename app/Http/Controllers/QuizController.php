@@ -257,15 +257,15 @@ class QuizController extends Controller
         }
 
         $history = Progression::with([
-            'quiz' => function ($query) {
-                $query->with(['questions.reponses']);
-            }
+            'quiz.formation',
+            'quiz.questions.reponses',
         ])
             ->where('stagiaire_id', $stagiaire->id)
             ->orderBy('created_at', 'desc')
             ->get()
             ->map(function ($progression) {
-                $niveau = $progression->quiz->niveau ?? 'débutant';
+                $quiz = $progression->quiz;
+                $niveau = $quiz->niveau ?? 'débutant';
                 $totalQuestions = $progression->total_questions;
                 if ($niveau === 'débutant' && $totalQuestions > 5) {
                     $totalQuestions = 5;
@@ -274,14 +274,49 @@ class QuizController extends Controller
                 } elseif ($niveau === 'avancé' && $totalQuestions > 20) {
                     $totalQuestions = 20;
                 }
+                // Construction d'un objet quiz complet pour le front
+                $quizData = [
+                    'id' => (int) $quiz->id,
+                    'titre' => $quiz->titre,
+                    'description' => $quiz->description,
+                    'duree' => $quiz->duree,
+                    'niveau' => $quiz->niveau,
+                    'status' => $quiz->status,
+                    'nb_points_total' => $quiz->nb_points_total,
+                    'formation' => $quiz->formation ? [
+                        'id' => $quiz->formation->id,
+                        'titre' => $quiz->formation->titre,
+                        'description' => $quiz->formation->description,
+                        'duree' => $quiz->formation->duree,
+                        'categorie' => $quiz->formation->categorie,
+                    ] : null,
+                    'questions' => $quiz->questions->map(function ($question) {
+                        return [
+                            'id' => (string) $question->id,
+                            'quizId' => $question->quiz_id,
+                            'text' => $question->text,
+                            'type' => $question->type,
+                            'explication' => $question->explication,
+                            'points' => $question->points,
+                            'astuce' => $question->astuce,
+                            'mediaUrl' => $question->media_url,
+                            'answers' => $question->reponses->map(function ($reponse) {
+                                return [
+                                    'id' => (string) $reponse->id,
+                                    'text' => $reponse->text,
+                                    'isCorrect' => $reponse->is_correct,
+                                    'position' => $reponse->position,
+                                    'matchPair' => $reponse->match_pair,
+                                    'bankGroup' => $reponse->bank_group,
+                                    'flashcardBack' => $reponse->flashcard_back,
+                                ];
+                            })->toArray(),
+                        ];
+                    })->toArray(),
+                ];
                 return [
                     'id' => (string) $progression->id,
-                    'quiz' => [
-                        'id' => (int) $progression->quiz->id,
-                        'title' => $progression->quiz->titre,
-                        'category' => $progression->quiz->formation->categorie ?? 'Non catégorisé',
-                        'level' => $niveau
-                    ],
+                    'quiz' => $quizData,
                     'score' => $progression->score,
                     'completedAt' => $progression->created_at->toISOString(),
                     'timeSpent' => $progression->time_spent,
