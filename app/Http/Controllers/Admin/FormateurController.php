@@ -105,7 +105,24 @@ class FormateurController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        try {
+            $formateur = $this->formateurService->show($id);
+
+            // Suppression de l'image du formateur s'il existe
+            if ($formateur->image) {
+                $imagePath = public_path('images/formateurs/' . $formateur->image);
+                if (File::exists($imagePath)) {
+                    File::delete($imagePath);
+                }
+            }
+
+            // Suppression du formateur
+            $this->formateurService->delete($id);
+
+            return redirect()->route('formateur.index')->with('success', 'Formateur supprimé avec succès.');
+        } catch (\Exception $e) {
+            return redirect()->route('formateur.index')->with('error', 'Erreur lors de la suppression: ' . $e->getMessage());
+        }
     }
 
 

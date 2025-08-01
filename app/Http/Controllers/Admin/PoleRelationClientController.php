@@ -107,7 +107,21 @@ class PoleRelationClientController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        try {
+            // Suppression de la relation Pôle Relation Client
+            $poleRelationClient = $this->polerelationClientRepository->find($id);
+            if ($poleRelationClient) {
+                $poleRelationClient->delete();
+                return redirect()->route('pole_relation_clients.index')
+                    ->with('success', 'Le pôle relation client a été supprimé avec succès.');
+            } else {
+                return redirect()->route('pole_relation_clients.index')
+                    ->with('error', 'Pôle relation client non trouvé.');
+            }
+        } catch (\Exception $e) {
+            return redirect()->route('pole_relation_clients.index')
+                ->with('error', 'Erreur lors de la suppression: ' . $e->getMessage());
+        }
     }
 
     private function splitConsultants($cellValue)

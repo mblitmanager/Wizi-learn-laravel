@@ -17,6 +17,11 @@
             <div class="btn-group">
                 <a href="{{ route('commercials.index') }}" type="button" class="btn btn-sm btn-primary"><i
                         class="fadeIn animated bx bx-chevron-left-circle"></i>Retour</a>
+                <form action="{{ route('commercials.destroy', $commercial->id) }}" method="POST" style="display:inline-block; margin-left:8px;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce commercial ?');">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-sm btn-danger"><i class="lni lni-trash"></i> Supprimer</button>
+                </form>
             </div>
         </div>
     </div>

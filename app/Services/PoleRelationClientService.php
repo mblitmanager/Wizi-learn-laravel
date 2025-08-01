@@ -49,16 +49,18 @@ class PoleRelationClientService implements PRCInterface
                 'name' => $data['name'],
                 'email' => $data['email'],
                 'password' => Hash::make($data['password']),
-                'role' => 'pole relation client',
+                'role' => $data['role'] ?? 'pole relation client',
                 'image' => $imagePath,
             ]);
 
-            // Création du PRC
+            // Création du PRC avec prenom, telephone et role
             $prcData = [
                 'user_id' => $user->id,
-                // Ajoutez ici les autres champs spécifiques au PRC
+                'prenom' => $data['prenom'] ?? null,
+                'telephone' => $data['telephone'] ?? null,
+                'role' => $data['role'] ?? 'pole relation client',
             ];
-
+            // dd($prcData);
             $prc = $this->repository->create($prcData);
 
             // Gestion des relations

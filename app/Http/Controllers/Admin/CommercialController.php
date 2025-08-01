@@ -105,7 +105,13 @@ class CommercialController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        try {
+            $this->commercialsService->delete($id);
+            return redirect()->route('commercials.index')
+                ->with('success', 'Le commercial a été supprimé avec succès.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Erreur lors de la suppression: ' . $e->getMessage());
+        }
     }
 
     private function splitConsultants($cellValue)
