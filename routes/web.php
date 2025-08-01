@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\CatalogueFormationController;
 use App\Http\Controllers\Admin\CommercialController;
+use App\Http\Controllers\Admin\DemandeHistoriqueController;
 use App\Http\Controllers\Admin\FormateurController;
 use App\Http\Controllers\Admin\FormationController;
 use App\Http\Controllers\Admin\MediaController;
@@ -128,6 +129,8 @@ Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function
     Route::resource('partenaires', PartenaireController::class);
     Route::get('partenaires/{partenaire}/classements', [\App\Http\Controllers\Admin\ClassementController::class, 'show'])->name('classements.show');
     Route::get('classements', [\App\Http\Controllers\Admin\ClassementController::class, 'index'])->name('classement.index');
+    Route::get('demande/historique', [DemandeHistoriqueController::class, 'index'])->name('demande.historique.index');
+    Route::get('demande/historique/{id}', [DemandeHistoriqueController::class, 'show'])->name('demande.historique.show');
 });
 
 // // Route pour enregistrer le token FCM

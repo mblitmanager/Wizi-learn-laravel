@@ -1064,9 +1064,35 @@ class QuizController extends Controller
     private function processWordBank(&$questionData, $rows, $currentIndex, $questionText)
     {
         $question = Questions::create($questionData);
+        $correctIds = [];
 
-        // Implémentation spécifique pour les banques de mots
-        // ...
+        // Récupérer toutes les réponses pour cette question
+        $responses = array_filter($rows, function ($row) use ($questionText) {
+            return trim($row[6] ?? '') === $questionText;
+        });
+
+        foreach ($responses as $row) {
+            $reponseText = $row[9] ?? null; // Colonne J (RÉPONSE TEXTE)
+            $isCorrect = strtolower(trim($row[10] ?? 'non')) === 'oui'; // Colonne K (RÉPONSE CORRECT?)
+            $position = (int)($row[11] ?? 0); // Colonne L (RÉPONSE POSITION)
+            $groupe = $row[13] ?? null; // Colonne N (RÉPONSE GROUPE BANQUE DE MOTS)
+
+            if (empty($reponseText)) continue;
+
+            $reponse = Reponse::create([
+                'question_id' => $question->id,
+                'text' => trim($reponseText),
+                'is_correct' => $isCorrect,
+                'position' => $position,
+                'groupe' => $groupe,
+            ]);
+
+            if ($isCorrect) $correctIds[] = $reponse->id;
+        }
+
+        // Pour la banque de mots, on peut avoir plusieurs réponses correctes
+        // On stocke toutes les IDs des réponses correctes
+        $question->update(['correct_reponses_ids' => json_encode($correctIds)]);
     }
 
 
