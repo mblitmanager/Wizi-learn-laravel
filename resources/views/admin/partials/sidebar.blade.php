@@ -132,7 +132,7 @@
         </li>
         <li>
             <a href="{{ route('demande.historique.index') }}">
-                <div class="parent-icon"><i class='bx bx-cog bx-spin'></i>
+                <div class="parent-icon"><i class='bx  bx-folder'></i>
                 </div>
                 <div class="menu-title">Historique des demandes</div>
             </a>
