@@ -12,6 +12,7 @@ use App\Services\FormateurService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\HtmlString;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -257,7 +258,7 @@ class FormateurController extends Controller
                 } catch (\Exception $e) {
                     DB::rollBack();
                     $results['errors'][] = "Ligne $rowIndex: Erreur - " . $e->getMessage();
-                    \Log::error("Erreur import ligne $rowIndex", [
+                    Log::error("Erreur import ligne $rowIndex", [
                         'email' => $email,
                         'error' => $e->getMessage(),
                         'trace' => $e->getTraceAsString()
@@ -299,7 +300,7 @@ class FormateurController extends Controller
 
             return $redirect;
         } catch (\Exception $e) {
-            \Log::error("Erreur globale d'import", [
+            Log::error("Erreur globale d'import", [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
