@@ -32,31 +32,68 @@
                         <!-- Colonne pour le média -->
                         <div class="col-md-6 d-flex justify-content-center align-items-center">
                             @php
-                                $isExternalUrl = filter_var($media->url, FILTER_VALIDATE_URL);
-                                $isYoutubeUrl = $isExternalUrl && (str_contains($media->url, 'youtube.com') || str_contains($media->url, 'youtu.be'));
+                                // Détection des URLs YouTube
+                                $isYoutubeUrl = false;
+                                $youtubeId = null;
+                                if (filter_var($media->url, FILTER_VALIDATE_URL)) {
+                                    $parsedUrl = parse_url($media->url);
+                                    $host = strtolower($parsedUrl['host'] ?? '');
+
+                                    if (str_contains($host, 'youtube.com') || str_contains($host, 'youtu.be')) {
+                                        $isYoutubeUrl = true;
+
+                                        // Extraction de l'ID vidéo
+                                        if (str_contains($media->url, 'watch?v=')) {
+                                            parse_str($parsedUrl['query'] ?? '', $query);
+                                            $youtubeId = $query['v'] ?? null;
+                                        } elseif (str_contains($media->url, 'youtu.be/')) {
+                                            $youtubeId = substr($parsedUrl['path'] ?? '', 1);
+                                        } elseif (str_contains($media->url, '/embed/')) {
+                                            $parts = explode('/embed/', $media->url);
+                                            $youtubeId = $parts[1] ?? null;
+                                        } elseif (str_contains($media->url, '/shorts/')) {
+                                            $parts = explode('/shorts/', $media->url);
+                                            $youtubeId = $parts[1] ?? null;
+                                        }
+
+                                        // Nettoyage de l'ID (suppression des paramètres supplémentaires)
+                                        if ($youtubeId) {
+                                            $youtubeId = strtok($youtubeId, '?&');
+                                        }
+                                    }
+                                }
                             @endphp
 
-                            @if ($isExternalUrl)
-                                @if ($isYoutubeUrl)
-                                    <div class="card p-3 shadow-lg border-0" style="background: linear-gradient(135deg, #ffb923, #fcde99);">
-                                        <div class="ratio ratio-16x9">
-                                            <iframe src="{{ str_replace('watch?v=', 'embed/', $media->url) }}"
-                                                    title="{{ $media->titre }}"
-                                                    allowfullscreen
-                                                    style="border-radius: 10px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);">
-                                            </iframe>
+                            @if($isYoutubeUrl && $youtubeId)
+                                <div class="card p-3 shadow-lg border-0 youtube-card" style="
+            background: linear-gradient(135deg, #ff0000, #cc0000);
+            border-radius: 15px;
+            width: 100%;
+            max-width: 800px;
+            transition: transform 0.3s ease;
+        ">
+                                    <div class="ratio ratio-16x9">
+                                        <iframe
+                                            src="https://www.youtube.com/embed/{{ $youtubeId }}?autoplay=0&rel=0&modestbranding=1"
+                                            title="{{ $media->titre }}"
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                            allowfullscreen
+                                            style="border-radius: 10px; border: none;"
+                                            loading="lazy"
+                                        ></iframe>
+                                    </div>
+                                    <div class="card-footer bg-transparent border-0 pt-3">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <a href="https://www.youtube.com/watch?v={{ $youtubeId }}"
+                                               target="_blank"
+                                               class="btn btn-sm btn-danger"
+                                            >
+                                                <i class="fab fa-youtube me-2"></i>Voir sur YouTube
+                                            </a>
+                                            <small class="text-white">@lang('Vidéo YouTube')</small>
                                         </div>
                                     </div>
-                                @else
-                                    <div class="card p-4 shadow-lg border-0" style="background: linear-gradient(135deg, #fbdfa1, #ffb923); border-radius: 20px;">
-                                        <div class="text-center mb-4">
-                                            <i class="bi bi-link-45deg" style="font-size: 4rem; color: #6c63ff;"></i>
-                                        </div>
-                                        <a href="{{ $media->url }}" target="_blank" class="btn btn-primary btn-lg w-100">
-                                            <i class="bi bi-box-arrow-up-right me-2"></i>Ouvrir le lien
-                                        </a>
-                                    </div>
-                                @endif
+                                </div>
                             @else
                                 @if (Str::startsWith($media->type, 'image'))
                                     <img src="{{ asset($media->url) }}" alt="{{ $media->titre }}"

@@ -26,7 +26,7 @@
                                 <tr>
                                     <td>
                                         @if ($partenaire->logo)
-                                            <img src="{{ asset('storage/' . $partenaire->logo) }}"
+                                            <img src="{{ asset($partenaire->logo) }}"
                                                 alt="{{ $partenaire->identifiant }}" class="rounded-circle" width="40">
                                         @else
                                             <div class="avatar-initials bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center"
