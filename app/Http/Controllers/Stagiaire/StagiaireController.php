@@ -56,4 +56,27 @@ class StagiaireController extends Controller
 
         return response()->json(['success' => true]);
     }
+
+    /**
+     * Met à jour la photo de profil de l'utilisateur connecté (champ image de User)
+     */
+    public function updateProfilePhoto(Request $request)
+    {
+        $user = auth()->user();
+        if (!$user) {
+            return response()->json(['success' => false, 'error' => 'Utilisateur non trouvé'], 404);
+        }
+        $request->validate([
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $imageName = 'user_' . $user->id . '_' . time() . '.' . $image->getClientOriginalExtension();
+            $image->storeAs('public/users', $imageName);
+            $user->image = 'users/' . $imageName;
+            $user->save();
+            return response()->json(['success' => true, 'image' => $user->image]);
+        }
+        return response()->json(['success' => false, 'error' => 'Aucun fichier image reçu'], 400);
+    }
 }
