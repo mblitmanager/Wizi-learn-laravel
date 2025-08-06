@@ -167,6 +167,8 @@ Route::middleware(['auth:api'])->group(function () {
     });
     Route::get('/send-daily-notification', [DailyNotificationController::class, 'send']);
     Route::middleware('auth:api')->post('/notify-daily-formation', [DailyFormationNotificationController::class, 'notify']);
+
+    Route::post('/contact', [\App\Http\Controllers\Api\ContactController::class, 'sendContactForm']);
 });
 
 // // Admin Achievement Management
