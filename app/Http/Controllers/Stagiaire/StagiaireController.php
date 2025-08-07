@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Stagiaire;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class StagiaireController extends Controller
 {
@@ -49,7 +50,7 @@ class StagiaireController extends Controller
 
     public function setOnboardingSeen(Request $request)
     {
-        $user = auth()->user();
+        $user = Auth::user();
         $stagiaire = $user->stagiaire; // ou autre logique pour récupérer le stagiaire
         $stagiaire->onboarding_seen = true;
         $stagiaire->save();
@@ -62,20 +63,21 @@ class StagiaireController extends Controller
      */
     public function updateProfilePhoto(Request $request)
     {
-        $user = auth()->user();
+        $user = \App\Models\User::find(Auth::id());
         if (!$user) {
             return response()->json(['success' => false, 'error' => 'Utilisateur non trouvé'], 404);
         }
         $request->validate([
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
-        if ($request->hasFile('image')) {
-            $image = $request->file('image');
-            $imageName = 'user_' . $user->id . '_' . time() . '.' . $image->getClientOriginalExtension();
-            $image->storeAs('public/users', $imageName);
-            $user->image = 'users/' . $imageName;
+        if ($request->hasFile('avatar')) {
+            $image = $request->file('avatar');
+            $imageName = $user->id . '_' . time() . '.' . $image->getClientOriginalExtension();
+            $image->storeAs('public/uploads/users', $imageName);
+            $user->image = 'uploads/users/' . $imageName;
             $user->save();
-            return response()->json(['success' => true, 'image' => $user->image]);
+            $imageUrl = asset('uploads/users/' . $imageName);
+            return response()->json(['success' => true, 'image' => $imageUrl]);
         }
         return response()->json(['success' => false, 'error' => 'Aucun fichier image reçu'], 400);
     }

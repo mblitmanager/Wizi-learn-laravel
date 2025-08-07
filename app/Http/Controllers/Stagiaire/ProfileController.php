@@ -131,30 +131,32 @@ class ProfileController extends Controller
 
         return response()->json(['message' => 'All notifications marked as read']);
     }
-    public function uploadAvatar(Request $request, $id)
+    public function uploadAvatar(Request $request)
     {
         $request->validate([
             'avatar' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
-        $stagiaire = $this->stagiaireService->show($id);
-        if (!$stagiaire) {
-            return response()->json(['message' => 'Stagiaire not found'], 404);
+        $user = \Auth::user();
+        if (!$user) {
+            return response()->json(['message' => 'Utilisateur non trouvé'], 404);
         }
 
         $file = $request->file('avatar');
-        $fileName = 'avatar_' . $id . '_' . time() . '.' . $file->getClientOriginalExtension();
+        $fileName = 'avatar_' . $user->id . '_' . time() . '.' . $file->getClientOriginalExtension();
 
         // S'assurer que le dossier existe
-        $destination = public_path('uploads/avatars');
+        $destination = public_path('uploads/users');
         if (!file_exists($destination)) {
             mkdir($destination, 0775, true);
         }
 
         $file->move($destination, $fileName);
-        $avatarPath = 'uploads/avatars/' . $fileName;
+        $avatarPath = 'uploads/users/' . $fileName;
 
-        $this->stagiaireService->update($id, ['avatar' => $avatarPath]);
+        // Met à jour le champ image de l'utilisateur
+        $user->image = $avatarPath;
+        $user->save();
 
         return response()->json([
             'message' => 'Avatar uploaded successfully',
