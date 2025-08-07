@@ -5,7 +5,7 @@
         <div class="row mb-4">
             <div class="col-md-8">
                 <h2>
-                    <img src="{{ asset('storage/' . $partenaire->logo) }}" alt="Logo {{ $partenaire->identifiant }}"
+                    <img src="{{ asset($partenaire->logo) }}" alt="Logo {{ $partenaire->identifiant }}"
                         width="50" class="rounded-circle me-2">
                     Classement des stagiaires - {{ $partenaire->identifiant }}
                 </h2>
