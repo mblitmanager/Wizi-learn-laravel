@@ -7,6 +7,7 @@ use App\Models\Stagiaire;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\File;
 
 class StagiaireController extends Controller
 {
@@ -73,7 +74,12 @@ class StagiaireController extends Controller
         if ($request->hasFile('avatar')) {
             $image = $request->file('avatar');
             $imageName = $user->id . '_' . time() . '.' . $image->getClientOriginalExtension();
-            $image->storeAs('public/uploads/users', $imageName);
+            // Stocker directement dans public/uploads/users (accessible sans symlink)
+            $destinationPath = public_path('uploads/users');
+            if (!File::isDirectory($destinationPath)) {
+                File::makeDirectory($destinationPath, 0755, true);
+            }
+            $image->move($destinationPath, $imageName);
             $user->image = 'uploads/users/' . $imageName;
             $user->save();
             $imageUrl = asset('uploads/users/' . $imageName);
