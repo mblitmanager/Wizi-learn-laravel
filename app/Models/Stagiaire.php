@@ -115,4 +115,14 @@ class Stagiaire extends Model
     {
         return $this->hasMany(Progression::class);
     }
+
+    public function referrals()
+    {
+        return $this->hasMany(Parrainage::class, 'parrain_id');
+    }
+
+    public function watchedVideos()
+    {
+        return $this->medias()->where('is_watched', true);
+    }
 }

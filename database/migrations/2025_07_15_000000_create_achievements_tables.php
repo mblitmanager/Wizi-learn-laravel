@@ -18,6 +18,7 @@ class CreateAchievementsTables extends Migration
             $table->string('icon')->nullable();
             $table->string('level')->nullable(); // bronze, silver, gold, etc.
             $table->unsignedBigInteger('quiz_id')->nullable(); // Lien vers un quiz spécifique
+            $table->string('code')->unique()->nullable(); // Code unique pour identifier l'achievement
             $table->timestamps();
         });
 

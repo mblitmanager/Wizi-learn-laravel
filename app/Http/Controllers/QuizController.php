@@ -909,6 +909,10 @@ class QuizController extends Controller
             // Mettre à jour le classement
             $this->updateClassement($quiz->id, $stagiaire->id, $score);
 
+            // Vérifier les achievements après soumission du quiz
+            $achievementService = app(\App\Services\StagiaireAchievementService::class);
+            $newAchievements = $achievementService->checkAchievements($stagiaire, $quiz->id);
+
             return response()->json([
                 'id' => $result->id,
                 'quizId' => $result->quiz_id,
@@ -919,7 +923,8 @@ class QuizController extends Controller
                 'totalQuestions' => $result->total_questions,
                 'completedAt' => $result->completion_time->toISOString(),
                 'timeSpent' => $result->time_spent,
-                'questions' => $questionsDetails->values()->all()
+                'questions' => $questionsDetails->values()->all(),
+                'newAchievements' => $newAchievements
             ])->setStatusCode(201, 'Résultat du quiz soumis avec succès');
         } catch (\Exception $e) {
             Log::error('Erreur dans submitQuizResult', [

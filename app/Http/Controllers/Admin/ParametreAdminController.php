@@ -264,6 +264,24 @@ class ParametreAdminController extends Controller
                 \App\Models\Progression::truncate();
             }
 
+            // Réinitialiser les succès (achievements) débloqués et stats associées
+            if (in_array('achievements', $resetData)) {
+                // Détacher toutes les relations stagiaire_achievements (pivot)
+                \DB::table('stagiaire_achievements')->delete();
+                // Optionnel: remettre à zéro d'autres stats si vous avez des tables dérivées
+                // Exemples (décommentez si ces tables existent):
+                // \App\Models\AchievementStat::truncate();
+            }
+
+            // Réinitialiser l'historique des quiz joués
+            if (in_array('quiz_history', $resetData)) {
+                // Selon votre modèle d'historique, effacer les résumés/archives
+                // Ici on suppose que l'historique est basé sur participations + réponses
+                // donc on supprime explicitement les réponses et participations
+                \App\Models\QuizParticipationAnswer::query()->delete();
+                \App\Models\Participation::query()->delete();
+            }
+
             // Nettoyer la table challenges si demandé
             if (in_array('challenges', $resetData)) {
                 \App\Models\Challenge::query()->delete();
