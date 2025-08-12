@@ -55,10 +55,13 @@ class CommercialService
                 'image' => $imagePath,
             ]);
 
-            // Création du commercial
+
+            // Création du commercial avec prenom et telephone
             $commercialData = [
                 'user_id' => $user->id,
-                // Ajoutez ici les autres champs spécifiques au commercial
+                'prenom' => $data['prenom'] ?? null,
+                'telephone' => $data['telephone'] ?? null,
+                'role' => 'commercial',
             ];
 
             $commercial = $this->commercialInterface->create($commercialData);

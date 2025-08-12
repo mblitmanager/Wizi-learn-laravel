@@ -45,10 +45,12 @@ class AchievementController extends Controller
 
             // Si un code d'achievement est passé (ex: android_download)
             $code = $request->input('code');
+            $quizId = $request->input('quiz_id');
+            
             if ($code) {
                 $newAchievements = $this->achievementService->unlockAchievementByCode($stagiaire, $code);
             } else {
-                $newAchievements = $this->achievementService->checkAchievements($stagiaire);
+                $newAchievements = $this->achievementService->checkAchievements($stagiaire, $quizId);
             }
             return response()->json(['new_achievements' => $newAchievements]);
         } catch (JWTException $e) {

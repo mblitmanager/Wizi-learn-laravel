@@ -16,8 +16,14 @@
             </div>
             <div class="ms-auto">
                 <div class="btn-group">
-                    <a href="{{ route('formateur.index') }}" type="button" class="btn btn-sm btn-primary"><i
-                            class="fadeIn animated bx bx-chevron-left-circle"></i>Retour</a>
+                    <a href="{{ route('formateur.index') }}" type="button" class="btn btn-sm btn-primary"><i class="fadeIn animated bx bx-chevron-left-circle"></i>Retour</a>
+                    <form action="{{ route('formateur.destroy', $formateur->id) }}" method="POST" onsubmit="return confirm('Confirmer la suppression ?');" style="display:inline-block; margin-left:8px;">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-sm btn-danger px-4">
+                            <i class="lni lni-trash"></i> Supprimer
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -198,6 +204,7 @@
                     </div>
 
                 </form>
+
             </div>
         </div>
     </div>

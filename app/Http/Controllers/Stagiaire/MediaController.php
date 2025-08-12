@@ -206,7 +206,14 @@ class MediaController extends Controller
                 ]
             );
 
-            return response()->json(['success' => true]);
+            // Vérifier les achievements après marquage de la vidéo
+            $achievementService = app(\App\Services\StagiaireAchievementService::class);
+            $newAchievements = $achievementService->checkAchievements($stagiaire);
+
+            return response()->json([
+                'success' => true,
+                'newAchievements' => $newAchievements
+            ]);
         } catch (JWTException $e) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }

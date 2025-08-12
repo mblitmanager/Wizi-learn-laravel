@@ -84,6 +84,36 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="icon" class="form-label">Icône</label>
+                                    <select name="icon" id="icon"
+                                        class="form-control @error('icon') is-invalid @enderror" required>
+                                        <option value="trophy" {{ old('icon') == 'trophy' ? 'selected' : '' }}>Trophée 🏆
+                                        </option>
+                                        <option value="gold" {{ old('icon') == 'gold' ? 'selected' : '' }}>Or 🏆</option>
+                                        <option value="silver" {{ old('icon') == 'silver' ? 'selected' : '' }}>Argent 🥈
+                                        </option>
+                                        <option value="bronze" {{ old('icon') == 'bronze' ? 'selected' : '' }}>Bronze 🥉
+                                        </option>
+                                        <option value="tv" {{ old('icon') == 'tv' ? 'selected' : '' }}>Vidéo/TV 📺
+                                        </option>
+                                        <option value="handshake" {{ old('icon') == 'handshake' ? 'selected' : '' }}>
+                                            Parrainage 🤝</option>
+                                        <option value="clapper" {{ old('icon') == 'clapper' ? 'selected' : '' }}>
+                                            Tutoriel/Media 🎬</option>
+                                        <option value="party" {{ old('icon') == 'party' ? 'selected' : '' }}>Fête 🎉
+                                        </option>
+                                        <option value="fire" {{ old('icon') == 'fire' ? 'selected' : '' }}>Streak 🔥
+                                        </option>
+                                    </select>
+                                    @error('icon')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
                         <div class="text-center mt-3">
                             <button type="submit" class="btn btn-success px-4">Créer</button>
                             <a href="{{ route('admin.achievements.index') }}" class="btn btn-secondary px-4">Annuler</a>

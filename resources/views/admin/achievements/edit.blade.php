@@ -24,6 +24,18 @@
             </div>
         </div>
         <div class="col-md-12">
+            @if (session('success'))
+                <div class="alert alert-success border-0 bg-success alert-dismissible fade show">
+                    <div class="text-white"> {{ session('success') }}</div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                <script>
+                    // Redirection auto vers l'index après un enregistrement réussi
+                    setTimeout(function() {
+                        window.location.href = "{{ route('admin.achievements.index') }}";
+                    }, 800);
+                </script>
+            @endif
             <div class="card">
                 <div class="card-body p-4 border rounded">
                     <form class="row g-3" action="{{ route('admin.achievements.update', $achievement->id) }}"
@@ -75,6 +87,46 @@
                                         @endforeach
                                     </select>
                                     @error('quiz_id')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="icon" class="form-label">Icône</label>
+                                    <select name="icon" id="icon"
+                                        class="form-control @error('icon') is-invalid @enderror" required>
+                                        <option value="trophy"
+                                            {{ old('icon', $achievement->icon) == 'trophy' ? 'selected' : '' }}>Trophée 🏆
+                                        </option>
+                                        <option value="gold"
+                                            {{ old('icon', $achievement->icon) == 'gold' ? 'selected' : '' }}>Or 🏆
+                                        </option>
+                                        <option value="silver"
+                                            {{ old('icon', $achievement->icon) == 'silver' ? 'selected' : '' }}>Argent 🥈
+                                        </option>
+                                        <option value="bronze"
+                                            {{ old('icon', $achievement->icon) == 'bronze' ? 'selected' : '' }}>Bronze 🥉
+                                        </option>
+                                        <option value="tv"
+                                            {{ old('icon', $achievement->icon) == 'tv' ? 'selected' : '' }}>Vidéo/TV 📺
+                                        </option>
+                                        <option value="handshake"
+                                            {{ old('icon', $achievement->icon) == 'handshake' ? 'selected' : '' }}>
+                                            Parrainage 🤝</option>
+                                        <option value="clapper"
+                                            {{ old('icon', $achievement->icon) == 'clapper' ? 'selected' : '' }}>
+                                            Tutoriel/Media 🎬</option>
+                                        <option value="party"
+                                            {{ old('icon', $achievement->icon) == 'party' ? 'selected' : '' }}>Fête 🎉
+                                        </option>
+                                        <option value="fire"
+                                            {{ old('icon', $achievement->icon) == 'fire' ? 'selected' : '' }}>Streak 🔥
+                                        </option>
+                                    </select>
+                                    @error('icon')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>

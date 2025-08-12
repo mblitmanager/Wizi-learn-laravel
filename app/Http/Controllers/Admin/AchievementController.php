@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Achievement;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+// use Illuminate\Support\Facades\File;
 
 class AchievementController extends Controller
 {
@@ -23,14 +24,29 @@ class AchievementController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'type' => 'required|string',
             'condition' => 'required|integer',
+            'description' => 'required|string',
             'level' => 'nullable|string',
             'quiz_id' => 'nullable|exists:quizzes,id',
+            'icon' => 'required|in:tv,handshake,clapper,trophy,party,fire,gold,silver,bronze',
         ]);
-        Achievement::create($request->all());
+
+        $data = [
+            'name' => $validated['name'],
+            'type' => $validated['type'],
+            'condition' => $validated['condition'],
+            'description' => $validated['description'],
+            'level' => $validated['level'] ?? null,
+            'quiz_id' => $validated['quiz_id'] ?? null,
+        ];
+
+        // Icône restreinte aux 3 choix
+        $data['icon'] = $validated['icon'];
+
+        Achievement::create($data);
         return redirect()->route('admin.achievements.index')->with('success', 'Succès créé avec succès.');
     }
 
@@ -42,14 +58,29 @@ class AchievementController extends Controller
 
     public function update(Request $request, Achievement $achievement)
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'type' => 'required|string',
             'condition' => 'required|integer',
+            'description' => 'required|string',
             'level' => 'nullable|string',
             'quiz_id' => 'nullable|exists:quizzes,id',
+            'icon' => 'required|in:tv,handshake,clapper,trophy,party,fire,gold,silver,bronze',
         ]);
-        $achievement->update($request->all());
+
+        $data = [
+            'name' => $validated['name'],
+            'type' => $validated['type'],
+            'condition' => $validated['condition'],
+            'description' => $validated['description'],
+            'level' => $validated['level'] ?? null,
+            'quiz_id' => $validated['quiz_id'] ?? null,
+        ];
+
+        // Icône restreinte aux 3 choix
+        $data['icon'] = $validated['icon'];
+
+        $achievement->update($data);
         return redirect()->route('admin.achievements.index')->with('success', 'Succès mis à jour.');
     }
 
@@ -86,7 +117,7 @@ class AchievementController extends Controller
      */
     public function detailedStats()
     {
-        $stagiaires = \App\Models\Stagiaire::with(['achievements' => function($q) {
+        $stagiaires = \App\Models\Stagiaire::with(['achievements' => function ($q) {
             $q->withPivot('created_at');
         }])->get();
 

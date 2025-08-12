@@ -75,10 +75,28 @@
                                             </div>
                                             <div class="form-check mb-3">
                                                 <input class="form-check-input" type="checkbox" name="reset_data[]"
+                                                    value="quiz_history" id="resetQuizHistory">
+                                                <label class="form-check-label" for="resetQuizHistory">
+                                                    Historique des quiz joués
+                                                </label>
+                                            </div>
+                                            <div class="form-check mb-3">
+                                                <input class="form-check-input" type="checkbox" name="reset_data[]"
                                                     value="progression" id="resetProgression">
                                                 <label class="form-check-label" for="resetProgression">
                                                     Progression des stagiaires
                                                 </label>
+                                            </div>
+                                            <div class="form-check mb-3">
+                                                <input class="form-check-input" type="checkbox" name="reset_data[]"
+                                                    value="achievements" id="resetAchievements">
+                                                <label class="form-check-label" for="resetAchievements">
+                                                    Succès (achievements) et statistiques associées
+                                                </label>
+                                                <div class="form-text">
+                                                    Efface les succès débloqués par les stagiaires et réinitialise les
+                                                    statistiques liées (compteurs, récapitulatifs).
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

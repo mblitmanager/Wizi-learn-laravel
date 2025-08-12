@@ -7,16 +7,21 @@
                 <div class="ps-3">
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb mb-0 p-0">
-                            <li class="breadcrumb-item"><a href="{{ route('admin.achievements.index') }}"><i class="bx bx-home-alt"></i></a></li>
-                            <li class="breadcrumb-item active text-uppercase fw-bold" aria-current="page">Gestion des Succès</li>
+                            <li class="breadcrumb-item"><a href="{{ route('admin.achievements.index') }}"><i
+                                        class="bx bx-home-alt"></i></a></li>
+                            <li class="breadcrumb-item active text-uppercase fw-bold" aria-current="page">Gestion des Succès
+                            </li>
                         </ol>
                     </nav>
                 </div>
                 <div class="ms-auto">
                     <div class="btn-group">
-                        <a href="{{ route('admin.achievements.create') }}" class="btn btn-sm btn-primary mx-2"><i class="fadeIn animated bx bx-plus"></i> Ajouter un succès</a>
-                        <a href="{{ route('admin.achievements.statistics') }}" class="btn btn-sm btn-info mx-2"><i class="fas fa-chart-bar"></i> Statistiques</a>
-                        <a href="{{ route('admin.achievements.trends') }}" class="btn btn-sm btn-secondary mx-2"><i class="fas fa-chart-line"></i> Tendances</a>
+                        <a href="{{ route('admin.achievements.create') }}" class="btn btn-sm btn-primary mx-2"><i
+                                class="fadeIn animated bx bx-plus"></i> Ajouter un succès</a>
+                        <a href="{{ route('admin.achievements.statistics') }}" class="btn btn-sm btn-info mx-2"><i
+                                class="fas fa-chart-bar"></i> Statistiques</a>
+                        <a href="{{ route('admin.achievements.trends') }}" class="btn btn-sm btn-secondary mx-2"><i
+                                class="fas fa-chart-line"></i> Tendances</a>
                     </div>
                 </div>
             </div>
@@ -29,6 +34,7 @@
                             <thead>
                                 <tr>
                                     <th>ID</th>
+                                    <th>Icône</th>
                                     <th>Nom</th>
                                     <th>Description</th>
                                     <th>Palier</th>
@@ -36,21 +42,37 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($achievements as $achievement)
-                                <tr>
-                                    <td>{{ $achievement->id }}</td>
-                                    <td>{{ $achievement->name }}</td>
-                                    <td>{{ $achievement->description }}</td>
-                                    <td>{{ $achievement->tier }}</td>
-                                    <td>
-                                        <a href="{{ route('admin.achievements.edit', $achievement->id) }}" class="btn btn-sm btn-warning">Modifier</a>
-                                        <form action="{{ route('admin.achievements.destroy', $achievement->id) }}" method="POST" style="display:inline-block;">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Supprimer ce succès ?')">Supprimer</button>
-                                        </form>
-                                    </td>
-                                </tr>
+                                @foreach ($achievements as $achievement)
+                                    <tr>
+                                        <td>{{ $achievement->id }}</td>
+                                        <td>
+                                            @php
+                                                $emoji =
+                                                    $achievement->icon === 'gold'
+                                                        ? '🏆'
+                                                        : ($achievement->icon === 'silver'
+                                                            ? '🥈'
+                                                            : ($achievement->icon === 'bronze'
+                                                                ? '🥉'
+                                                                : '—'));
+                                            @endphp
+                                            <span style="font-size:20px;">{{ $emoji }}</span>
+                                        </td>
+                                        <td>{{ $achievement->name }}</td>
+                                        <td>{{ $achievement->description }}</td>
+                                        <td>{{ $achievement->tier }}</td>
+                                        <td>
+                                            <a href="{{ route('admin.achievements.edit', $achievement->id) }}"
+                                                class="btn btn-sm btn-warning">Modifier</a>
+                                            <form action="{{ route('admin.achievements.destroy', $achievement->id) }}"
+                                                method="POST" style="display:inline-block;">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-danger"
+                                                    onclick="return confirm('Supprimer ce succès ?')">Supprimer</button>
+                                            </form>
+                                        </td>
+                                    </tr>
                                 @endforeach
                             </tbody>
                         </table>

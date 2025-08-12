@@ -23,6 +23,7 @@ class Achievement extends Model
         'icon',
         'level', // bronze, silver, gold, etc.
         'quiz_id', // id du quiz associé
+        'code', // code unique pour identifier l'achievement
     ];
 
     /**

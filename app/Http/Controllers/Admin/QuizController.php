@@ -948,6 +948,7 @@ class QuizController extends Controller
             return trim($row[6] ?? '') === $questionText;
         });
 
+        $reponseCount = 0;
         foreach ($responses as $row) {
             $reponseText = $row[9] ?? null; // Colonne J
             $isCorrect = strtolower(trim($row[10] ?? 'non')) === 'oui'; // Colonne K
@@ -963,11 +964,21 @@ class QuizController extends Controller
             ]);
 
             if ($isCorrect) $correctIds[] = $reponse->id;
+            $reponseCount++;
         }
 
         // Validation pour QCM/Vrai-Faux
-        if (count($correctIds) !== 1) {
-            throw new \Exception("Doit avoir exactement une réponse correcte");
+        if ($questionData['type'] === 'vrai/faux') {
+            if ($reponseCount < 1 || $reponseCount > 2) {
+                throw new \Exception("Une question vrai/faux doit avoir 1 ou 2 réponses.");
+            }
+            if (count($correctIds) !== 1) {
+                throw new \Exception("Une question vrai/faux doit avoir exactement une réponse correcte.");
+            }
+        } else {
+            if (count($correctIds) !== 1) {
+                throw new \Exception("Doit avoir exactement une réponse correcte");
+            }
         }
 
         $question->update(['correct_reponses_ids' => json_encode($correctIds)]);

@@ -22,6 +22,11 @@
                         <a href="{{ route('pole_relation_clients.index') }}" type="button"
                             class="btn btn-sm btn-primary"><i class="fadeIn animated bx bx-chevron-left-circle"></i>
                             Retour</a>
+                        <form action="{{ route('pole_relation_clients.destroy', $poleRelationClient->id) }}" method="POST" style="display:inline-block; margin-left:8px;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce pôle relation client ?');">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-sm btn-danger"><i class="lni lni-trash"></i> Supprimer</button>
+                        </form>
                     </div>
                 </div>
             </div>
