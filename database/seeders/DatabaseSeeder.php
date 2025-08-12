@@ -13,11 +13,17 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        $this->call([
+            UserSeeder::class,
+            StagiaireSeeder::class,
+            FormationSeeder::class,
+            NotificationSeeder::class,
+            TeamSeeder::class,
+            AchievementSeeder::class,
+            AndroidDownloadAchievementSeeder::class,
+            VideoAchievementsSeeder::class,
         ]);
+
+        // Les achievements (streaks, vidéos, quiz, points, etc.) sont désormais gérés par AchievementSeeder
     }
 }

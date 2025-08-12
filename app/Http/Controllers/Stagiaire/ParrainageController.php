@@ -2,233 +2,196 @@
 
 namespace App\Http\Controllers\Stagiaire;
 
-use App\Http\Controllers\Controller;
-use App\Services\ParrainageService;
-use Tymon\JWTAuth\Facades\JWTAuth;
-use Tymon\JWTAuth\Exceptions\JWTException;
+use App\Models\User;
+use App\Models\Stagiaire;
+use App\Models\ParrainageToken;
+use App\Models\Parrainage;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Validator;
+use App\Http\Controllers\Controller;
+use App\Mail\FilleulInscriptionConfirmation;
+use App\Models\CatalogueFormation;
+use App\Models\DemandeInscription;
+use App\Models\DemandeInscriptionParrainage;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class ParrainageController extends Controller
 {
-    protected $parrainageService;
 
-    public function __construct(ParrainageService $parrainageService)
+    // Générer un lien de parrainage
+    public function generateLink(Request $request)
     {
-        $this->parrainageService = $parrainageService;
+        $user = $request->user();
+
+        $token = Str::random(40);
+
+        ParrainageToken::create([
+            'token' => $token,
+            'user_id' => $user->id,
+            'parrain_data' => json_encode([
+                'user' => $user,
+                'stagiaire' => $user->stagiaire
+            ]),
+            'expires_at' => now()->addDays(30)
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'token' => $token
+        ]);
     }
 
-    public function getParrainageLink()
+    // Récupérer les données du parrain
+    public function getParrainData($token)
     {
-        try {
-            $user = JWTAuth::parseToken()->authenticate();
-             // Charger la relation stagiaire si elle n'est pas déjà chargée
-             if (!isset($user->relations['stagiaire'])) {
-                $user->load('stagiaire');
-            }
+        $parrainage = ParrainageToken::where('token', $token)
+            ->where('expires_at', '>', now())
+            ->first();
 
-            // Vérifier si l'utilisateur est bien le stagiaire demandé ou a les droits d'accès
-            if ($user->role != 'formateur' && $user->role != 'admin') {
-                // Vérifier si l'utilisateur est associé à ce stagiaire
-                $userStagiaire = $user->stagiaire;
-                if (!$userStagiaire) {
-                    return response()->json(['error' => 'non autorisé'], 403);
-                }
-            }
-            $link = $this->parrainageService->getParrainageLink($user->stagiaire->id);
-            return response()->json(['link' => $link]);
-        } catch (JWTException $e) {
-            return response()->json(['error' => 'Non autorisé'], 401);
-        }
-    }
-
-    public function getFilleuls()
-    {
-        try {
-            $user = JWTAuth::parseToken()->authenticate();
-             // Charger la relation stagiaire si elle n'est pas déjà chargée
-             if (!isset($user->relations['stagiaire'])) {
-                $user->load('stagiaire');
-            }
-
-            // Vérifier si l'utilisateur est bien le stagiaire demandé ou a les droits d'accès
-            if ($user->role != 'formateur' && $user->role != 'admin') {
-                // Vérifier si l'utilisateur est associé à ce stagiaire
-                $userStagiaire = $user->stagiaire;
-                if (!$userStagiaire) {
-                    return response()->json(['error' => 'non autorisé'], 403);
-                }
-            }
-            $filleuls = $this->parrainageService->getFilleuls($user->stagiaire->id);
-
-            return response()->json($filleuls);
-        } catch (JWTException $e) {
-            return response()->json(['error' => 'Non autorisé'], 401);
-        }
-    }
-
-    public function getParrainageStats()
-    {
-        try {
-            $user = JWTAuth::parseToken()->authenticate();
-             // Charger la relation stagiaire si elle n'est pas déjà chargée
-             if (!isset($user->relations['stagiaire'])) {
-                $user->load('stagiaire');
-            }
-
-            // Vérifier si l'utilisateur est bien le stagiaire demandé ou a les droits d'accès
-            if ($user->role != 'formateur' && $user->role != 'admin') {
-                // Vérifier si l'utilisateur est associé à ce stagiaire
-                $userStagiaire = $user->stagiaire;
-                if (!$userStagiaire) {
-                    return response()->json(['error' => 'non autorisé'], 403);
-                }
-            }
-
-            $stats = $this->parrainageService->getParrainageStats($user->stagiaire->id);
-            return response()->json($stats);
-        } catch (JWTException $e) {
-            return response()->json(['error' => 'Non autorisé'], 401);
-        }
-    }
-
-    /**
-     * Génère un lien de parrainage pour le stagiaire connecté
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function generateParrainageLink()
-    {
-        try {
-            $user = JWTAuth::parseToken()->authenticate();
-
-            // Charger la relation stagiaire si elle n'est pas déjà chargée
-            if (!isset($user->relations['stagiaire'])) {
-                $user->load('stagiaire');
-            }
-
-            // Vérifier si l'utilisateur est bien un stagiaire
-            if ($user->role !== 'stagiaire') {
-                return response()->json(['error' => 'Accès non autorisé'], 403);
-            }
-
-            // Générer le lien de parrainage
-            $link = $this->parrainageService->generateParrainageLink($user->stagiaire->id);
-
+        if (!$parrainage) {
             return response()->json([
-                'success' => true,
-                'link' => $link
-            ]);
-        } catch (JWTException $e) {
-            return response()->json(['error' => 'Non autorisé'], 401);
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Erreur lors de la génération du lien', 'message' => $e->getMessage()], 500);
+                'success' => false,
+                'message' => 'Lien de parrainage invalide ou expiré'
+            ], 404);
         }
+
+        return response()->json([
+            'success' => true,
+            'parrain' => json_decode($parrainage->parrain_data, true)
+        ]);
     }
 
-    public function getParrainageRewards()
+    // Enregistrer un nouveau filleul
+    public function registerFilleul(Request $request)
     {
-        try {
-            $user = JWTAuth::parseToken()->authenticate();
+        $validator = Validator::make($request->all(), [
+            'civilite' => 'nullable|in:M,Mme',
+            'prenom' => 'nullable|string|max:255',
+            'nom' => 'nullable|string|max:255',
+            'email' => 'nullable|email|unique:users,email',
+            'telephone' => 'nullable|string|max:20',
+            'adresse' => 'nullable|string|max:255',
+            'code_postal' => 'nullable|string|max:10',
+            'ville' => 'nullable|string|max:255',
+            'date_naissance' => 'nullable|date',
+            'date_debut_formation' => 'nullable|date',
+            'date_inscription' => 'nullable|date',
+            'statut' => 'nullable|string',
+            'parrain_id' => 'required|exists:users,id',
+            'catalogue_formation_id' => 'required|exists:catalogue_formations,id',
+            'lien_parrainage' => 'nullable|string',
+            'motif' => 'required', // Validation du motif
+        ], [
+            'parrain_id.required' => 'Le parrain est requis',
+            'catalogue_formation_id.required' => 'Le catalogue de formation est requis',
+            'email.unique' => 'Cette adresse e-mail est deja utilisée.',
+            'email.email' => 'Veuillez fournir une adresse e-mail valide.',
+            'email.required' => 'Veuillez fournir une adresse e-mail.',
+            'motif.required' => 'Le motif est requis',
+        ]);
 
-            // Charger la relation stagiaire si elle n'est pas déjà chargée
-            if (!isset($user->relations['stagiaire'])) {
-                $user->load('stagiaire');
-            }
-
-            // Vérifier si l'utilisateur est bien le stagiaire demandé ou a les droits d'accès
-            if ($user->role != 'formateur' && $user->role != 'admin') {
-                $userStagiaire = $user->stagiaire;
-                if (!$userStagiaire) {
-                    return response()->json(['error' => 'non autorisé'], 403);
-                }
-            }
-
-            $rewards = $this->parrainageService->getParrainageRewards($user->stagiaire->id);
-
-            return response()->json($rewards);
-        } catch (JWTException $e) {
-            return response()->json(['error' => 'Non autorisé'], 401);
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Erreur lors de la récupération des récompenses', 'message' => $e->getMessage()], 500);
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
         }
+
+        // Création du user
+        $user = User::create([
+            'name' => $request->nom,
+            'email' => $request->email,
+            'password' => bcrypt(Str::random(12)),
+            'role' => 'stagiaire'
+        ]);
+
+        // Création du stagiaire
+        $stagiaire = Stagiaire::create([
+            'user_id' => $user->id,
+            'civilite' => $request->civilite,
+            'prenom' => $request->prenom,
+            'nom' => $request->nom,
+            'telephone' => $request->telephone,
+            'adresse' => $request->adresse,
+            'code_postal' => $request->code_postal,
+            'ville' => $request->ville,
+            'date_naissance' => $request->date_naissance,
+            'date_debut_formation' => $request->date_debut_formation ?? null,
+            'date_inscription' => $request->date_inscription ?? now(),
+            'statut' => $request->statut ?? 'en_attente',
+        ]);
+
+        // Enregistrement du parrainage
+        $parrainage = Parrainage::create([
+            'parrain_id' => $request->parrain_id,
+            'filleul_id' => $user->id,
+            'date_parrainage' => now(),
+            'points' => 2,
+            'gains' => 50.00
+        ]);
+
+        // Association avec la formation
+        DB::table('stagiaire_catalogue_formations')->insert([
+            'stagiaire_id' => $stagiaire->id,
+            'catalogue_formation_id' => $request->catalogue_formation_id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // Enregistrement de la demande de parrainage avec les nouveaux champs
+        DemandeInscription::create([
+            'parrain_id' => $request->parrain_id,
+            'filleul_id' => $user->id,
+            'formation_id' => $request->catalogue_formation_id,
+            'statut' => 'complete',
+            'donnees_formulaire' => json_encode($request->all()),
+            'lien_parrainage' => $request->lien_parrainage,
+            'motif' => $request->motif,
+            'date_demande' => now(),
+            'date_inscription' => now(),
+        ]);
+
+        $parrain = User::find($request->parrain_id);
+        $formation = CatalogueFormation::find($request->catalogue_formation_id);
+
+        // Envoyer l'email de confirmation
+        if ($user->email) {
+            Mail::to($user->email)->send(new FilleulInscriptionConfirmation($user, $parrain, $formation));
+        }
+
+        // Envoyer une notification au parrain
+        if ($parrain) {
+            app(\App\Services\NotificationService::class)->sendFcmToUser(
+                $parrain,
+                'Nouveau filleul',
+                'Vous avez reçu un nouveau filleul !',
+                ['type' => 'parrainage', 'filleul_id' => $user->id]
+            );
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Inscription réussie! Un email de confirmation a été envoyé.',
+            'data' => [
+                'user' => $user,
+                'stagiaire' => $stagiaire
+            ]
+        ]);
     }
-
-    public function getParrainageHistory()
+    public function getStatsParrain(Request $request)
     {
-        try {
-            $user = JWTAuth::parseToken()->authenticate();
+        $parrain_id = $request->user()->id;
+        $nombreFilleuls = Parrainage::where('parrain_id', $parrain_id)->count();
+        $totalPoints = Parrainage::where('parrain_id', $parrain_id)->sum('points');
 
-            // Charger la relation stagiaire si elle n'est pas déjà chargée
-            if (!isset($user->relations['stagiaire'])) {
-                $user->load('stagiaire');
-            }
-
-            // Convertir stagiaire en objet si c'est un tableau
-            $userStagiaire = is_array($user->stagiaire) ? (object) $user->stagiaire : $user->stagiaire;
-
-            // Vérifier si l'utilisateur est bien le stagiaire demandé ou a les droits d'accès
-            if ($user->role != 'formateur' && $user->role != 'admin') {
-                if (!$userStagiaire || empty($userStagiaire->id)) {
-                    return response()->json(['error' => 'non autorisé'], 403);
-                }
-            }
-
-            $history = $this->parrainageService->getParrainageHistory($userStagiaire->id);
-
-
-            // Format the history data
-            $formattedHistory = array_map(function ($record) {
-                return [
-                    'id' => $record['id'] ?? null,
-                    'parrain_id' => $record['parrain_id'] ?? null,
-                    'filleul_id' => $record['filleul_id'] ?? null,
-                    'token' => $record['token'] ?? null,
-                    'nombre_filleul' => $record['nombre_filleul'] ?? null,
-                    'lien' => $record['lien'] ?? null,
-                    'points' => $record['points'] ?? null,
-                    'created_at' => $record['created_at'] ?? null,
-                    'updated_at' => $record['updated_at'] ?? null,
-                    'filleul' => $record['filleul'] ?? null,
-                ];
-            }, $history);
-
-            return response()->json($formattedHistory);
-        } catch (JWTException $e) {
-            return response()->json(['error' => 'Non autorisé'], 401);
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Erreur lors de la récupération de l\'historique', 'message' => $e->getMessage()], 500);
-        }
-    }
-
-    public function acceptParrainage(Request $request)
-    {
-        try {
-            $user = JWTAuth::parseToken()->authenticate();
-
-            // Charger la relation stagiaire si elle n'est pas déjà chargée
-            if (!isset($user->relations['stagiaire'])) {
-                $user->load('stagiaire');
-            }
-
-            // Vérifier si l'utilisateur est bien le stagiaire demandé ou a les droits d'accès
-            if ($user->role != 'stagiaire') {
-                return response()->json(['error' => 'Accès non autorisé'], 403);
-            }
-
-            $validatedData = $request->validate([
-                'token' => 'required|string',
-            ]);
-
-            $result = $this->parrainageService->acceptParrainage($user->stagiaire->id, $validatedData['token']);
-
-            return response()->json($result);
-        } catch (JWTException $e) {
-            return response()->json(['error' => 'Non autorisé'], 401);
-        } catch (ValidationException $e) {
-            return response()->json(['error' => 'Données invalides', 'message' => $e->getMessage()], 422);
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Erreur lors de l\'acceptation du parrainage', 'message' => $e->getMessage()], 500);
-        }
+        return response()->json([
+            'success' => true,
+            'parrain_id' => $parrain_id,
+            'nombre_filleuls' => $nombreFilleuls,
+            'total_points' => $totalPoints,
+            'gains' => Parrainage::where('parrain_id', $parrain_id)->sum('gains'),
+        ]);
     }
 }

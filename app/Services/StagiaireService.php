@@ -26,7 +26,7 @@ class StagiaireService
         return $this->stagiaireRepository->find($id);
     }
 
-    public function create(array $data)
+    public function create(array $data, array $selectedFormations, array $poleRelationClientIds = [], array $formateurIds = [])
     {
         // 1. Créer l'utilisateur associé
         $user = User::create([
@@ -39,27 +39,27 @@ class StagiaireService
         // 2. Associer l'utilisateur
         $data['user_id'] = $user->id;
 
-        // 3. Récupérer et retirer les formations du tableau avant création du stagiaire
-        $formationIds = $data['formation_id']; // Tableau d'IDs
-        $formateurIds = $data['formateur_id'] ?? [];
+        // 3. Récupérer et retirer les champs non nécessaires
         $commercialIds = $data['commercial_id'] ?? [];
-        unset($data['formation_id']);
-        unset($data['formateur_id']);
-        unset($data['commercial_id']);
+        // Do not unset partenaire_id so it is saved
+        unset($data['formateur_id'], $data['commercial_id'], $data['pole_relation_client_id']);
 
         // 4. Créer le stagiaire
         $stagiaire = $this->stagiaireRepository->create($data);
 
-        // 5. Associer les formations via la table pivot
-        $stagiaire->formations()->sync($formationIds);
+        // 5. Associer les formations via la table pivot avec date_debut et formateur_id
+        $stagiaire->catalogue_formations()->sync($selectedFormations);
         // 6. Associer les formateurs via la table pivot
         $stagiaire->formateurs()->sync($formateurIds);
         // 7. Associer les commerciaux via la table pivot
         $stagiaire->commercials()->sync($commercialIds);
+        // 8. Associer les pôles relation client via la table pivot
+        $stagiaire->poleRelationClient()->sync($poleRelationClientIds);
 
         return $stagiaire;
     }
-    public function update(int $id, array $data)
+
+    public function update(int $id, array $data, array $selectedFormations, array $poleRelationClientIds = [], array $formateurIds = [])
     {
         $stagiaire = $this->stagiaireRepository->find($id);
 
@@ -76,27 +76,30 @@ class StagiaireService
                 : $stagiaire->user->password,
         ]);
 
-
-        $formationIds = $data['formation_id'] ?? [];
-        $formateurIds = $data['formateur_id'] ?? [];
         $commercialIds = $data['commercial_id'] ?? [];
+        $formationIds = $data['catalogue_formation_id'] ?? [];
 
-        unset($data['name'], $data['email'], $data['password'], $data['formation_id']);
+        // Do not unset partenaire_id so it is saved
+        unset($data['name'], $data['email'], $data['password'], $data['catalogue_formation_id'], $data['formateur_id'], $data['commercial_id']);
 
         // 3. Mise à jour des champs du stagiaire
         $this->stagiaireRepository->update($id, $data);
 
-        // 4. Synchronisation des formations
-        $stagiaire->formations()->sync($formationIds);
-
+        // 4. Synchronisation des formations avec date_debut et formateur_id
+        $stagiaire->catalogue_formations()->sync($selectedFormations);
         // 5. Synchronisation des formateurs
-        $stagiaire->formateurs()->sync($formateurIds);
+        if (!empty($formateurIds)) {
+            $stagiaire->formateurs()->sync($formateurIds);
+        }
         // 6. Synchronisation des commerciaux
-        $stagiaire->commercials()->sync($commercialIds);
+        if (!empty($commercialIds)) {
+            $stagiaire->commercials()->sync($commercialIds);
+        }
+        // 7. Synchronisation des pôles relation client
+        $stagiaire->poleRelationClient()->sync($poleRelationClientIds);
 
         return true;
     }
-
 
     public function delete($id)
     {
@@ -107,6 +110,7 @@ class StagiaireService
     {
         return $this->stagiaireRepository->desactive($id);
     }
+
     public function active($id)
     {
         return $this->stagiaireRepository->active($id);

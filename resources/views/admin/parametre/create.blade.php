@@ -1,8 +1,9 @@
 @extends('admin.layout')
 
 @section('content')
-    <div class="container">
-        <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
+<div class="container-fluid">
+    <div class="shadow-lg border-0 px-2 py-2 mb-3">
+        <div class="page-breadcrumb d-none d-sm-flex align-items-center ">
             <div class="ps-3">
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb mb-0 p-0">
@@ -20,33 +21,34 @@
                 </div>
             </div>
         </div>
-        @if (session('success'))
-            <div class="alert alert-success border-0 bg-success alert-dismissible fade show">
-                <div class="text-white"> {{ session('success') }}</div>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        @endif
-        @if (session('error'))
-            <div class="alert alert-danger border-0 bg-danger alert-dismissible fade show">
-                <div class="text-white"> {{ session('error') }}</div>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        @endif
-        <div class="card">
-            <div class="card-body">
-                <h4>Créer un utilisateur</h4>
-                <hr>
-                <form action="{{ route('parametre.store') }}" method="POST" enctype="multipart/form-data">
-                    @csrf
+    </div>
+    @if (session('success'))
+    <div class="alert alert-success border-0 bg-success alert-dismissible fade show">
+        <div class="text-white"> {{ session('success') }}</div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    @endif
+    @if (session('error'))
+    <div class="alert alert-danger border-0 bg-danger alert-dismissible fade show">
+        <div class="text-white"> {{ session('error') }}</div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    @endif
+    <div class="card">
+        <div class="card-body">
+            <h4>Créer un utilisateur</h4>
+            <hr>
+            <form action="{{ route('parametre.store') }}" method="POST" enctype="multipart/form-data">
+                @csrf
 
-                    @include('admin.parametre.form-user')
-                    <div class="text-center">
-                        <button type="submit" class="btn btn-primary btn-sm px-4">
-                            <i class="lni lni-save"></i> Enregistrer
-                        </button>
-                    </div>
-                </form>
-            </div>
+                @include('admin.parametre.form-user')
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary btn-sm px-4">
+                        <i class="lni lni-save"></i> Enregistrer
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
+</div>
 @endsection

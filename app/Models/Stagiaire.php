@@ -13,6 +13,12 @@ use ApiPlatform\Metadata\ApiResource;
 class Stagiaire extends Model
 {
     use HasFactory;
+
+    public function partenaire()
+    {
+        return $this->belongsTo(Partenaire::class, 'partenaire_id');
+    }
+    use HasFactory;
     protected $fillable = [
         'civilite',
         'prenom',
@@ -21,16 +27,24 @@ class Stagiaire extends Model
         'date_naissance',
         'ville',
         'code_postal',
+        'date_debut_formation',
+        'date_inscription',
         'role',
         'statut',
         'user_id',
+        'date_fin_formation',
+        'onboarding_seen',
+        'partenaire_id',
     ];
 
 
 
-    public function formations()
+
+    public function catalogue_formations()
     {
-        return $this->belongsToMany(Formation::class, 'stagiaire_formations');
+        return $this->belongsToMany(CatalogueFormation::class, 'stagiaire_catalogue_formations', 'stagiaire_id', 'catalogue_formation_id')
+            ->withPivot(['date_debut', 'date_inscription', 'date_fin', 'formateur_id'])
+            ->withTimestamps();
     }
 
     public function user()
@@ -65,12 +79,6 @@ class Stagiaire extends Model
         return $this->belongsToMany(PoleRelationClient::class, 'pole_relation_client_stagiaire');
     }
 
-
-    public function stagiaires()
-    {
-        return $this->belongsToMany(Stagiaire::class, 'stagiaire_formations');
-    }
-
     public function commercial()
     {
         return $this->belongsToMany(Commercial::class, 'commercial_stagiaire');
@@ -84,5 +92,37 @@ class Stagiaire extends Model
     public function poleRelationClient()
     {
         return $this->belongsToMany(PoleRelationClient::class, 'pole_relation_client_stagiaire');
+    }
+
+    public function medias()
+    {
+        return $this->belongsToMany(Media::class)
+            ->withPivot('is_watched', 'watched_at')
+            ->withTimestamps();
+    }
+    // Ajout des relations pour les succès
+    public function achievements()
+    {
+        return $this->belongsToMany(Achievement::class, 'stagiaire_achievements')->withTimestamps();
+    }
+
+    public function classements()
+    {
+        return $this->hasMany(Classement::class);
+    }
+
+    public function progressions()
+    {
+        return $this->hasMany(Progression::class);
+    }
+
+    public function referrals()
+    {
+        return $this->hasMany(Parrainage::class, 'parrain_id');
+    }
+
+    public function watchedVideos()
+    {
+        return $this->medias()->where('is_watched', true);
     }
 }

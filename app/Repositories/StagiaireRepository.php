@@ -11,12 +11,12 @@ class StagiaireRepository implements StagiaireRepositoryInterface
 {
     public function all(): Collection
     {
-        return Stagiaire::with(['formations'])->get();
+        return Stagiaire::with(['catalogue_formations'])->get();
     }
 
     public function find($id): ?Stagiaire
     {
-        return Stagiaire::with('user', 'formations')->where('id', $id)->first();
+        return Stagiaire::with('user', 'catalogue_formations')->where('id', $id)->first();
     }
 
     public function create(array $data): Stagiaire
@@ -59,13 +59,13 @@ class StagiaireRepository implements StagiaireRepositoryInterface
     public function getStagiaireStats($id)
     {
         $stagiaire = $this->find($id);
-        
+
         // Get quizzes through formations
         $quizzes = collect();
         foreach ($stagiaire->formations as $formation) {
             $quizzes = $quizzes->merge($formation->quizzes);
         }
-        
+
         return [
             'total_formations' => $stagiaire->formations->count(),
             'completed_formations' => $stagiaire->formations->where('completed', true)->count(),
@@ -85,7 +85,7 @@ class StagiaireRepository implements StagiaireRepositoryInterface
             ->orderBy('total_points', 'desc')
             ->get();
 
-        $position = $globalRanking->search(function($item) use ($id) {
+        $position = $globalRanking->search(function ($item) use ($id) {
             return $item->id == $id;
         }) + 1;
 
@@ -98,9 +98,9 @@ class StagiaireRepository implements StagiaireRepositoryInterface
     public function getStagiaireProgress($id)
     {
         $stagiaire = $this->find($id);
-        
+
         return [
-            'formations_progress' => $stagiaire->formations->map(function($formation) {
+            'formations_progress' => $stagiaire->formations->map(function ($formation) {
                 return [
                     'formation_id' => $formation->id,
                     'title' => $formation->title,
@@ -108,8 +108,8 @@ class StagiaireRepository implements StagiaireRepositoryInterface
                     'completed' => $formation->pivot->completed
                 ];
             }),
-            'quizzes_progress' => $stagiaire->formations->flatMap(function($formation) {
-                return $formation->quizzes->map(function($quiz) {
+            'quizzes_progress' => $stagiaire->formations->flatMap(function ($formation) {
+                return $formation->quizzes->map(function ($quiz) {
                     return [
                         'quiz_id' => $quiz->id,
                         'title' => $quiz->title,

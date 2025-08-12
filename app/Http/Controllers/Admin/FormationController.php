@@ -64,4 +64,21 @@ class FormationController extends Controller
             ? redirect()->route('formations.index')->with('success', 'Formation supprimée avec succès !')
             : redirect()->route('formations.index')->with('error', 'Formation non trouvée.');
     }
+
+    /**
+     * Dupliquer une formation
+     */
+    public function duplicate($id)
+    {
+        $formation = $this->formationService->getById($id);
+        if (!$formation) {
+            return redirect()->route('formations.index')->with('error', 'Formation non trouvée.');
+        }
+        $newData = $formation->toArray();
+        unset($newData['id'], $newData['created_at'], $newData['updated_at']);
+        $newData['nom'] = $formation->nom . ' (copie)';
+        $newFormation = $this->formationService->store($newData);
+        return redirect()->route('formations.edit', $newFormation->id)
+            ->with('success', 'Formation dupliquée avec succès.');
+    }
 }

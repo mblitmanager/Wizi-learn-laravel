@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr">
 
 <head>
     <!-- Required meta tags -->
@@ -20,7 +20,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
     <link href="{{ asset('assets/css/app.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/css/icons.css') }}" rel="stylesheet">
-    <title>Wizi Learn</title>
+    <title>Wizi Learn - Administration</title>
 </head>
 
 <body class="bg-login">
@@ -38,39 +38,38 @@
                                 <div class="border p-4 rounded">
                                     <div class="text-center">
                                         <h3 class="">Connectez-vous</h3>
-                                        <p>Vous n’avez pas encore de compte? <a
-                                                href="{{ route('register') }}">inscrivez-vous ici</a>
-                                        </p>
+                                        <p>Vous n'avez pas encore de compte? <a href="{{ route('register') }}">inscrivez-vous ici</a></p>
                                     </div>
-                                    <div class="login-separater text-center mb-4"> <span>OU CONNECTEZ-VOUS AVEC VOTRE
-                                            COURRIEL</span>
+                                    <div class="login-separater text-center mb-4">
+                                        <span>OU CONNECTEZ-VOUS AVEC VOTRE COURRIEL</span>
                                         <hr />
                                     </div>
                                     <div class="form-body">
                                         <form class="row g-3" action="{{ route('login.post') }}" method="POST">
                                             @csrf
                                             <div class="col-12">
-                                                <label for="inputEmailAddress" class="form-label">adresse e-mail</label>
-                                                <input type="email" class="form-control" name="email"
-                                                    id="inputEmailAddress" placeholder="Email Address">
+                                                <label for="inputEmailAddress" class="form-label">Adresse e-mail</label>
+                                                <input type="email" class="form-control @error('email') is-invalid @enderror" name="email" id="inputEmailAddress" placeholder="Email Address" value="{{ old('email') }}">
+                                                @error('email')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
                                             </div>
                                             <div class="col-12">
-                                                <label for="inputChoosePassword" class="form-label">saisir le mot de
-                                                    passe</label>
+                                                <label for="inputChoosePassword" class="form-label">Mot de passe</label>
                                                 <div class="input-group" id="show_hide_password">
-                                                    <input type="password" class="form-control border-end-0"
-                                                        id="inputChoosePassword" value="12345678" name="password"
-                                                        placeholder="Enter Password"> <a href="javascript:;"
-                                                        class="input-group-text bg-transparent"><i
-                                                            class='bx bx-hide'></i></a>
+                                                    <input type="password" class="form-control border-end-0 @error('password') is-invalid @enderror" id="inputChoosePassword" name="password" placeholder="Entrez votre mot de passe">
+                                                    <a href="javascript:;" class="input-group-text bg-transparent"><i class='bx bx-hide'></i></a>
+                                                    @error('password')
+                                                        <div class="invalid-feedback">{{ $message }}</div>
+                                                    @enderror
                                                 </div>
                                             </div>
-                                            <div class="col-md-6 text-end"> <a href="#">Mot de passe oublié ?</a>
+                                            <div class="col-md-6 text-end">
+                                                <a href="{{ route('password.request') }}">Mot de passe oublié ?</a>
                                             </div>
                                             <div class="col-12">
                                                 <div class="d-grid">
-                                                    <button type="submit" class="btn btn-primary"><i
-                                                            class="bx bxs-lock-open"></i>connectez-vous</button>
+                                                    <button type="submit" class="btn btn-primary"><i class="bx bxs-lock-open"></i>Connectez-vous</button>
                                                 </div>
                                             </div>
                                         </form>
@@ -80,7 +79,6 @@
                         </div>
                     </div>
                 </div>
-                <!--end row-->
             </div>
         </div>
     </div>

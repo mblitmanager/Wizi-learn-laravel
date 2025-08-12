@@ -1,11 +1,14 @@
 <?php
+
 namespace App\Services;
 
 use App\Models\PoleRelationClient;
 use App\Models\User;
 use App\Repositories\Interfaces\PRCInterface;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class PoleRelationClientService implements PRCInterface
 {
@@ -24,56 +27,122 @@ class PoleRelationClientService implements PRCInterface
     }
     public function create(array $data): PoleRelationClient
     {
-        $user = User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']),
-            'role' => 'pole relation client',
-        ]);
+        DB::beginTransaction();
 
-        // 2. Associer l'utilisateur
-        $data['user_id'] = $user->id;
+        try {
+            // Gestion de l'image
+            $imagePath = null;
+            if (isset($data['image']) && $data['image'] instanceof \Illuminate\Http\UploadedFile) {
+                $image = $data['image'];
 
-        $stagiaireId = $data['stagiaire_id'];
-        unset($data['stagiaire_id']);
+                if (!$image->isValid()) {
+                    throw new \Exception("Le fichier image n'est pas valide");
+                }
 
+                $imageName = 'prc_'.time().'_'.Str::random(8).'.'.$image->getClientOriginalExtension();
+                $image->move(public_path('uploads/users'), $imageName);
+                $imagePath = 'uploads/users/'.$imageName;
+            }
 
-        // 4. Créer le stagiaire
-        $prc = $this->repository->create($data);
+            // Création de l'utilisateur
+            $user = User::create([
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'password' => Hash::make($data['password']),
+                'role' => $data['role'] ?? 'pole relation client',
+                'image' => $imagePath,
+            ]);
 
-        // 5. Associer les formations via la table pivot
-        $prc->stagiaires()->sync($stagiaireId);
+            // Création du PRC avec prenom, telephone et role
+            $prcData = [
+                'user_id' => $user->id,
+                'prenom' => $data['prenom'] ?? null,
+                'telephone' => $data['telephone'] ?? null,
+                'role' => $data['role'] ?? 'pole relation client',
+            ];
+            // dd($prcData);
+            $prc = $this->repository->create($prcData);
 
-        return $prc;
+            // Gestion des relations
+            $stagiaireIds = $data['stagiaire_id'] ?? [];
+            $prc->stagiaires()->sync($stagiaireIds);
 
+            DB::commit();
+            return $prc;
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            // Nettoyage de l'image en cas d'erreur
+            if (isset($imagePath) && file_exists(public_path($imagePath))) {
+                unlink(public_path($imagePath));
+            }
+
+            \Log::error('Erreur création PRC: '.$e->getMessage());
+            throw $e;
+        }
     }
+
     public function update(int $id, array $data): bool
     {
-        $prc = $this->repository->find($id);
-        if (!$prc) {
-            throw new \Exception("PoleRelationClient not found");
+        DB::beginTransaction();
+
+        try {
+            $prc = $this->repository->find($id);
+            if (!$prc) {
+                throw new \Exception('PoleRelationClient not found');
+            }
+
+            // Préparation des données utilisateur
+            $userData = [
+                'name' => $data['name'],
+                'email' => $data['email'],
+            ];
+
+            // Gestion du mot de passe
+            if (!empty($data['password'])) {
+                $userData['password'] = Hash::make($data['password']);
+            }
+
+            // Gestion de l'image
+            if (isset($data['image']) && $data['image'] instanceof \Illuminate\Http\UploadedFile) {
+                $image = $data['image'];
+
+                if (!$image->isValid()) {
+                    throw new \Exception("Le fichier image n'est pas valide");
+                }
+
+                // Suppression de l'ancienne image
+                if ($prc->user->image && file_exists(public_path($prc->user->image))) {
+                    unlink(public_path($prc->user->image));
+                }
+
+                // Upload de la nouvelle image
+                $imageName = 'prc_' . $prc->user->id . '_' . time() . '.' . $image->getClientOriginalExtension();
+                $image->move(public_path('uploads/users'), $imageName);
+                $userData['image'] = 'uploads/users/' . $imageName;
+            }
+
+            // Mise à jour de l'utilisateur
+            $prc->user->update($userData);
+
+            // Mise à jour du PRC
+            $stagiaireIds = $data['stagiaire_id'] ?? [];
+            unset($data['name'], $data['email'], $data['password'], $data['image'], $data['stagiaire_id']);
+
+            $this->repository->update($id, $data);
+
+            // Synchronisation des relations
+            $prc->stagiaires()->sync($stagiaireIds);
+
+            DB::commit();
+            return true;
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Erreur mise à jour PRC: ' . $e->getMessage());
+            throw $e;
         }
-
-        // Mise à jour de l'utilisateur lié
-        $prc->user->update([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => isset($data['password']) && $data['password'] !== null
-                ? Hash::make($data['password'])
-                : $prc->user->password,
-        ]);
-
-        // Récupération et suppression du tableau de stagiaires pour éviter l'erreur SQL
-        $stagiaireIds = $data['stagiaire_id'] ?? [];
-        unset($data['name'], $data['email'], $data['password'], $data['stagiaire_id']);
-
-        // Mise à jour des autres champs de PRC
-        $this->repository->update($id, $data);
-
-        // Synchronisation des stagiaires
-        $prc->stagiaires()->sync($stagiaireIds);
-
-        return true;
     }
 
     public function delete(int $id): bool

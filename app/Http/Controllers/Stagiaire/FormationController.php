@@ -4,9 +4,13 @@ namespace App\Http\Controllers\Stagiaire;
 
 use App\Helpers\PaginationHelper;
 use App\Http\Controllers\Controller;
+use App\Models\CatalogueFormation;
+use App\Models\Formation;
+use App\Models\Stagiaire;
 use App\Services\FormationService;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
+use Illuminate\Support\Facades\Log;
 
 class FormationController extends Controller
 {
@@ -17,16 +21,42 @@ class FormationController extends Controller
         $this->formationService = $formationService;
     }
 
-    public function getFormationsByStagiaireId($id)
+    public function getFormationsByStagiaire($id)
     {
         try {
-            $formations = $this->formationService->getFormationsByStagiaire($id);
+            // Vérifie d'abord si le stagiaire existe
+            $stagiaire = Stagiaire::find($id);
+
+            if (!$stagiaire) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Stagiaire non trouvé'
+                ], 404);
+            }
+
+            // Récupère les formations à traverps les catalogues de formation
+            $formations = Formation::whereHas('catalogueFormation', function ($query) use ($id) {
+                $query->whereHas('stagiaires', function ($q) use ($id) {
+                    $q->where('stagiaires.id', $id);
+                });
+            })
+            ->with(['medias', 'catalogueFormation'])
+            ->get();
 
             return response()->json([
+                'success' => true,
                 'data' => $formations
             ]);
         } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+            Log::error('Erreur dans getFormationsByStagiaireId', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'error' => 'Une erreur est survenue lors de la récupération des formations'
+            ], 500);
         }
     }
 

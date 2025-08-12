@@ -22,11 +22,21 @@ class Quiz extends Model
         'niveau',
         'nb_points_total',
         'formation_id',
+        'status', // Ajout du champ status
+    ];
+
+    protected $attributes = [
+        'status' => 'actif'
     ];
 
     public function participations()
     {
         return $this->hasMany(Participation::class);
+    }
+
+    public function quiz_participations()
+    {
+        return $this->hasMany(QuizParticipation::class);
     }
 
     public function formation()
@@ -37,5 +47,12 @@ class Quiz extends Model
     public function questions()
     {
         return $this->hasMany(Questions::class);
+    }
+
+    protected static function booted()
+    {
+        static::saving(function ($quiz) {
+            $quiz->nb_points_total = $quiz->questions()->count() * 2; // 2 points par question
+        });
     }
 }

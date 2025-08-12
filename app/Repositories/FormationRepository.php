@@ -11,12 +11,12 @@ class FormationRepository implements FormationRepositoryInterface
 {
     public function all()
     {
-        return Formation::with(['formateurs', 'stagiaires'])->get();
+        return Formation::with(['catalogueFormation'])->get();
     }
 
     public function find($id): ?Formation
     {
-        return Formation::with(['formateurs', 'stagiaires'])->find($id);
+        return Formation::with(['catalogueFormation'])->find($id);
     }
 
     public function create(array $data): Formation
@@ -44,12 +44,13 @@ class FormationRepository implements FormationRepositoryInterface
     public function getFormationsByStagiaire($stagiaireId): \Illuminate\Support\Collection
     {
         return Formation::with([
-            'formateurs',
-            'stagiaires',
+            'catalogueFormation.stagiaires',
             'quizzes.questions.reponses'
         ])
-            ->whereHas('stagiaires', function($query) use ($stagiaireId) {
-                $query->where('stagiaires.id', $stagiaireId);
+            ->whereHas('catalogueFormation', function ($query) use ($stagiaireId) {
+                $query->whereHas('stagiaires', function ($q) use ($stagiaireId) {
+                    $q->where('stagiaires.id', $stagiaireId);
+                });
             })
             ->get();
     }

@@ -21,28 +21,26 @@
     })
 </script>
 <script>
-    // Afficher le loader au chargement de la page
-    window.addEventListener('load', function() {
-        const loader = document.getElementById('globalLoader');
-        loader.classList.add('d-none'); // Masquer une fois la page chargée
-    });
+    const descriptionEl = document.querySelector('#description');
 
-    // Afficher le loader à chaque clic sur un bouton ou élément .btn
-    document.querySelectorAll('.btn').forEach(el => {
-        el.addEventListener('click', function() {
-            const loader = document.getElementById('globalLoader');
-            loader.classList.remove('d-none'); // Affiche le loader
-        });
-    });
+    if (descriptionEl) {
+        ClassicEditor
+            .create(descriptionEl, {
+                toolbar: [
+                    'heading', '|',
+                    'bold', 'italic', 'link',
+                    'bulletedList', 'numberedList', 'blockQuote',
+                    'undo', 'redo', 'fontColor'
+                ],
+            })
+            .catch(error => {
+                console.error('Erreur CKEditor :', error);
+            });
+    } else {
+        console.warn("⚠️ Élément #description introuvable, CKEditor non initialisé.");
+    }
 </script>
-<script>
-    ClassicEditor
-        .create(document.querySelector('#description'), {
-            toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote',
-                'undo', 'redo', 'fontColor'
-            ],
-        })
-        .catch(error => {
-            console.error(error);
-        });
+
+
+
 </script>

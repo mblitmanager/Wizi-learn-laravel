@@ -9,6 +9,10 @@ use App\Models\Stagiaire;
 use App\Models\User;
 use App\Services\CommercialService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Response;
+use Illuminate\Support\HtmlString;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class CommercialController extends Controller
@@ -44,10 +48,23 @@ class CommercialController extends Controller
      */
     public function store(CommmercialStoreRequest $request)
     {
-        $this->commercialsService->create($request->validated());
+        try {
 
-        return redirect()->route('commercials.index')
-            ->with('success', 'Le commercial a été créé avec succès.');
+            // Récupère les données validées
+            $validatedData = $request->validated();
+            // Ajoute manuellement le fichier image s'il existe
+            if ($request->hasFile('image')) {
+                $validatedData['image'] = $request->file('image');
+            }
+
+            $this->commercialsService->create($validatedData);
+
+            return redirect()->route('commercials.index')
+                ->with('success', 'Le commercial a été créé avec succès.');
+        } catch (\Exception $e) {
+            return back()->withInput()
+                ->with('error', 'Erreur: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -74,18 +91,27 @@ class CommercialController extends Controller
      */
     public function update(CommmercialStoreRequest $request, string $id)
     {
-        $this->commercialsService->update($id, $request->validated());
-
-        return redirect()->route('commercials.index')
-            ->with('success', 'Le commercial a été mis à jour avec succès.');
+        try {
+            $this->commercialsService->update($id, $request->validated());
+            return redirect()->route('commercials.index')
+                ->with('success', 'Le commercial a été mis à jour avec succès.');
+        } catch (\Exception $e) {
+            return back()->withInput()
+                ->with('error', 'Erreur: ' . $e->getMessage());
+        }
     }
-
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)
     {
-        //
+        try {
+            $this->commercialsService->delete($id);
+            return redirect()->route('commercials.index')
+                ->with('success', 'Le commercial a été supprimé avec succès.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Erreur lors de la suppression: ' . $e->getMessage());
+        }
     }
 
     private function splitConsultants($cellValue)
@@ -99,29 +125,30 @@ class CommercialController extends Controller
 
     private function extraireNomPrenom($fullName)
     {
-        $parts = preg_split('/\s+/', trim($fullName));
+        $fullName = trim(preg_replace('/\s+/', ' ', $fullName)); // Normaliser les espaces
 
-        if (is_numeric($parts[0])) {
-            array_shift($parts);
+        // Supprimer les numéros en début de ligne si existent
+        $fullName = preg_replace('/^\d+\s*/', '', $fullName);
+
+        $parts = explode(' ', $fullName);
+
+        // Cas simple: 2 parties = prénom + nom
+        if (count($parts) === 2) {
+            return [
+                'prenom' => ucfirst($parts[0]),
+                'nom' => ucfirst($parts[1])
+            ];
         }
 
-        $nom = [];
-        $prenom = [];
-
-        foreach ($parts as $part) {
-            if (mb_strtoupper($part, 'UTF-8') === $part) {
-                $nom[] = ucfirst(strtolower($part));
-            } else {
-                $prenom[] = ucfirst(strtolower($part));
-            }
-        }
+        // Cas complexe: on prend le dernier mot comme nom, le reste comme prénom
+        $nom = array_pop($parts);
+        $prenom = implode(' ', $parts);
 
         return [
-            'nom' => implode(' ', $nom),
-            'prenom' => implode(' ', $prenom),
+            'prenom' => ucfirst($prenom),
+            'nom' => ucfirst($nom)
         ];
     }
-
     public function import(Request $request)
     {
         set_time_limit(0);
@@ -134,47 +161,174 @@ class CommercialController extends Controller
             $file = $request->file('file');
             $spreadsheet = IOFactory::load($file->getRealPath());
             $sheet = $spreadsheet->getActiveSheet();
-            $ignoredEmails = [];
 
-            foreach ($sheet->getRowIterator(2) as $row) {
-                $cell = $row->getCellIterator()->current();
-                $consultantsCell = trim($cell->getValue());
+            $results = [
+                'imported' => 0,
+                'ignored' => [],
+                'errors' => [],
+                'warnings' => []
+            ];
 
-                if (empty($consultantsCell))
+            // Vérification des en-têtes selon votre fichier Excel
+            $expectedHeaders = [
+                'A' => 'email',
+                'B' => 'nom',
+                'C' => 'prénom',
+                'D' => 'tel',
+                'E' => 'adresse'
+            ];
+
+            $headerErrors = [];
+            foreach ($expectedHeaders as $column => $expectedHeader) {
+                $cellValue = trim($sheet->getCell($column . '1')->getValue() ?? '');
+                if (mb_strtolower($cellValue) !== mb_strtolower($expectedHeader)) {
+                    $headerErrors[] = "Colonne $column: En-tête attendu '$expectedHeader' mais trouvé '$cellValue'";
+                }
+            }
+
+            if (!empty($headerErrors)) {
+                return redirect()->route('formateur.index')
+                    ->with('error', new HtmlString(
+                        'En-têtes incorrects:<br>' . implode('<br>', $headerErrors) .
+                            '<br>Veuillez utiliser le modèle fourni.'
+                    ));
+            }
+
+            $lastRow = $sheet->getHighestDataRow();
+
+            for ($rowIndex = 2; $rowIndex <= $lastRow; $rowIndex++) {
+                $email = trim($sheet->getCell('A' . $rowIndex)->getValue());
+                $nom = trim($sheet->getCell('B' . $rowIndex)->getValue());
+                $prenom = trim($sheet->getCell('C' . $rowIndex)->getValue());
+                $tel = trim($sheet->getCell('D' . $rowIndex)->getValue());
+                $adresse = trim($sheet->getCell('E' . $rowIndex)->getValue());
+
+                // Vérification des champs obligatoires
+                $requiredFields = [
+                    'email' => $email,
+                    'nom' => $nom,
+                    'prenom' => $prenom
+                ];
+
+                $missingFields = [];
+                foreach ($requiredFields as $field => $value) {
+                    if (empty($value)) {
+                        $missingFields[] = $field;
+                    }
+                }
+
+                if (!empty($missingFields)) {
+                    $results['errors'][] = "Ligne $rowIndex: Champs obligatoires manquants: " . implode(', ', $missingFields);
                     continue;
+                }
 
-                $consultants = $this->splitConsultants($consultantsCell);
+                // Validation de l'email
+                if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                    $results['errors'][] = "Ligne $rowIndex: Email invalide: '$email'";
+                    continue;
+                }
 
-                foreach ($consultants as $consultant) {
-                    $np = $this->extraireNomPrenom($consultant);
-
-                    $email = strtolower(str_replace(' ', '.', $np['prenom']) . '.' . strtolower($np['nom'])) . '@example.com';
-
-                    if (User::where('email', $email)->exists()) {
-                        $ignoredEmails[] = $email;
+                DB::beginTransaction();
+                try {
+                    // Vérification des doublons
+                    $existingUser = User::where('email', $email)->where('role', 'Formateur')->first();
+                    if ($existingUser) {
+                        $results['ignored'][] = "Ligne $rowIndex: L'utilisateur $email existe déjà";
+                        DB::rollBack();
                         continue;
                     }
 
+                    // Formatage du téléphone
+                    $tel = $this->formatPhoneNumber($tel);
+
+                    // Création de l'utilisateur
                     $user = User::create([
-                        'name' => $np['prenom'] . ' ' . $np['nom'],
+                        'name' => "$prenom $nom",
                         'email' => $email,
-                        'password' => bcrypt('consultant123'),
-                        'role' => 'commercial',
+                        'password' => bcrypt('commercial@123'),
+                        'role' => 'Commercial',
+                        'adresse' => $adresse
                     ]);
 
+                    // Création du commercial
                     Commercial::create([
-                        'prenom' => $np['prenom'],
+                        'prenom' => $prenom,
+                        'telephone' => $tel,
                         'user_id' => $user->id,
-                        'role' => 'commercial',
+                        'role' => 'Commercial',
+                        'statut' => true,
+                    ]);
+
+                    DB::commit();
+                    $results['imported']++;
+                } catch (\Exception $e) {
+                    DB::rollBack();
+                    $results['errors'][] = "Ligne $rowIndex: Erreur - " . $e->getMessage();
+                    \Log::error("Erreur import ligne $rowIndex", [
+                        'email' => $email,
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
                     ]);
                 }
             }
 
-            return redirect()->route('commercials.index')
-                ->with('success', 'Importation réussie.')
-                ->with('ignored', $ignoredEmails);
+            // Construction du message de résultat
+            $message = "<strong>Résultat de l'importation :</strong><br>";
+            $message .= "- Commercial importés : {$results['imported']}<br>";
+
+            if (!empty($results['ignored'])) {
+                $message .= "- Doublons ignorés : " . count($results['ignored']) . "<br>";
+            }
+
+            if (!empty($results['errors'])) {
+                $message .= "- Erreurs : " . count($results['errors']) . "<br>";
+            }
+
+            // Préparation des données pour la vue
+            $redirect = redirect()->route('commercials.index')
+                ->with('import_results', new HtmlString($message));
+
+            if (!empty($results['errors'])) {
+                $redirect->with('import_errors', $results['errors']);
+            }
+
+            if (!empty($results['ignored'])) {
+                $redirect->with('import_ignored', $results['ignored']);
+            }
+
+            return $redirect;
         } catch (\Exception $e) {
-            return redirect()->route('commercials.index')->with('error', 'Erreur: ' . $e->getMessage());
+            \Log::error("Erreur globale d'import", [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return redirect()->route('commercials.index')
+                ->with('error', "Erreur lors de l'import: " . $e->getMessage());
         }
+    }
+
+    private function formatPhoneNumber($phone)
+    {
+        $phone = preg_replace('/[^0-9]/', '', $phone);
+
+        if (strlen($phone) === 9) {
+            return '0' . $phone; // Ajoute le 0 manquant pour les numéros français
+        }
+
+        return $phone;
+    }
+
+
+    public function downloadCommercialModel()
+    {
+        $filePath = public_path('models/commercial/commercial.xlsx');
+
+        if (!File::exists($filePath)) {
+            return redirect()->back()->with('error', 'Le fichier modèle est introuvable.');
+        }
+
+        $fileName = 'modele_import_commercial.xlsx';
+
+        return Response::download($filePath, $fileName);
     }
 }

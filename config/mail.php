@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Default Mailer
@@ -36,7 +35,6 @@ return [
     */
 
     'mailers' => [
-
         'smtp' => [
             'transport' => 'smtp',
             'scheme' => env('MAIL_SCHEME'),
@@ -94,7 +92,6 @@ return [
                 'postmark',
             ],
         ],
-
     ],
 
     /*
@@ -109,8 +106,10 @@ return [
     */
 
     'from' => [
-        'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
+        'address' => env('MAIL_FROM_ADDRESS', 'Contact@wizi-learn.com'),
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
 
+    // Adresse email du pôle relation
+    'pole_relation_email' => env('POLE_RELATION_EMAIL', 'teddy.ralaivao@mbl-service.com'),
 ];

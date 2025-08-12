@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Stagiaire;
 
 use App\Http\Controllers\Controller;
 use App\Models\Stagiaire;
+use App\Models\User;
 use Illuminate\Http\Request;
 use App\Services\FormationService;
 use App\Services\StagiaireService;
@@ -129,5 +130,50 @@ class ProfileController extends Controller
         }
 
         return response()->json(['message' => 'All notifications marked as read']);
+    }
+    public function uploadAvatar(Request $request)
+    {
+        $request->validate([
+            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
+        ]);
+
+        $user = \Auth::user();
+        if (!$user) {
+            return response()->json(['message' => 'Utilisateur non trouvé'], 404);
+        }
+
+        $file = $request->file('avatar');
+        $fileName = 'avatar_' . $user->id . '_' . time() . '.' . $file->getClientOriginalExtension();
+
+        // S'assurer que le dossier existe
+        $destination = public_path('uploads/users');
+        if (!file_exists($destination)) {
+            mkdir($destination, 0775, true);
+        }
+
+        $file->move($destination, $fileName);
+        $avatarPath = 'uploads/users/' . $fileName;
+
+        // Met à jour le champ image de l'utilisateur
+        $user->image = $avatarPath;
+        $user->save();
+
+        return response()->json([
+            'message' => 'Avatar uploaded successfully',
+            'avatar' => $avatarPath,
+            'avatar_url' => asset($avatarPath)
+        ]);
+    }
+
+    public function onlineUsers()
+    {
+        return response()->json([
+            'online_users' => User::where('is_online', true)->get(),
+            'recently_online' => User::where('last_activity_at', '>=', now()->subMinutes(15))
+                ->where('is_online', false)
+                ->orderBy('last_activity_at', 'desc')
+                ->get(),
+            'all_users' => User::orderBy('last_activity_at', 'desc')->get()
+        ]);
     }
 }

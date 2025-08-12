@@ -76,11 +76,11 @@ class ParametreAdminController extends Controller
     }
 
     /**
-     * Affiche les détails d’un utilisateur.
+     * Affiche les détails d'un utilisateur.
      */
     public function show($id)
     {
-        $user = $this->parametreService->find($id);
+        $user = $this->parametreService->find((int) $id);
         return view('admin.parametre.show', compact('user'));
     }
 
@@ -96,7 +96,6 @@ class ParametreAdminController extends Controller
     /**
      * Met à jour un utilisateur.
      */
-
     public function update(Request $request, $id)
     {
         $data = $request->only(['name', 'email', 'password', 'role']);
@@ -106,7 +105,7 @@ class ParametreAdminController extends Controller
             'email' => 'required|email|unique:users,email,' . $id,
             'password' => 'nullable|string|min:6',
             'role' => 'required|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:102400',
 
             // Champs supplémentaires partagés
             'prenom' => 'nullable|string|max:255',
@@ -159,7 +158,7 @@ class ParametreAdminController extends Controller
                     'code_postal'
                 ]);
                 $stagiaireData['user_id'] = $user->id;
-                $stagiaireData['statut'] = 'actif';
+                $stagiaireData['statut'] = '1';
                 \App\Models\Stagiaire::updateOrCreate(['user_id' => $user->id], $stagiaireData);
                 break;
 
@@ -204,7 +203,7 @@ class ParametreAdminController extends Controller
     public function updateImage(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:102400',
         ]);
 
         if ($validator->fails()) {
@@ -221,5 +220,79 @@ class ParametreAdminController extends Controller
         }
 
         return redirect()->back()->with('success', 'Image mise à jour avec succès.');
+    }
+
+    /**
+     * Affiche la page de réinitialisation des données.
+     */
+    public function showResetData()
+    {
+        return view('admin.parametre.reset-data');
+    }
+
+    /**
+     * Réinitialise les données du système.
+     */
+    public function resetData(Request $request)
+    {
+        try {
+            $resetData = $request->input('reset_data', []);
+
+            if (empty($resetData)) {
+                return redirect()->route('admin.parametre.reset-data')
+                    ->with('error', 'Veuillez sélectionner au moins un type de données à réinitialiser.');
+            }
+
+            // Réinitialiser les classements
+            if (in_array('classements', $resetData)) {
+                \App\Models\Classement::truncate();
+            }
+
+            // Réinitialiser les participations aux quiz
+            if (in_array('participations', $resetData)) {
+                // Utiliser delete pour éviter les problèmes de clé étrangère
+                \App\Models\Participation::query()->delete();
+            }
+
+            // Réinitialiser les réponses aux quiz
+            if (in_array('reponses', $resetData)) {
+                \App\Models\QuizParticipationAnswer::truncate();
+            }
+
+            // Réinitialiser les progressions
+            if (in_array('progression', $resetData)) {
+                \App\Models\Progression::truncate();
+            }
+
+            // Réinitialiser les succès (achievements) débloqués et stats associées
+            if (in_array('achievements', $resetData)) {
+                // Détacher toutes les relations stagiaire_achievements (pivot)
+                \DB::table('stagiaire_achievements')->delete();
+                // Optionnel: remettre à zéro d'autres stats si vous avez des tables dérivées
+                // Exemples (décommentez si ces tables existent):
+                // \App\Models\AchievementStat::truncate();
+            }
+
+            // Réinitialiser l'historique des quiz joués
+            if (in_array('quiz_history', $resetData)) {
+                // Selon votre modèle d'historique, effacer les résumés/archives
+                // Ici on suppose que l'historique est basé sur participations + réponses
+                // donc on supprime explicitement les réponses et participations
+                \App\Models\QuizParticipationAnswer::query()->delete();
+                \App\Models\Participation::query()->delete();
+            }
+
+            // Nettoyer la table challenges si demandé
+            if (in_array('challenges', $resetData)) {
+                \App\Models\Challenge::query()->delete();
+            }
+
+            $message = 'Les données sélectionnées ont été réinitialisées avec succès.';
+            return redirect()->route('admin.parametre.reset-data')
+                ->with('success', $message);
+        } catch (\Exception $e) {
+            return redirect()->route('admin.parametre.reset-data')
+                ->with('error', 'Une erreur est survenue lors de la réinitialisation des données : ' . $e->getMessage());
+        }
     }
 }

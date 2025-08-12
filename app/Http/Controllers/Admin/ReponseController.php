@@ -26,4 +26,13 @@ class ReponseController extends Controller
             'data' => $reponses
         ]);
     }
+
+    public function getQuestionById(int $id): JsonResponse
+    {
+        $question = Questions::findOrFail($id);
+        return response()->json([
+            'success' => true,
+            'data' => $question
+        ]);
+    }
 }

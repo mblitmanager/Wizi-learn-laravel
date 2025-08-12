@@ -9,6 +9,11 @@ use App\Models\Stagiaire;
 use App\Models\User;
 use App\Services\PoleRelationClientService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Response;
+use Illuminate\Support\HtmlString;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class PoleRelationClientController extends Controller
@@ -19,6 +24,7 @@ class PoleRelationClientController extends Controller
     {
         $this->polerelationClientRepository = $polerelationClientRepository;
     }
+
     /**
      * Display a listing of the resource.
      */
@@ -34,7 +40,8 @@ class PoleRelationClientController extends Controller
     public function create()
     {
         $stagiaires = Stagiaire::all();
-        return view('admin.pole_relation_client.create', compact('stagiaires'));
+        $roles = ['Pôle Relation Client', 'Conseiller', 'Consultant 1er accueil', 'Interlocuteur', 'autre'];
+        return view('admin.pole_relation_client.create', compact('stagiaires', 'roles'));
     }
 
     /**
@@ -42,9 +49,23 @@ class PoleRelationClientController extends Controller
      */
     public function store(PoleRelationClientRequest $request)
     {
-        $this->polerelationClientRepository->create($request->validated());
-        return redirect()->route('pole_relation_clients.index')
-            ->with('success', 'Le pole relation client a été créé avec succès.');
+        try {
+
+            // Récupère les données validées
+            $validatedData = $request->validated();
+            // Ajoute manuellement le fichier image s'il existe
+            if ($request->hasFile('image')) {
+                $validatedData['image'] = $request->file('image');
+            }
+
+            $this->polerelationClientRepository->create($validatedData);
+
+            return redirect()->route('pole_relation_clients.index')
+                ->with('success', 'Le pole relation client a été créé avec succès.');
+        } catch (\Exception $e) {
+            return back()->withInput()
+                ->with('error', 'Erreur: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -69,11 +90,16 @@ class PoleRelationClientController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(PoleRelationClientRequest $request, string $id)
     {
-        $this->polerelationClientRepository->update($id, $request->all());
-        return redirect()->route('pole_relation_clients.index')
-            ->with('success', 'Le pole relation client a été mis à jour avec succès.');
+        try {
+            $this->polerelationClientRepository->update($id, $request->validated());
+            return redirect()->route('pole_relation_clients.index')
+                ->with('success', 'Le pole relation client a été mis à jour avec succès.');
+        } catch (\Exception $e) {
+            return back()->withInput()
+                ->with('error', 'Erreur: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -81,7 +107,21 @@ class PoleRelationClientController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        try {
+            // Suppression de la relation Pôle Relation Client
+            $poleRelationClient = $this->polerelationClientRepository->find($id);
+            if ($poleRelationClient) {
+                $poleRelationClient->delete();
+                return redirect()->route('pole_relation_clients.index')
+                    ->with('success', 'Le pôle relation client a été supprimé avec succès.');
+            } else {
+                return redirect()->route('pole_relation_clients.index')
+                    ->with('error', 'Pôle relation client non trouvé.');
+            }
+        } catch (\Exception $e) {
+            return redirect()->route('pole_relation_clients.index')
+                ->with('error', 'Erreur lors de la suppression: ' . $e->getMessage());
+        }
     }
 
     private function splitConsultants($cellValue)
@@ -95,26 +135,28 @@ class PoleRelationClientController extends Controller
 
     private function extraireNomPrenom($fullName)
     {
-        $parts = preg_split('/\s+/', trim($fullName));
+        $fullName = trim(preg_replace('/\s+/', ' ', $fullName)); // Normaliser les espaces
 
-        if (is_numeric($parts[0])) {
-            array_shift($parts);
+        // Supprimer les numéros en début de ligne si existent
+        $fullName = preg_replace('/^\d+\s*/', '', $fullName);
+
+        $parts = explode(' ', $fullName);
+
+        // Cas simple: 2 parties = prénom + nom
+        if (count($parts) === 2) {
+            return [
+                'prenom' => ucfirst($parts[0]),
+                'nom' => ucfirst($parts[1])
+            ];
         }
 
-        $nom = [];
-        $prenom = [];
-
-        foreach ($parts as $part) {
-            if (mb_strtoupper($part, 'UTF-8') === $part) {
-                $nom[] = ucfirst(strtolower($part));
-            } else {
-                $prenom[] = ucfirst(strtolower($part));
-            }
-        }
+        // Cas complexe: on prend le dernier mot comme nom, le reste comme prénom
+        $nom = array_pop($parts);
+        $prenom = implode(' ', $parts);
 
         return [
-            'nom' => implode(' ', $nom),
-            'prenom' => implode(' ', $prenom),
+            'prenom' => ucfirst($prenom),
+            'nom' => ucfirst($nom)
         ];
     }
 
@@ -130,53 +172,155 @@ class PoleRelationClientController extends Controller
             $file = $request->file('file');
             $spreadsheet = IOFactory::load($file->getRealPath());
             $sheet = $spreadsheet->getActiveSheet();
+
             $ignoredEmails = [];
+            $invalidRows = [];
+            $importedCount = 0;
 
-            foreach ($sheet->getRowIterator(2) as $row) {
-                $cell = $row->getCellIterator()->current();
+            // Vérification de l'en-tête (optionnel mais recommandé)
+            $headerRow = $sheet->getRowIterator()->current();
+            $headerCell = $headerRow->getCellIterator()->current();
+            $headerValue = trim($headerCell->getValue());
+            $normalizedHeader = mb_strtolower(trim($headerValue));
+            $expectedHeader = mb_strtolower(trim('Consultant 1er accueil'));
+            $lastRow = $sheet->getHighestDataRow();
+            if ($normalizedHeader !== $expectedHeader) {
+                return redirect()->route('pole_relation_clients.index')
+                    ->with('error', 'En-tête incorrect. La première colonne doit être "Consultant 1er accueil".')
+                    ->with('debug_header', $headerValue); // Pour le débogage
+            }
+            $lastRow = $sheet->getHighestDataRow(); // Récupère la dernière ligne avec des données
+
+            for ($rowIndex = 2; $rowIndex <= $lastRow; $rowIndex++) {
+                $cell = $sheet->getCell('A' . $rowIndex);
                 $consultantsCell = trim($cell->getValue());
+                // Lire le rôle en colonne B si elle existe, sinon 'autre'
+                $roleCell = $sheet->getCell('B' . $rowIndex);
+                $role = $roleCell ? trim($roleCell->getValue()) : '';
+                $role = $role ?: 'autre';
 
-                if (empty($consultantsCell))
+                // Si la cellule est vide, on passe à la ligne suivante
+                if (empty($consultantsCell)) {
+                    Log::info("Ligne $rowIndex vide - Ignorée.");
                     continue;
+                }
+
+                Log::info("Ligne $rowIndex : $consultantsCell");
 
                 $consultants = $this->splitConsultants($consultantsCell);
 
-
                 foreach ($consultants as $consultant) {
-                    $np = $this->extraireNomPrenom($consultant);
+                    DB::beginTransaction();
+                    try {
+                        $np = $this->extraireNomPrenom($consultant);
 
-                    $email = strtolower(str_replace(' ', '.', $np['prenom']) . '.' . strtolower($np['nom'])) . '@example.com';
+                        if (empty($np['nom']) || empty($np['prenom'])) {
+                            $invalidRows[] = 'Ligne ' . $rowIndex . ': Format du nom/prénom invalide - "' . $consultant . '"';
+                            DB::rollBack();
+                            continue;
+                        }
 
-                    if (User::where('email', $email)->exists()) {
-                        $ignoredEmails[] = $email;
-                        continue;
+                        $email = trim(strtolower(preg_replace('/[^a-z]/', '', $np['prenom']))) . '.' .
+                            trim(strtolower(preg_replace('/[^a-z]/', '', $np['nom']))) . '@example.com';
+
+                        if ($email === '@example.com') {
+                            $invalidRows[] = 'Ligne ' . $rowIndex . ': Email invalide - "' . $consultant . '"';
+                            DB::rollBack();
+                            continue;
+                        }
+
+                        Log::info("Import - Ligne {$rowIndex}", [
+                            'consultant' => $consultant,
+                            'np' => $np,
+                            'email' => $email
+                        ]);
+
+                        $existingUser = User::where('email', $email)
+                            ->where('role', $role)
+                            ->first();
+
+                        if ($existingUser) {
+                            $ignoredEmails[] = $email;
+                            DB::rollBack();
+                            continue;
+                        }
+
+                        $user = User::create([
+                            'name' => $np['prenom'] . ' ' . $np['nom'],
+                            'email' => $email,
+                            'password' => bcrypt('pole123'),
+                            'role' => $role, // rôle libre
+                        ]);
+
+                        PoleRelationClient::create([
+                            'prenom' => $np['prenom'],
+                            'nom' => $np['nom'],
+                            'user_id' => $user->id,
+                            'role' => $role, // rôle libre
+                            'statut' => true,
+                        ]);
+
+                        DB::commit();
+                        $importedCount++;
+                    } catch (\Exception $e) {
+                        Log::error("Erreur d'import - Ligne {$rowIndex}", [
+                            'consultant' => $consultant,
+                            'np' => $np,
+                            'error' => $e->getMessage()
+                        ]);
+                        DB::rollBack();
+                        $invalidRows[] = 'Ligne ' . $rowIndex . ': Erreur - ' . $e->getMessage();
                     }
-
-                    $user = User::create([
-                        'name' => $np['prenom'] . ' ' . $np['nom'],
-                        'email' => $email,
-                        'password' => bcrypt('consultant123'),
-                        'role' => 'pole relation client',
-                    ]);
-
-                    PoleRelationClient::create([
-                        'prenom' => $np['prenom'],
-                        'user_id' => $user->id,
-                        'role' => 'pole relation client',
-                    ]);
                 }
             }
-            if (!empty($ignoredEmails)) {
-                return redirect()->route('pole_relation_clients.index')
-                    ->with('success', 'Importation réussie. Certains emails ont été ignorés.')
-                    ->with('ignoredEmails', $ignoredEmails);
+
+
+            // Construction du message de résultat
+            $message = "Importation terminée";
+            if ($importedCount > 0) {
+                $message .= ": $importedCount pôle relation clients importés";
+            }
+            if (count($ignoredEmails) > 0) {
+                $message .= "<br>" . count($ignoredEmails) . " doublons ignorés : " . implode(', ', $ignoredEmails);
             }
 
-            return redirect()->route('pole_relation_clients.index')
-                ->with('success', 'Importation réussie.')
-            ;
+            if (count($invalidRows) > 0) {
+                $message .= "<br>" . count($invalidRows) . ' ' . (count($invalidRows) === 1 ? 'erreur' : 'erreurs');
+            }
+
+            // Retour avec le statut approprié
+            $redirect = redirect()->route('pole_relation_clients.index');
+            if (count($ignoredEmails) > 0) {
+                $message = "<br>" . count($ignoredEmails) . " doublons ignorés";
+                return $redirect->with([
+                    'ignoredEmails' => $ignoredEmails,
+                    'ignoredMessage' => new HtmlString($message)
+                ]);
+            }
+
+            if ($importedCount > 0) {
+                return $redirect->with('success', new HtmlString($message));
+            } elseif (count($invalidRows) > 0) {
+                return $redirect->with('error', new HtmlString($message));
+            } else {
+                return $redirect->with('info', 'Aucun pôle relation client importé (fichier vide ou seulement des doublons)');
+            }
         } catch (\Exception $e) {
-            return redirect()->route('pole_relation_clients.index')->with('error', 'Erreur: ' . $e->getMessage());
+            return redirect()->route('pole_relation_clients.index')
+                ->with('error', 'Erreur lors de l\'import: ' . $e->getMessage());
         }
+    }
+
+    public function downloadPrcModel()
+    {
+        $filePath = public_path('models/prc/prc.xlsx');
+
+        if (!File::exists($filePath)) {
+            return redirect()->back()->with('error', 'Le fichier modèle est introuvable.');
+        }
+
+        $fileName = 'modele_import_prc.xlsx';
+
+        return Response::download($filePath, $fileName);
     }
 }

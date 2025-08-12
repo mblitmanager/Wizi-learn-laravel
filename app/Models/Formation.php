@@ -25,20 +25,6 @@ class Formation extends Model
         'duree',
     ];
 
-    public function formateurs()
-    {
-        return $this->belongsToMany(Formateur::class, 'formateur_formation');
-    }
-
-    public function formations()
-    {
-        return $this->belongsToMany(Formation::class, 'stagiaire_formations');
-    }
-
-    public function stagiaires()
-    {
-        return $this->belongsToMany(Stagiaire::class, 'stagiaire_formations');
-    }
 
     public function medias()
     {
@@ -53,6 +39,16 @@ class Formation extends Model
 
     public function catalogueFormation()
     {
-        return $this->hasOne(CatalogueFormation::class, 'formation_id');
+        return $this->hasMany(CatalogueFormation::class, 'formation_id');
+    }
+
+    public function tutoriels()
+    {
+        return $this->hasMany(Media::class)->where('type', 'tutoriel')->orderBy('ordre');
+    }
+
+    public function astuces()
+    {
+        return $this->hasMany(Media::class)->where('type', 'astuce')->orderBy('ordre');
     }
 }

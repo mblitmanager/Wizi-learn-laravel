@@ -1,163 +1,206 @@
 @extends('admin.layout')
 @section('content')
-    <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
-        <div class="breadcrumb-title pe-3"></div>
-        <div class="ps-3">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-0 p-0">
-                    <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
-                    </li>
-                    <li class="breadcrumb-item active" aria-current="page">Gestion Quiz</li>
-                </ol>
-            </nav>
-        </div>
-        <div class="ms-auto">
-            <div class="btn-group">
-                <button class="btn btn-sm text-white btn-info mx-2" data-bs-toggle="modal" data-bs-target="#importModal"><i
-                        class="lni lni-cloud-download"></i>importer quiz</button>
+    <div class="container-fluid">
+        <div class="shadow-lg border-0 px-2 py-2 mb-3">
+            <div class="page-breadcrumb d-none d-sm-flex align-items-center">
+                <div class="breadcrumb-title pe-3"></div>
+                <div class="ps-3">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0 p-0">
+                            <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
+                            </li>
+                            <li class="breadcrumb-item active text-uppercase fw-bold" aria-current="page">Gestion des Quiz
+                            </li>
+                        </ol>
+                    </nav>
+                </div>
+                <div class="ms-auto">
+                    <div class="btn-group">
+                        <a href="{{ route('download.quiz.model') }}" class="btn btn-sm btn-success mx-2">
+                            Télécharger le modèle de quiz
+                        </a>
+                        <button class="btn btn-sm text-white btn-info mx-2" data-bs-toggle="modal"
+                            data-bs-target="#importModal"><i class="lni lni-cloud-download"></i>importer quiz</button>
 
-                <a href="{{ route('quiz.create') }}" type="button" class="btn btn-sm btn-primary px-4"> <i
-                        class="fadeIn animated bx bx-plus"></i> Nouveau quiz</a>
+                        <a href="{{ route('quiz.create') }}" type="button" class="btn btn-sm btn-primary px-4"> <i
+                                class="fadeIn animated bx bx-plus"></i> Nouveau quiz</a>
+                        <button class="btn btn-sm btn-warning mx-2" data-bs-toggle="modal" data-bs-target="#exportModal">
+                            <i class="lni lni-download"></i> Exporter des Quiz
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
+        @if (session('success'))
+            <div class="alert alert-success border-0 bg-success alert-dismissible fade show">
+                <div class="text-white"> {{ session('success') }}</div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+        @if (session('error'))
+            <div class="alert alert-danger border-0 bg-danger alert-dismissible fade show">
+                <div class="text-white"> {{ session('error') }}</div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+        <div>
+            <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Importer stagiaires</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form action="{{ route('quiz.import') }}" method="POST" enctype="multipart/form-data">
+                                @csrf
 
-    @if (session('success'))
-        <div class="alert alert-success border-0 bg-success alert-dismissible fade show">
-            <div class="text-white"> {{ session('success') }}</div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
-    @if (session('error'))
-        <div class="alert alert-danger border-0 bg-danger alert-dismissible fade show">
-            <div class="text-white"> {{ session('error') }}</div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
-    <div>
-        <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">Importer stagiaires</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                <div class="mb-3">
+                                    <label for="file" class="form-label">Fichier Excel (.xlsx)</label>
+                                    <input type="file" name="file" id="file" class="form-control" required
+                                        accept=".xlsx,.xls">
+                                </div>
+
+                                <div class="progress mb-3 d-none" id="progressBarWrapper">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                                        style="width: 100%;" id="progressBar">
+                                        Importation en cours...
+                                    </div>
+                                </div>
+
+
+                                <button type="submit" class="btn btn-primary">Importer</button>
+                            </form>
+                        </div>
                     </div>
-                    <div class="modal-body">
-                        <form action="{{ route('quiz.import') }}" method="POST" enctype="multipart/form-data">
-                            @csrf
-
-                            <div class="mb-3">
-                                <label for="file" class="form-label">Fichier Excel (.xlsx)</label>
-                                <input type="file" name="file" id="file" class="form-control" required
-                                    accept=".xlsx,.xls">
-                            </div>
-
-                            <div class="progress mb-3 d-none" id="progressBarWrapper">
-                                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
-                                    style="width: 100%;" id="progressBar">
-                                    Importation en cours...
+                </div>
+            </div>
+        </div>
+        <div>
+            <div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="exportModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exportModalLabel">Exporter des Quiz</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="exportForm" method="GET">
+                                <div class="mb-3">
+                                    <label for="quizSelect" class="form-label">Sélectionnez les quiz à exporter</label>
+                                    <select id="quizSelect" name="quiz_ids[]" class="form-select" multiple required>
+                                        @foreach ($quiz as $row)
+                                            <option value="{{ $row->id }}">{{ $row->titre }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Exporter</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="table-responsive px-4 py-4">
+                            <div class="row mb-3">
+                                <div class="col-md-3">
+                                    <label for="formationFilter">Filtrer par formation</label>
+                                    <select id="formationFilter" class="form-select">
+                                        <option value="">Toutes les formations</option>
+                                        @foreach ($formations as $formation)
+                                            <option value="{{ $formation->titre }}">{{ $formation->titre }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="categorieFilter">Filtrer par catégorie</label>
+                                    <select id="categorieFilter" class="form-select">
+                                        <option value="">Toutes les catégories</option>
+                                        @foreach ($categories as $categorie)
+                                            <option value="{{ $categorie }}">{{ $categorie }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="niveauFilter">Filtrer par niveau</label>
+                                    <select id="niveauFilter" class="form-select">
+                                        <option value="">Tous les niveaux</option>
+                                        @foreach ($niveaux as $niveau)
+                                            <option value="{{ $niveau }}">{{ $niveau }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="statusFilter">Filtrer par status</label>
+                                    <select id="statusFilter" class="form-select">
+                                        <option value="">Tous les status</option>
+                                        @foreach ($status as $statut)
+                                            <option value="{{ $statut }}">{{ $statut }}</option>
+                                        @endforeach
+                                    </select>
                                 </div>
                             </div>
-
-
-                            <button type="submit" class="btn btn-primary">Importer</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="card">
-        <div class="card-body">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="table-responsive px-4 py-4">
-                        <table id="stagiairesTable" class="table table-bordered table-striped table-hover mb-0">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Titre</th>
-                                    <th>Description</th>
-                                    <th>Duree</th>
-                                    <th>Niveau</th>
-                                    <th>Action</th>
-                                </tr>
-                                <tr>
-                                    <th></th>
-                                    <th><input type="text" placeholder="Filtrer" class="form-control form-control-sm" />
-                                    </th>
-                                    <th><input type="text" placeholder="Filtrer" class="form-control form-control-sm" />
-                                    </th>
-                                    <th><input type="text" placeholder="Filtrer" class="form-control form-control-sm" />
-                                    </th>
-                                    <th><input type="text" placeholder="Filtrer" class="form-control form-control-sm" />
-                                    </th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($quiz as $row)
+                            <table id="stagiairesTable" class="table table-bordered table-striped table-hover mb-0">
+                                <thead>
                                     <tr>
-                                        <td>{{ $row->id }}</td>
-                                        <td>{{ $row->titre }}</td>
-                                        <td>{{ $row->description }}</td>
-                                        <td>{{ $row->duree }}</td>
-                                        <td>{{ $row->niveau }}</td>
-                                        <td>
-                                            <a href="{{ route('quiz.edit', $row->id) }}" class="btn btn-sm btn-success ">
-                                                Modifier
-                                            </a>
-                                            <a href="{{ route('quiz.show', $row->id) }}" class="btn btn-sm btn-secondary">
-                                                Afficher
-                                            </a>
-
-                                        </td>
+                                        <th>Titre</th>
+                                        <th style="display:none">Formation</th>
+                                        <th style="display:none">Catégorie</th>
+                                        <th>Niveau</th>
+                                        <th>Status</th>
+                                        <th>Durer</th>
+                                        <th>Action</th>
                                     </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                                    <tr>
+                                        <th><input type="text" placeholder="Filtrer"
+                                                class="form-control form-control-sm" /></th>
+                                        <th style="display:none"><input type="text" placeholder="Filtrer"
+                                                class="form-control form-control-sm" /></th>
+                                        <th style="display:none"><input type="text" placeholder="Filtrer"
+                                                class="form-control form-control-sm" /></th>
+                                        <th><input type="text" placeholder="Filtrer"
+                                                class="form-control form-control-sm" /></th>
+                                        <th><input type="text" placeholder="Filtrer"
+                                                class="form-control form-control-sm" /></th>
+                                        <th><input type="text" placeholder="Filtrer"
+                                                class="form-control form-control-sm" /></th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($quiz as $row)
+                                        <tr>
+                                            <td>{{ $row->titre }}</td>
+                                            <td style="display:none">{{ $row->formation->titre ?? '' }}</td>
+                                            <td style="display:none">{{ $row->formation->categorie ?? '' }}</td>
+                                            <td>{{ $row->niveau }}</td>
+                                            <td>{{ $row->status }}</td>
+                                            <td>{{ $row->duree }}</td>
+                                            <td class="text-center">
+                                                <a href="{{ route('quiz.edit', $row->id) }}"
+                                                    class="btn btn-sm btn-success ">
+                                                    Modifier
+                                                </a>
+                                                <a href="{{ route('quiz.show', $row->id) }}"
+                                                    class="btn btn-sm btn-info text-white">
+                                                    Afficher
+                                                </a>
+
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    @if (session('success'))
-        <script>
-            $(document).ready(function() {
-                Toastify({
-                    text: '{{ session('success') }}',
-                    duration: 3000,
-                    close: true,
-                    gravity: "top",
-                    position: "right",
-                    stopOnFocus: true,
-                    style: {
-                        background: "linear-gradient(to right, #00b09b, #96c93d)",
-                    },
-                    onClick: function() {}
-                }).showToast();
-            });
-        </script>
-    @endif
-
-    @if (session('error'))
-        <script>
-            $(document).ready(function() {
-                Toastify({
-                    text: '{{ session('error') }}',
-                    duration: 3000,
-                    close: true,
-                    gravity: "top",
-                    position: "right",
-                    stopOnFocus: true,
-                    style: {
-                        background: "linear-gradient(to right, #ff5f6d, #ffc371)",
-                    },
-                    onClick: function() {}
-                }).showToast();
-            });
-        </script>
-    @endif
 @endsection
 @section('scripts')
     <script>
@@ -183,6 +226,27 @@
                         });
                     });
                 }
+            });
+
+            // Filtre par formation
+            $('#formationFilter').on('change', function() {
+                var val = $(this).val();
+                table.column(1).search(val).draw();
+            });
+            // Filtre par catégorie
+            $('#categorieFilter').on('change', function() {
+                var val = $(this).val();
+                table.column(2).search(val).draw();
+            });
+            // Filtre par niveau
+            $('#niveauFilter').on('change', function() {
+                var val = $(this).val();
+                table.column(3).search(val).draw();
+            });
+            // Filtre par status (fix: colonne 4)
+            $('#statusFilter').on('change', function() {
+                var val = $(this).val();
+                table.column(4).search(val).draw();
             });
         });
     </script>

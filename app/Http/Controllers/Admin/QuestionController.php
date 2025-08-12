@@ -96,16 +96,12 @@ class QuestionController extends Controller
                     }
                 }
             }
-
-
         } catch (\Exception $exception) {
             // Gérer l'erreur
             return redirect()->back()->with('error', 'Erreur lors de la mise à jour de la question : ' . $exception->getMessage());
         }
         return redirect()->route('question.show', $question->id)->with('success', 'Question mise à jour avec succès.');
     }
-
-
 
     /**
      * Remove the specified resource from storage.

@@ -18,6 +18,7 @@ return new class extends Migration {
             $table->string('heure')->nullable();
             $table->string('score')->nullable();
             $table->boolean('deja_jouer')->default(false);
+            $table->softDeletes();
             $table->timestamps();
         });
     }

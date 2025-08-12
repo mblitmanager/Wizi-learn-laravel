@@ -16,13 +16,24 @@ class Media extends Model
     protected $fillable = [
         'url',
         'type',
+        'categorie',
         'titre',
         'description',
         'formation_id',
+        'duree',
+        'ordre',
+
     ];
 
     public function formation()
     {
         return $this->belongsTo(Formation::class);
+    }
+
+    public function stagiaires()
+    {
+        return $this->belongsToMany(Stagiaire::class)
+            ->withPivot('is_watched', 'watched_at')
+            ->withTimestamps();
     }
 }

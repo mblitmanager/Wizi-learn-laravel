@@ -14,6 +14,13 @@ use App\Models\Progression;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use App\Models\Stagiaire;
+use App\Models\Classement;
+use App\Models\CorrespondancePair;
+use App\Models\QuizParticipation;
+use App\Models\QuizParticipationAnswer;
+use Illuminate\Support\Facades\DB;
+use App\Models\QuizCategory;
+use App\Models\Formation;
 
 class QuizController extends Controller
 {
@@ -28,99 +35,101 @@ class QuizController extends Controller
     {
         try {
             // Récupérer les quizzes des formations ayant la catégorie spécifiée et qui ont des stagiaires
-            $quizzes = Quiz::with(['questions.reponses', 'formation'])
-                ->whereHas('formation', function($query) use ($category) {
-                    $query->where('categorie', $category)
-                          ->whereHas('stagiaires', function($query) {
-                              $query->where('role', 'stagiaire');
-                          });
-                })
+            $quizzes = Quiz::select('quizzes.*')
+                ->join('formations', 'formations.id', '=', 'quizzes.formation_id')
+                ->join('catalogue_formations', 'catalogue_formations.formation_id', '=', 'formations.id')
+                ->join('stagiaire_catalogue_formations', 'stagiaire_catalogue_formations.catalogue_formation_id', '=', 'catalogue_formations.id')
+                ->join('stagiaires', 'stagiaires.id', '=', 'stagiaire_catalogue_formations.stagiaire_id')
+                ->where('formations.categorie', $category)
+                ->where('stagiaires.role', 'stagiaire')
+                ->where('quizzes.status', 'actif')
+                ->with(['questions.reponses', 'formation'])
                 ->get();
 
             // Transformer les données pour correspondre au format TypeScript
-            $formattedQuizzes = $quizzes->map(function($quiz) {
+            $formattedQuizzes = $quizzes->map(function ($quiz) {
                 return [
-                    'id' => (string)$quiz->id,
+                    'id' => (string) $quiz->id,
                     'titre' => $quiz->titre,
                     'description' => $quiz->description,
                     'categorie' => $quiz->formation->categorie ?? 'Non catégorisé',
                     'categorieId' => $quiz->formation->categorie ?? 'non-categorise',
                     'niveau' => $quiz->niveau ?? 'débutant',
-                    'questions' => $quiz->questions->map(function($question) {
+                    'questions' => $quiz->questions->map(function ($question) {
                         $questionData = [
-                            'id' => (string)$question->id,
+                            'id' => (string) $question->id,
                             'text' => $question->text,
-                            'type' => $question->type ?? 'multiplechoice',
+                            'type' => $question->type ?? 'choix multiples',
                         ];
 
                         // Gestion spécifique selon le type de question
                         switch ($question->type) {
-                            case 'multiplechoice':
-                            case 'truefalse':
-                                $questionData['answers'] = $question->reponses->map(function($reponse) {
+                            case 'choix multiples':
+                            case 'vrai/faux':
+                                $questionData['answers'] = $question->reponses->map(function ($reponse) {
                                     return [
-                                        'id' => (string)$reponse->id,
+                                        'id' => (string) $reponse->id,
                                         'text' => $reponse->text,
-                                        'isCorrect' => (bool)$reponse->is_correct
+                                        'isCorrect' => (bool) $reponse->is_correct
                                     ];
                                 })->toArray();
                                 break;
 
-                            case 'ordering':
-                                $questionData['answers'] = $question->reponses->map(function($reponse) {
+                            case 'rearrangement':
+                                $questionData['answers'] = $question->reponses->map(function ($reponse) {
                                     return [
-                                        'id' => (string)$reponse->id,
+                                        'id' => (string) $reponse->id,
                                         'text' => $reponse->text,
-                                        'position' => (int)$reponse->position
+                                        'position' => (int) $reponse->position
                                     ];
                                 })->sortBy('position')->values()->toArray();
                                 break;
 
-                            case 'fillblank':
-                                $questionData['blanks'] = $question->reponses->map(function($reponse) {
+                            case 'remplir le champ vide':
+                                $questionData['blanks'] = $question->reponses->map(function ($reponse) {
                                     return [
-                                        'id' => (string)$reponse->id,
+                                        'id' => (string) $reponse->id,
                                         'text' => $reponse->text,
                                         'bankGroup' => $reponse->bank_group
                                     ];
                                 })->toArray();
                                 break;
 
-                            case 'wordbank':
-                                $questionData['wordbank'] = $question->reponses->map(function($reponse) {
+                            case 'banque de mots':
+                                $questionData['wordbank'] = $question->reponses->map(function ($reponse) {
                                     return [
-                                        'id' => (string)$reponse->id,
+                                        'id' => (string) $reponse->id,
                                         'text' => $reponse->text,
-                                        'isCorrect' => (bool)$reponse->is_correct,
+                                        'isCorrect' => (bool) $reponse->is_correct,
                                         'bankGroup' => $reponse->bank_group
                                     ];
                                 })->toArray();
                                 break;
 
-                            case 'flashcard':
+                            case 'carte flash':
                                 $questionData['flashcard'] = [
                                     'front' => $question->text,
                                     'back' => $question->flashcard_back
                                 ];
                                 break;
 
-                            case 'matching':
-                                $questionData['matching'] = $question->reponses->map(function($reponse) {
+                            case 'correspondance':
+                                $questionData['matching'] = $question->reponses->map(function ($reponse) {
                                     return [
-                                        'id' => (string)$reponse->id,
+                                        'id' => (string) $reponse->id,
                                         'text' => $reponse->text,
                                         'matchPair' => $reponse->match_pair
                                     ];
                                 })->toArray();
                                 break;
 
-                            case 'audioquestion':
-                                $questionData['audioUrl'] = $question->audio_url;
-                                $questionData['answers'] = $question->reponses->map(function($reponse) {
+                            case 'question audio':
+                                $questionData['audioUrl'] = $question->audio_url ?? $question->media_url ?? null;
+                                $questionData['answers'] = $question->reponses->map(function ($reponse) {
                                     return [
-                                        'id' => (string)$reponse->id,
+                                        'id' => (string) $reponse->id,
                                         'text' => $reponse->text,
-                                        'isCorrect' => (bool)$reponse->is_correct
+                                        'isCorrect' => (bool) $reponse->is_correct
                                     ];
                                 })->toArray();
                                 break;
@@ -128,7 +137,7 @@ class QuizController extends Controller
 
                         return $questionData;
                     })->toArray(),
-                    'points' => (int)($quiz->nb_points_total ?? 0)
+                    'points' => (int) ($quiz->nb_points_total ?? 0)
                 ];
             });
 
@@ -153,7 +162,7 @@ class QuizController extends Controller
             $user = Auth::user();
 
             // Récupérer le stagiaire associé à l'utilisateur
-            $stagiaire = Stagiaire::where('user_id', $user->id)->first();
+            $stagiaire = Stagiaire::where('user_id', $user->getKey())->first();
 
             if (!$stagiaire) {
                 return response()->json([
@@ -162,24 +171,27 @@ class QuizController extends Controller
             }
 
             // Récupérer les catégories uniques depuis les formations associées aux quizzes du stagiaire
-            $categories = Quiz::with('formation')
-                ->whereHas('formation.stagiaires', function($query) use ($stagiaire) {
-                    $query->where('stagiaires.id', $stagiaire->id);
-                })
-                ->select('formation_id')
+            $categories = Quiz::select('quizzes.*')
+                ->join('formations', 'formations.id', '=', 'quizzes.formation_id')
+                ->join('catalogue_formations', 'catalogue_formations.formation_id', '=', 'formations.id')
+                ->join('stagiaire_catalogue_formations', 'stagiaire_catalogue_formations.catalogue_formation_id', '=', 'catalogue_formations.id')
+                ->where('stagiaire_catalogue_formations.stagiaire_id', $stagiaire->id)
+                ->with(['formation'])
                 ->distinct()
                 ->get()
-                ->map(function($quiz) use ($stagiaire) {
+                ->map(function ($quiz) use ($stagiaire) {
                     return [
                         'id' => $quiz->formation->categorie ?? 'non-categorise',
                         'name' => $quiz->formation->categorie ?? 'Non catégorisé',
                         'color' => $this->getCategoryColor($quiz->formation->categorie ?? 'Non catégorisé'),
                         'icon' => $this->getCategoryIcon($quiz->formation->categorie ?? 'Non catégorisé'),
                         'description' => $this->getCategoryDescription($quiz->formation->categorie ?? 'Non catégorisé'),
-                        'quizCount' => Quiz::where('formation_id', $quiz->formation_id)
-                            ->whereHas('formation.stagiaires', function($query) use ($stagiaire) {
-                                $query->where('stagiaires.id', $stagiaire->id);
-                            })
+                        'quizCount' => Quiz::select('quizzes.*')
+                            ->join('formations', 'formations.id', '=', 'quizzes.formation_id')
+                            ->join('catalogue_formations', 'catalogue_formations.formation_id', '=', 'formations.id')
+                            ->join('stagiaire_catalogue_formations', 'stagiaire_catalogue_formations.catalogue_formation_id', '=', 'catalogue_formations.id')
+                            ->where('stagiaire_catalogue_formations.stagiaire_id', $stagiaire->id)
+                            ->where('quizzes.formation_id', $quiz->formation_id)
                             ->count(),
                         'colorClass' => 'category-' . strtolower(str_replace(' ', '-', $quiz->formation->categorie ?? 'non-categorise'))
                     ];
@@ -238,27 +250,80 @@ class QuizController extends Controller
     public function getQuizHistory()
     {
         $user = Auth::user();
+        $stagiaire = Stagiaire::where('user_id', $user->id)->first();
 
-        $history = Progression::with(['quiz' => function($query) {
-            $query->with(['questions.answers']);
-        }])
-        ->where('user_id', $user->id)
-        ->orderBy('created_at', 'desc')
-        ->get()
-        ->map(function($progression) {
-            return [
-                'id' => (string)$progression->id,
-                'quiz' => [
-                    'id' => (string)$progression->quiz->id,
-                    'title' => $progression->quiz->title,
-                    'category' => $progression->quiz->category,
-                    'level' => $progression->quiz->level
-                ],
-                'score' => $progression->score,
-                'completedAt' => $progression->created_at->toISOString(),
-                'timeSpent' => $progression->time_spent
-            ];
-        });
+        if (!$stagiaire) {
+            return response()->json([], 200);
+        }
+
+        $history = Progression::with([
+            'quiz.formation',
+            'quiz.questions.reponses',
+        ])
+            ->where('stagiaire_id', $stagiaire->id)
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($progression) {
+                $quiz = $progression->quiz;
+                $niveau = $quiz->niveau ?? 'débutant';
+                $totalQuestions = $progression->total_questions;
+                if ($niveau === 'débutant' && $totalQuestions > 5) {
+                    $totalQuestions = 5;
+                } elseif ($niveau === 'intermédiaire' && $totalQuestions > 10) {
+                    $totalQuestions = 10;
+                } elseif ($niveau === 'avancé' && $totalQuestions > 20) {
+                    $totalQuestions = 20;
+                }
+                // Construction d'un objet quiz complet pour le front
+                $quizData = [
+                    'id' => (int) $quiz->id,
+                    'titre' => $quiz->titre,
+                    'description' => $quiz->description,
+                    'duree' => $quiz->duree,
+                    'niveau' => $quiz->niveau,
+                    'status' => $quiz->status,
+                    'nb_points_total' => $quiz->nb_points_total,
+                    'formation' => $quiz->formation ? [
+                        'id' => $quiz->formation->id,
+                        'titre' => $quiz->formation->titre,
+                        'description' => $quiz->formation->description,
+                        'duree' => $quiz->formation->duree,
+                        'categorie' => $quiz->formation->categorie,
+                    ] : null,
+                    'questions' => $quiz->questions->map(function ($question) {
+                        return [
+                            'id' => (string) $question->id,
+                            'quizId' => $question->quiz_id,
+                            'text' => $question->text,
+                            'type' => $question->type,
+                            'explication' => $question->explication,
+                            'points' => $question->points,
+                            'astuce' => $question->astuce,
+                            'mediaUrl' => $question->media_url,
+                            'answers' => $question->reponses->map(function ($reponse) {
+                                return [
+                                    'id' => (string) $reponse->id,
+                                    'text' => $reponse->text,
+                                    'isCorrect' => $reponse->is_correct,
+                                    'position' => $reponse->position,
+                                    'matchPair' => $reponse->match_pair,
+                                    'bankGroup' => $reponse->bank_group,
+                                    'flashcardBack' => $reponse->flashcard_back,
+                                ];
+                            })->toArray(),
+                        ];
+                    })->toArray(),
+                ];
+                return [
+                    'id' => (string) $progression->id,
+                    'quiz' => $quizData,
+                    'score' => $progression->score,
+                    'completedAt' => $progression->created_at->toISOString(),
+                    'timeSpent' => $progression->time_spent,
+                    'totalQuestions' => $totalQuestions,
+                    'correctAnswers' => $progression->correct_answers
+                ];
+            });
 
         return response()->json($history);
     }
@@ -266,40 +331,114 @@ class QuizController extends Controller
     public function getQuizStats()
     {
         $user = Auth::user();
+        $stagiaire = Stagiaire::where('user_id', $user->id)->first();
 
+        if (!$stagiaire) {
+            return response()->json([
+                'totalQuizzes' => 0,
+                'averageScore' => 0,
+                'totalPoints' => 0,
+                'categoryStats' => [],
+                'levelProgress' => []
+            ]);
+        }
+
+        // Utiliser Classement pour le calcul du score moyen
+        $classements = Classement::where('stagiaire_id', $stagiaire->id)->get();
+        $totalPoints = $classements->sum('points');
+        $quizCount = $classements->count();
+        $averageScore = $quizCount > 0 ? round($totalPoints / $quizCount, 2) : 0;
         $stats = [
-            'totalQuizzes' => Progression::where('user_id', $user->id)->count(),
-            'averageScore' => Progression::where('user_id', $user->id)->avg('score'),
-            'totalPoints' => Progression::where('user_id', $user->id)->sum('score'),
-            'categoryStats' => $this->getCategoryStats($user->id),
-            'levelProgress' => $this->getLevelProgress($user->id)
+            'totalQuizzes' => $quizCount,
+            'averageScore' => $averageScore,
+            'totalPoints' => $totalPoints,
+            'categoryStats' => $this->getCategoryStatsForStagiaire($stagiaire->id),
+            'levelProgress' => $this->getLevelProgress($stagiaire->id)
         ];
 
         return response()->json($stats);
     }
 
-    private function getCategoryStats($userId)
+    public function getQuizStatistics($quizId)
     {
-        return Quiz::select('category', 'category_id')
-            ->withCount(['progressions' => function($query) use ($userId) {
-                $query->where('user_id', $userId);
-            }])
-            ->with(['progressions' => function($query) use ($userId) {
-                $query->where('user_id', $userId);
-            }])
-            ->get()
-            ->map(function($quiz) {
-                return [
-                    'category' => $quiz->category,
-                    'quizCount' => $quiz->progressions_count,
-                    'averageScore' => $quiz->progressions->avg('score')
-                ];
-            });
+        try {
+            // Récupérer l'utilisateur authentifié
+            $user = Auth::user();
+            $stagiaire = Stagiaire::where('user_id', $user->id)->first();
+
+            if (!$stagiaire) {
+                return response()->json([
+                    'error' => 'Aucun stagiaire associé à cet utilisateur',
+                ], 404);
+            }
+
+            // Récupérer les statistiques du quiz
+            $quiz = Quiz::findOrFail($quizId);
+            $progressions = Progression::where('quiz_id', $quizId)
+                ->where('stagiaire_id', $stagiaire->id)
+                ->get();
+
+            $totalAttempts = $progressions->count();
+            $averageScore = $totalAttempts > 0 ? $progressions->avg('score') : 0;
+            $bestScore = $totalAttempts > 0 ? $progressions->max('score') : 0;
+            $lastAttempt = $totalAttempts > 0 ? $progressions->last() : null;
+
+            $statistics = [
+                'total_attempts' => $totalAttempts,
+                'average_score' => round($averageScore, 2),
+                'best_score' => $bestScore,
+                'last_attempt' => $lastAttempt ? [
+                    'score' => $lastAttempt->score,
+                    'date' => $lastAttempt->created_at->format('Y-m-d H:i:s'),
+                    'time_spent' => $lastAttempt->time_spent
+                ] : null,
+                'quiz' => [
+                    'id' => $quiz->id,
+                    'title' => $quiz->titre,
+                    'total_questions' => $quiz->questions->count(),
+                    'total_points' => $quiz->nb_points_total
+                ]
+            ];
+
+            return response()->json($statistics);
+        } catch (\Exception $e) {
+            Log::error('Erreur dans getQuizStatistics', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'error' => 'Une erreur est survenue lors de la récupération des statistiques du quiz',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
-    private function getLevelProgress($userId)
+    private function getCategoryStatsForStagiaire($stagiaireId)
     {
-        $progressions = Progression::where('user_id', $userId)
+        // Récupérer tous les classements du stagiaire avec quiz et formation
+        $classements = Classement::where('stagiaire_id', $stagiaireId)
+            ->with('quiz.formation')
+            ->get();
+
+        // Grouper les classements par catégorie de formation
+        $categoryStats = $classements->groupBy(function ($classement) {
+            return $classement->quiz->formation->categorie ?? 'Non catégorisé';
+        })->map(function ($group) {
+            return [
+                'category' => $group->first()->quiz->formation->categorie ?? 'Non catégorisé',
+                'quizCount' => $group->count(),
+                'averageScore' => $group->avg('points')
+            ];
+        })->values();
+
+        return $categoryStats;
+    }
+
+    private function getLevelProgress($stagiaireId)
+    {
+        // Utiliser Classement pour les stats par niveau
+        $classements = Classement::where('stagiaire_id', $stagiaireId)
             ->with('quiz')
             ->get();
 
@@ -307,13 +446,13 @@ class QuizController extends Controller
         $levelStats = [];
 
         foreach ($levels as $level) {
-            $levelQuizzes = $progressions->filter(function($progression) use ($level) {
-                return $progression->quiz->level === $level;
+            $levelClassements = $classements->filter(function ($classement) use ($level) {
+                return $classement->quiz && $classement->quiz->niveau === $level;
             });
 
             $levelStats[$level] = [
-                'completed' => $levelQuizzes->count(),
-                'averageScore' => $levelQuizzes->avg('score')
+                'completed' => $levelClassements->count(),
+                'averageScore' => $levelClassements->avg('points')
             ];
         }
 
@@ -327,86 +466,86 @@ class QuizController extends Controller
                 ->findOrFail($id);
 
             return response()->json([
-                'id' => (string)$quiz->id,
+                'id' => (string) $quiz->id,
                 'titre' => $quiz->titre,
                 'description' => $quiz->description,
                 'categorie' => $quiz->formation->categorie ?? 'Non catégorisé',
                 'categorieId' => $quiz->formation->categorie ?? 'non-categorise',
                 'niveau' => $quiz->niveau ?? 'débutant',
-                'questions' => $quiz->questions->map(function($question) {
+                'questions' => $quiz->questions->map(function ($question) {
                     $questionData = [
-                        'id' => (string)$question->id,
+                        'id' => (string) $question->id,
                         'text' => $question->text,
-                        'type' => $question->type ?? 'multiplechoice',
+                        'type' => $question->type ?? 'choix multiples',
                     ];
 
                     // Par défaut, toutes les questions ont des réponses
-                    $questionData['answers'] = $question->reponses->map(function($reponse) {
+                    $questionData['answers'] = $question->reponses->map(function ($reponse) {
                         return [
-                            'id' => (string)$reponse->id,
+                            'id' => (string) $reponse->id,
                             'text' => $reponse->text,
-                            'isCorrect' => (bool)$reponse->is_correct
+                            'isCorrect' => (bool) $reponse->is_correct
                         ];
                     })->toArray();
 
                     // Ajout des propriétés spécifiques selon le type
                     switch ($question->type) {
-                        case 'ordering':
-                            $questionData['answers'] = $question->reponses->map(function($reponse) {
+                        case 'rearrangement':
+                            $questionData['answers'] = $question->reponses->map(function ($reponse) {
                                 return [
-                                    'id' => (string)$reponse->id,
+                                    'id' => (string) $reponse->id,
                                     'text' => $reponse->text,
-                                    'position' => (int)$reponse->position
+                                    'position' => (int) $reponse->position
                                 ];
                             })->sortBy('position')->values()->toArray();
                             break;
 
-                        case 'fillblank':
-                            $questionData['blanks'] = $question->reponses->map(function($reponse) {
+                        case 'remplir le champ vide':
+                            $questionData['blanks'] = $question->reponses->map(function ($reponse) {
                                 return [
-                                    'id' => (string)$reponse->id,
+                                    'id' => (string) $reponse->id,
                                     'text' => $reponse->text,
                                     'bankGroup' => $reponse->bank_group
                                 ];
                             })->toArray();
                             break;
 
-                        case 'wordbank':
-                            $questionData['wordbank'] = $question->reponses->map(function($reponse) {
+                        case 'banque de mots':
+                            $questionData['wordbank'] = $question->reponses->map(function ($reponse) {
                                 return [
-                                    'id' => (string)$reponse->id,
+                                    'id' => (string) $reponse->id,
                                     'text' => $reponse->text,
-                                    'isCorrect' => (bool)$reponse->is_correct,
+                                    'isCorrect' => (bool) $reponse->is_correct,
                                     'bankGroup' => $reponse->bank_group
                                 ];
                             })->toArray();
                             break;
 
-                        case 'flashcard':
+                        case 'carte flash':
                             $questionData['flashcard'] = [
                                 'front' => $question->text,
                                 'back' => $question->flashcard_back
                             ];
                             break;
 
-                        case 'matching':
-                            $questionData['matching'] = $question->reponses->map(function($reponse) {
+                        case 'correspondance':
+                            $questionData['matching'] = $question->reponses->map(function ($reponse) {
                                 return [
-                                    'id' => (string)$reponse->id,
+                                    'id' => (string) $reponse->id,
                                     'text' => $reponse->text,
                                     'matchPair' => $reponse->match_pair
                                 ];
                             })->toArray();
                             break;
 
-                        case 'audioquestion':
-                            $questionData['audioUrl'] = $question->audio_url;
+                        case 'question audio':
+                            $questionData['audioUrl'] = $question->audio_url ?? $question->media_url ?? null;
                             break;
                     }
 
                     return $questionData;
                 })->toArray(),
-                'points' => (int)($quiz->nb_points_total ?? 0)
+                'points' => (int) ($quiz->nb_points_total ?? 0)
             ]);
         } catch (\Exception $e) {
             Log::error('Erreur dans getQuizById', [
@@ -421,6 +560,151 @@ class QuizController extends Controller
         }
     }
 
+    private function isAnswerCorrect($question, $selectedAnswers)
+    {
+        // Fonction pour normaliser et filtrer les valeurs
+        $normalize = function ($value) {
+            if (is_array($value)) {
+                return array_filter($value, fn($v) => $v !== null && $v !== '' && $v !== []);
+            }
+            return $value !== null && $value !== '' ? $value : null;
+        };
+
+        // Nettoyer les réponses sélectionnées
+        $cleanedSelectedAnswers = $normalize($selectedAnswers);
+
+        // Récupérer les bonnes réponses une seule fois pour les types qui l'utilisent
+        $correctAnswers = $question->reponses
+            ->where('is_correct', true)
+            ->pluck('text')
+            ->toArray();
+
+        switch ($question->type) {
+            case 'correspondance':
+                $reponsesMap = $question->reponses->pluck('text', 'id')->toArray();
+                $selectedPairs = [];
+
+                foreach ($selectedAnswers as $leftId => $rightText) {
+                    if (isset($reponsesMap[$leftId]) && !empty($rightText)) {
+                        $selectedPairs[$reponsesMap[$leftId]] = $rightText;
+                    }
+                }
+
+                $correctPairs = CorrespondancePair::where('question_id', $question->id)
+                    ->whereIn('left_text', $question->reponses->pluck('text')->toArray())
+                    ->get()
+                    ->mapWithKeys(fn($pair) => [$pair->left_text => $pair->right_text])
+                    ->toArray();
+
+                $matchPairs = CorrespondancePair::where('question_id', $question->id)
+                    ->whereIn('left_text', $question->reponses->pluck('text')->toArray())
+                    ->get()
+                    ->map(fn($pair) => ['left' => $pair->left_text, 'right' => $pair->right_text]);
+
+                return [
+                    'selectedAnswers' => $selectedPairs,
+                    'correctAnswers' => $correctPairs,
+                    'isCorrect' => $selectedPairs == $correctPairs,
+                    'match_pair' => $matchPairs
+                ];
+
+            case 'carte flash':
+            case 'question audio':
+                $selectedText = is_array($cleanedSelectedAnswers)
+                    ? ($cleanedSelectedAnswers['text'] ?? (count($cleanedSelectedAnswers) > 0 ? $cleanedSelectedAnswers[0] : null))
+                    : (is_object($cleanedSelectedAnswers) ? $cleanedSelectedAnswers->text : $cleanedSelectedAnswers);
+
+                return [
+                    'selectedAnswers' => $selectedText,
+                    'correctAnswers' => $correctAnswers,
+                    'isCorrect' => !empty($selectedText) && in_array($selectedText, $correctAnswers)
+                ];
+
+            case 'remplir le champ vide':
+                $correctBlanks = [];
+                foreach ($question->reponses as $reponse) {
+                    if ($reponse->bank_group && $reponse->is_correct) {
+                        $correctBlanks[$reponse->bank_group] = $normalize($reponse->text);
+                    }
+                }
+
+                $details = [
+                    'selectedAnswers' => $cleanedSelectedAnswers,
+                    'correctAnswers' => $correctBlanks,
+                    'isCorrect' => false
+                ];
+
+                if (is_array($cleanedSelectedAnswers)) {
+                    // Cas avec des bank_groups
+                    if (array_keys($cleanedSelectedAnswers) !== range(0, count($cleanedSelectedAnswers) - 1)) {
+                        $allCorrect = true;
+                        foreach ($correctBlanks as $blankId => $correctText) {
+                            $userText = $normalize($cleanedSelectedAnswers[$blankId] ?? null);
+                            if ($userText !== $correctText) {
+                                $allCorrect = false;
+                                break;
+                            }
+                        }
+                        $details['isCorrect'] = $allCorrect &&
+                            count(array_intersect_key($cleanedSelectedAnswers, $correctBlanks)) === count($correctBlanks);
+                    }
+                    // Cas tableau simple
+                    else {
+                        $correctTexts = array_map($normalize, array_values($correctBlanks));
+                        $userTexts = array_map($normalize, array_values($cleanedSelectedAnswers));
+                        $details['isCorrect'] = $userTexts === $correctTexts;
+                        $details['correctAnswers'] = $correctTexts;
+                    }
+                }
+                return $details;
+
+            case 'choix multiples':
+            case 'banque de mots':
+            case 'vrai/faux':
+                $selected = is_array($cleanedSelectedAnswers)
+                    ? array_values($cleanedSelectedAnswers)
+                    : [$cleanedSelectedAnswers];
+
+                return [
+                    'selectedAnswers' => $selected,
+                    'correctAnswers' => $correctAnswers,
+                    'isCorrect' => empty(array_diff($selected, $correctAnswers)) &&
+                        empty(array_diff($correctAnswers, $selected))
+                ];
+
+            case 'rearrangement':
+                $correctOrder = $question->reponses
+                    ->where('is_correct', true)
+                    ->sortBy('position')
+                    ->pluck('text')
+                    ->values()
+                    ->toArray();
+
+                $userOrder = is_array($cleanedSelectedAnswers) ? array_values($cleanedSelectedAnswers) : [];
+                return [
+                    'selectedAnswers' => $userOrder,
+                    'correctAnswers' => $correctOrder,
+                    'isCorrect' => $userOrder === $correctOrder
+                ];
+
+            default:
+                // Comparaison standard
+                if (is_array($cleanedSelectedAnswers)) {
+                    return [
+                        'selectedAnswers' => $cleanedSelectedAnswers,
+                        'correctAnswers' => $correctAnswers,
+                        'isCorrect' => empty(array_diff($cleanedSelectedAnswers, $correctAnswers)) &&
+                            empty(array_diff($correctAnswers, $cleanedSelectedAnswers))
+                    ];
+                }
+                return [
+                    'selectedAnswers' => $cleanedSelectedAnswers,
+                    'correctAnswers' => $correctAnswers,
+                    'isCorrect' => in_array($cleanedSelectedAnswers, $correctAnswers)
+                ];
+        }
+    }
+
     public function submitQuizResult(Request $request, $id)
     {
         $user = null;
@@ -428,12 +712,36 @@ class QuizController extends Controller
             $user = Auth::user();
             $quiz = Quiz::with(['formation', 'questions.reponses'])->findOrFail($id);
 
-            // Log de débogage détaillé
+            // Log complet pour le débogage
+            Log::info('Début du traitement du quiz', [
+                'quiz_id' => $quiz->id,
+                'questions_in_quiz' => $quiz->questions->pluck('id'),
+                'questions_in_request' => array_keys($request->answers)
+            ]);
+
+            // Validation
+            $validated = $request->validate([
+                'answers' => 'required|array',
+                'timeSpent' => 'required|integer|min:0'
+            ]);
+
+            // Log de débogage détaillé - Payload complet
             Log::info('Requête de soumission de quiz', [
                 'request_data' => $request->all(),
                 'request_answers' => $request->answers,
                 'quiz_id' => $id,
-                'user_id' => $user->id
+                'user_id' => $user->getKey()
+            ]);
+
+            // Log de tous les types de questions du quiz
+            Log::info('Types de questions du quiz', [
+                'questions' => $quiz->questions->map(function ($q) {
+                    return [
+                        'id' => $q->id,
+                        'text' => $q->text,
+                        'type' => $q->type
+                    ];
+                })
             ]);
 
             // Validation des données
@@ -443,47 +751,61 @@ class QuizController extends Controller
             ]);
 
             // Récupérer le stagiaire associé à l'utilisateur
-            $stagiaire = Stagiaire::where('user_id', $user->id)->firstOrFail();
+            $stagiaire = Stagiaire::where('user_id', $user->getKey())->firstOrFail();
+
+            // Récupérer ou créer la participation en cours
+            $participation = QuizParticipation::firstOrCreate(
+                [
+                    'user_id' => $user->getKey(),
+                    'quiz_id' => $quiz->id,
+                    'status' => 'in_progress'
+                ],
+                [
+                    'started_at' => now(),
+                    'score' => 0,
+                    'correct_answers' => 0,
+                    'time_spent' => 0
+                ]
+            );
 
             // Préparer les détails des questions et réponses
-            $questionsDetails = $quiz->questions->map(function($question) use ($request) {
-                // S'assurer que les réponses sont dans un tableau
-                $selectedAnswerIds = is_array($request->answers[$question->id] ?? null)
-                    ? $request->answers[$question->id]
-                    : [];
+            $questionsDetails = $quiz->questions
+                ->filter(function ($question) use ($request) {
+                    return isset($request->answers[$question->id]) && $request->answers[$question->id] !== null;
+                })
+                ->map(function ($question) use ($request) {
 
-                // Log de débogage pour chaque question
-                Log::info('Traitement de la question', [
-                    'question_id' => $question->id,
-                    'selected_answers' => $selectedAnswerIds,
-                    'request_answers' => $request->answers,
-                    'question_data' => $question->toArray()
-                ]);
+                    $selectedAnswers = $request->answers[$question->id] ?? null;
+                    $isCorrectResult = $this->isAnswerCorrect($question, $selectedAnswers);
 
-                $correctAnswerIds = $question->reponses->where('is_correct', true)->pluck('id')->toArray();
+                    return [
+                        'id' => $question->id,
+                        'text' => $question->text,
+                        'type' => $question->type,
+                        'selectedAnswers' => $isCorrectResult['selectedAnswers'] ?? [],
+                        'correctAnswers' => $isCorrectResult['correctAnswers'] ?? [],
+                        'answers' => $question->reponses->map(function ($reponse) {
+                            return [
+                                'id' => $reponse->id,
+                                'text' => $reponse->text,
+                                'isCorrect' => $reponse->is_correct
+                            ];
+                        })->toArray(),
+                        'isCorrect' => $isCorrectResult['isCorrect'] ?? false,
+                        'meta' => $question->type === 'correspondance'
+                            ? [
+                                'selectedAnswers' => $isCorrectResult['selectedAnswers'],
+                                'correctAnswers' => $isCorrectResult['correctAnswers'],
+                                'isCorrect' => $isCorrectResult['isCorrect'],
+                                'match_pair' => $isCorrectResult['match_pair']
+                            ]
+                            : null
+                    ];
+                });
 
-                return [
-                    'id' => $question->id,
-                    'text' => $question->text,
-                    'type' => $question->type,
-                    'selectedAnswers' => $selectedAnswerIds,
-                    'correctAnswers' => $correctAnswerIds,
-                    'answers' => $question->reponses->map(function($reponse) {
-                        return [
-                            'id' => $reponse->id,
-                            'text' => $reponse->text,
-                            'isCorrect' => $reponse->is_correct
-                        ];
-                    })->toArray(),
-                    'isCorrect' => empty(array_diff($selectedAnswerIds, $correctAnswerIds)) &&
-                                 empty(array_diff($correctAnswerIds, $selectedAnswerIds))
-                ];
-            });
-
-            // Calculer le score et le nombre de réponses correctes
             $correctAnswers = $questionsDetails->where('isCorrect', true)->count();
             $totalQuestions = $questionsDetails->count();
-            $score = $totalQuestions > 0 ? round(($correctAnswers / $totalQuestions) * 100) : 0;
+            $score = $correctAnswers * 2;
 
             $result = Progression::create([
                 'stagiaire_id' => $stagiaire->id,
@@ -496,6 +818,101 @@ class QuizController extends Controller
                 'completion_time' => now()
             ]);
 
+            // TRAITEMENT DES ANSWERS
+            foreach ($request->answers as $questionId => $answerValue) {
+                Log::info('Traitement de la réponse utilisateur', [
+                    'question_id' => $questionId,
+                    'answer_value' => $answerValue
+                ]);
+
+                $question = $quiz->questions->firstWhere('id', $questionId);
+
+                if (!$question) {
+                    Log::warning('Question non trouvée dans le quiz', [
+                        'question_id' => $questionId
+                    ]);
+                    continue;
+                }
+
+                Log::info('Type de la question à traiter', [
+                    'question_id' => $questionId,
+                    'question_type' => $question->type
+                ]);
+
+                try {
+                    if ($question->type === 'correspondance') {
+                        if (!is_array($answerValue) && !is_object($answerValue)) {
+                            Log::warning('Réponse de correspondance invalide (non itérable)', [
+                                'question_id' => $questionId,
+                                'answer_value' => $answerValue
+                            ]);
+                            continue;
+                        }
+
+                        $answerValue = (array) $answerValue;
+                        if (empty($answerValue)) {
+                            Log::warning('Réponse de correspondance vide après cast', [
+                                'question_id' => $questionId,
+                                'answer_value' => $answerValue
+                            ]);
+                            continue;
+                        }
+
+                        $answerPairs = [];
+                        foreach ($answerValue as $leftId => $rightText) {
+                            if ($rightText === null || $rightText === '') {
+                                continue;
+                            }
+
+                            $leftAnswer = $question->reponses->firstWhere('id', $leftId);
+                            $leftText = $leftAnswer ? $leftAnswer->text : 'unknown';
+                            $answerPairs[] = ['left' => $leftText, 'right' => $rightText];
+                        }
+
+                        QuizParticipationAnswer::create([
+                            'participation_id' => $participation->id,
+                            'question_id' => $questionId,
+                            'answer_ids' => array_keys($answerValue),
+                            'answer_texts' => json_encode($answerPairs)
+                        ]);
+                    } else {
+                        $answerToStore = is_array($answerValue) || is_object($answerValue)
+                            ? json_encode((array) $answerValue)
+                            : $answerValue;
+
+                        QuizParticipationAnswer::create([
+                            'participation_id' => $participation->id,
+                            'question_id' => $questionId,
+                            'answer_texts' => $answerToStore
+                        ]);
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Erreur lors du traitement de la réponse', [
+                        'question_id' => $questionId,
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString(),
+                        'answer_value' => $answerValue
+                    ]);
+                    continue;
+                }
+            }
+
+            // Marquer la participation comme terminée
+            $participation->update([
+                'status' => 'completed',
+                'score' => $score,
+                'correct_answers' => $correctAnswers,
+                'time_spent' => $request->timeSpent,
+                'completed_at' => now(),
+            ]);
+
+            // Mettre à jour le classement
+            $this->updateClassement($quiz->id, $stagiaire->id, $score);
+
+            // Vérifier les achievements après soumission du quiz
+            $achievementService = app(\App\Services\StagiaireAchievementService::class);
+            $newAchievements = $achievementService->checkAchievements($stagiaire, $quiz->id);
+
             return response()->json([
                 'id' => $result->id,
                 'quizId' => $result->quiz_id,
@@ -506,9 +923,9 @@ class QuizController extends Controller
                 'totalQuestions' => $result->total_questions,
                 'completedAt' => $result->completion_time->toISOString(),
                 'timeSpent' => $result->time_spent,
-                'questions' => $questionsDetails
-            ]);
-
+                'questions' => $questionsDetails->values()->all(),
+                'newAchievements' => $newAchievements
+            ])->setStatusCode(201, 'Résultat du quiz soumis avec succès');
         } catch (\Exception $e) {
             Log::error('Erreur dans submitQuizResult', [
                 'error' => $e->getMessage(),
@@ -527,6 +944,53 @@ class QuizController extends Controller
         }
     }
 
+
+
+    private function updateClassement($quizId, $stagiaireId, $points)
+    {
+        try {
+            $classement = Classement::where('quiz_id', $quizId)
+                ->where('stagiaire_id', $stagiaireId)
+                ->first();
+
+            if ($classement) {
+                if ($points > $classement->points) {
+                    $classement->update(['points' => $points]);
+                }
+            } else {
+                $classement = Classement::create([
+                    'quiz_id' => $quizId,
+                    'stagiaire_id' => $stagiaireId,
+                    'points' => $points
+                ]);
+            }
+
+            $this->updateRanks($quizId);
+            return $classement;
+        } catch (\Exception $e) {
+            Log::error('Erreur dans updateClassement', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw $e;
+        }
+    }
+
+
+    private function updateRanks($quizId)
+    {
+        // Récupérer tous les classements pour ce quiz, triés par points décroissants
+        $classements = Classement::where('quiz_id', $quizId)
+            ->orderBy('points', 'desc')
+            ->get();
+
+        // Mettre à jour les rangs
+        $rank = 1;
+        foreach ($classements as $classement) {
+            $classement->update(['rang' => $rank++]);
+        }
+    }
+
     public function getStagiaireQuizzes()
     {
         try {
@@ -534,7 +998,7 @@ class QuizController extends Controller
             $user = Auth::user();
 
             // Récupérer le stagiaire associé à l'utilisateur
-            $stagiaire = Stagiaire::where('user_id', $user->id)->first();
+            $stagiaire = Stagiaire::where('user_id', $user->getKey())->first();
 
             if (!$stagiaire) {
                 return response()->json([
@@ -543,34 +1007,35 @@ class QuizController extends Controller
             }
 
             // Récupérer les quizzes associés aux formations du stagiaire
-            $quizzes = Quiz::with(['formation', 'questions'])
-                ->whereHas('formation.stagiaires', function($query) use ($stagiaire) {
-                    $query->where('stagiaires.id', $stagiaire->id);
-                })
+            $quizzes = Quiz::select('quizzes.*')
+                ->join('formations', 'quizzes.formation_id', '=', 'formations.id')
+                ->join('stagiaire_formations', 'formations.id', '=', 'stagiaire_formations.formation_id')
+                ->where('stagiaire_formations.stagiaire_id', $stagiaire->id)
+                ->with(['formation', 'questions.reponses'])
                 ->get()
-                ->map(function($quiz) {
+                ->map(function ($quiz) {
                     return [
-                        'id' => (string)$quiz->id,
+                        'id' => (string) $quiz->id,
                         'titre' => $quiz->titre,
                         'description' => $quiz->description,
                         'categorie' => $quiz->formation->categorie ?? 'Non catégorisé',
                         'categorieId' => $quiz->formation->categorie ?? 'non-categorise',
                         'niveau' => $quiz->niveau ?? 'débutant',
-                        'questions' => $quiz->questions->map(function($question) {
+                        'questions' => $quiz->questions->map(function ($question) {
                             return [
-                                'id' => (string)$question->id,
+                                'id' => (string) $question->id,
                                 'text' => $question->text,
                                 'type' => $question->type ?? 'multiplechoice',
-                                'answers' => $question->reponses->map(function($reponse) {
+                                'answers' => $question->reponses->map(function ($reponse) {
                                     return [
-                                        'id' => (string)$reponse->id,
+                                        'id' => (string) $reponse->id,
                                         'text' => $reponse->text,
-                                        'isCorrect' => (bool)$reponse->is_correct
+                                        'isCorrect' => (bool) $reponse->is_correct
                                     ];
                                 })->toArray()
                             ];
                         })->toArray(),
-                        'points' => (int)($quiz->nb_points_total ?? 0)
+                        'points' => (int) ($quiz->nb_points_total ?? 0)
                     ];
                 });
 
@@ -583,6 +1048,683 @@ class QuizController extends Controller
 
             return response()->json([
                 'error' => 'Une erreur est survenue lors de la récupération des quizzes',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getClassement($quizId)
+    {
+        try {
+            $classement = Classement::with(['stagiaire.user', 'quiz'])
+                ->where('quiz_id', $quizId)
+                ->orderBy('rang')
+                ->get()
+                ->map(function ($item) {
+                    return [
+                        'id' => (string) $item->id,
+                        'rang' => $item->rang,
+                        'points' => $item->points,
+                        'stagiaire' => [
+                            'id' => (string) $item->stagiaire->id,
+                            'prenom' => $item->stagiaire->prenom,
+                            'image' => $item->stagiaire->user->image ?? null
+                        ],
+                        'quiz' => [
+                            'id' => (string) $item->quiz->id,
+                            'titre' => $item->quiz->titre
+                        ]
+                    ];
+                });
+
+            return response()->json($classement);
+        } catch (\Exception $e) {
+            Log::error('Erreur dans getClassement', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'error' => 'Une erreur est survenue lors de la récupération du classement',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getGlobalClassement()
+    {
+        try {
+            // Récupérer tous les classements avec leurs relations
+            $classements = Classement::with(['stagiaire.user', 'quiz'])
+                ->get()
+                ->groupBy('stagiaire_id')
+                ->map(function ($group) {
+                    $totalPoints = $group->sum('points');
+                    $quizCount = $group->count();
+                    $averageScore = $quizCount > 0 ? round($totalPoints / $quizCount, 2) : 0;
+                    return [
+                        'stagiaire' => [
+                            'id' => (string) $group->first()->stagiaire->id,
+                            'prenom' => $group->first()->stagiaire->prenom,
+                            'image' => $group->first()->stagiaire->user->image ?? null
+                        ],
+                        'totalPoints' => $totalPoints,
+                        'quizCount' => $quizCount,
+                        'averageScore' => $averageScore
+                    ];
+                })
+                ->sortByDesc('totalPoints')
+                ->values()
+                ->map(function ($item, $index) {
+                    return [
+                        ...$item,
+                        'rang' => $index + 1
+                    ];
+                });
+
+            return response()->json($classements);
+        } catch (\Exception $e) {
+            Log::error('Erreur dans getGlobalClassement', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'error' => 'Une erreur est survenue lors de la récupération du classement global',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function startParticipation($quizId, Request $request = null)
+    {
+        try {
+            // Vérifier si le quiz existe
+            $quiz = Quiz::find($quizId);
+            if (!$quiz) {
+                return response()->json(['message' => 'Quiz non trouvé'], 404);
+            }
+
+            // Vérifier si l'utilisateur a déjà une participation en cours
+            $existingParticipation = QuizParticipation::where('user_id', auth()->user()->getKey())
+                ->where('quiz_id', $quizId)
+                ->where('status', 'in_progress')
+                ->first();
+
+            if ($existingParticipation) {
+                return response()->json([
+                    'message' => 'Participation en cours trouvée',
+                    'participation' => $existingParticipation
+                ], 200);
+            }
+
+            // Créer une nouvelle participation
+            $participation = QuizParticipation::create([
+                'user_id' => auth()->user()->getKey(),
+                'quiz_id' => $quizId,
+                'status' => 'in_progress',
+                'started_at' => now(),
+                'score' => 0,
+                'correct_answers' => 0,
+                'time_spent' => 0
+            ]);
+
+            return response()->json([
+                'message' => 'Nouvelle participation créée',
+                'participation' => $participation
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Erreur lors de la création de la participation',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getCurrentParticipation($quizId)
+    {
+        try {
+            $participation = QuizParticipation::where('user_id', auth()->user()->getKey())
+                ->where('quiz_id', $quizId)
+                ->where('status', 'in_progress')
+                ->first();
+
+            if (!$participation) {
+                return response()->json([
+                    'message' => 'Aucune participation en cours trouvée'
+                ], 404);
+            }
+
+            return response()->json([
+                'participation' => $participation
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Erreur lors de la récupération de la participation',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function completeParticipation(Request $request, $quizId)
+    {
+        try {
+            $validated = $request->validate([
+                'score' => 'required|integer|min:0',
+                'correct_answers' => 'required|integer|min:0',
+                'time_spent' => 'required|integer|min:0'
+            ]);
+
+            $participation = QuizParticipation::where('user_id', auth()->user()->getKey())
+                ->where('quiz_id', $quizId)
+                ->where('status', 'in_progress')
+                ->firstOrFail();
+
+            $participation->update([
+                'status' => 'completed',
+                'score' => $validated['score'],
+                'correct_answers' => $validated['correct_answers'],
+                'time_spent' => $validated['time_spent'],
+                'completed_at' => now()
+            ]);
+
+            return response()->json([
+                'message' => 'Participation terminée avec succès',
+                'participation' => $participation
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Erreur lors de la mise à jour de la participation',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getGlobalRankings()
+    {
+        try {
+            $rankings = QuizParticipation::where('status', 'completed')
+                ->select('user_id', DB::raw('SUM(score) as total_score'))
+                ->groupBy('user_id')
+                ->orderBy('total_score', 'desc')
+                ->with('user:id,name')
+                ->take(10)
+                ->get();
+
+            return response()->json([
+                'rankings' => $rankings
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Erreur lors de la récupération des classements',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getQuizRankings($quizId)
+    {
+        try {
+            $rankings = QuizParticipation::where('quiz_id', $quizId)
+                ->where('status', 'completed')
+                ->select('user_id', 'score', 'correct_answers', 'time_spent')
+                ->orderBy('score', 'desc')
+                ->orderBy('time_spent', 'asc')
+                ->with('user:id,name')
+                ->take(10)
+                ->get();
+
+            return response()->json([
+                'rankings' => $rankings
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Erreur lors de la récupération des classements du quiz',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // API pour consulter le résumé d'une participation
+    public function getParticipationResume($participationId)
+    {
+        $participation = QuizParticipation::with(['quiz.questions.reponses'])->findOrFail($participationId);
+        $answers = QuizParticipationAnswer::where('participation_id', $participationId)->get()->keyBy('question_id');
+
+        $resume = $participation->quiz->questions->map(function ($question) use ($answers) {
+            $userAnswerIds = $answers[$question->id]->answer_ids ?? [];
+            $correctAnswers = $question->reponses->where('is_correct', true)->pluck('id')->toArray();
+
+            return [
+                'question' => $question->text,
+                'question_id' => $question->id,
+                'correctAnswers' => $correctAnswers,
+                'userAnswers' => $userAnswerIds,
+                'answers' => $question->reponses->map(function ($r) {
+                    return [
+                        'id' => $r->id,
+                        'text' => $r->text,
+                        'isCorrect' => $r->is_correct
+                    ];
+                })
+            ];
+        });
+
+        return response()->json([
+            'quiz' => [
+                'id' => $participation->quiz->id,
+                'titre' => $participation->quiz->titre,
+            ],
+            'questions' => $resume,
+            'score' => $participation->score,
+            'totalQuestions' => $participation->quiz->questions->count(),
+        ]);
+    }
+
+    public function getUserParticipations($quizId)
+    {
+        try {
+            // Récupérer l'utilisateur authentifié
+            $user = Auth::user();
+
+            // Vérifier si le quiz existe
+            $quiz = Quiz::findOrFail($quizId);
+
+            // Récupérer les participations de l'utilisateur pour ce quiz
+            $participations = QuizParticipation::where('user_id', $user->getKey())
+                ->where('quiz_id', $quizId)
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->map(function ($participation) {
+                    return [
+                        'id' => $participation->id,
+                        'score' => $participation->score,
+                        'correct_answers' => $participation->correct_answers,
+                        'time_spent' => $participation->time_spent,
+                        'status' => $participation->status,
+                        'completed_at' => $participation->completed_at ? $participation->completed_at->toISOString() : null,
+                    ];
+                });
+
+            return response()->json([
+                'quiz' => [
+                    'id' => $quiz->id,
+                    'title' => $quiz->titre,
+                ],
+                'participations' => $participations,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Erreur dans getUserParticipations', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'error' => 'Une erreur est survenue lors de la récupération des participations',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function exportQuiz($id)
+    {
+        try {
+            $quiz = Quiz::with(['questions.reponses'])->findOrFail($id);
+
+            $exportData = [
+                'quiz' => [
+                    'id' => $quiz->id,
+                    'titre' => $quiz->titre,
+                    'description' => $quiz->description,
+                    'niveau' => $quiz->niveau,
+                    'duree' => $quiz->duree,
+                    'nb_points_total' => $quiz->nb_points_total,
+                    'formation_id' => $quiz->formation_id,
+                ],
+                'questions' => $quiz->questions->map(function ($question) {
+                    return [
+                        'id' => $question->id,
+                        'text' => $question->text,
+                        'type' => $question->type,
+                        'points' => $question->points,
+                        'reponses' => $question->reponses->map(function ($reponse) {
+                            return [
+                                'id' => $reponse->id,
+                                'text' => $reponse->text,
+                                'is_correct' => $reponse->is_correct,
+                                'position' => $reponse->position,
+                                'match_pair' => $reponse->match_pair,
+                                'bank_group' => $reponse->bank_group,
+                                'flashcard_back' => $reponse->flashcard_back,
+                            ];
+                        }),
+                    ];
+                }),
+            ];
+
+            $fileName = 'quiz_export_' . $quiz->id . '.json';
+            $filePath = storage_path('app/' . $fileName);
+            file_put_contents($filePath, json_encode($exportData, JSON_PRETTY_PRINT));
+
+            return response()->download($filePath)->deleteFileAfterSend(true);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Erreur lors de l\'exportation du quiz : ' . $e->getMessage());
+        }
+    }
+
+    public function exportMultipleQuizzes(Request $request)
+    {
+        try {
+            $quizIds = $request->input('quiz_ids', []);
+
+            if (empty($quizIds)) {
+                return redirect()->back()->with('error', 'Aucun quiz sélectionné pour l\'exportation.');
+            }
+
+            $quizzes = Quiz::with(['questions.reponses'])->whereIn('id', $quizIds)->get();
+
+            $exportData = $quizzes->map(function ($quiz) {
+                return [
+                    'quiz' => [
+                        'id' => $quiz->id,
+                        'titre' => $quiz->titre,
+                        'description' => $quiz->description,
+                        'niveau' => $quiz->niveau,
+                        'duree' => $quiz->duree,
+                        'nb_points_total' => $quiz->nb_points_total,
+                        'formation_id' => $quiz->formation_id,
+                    ],
+                    'questions' => $quiz->questions->map(function ($question) {
+                        return [
+                            'id' => $question->id,
+                            'text' => $question->text,
+                            'type' => $question->type,
+                            'points' => $question->points,
+                            'reponses' => $question->reponses->map(function ($reponse) {
+                                return [
+                                    'id' => $reponse->id,
+                                    'text' => $reponse->text,
+                                    'is_correct' => $reponse->is_correct,
+                                    'position' => $reponse->position,
+                                    'match_pair' => $reponse->match_pair,
+                                    'bank_group' => $reponse->bank_group,
+                                    'flashcard_back' => $reponse->flashcard_back,
+                                ];
+                            }),
+                        ];
+                    }),
+                ];
+            });
+
+            $fileName = 'quizzes_export_' . now()->format('Ymd_His') . '.json';
+            $filePath = storage_path('app/' . $fileName);
+            file_put_contents($filePath, json_encode($exportData, JSON_PRETTY_PRINT));
+
+            return response()->download($filePath)->deleteFileAfterSend(true);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Erreur lors de l\'exportation des quiz : ' . $e->getMessage());
+        }
+    }
+
+    public function getGlobalCategoryStats()
+    {
+        try {
+            $user = Auth::user();
+            if (!$user) {
+                return response()->json([
+                    'error' => 'Utilisateur non authentifié'
+                ], 401);
+            }
+
+            $categories = Formation::select('categorie as name')
+                ->distinct()
+                ->get();
+            $stats = [];
+
+
+            foreach ($categories as $category) {
+                $quizCount = Quiz::whereHas('formation', function ($query) use ($category) {
+                    $query->where('categorie', $category->name);
+                })->count();
+
+                $completedQuizzes = Quiz::whereHas('formation', function ($query) use ($category) {
+                    $query->where('categorie', $category->name);
+                })
+                    ->whereHas('quiz_participations', function ($query) use ($user) {
+                        $query->where('user_id', $user->getKey())
+                            ->where('status', 'completed');
+                    })
+                    ->count();
+
+                $stats[] = [
+                    'category' => $category->name,
+                    'totalQuizzes' => $quizCount,
+                    'completedQuizzes' => $completedQuizzes,
+                    'completionRate' => $quizCount > 0 ? round(($completedQuizzes / $quizCount) * 100, 2) : 0
+                ];
+            }
+
+            return response()->json($stats);
+        } catch (\Exception $e) {
+            Log::error('Erreur dans getGlobalCategoryStats', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'error' => 'Une erreur est survenue lors de la récupération des statistiques par catégorie',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getProgressStats()
+    {
+        try {
+            $user = auth()->user();
+            if (!$user || !$user->stagiaire) {
+                return response()->json([
+                    'daily_progress' => [],
+                    'weekly_progress' => [],
+                    'monthly_progress' => [],
+                ]);
+            }
+
+            $now = now();
+            $thirtyDaysAgo = $now->copy()->subDays(30);
+
+            // Progression quotidienne
+            $dailyProgress = Classement::where('stagiaire_id', $user->stagiaire->id)
+                ->where('created_at', '>=', $thirtyDaysAgo)
+                ->get()
+                ->groupBy(function ($classement) {
+                    return $classement->created_at->format('Y-m-d');
+                })
+                ->map(function ($classements) {
+                    return [
+                        'date' => $classements->first()->created_at->format('Y-m-d'),
+                        'completed_quizzes' => $classements->count(),
+                        'average_points' => round($classements->avg('points'), 2),
+                    ];
+                })
+                ->values();
+
+            // Progression hebdomadaire
+            $weeklyProgress = Classement::where('stagiaire_id', $user->stagiaire->id)
+                ->where('created_at', '>=', $now->copy()->subWeeks(4))
+                ->get()
+                ->groupBy(function ($classement) {
+                    return $classement->created_at->format('Y-W');
+                })
+                ->map(function ($classements) {
+                    return [
+                        'week' => $classements->first()->created_at->format('Y-W'),
+                        'completed_quizzes' => $classements->count(),
+                        'average_points' => round($classements->avg('points'), 2),
+                    ];
+                })
+                ->values();
+
+            // Progression mensuelle
+            $monthlyProgress = Classement::where('stagiaire_id', $user->stagiaire->id)
+                ->where('created_at', '>=', $now->copy()->subMonths(6))
+                ->get()
+                ->groupBy(function ($classement) {
+                    return $classement->created_at->format('Y-m');
+                })
+                ->map(function ($classements) {
+                    return [
+                        'month' => $classements->first()->created_at->format('Y-m'),
+                        'completed_quizzes' => $classements->count(),
+                        'average_points' => round($classements->avg('points'), 2),
+                    ];
+                })
+                ->values();
+
+            return response()->json([
+                'daily_progress' => $dailyProgress,
+                'weekly_progress' => $weeklyProgress,
+                'monthly_progress' => $monthlyProgress,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Erreur dans getProgressStats', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json(['error' => 'Une erreur est survenue lors de la récupération des statistiques de progression'], 500);
+        }
+    }
+    public function getQuizTrends()
+    {
+        try {
+            $user = auth()->user();
+            if (!$user || !$user->stagiaire) {
+                return response()->json([
+                    'category_trends' => [],
+                    'overall_trend' => [],
+                ]);
+            }
+
+            $categories = Formation::select('categorie as name')
+                ->distinct()
+                ->get();
+            $thirtyDaysAgo = now()->subDays(30);
+
+            // Tendances par catégorie
+            $categoryTrends = $categories->map(function ($category) use ($user, $thirtyDaysAgo) {
+                $trendData = QuizParticipation::where('user_id', $user->getKey())
+                    ->whereHas('quiz.formation', function ($query) use ($category) {
+                        $query->where('categorie', $category->name);
+                    })
+                    ->where('status', 'completed')
+                    ->where('created_at', '>=', $thirtyDaysAgo)
+                    ->get()
+                    ->groupBy(function ($participation) {
+                        return $participation->created_at->format('Y-m-d');
+                    })
+                    ->map(function ($participations) {
+                        return [
+                            'date' => $participations->first()->created_at->format('Y-m-d'),
+                            'score' => round($participations->avg('score'), 2),
+                        ];
+                    })
+                    ->values();
+
+                return [
+                    'category_id' => $category->name,
+                    'category_name' => $category->name,
+                    'trend_data' => $trendData,
+                ];
+            });
+
+            // Tendance globale
+            $overallTrend = QuizParticipation::where('user_id', $user->getKey())
+                ->where('status', 'completed')
+                ->where('created_at', '>=', $thirtyDaysAgo)
+                ->get()
+                ->groupBy(function ($participation) {
+                    return $participation->created_at->format('Y-m-d');
+                })
+                ->map(function ($participations) {
+                    return [
+                        'date' => $participations->first()->created_at->format('Y-m-d'),
+                        'average_score' => round($participations->avg('score'), 2),
+                    ];
+                })
+                ->values();
+
+            return response()->json([
+                'category_trends' => $categoryTrends,
+                'overall_trend' => $overallTrend,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Erreur dans getQuizTrends', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json(['error' => 'Une erreur est survenue lors de la récupération des tendances des quiz'], 500);
+        }
+    }
+
+    public function getPerformanceStats()
+    {
+        try {
+            $user = Auth::user();
+            if (!$user || !$user->stagiaire) {
+                return response()->json([
+                    'strengths' => [],
+                    'weaknesses' => [],
+                    'improvement_areas' => [],
+                ]);
+            }
+
+            $categories = Formation::select('categorie as name')
+                ->distinct()
+                ->get();
+
+            $stats = [];
+
+            foreach ($categories as $category) {
+                $scores = QuizParticipation::where('user_id', $user->getKey())
+                    ->whereHas('quiz.formation', function ($query) use ($category) {
+                        $query->where('categorie', $category->name);
+                    })
+                    ->where('status', 'completed')
+                    ->pluck('score')
+                    ->toArray();
+
+                if (count($scores) > 0) {
+                    $averageScore = array_sum($scores) / count($scores);
+                    $stats[] = [
+                        'category_id' => $category->name,
+                        'category_name' => $category->name,
+                        'score' => round($averageScore, 2),
+                    ];
+                }
+            }
+
+            // Trier les scores pour identifier les forces et faiblesses
+            usort($stats, function ($a, $b) {
+                return $b['score'] <=> $a['score'];
+            });
+
+            $strengths = array_slice($stats, 0, 3);
+            $weaknesses = array_slice($stats, -3);
+            $improvementAreas = array_slice($stats, 3, -3);
+
+            return response()->json([
+                'strengths' => $strengths,
+                'weaknesses' => $weaknesses,
+                'improvement_areas' => $improvementAreas,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Erreur dans getPerformanceStats', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'error' => 'Une erreur est survenue lors de la récupération des statistiques de performance',
                 'message' => $e->getMessage()
             ], 500);
         }

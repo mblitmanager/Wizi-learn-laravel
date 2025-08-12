@@ -15,9 +15,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('pole_relation_client_id')->constrained()->onDelete('cascade');
             $table->foreignId('stagiaire_id')->constrained()->onDelete('cascade');
+            $table->softDeletes();
             $table->timestamps();
         });
-        
     }
 
     /**

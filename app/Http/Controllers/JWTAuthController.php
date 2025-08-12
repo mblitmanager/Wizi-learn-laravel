@@ -2,10 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\PasswordResetMail;
+use App\Models\LoginHistories;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
+use Jenssegers\Agent\Agent;
+use League\ISO3166\ISO3166;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use OpenApi\Attributes as OA;
@@ -66,38 +75,55 @@ class JWTAuthController extends Controller
         ]);
 
         $token = JWTAuth::fromUser($user);
+        if ($user = auth()->user()) {
+            $user->update([
+                'last_activity_at' => now()
+            ]);
+        }
 
         return response()->json(compact('user', 'token'), 201);
     }
 
-    #[OA\Post(
-        path: "/api/login",
-        summary: "Connexion de l'utilisateur",
-        tags: ["Authentication"],
-        requestBody: new OA\RequestBody(
-            required: true,
-            content: new OA\JsonContent(
-                required: ["email", "password"],
-                properties: [
-                    new OA\Property(property: "email", type: "string", example: "john.doe@example.com"),
-                    new OA\Property(property: "password", type: "string", example: "password123"),
-                ]
-            )
-        ),
-        responses: [
-            new OA\Response(
-                response: 200,
-                description: "Connexion réussie",
-                content: new OA\JsonContent(
-                    properties: [
-                        new OA\Property(property: "token", type: "string"),
-                    ]
-                )
-            ),
-            new OA\Response(response: 401, description: "Accès invalide"),
-            new OA\Response(response: 500, description: "Erreur interne du serveur"),
-        ]
-    )]
+    protected function getBrowser()
+    {
+        $agent = new Agent();
+        return $agent->browser();
+    }
+
+    protected function getPlatform()
+    {
+        $agent = new Agent();
+        return $agent->platform();
+    }
+    //
+//    #[OA\Post(
+//        path: "/api/login",
+//        summary: "Connexion de l'utilisateur",
+//        tags: ["Authentication"],
+//        requestBody: new OA\RequestBody(
+//            required: true,
+//            content: new OA\JsonContent(
+//                required: ["email", "password"],
+//                properties: [
+//                    new OA\Property(property: "email", type: "string", example: "john.doe@example.com"),
+//                    new OA\Property(property: "password", type: "string", example: "password123"),
+//                ]
+//            )
+//        ),
+//        responses: [
+//            new OA\Response(
+//                response: 200,
+//                description: "Connexion réussie",
+//                content: new OA\JsonContent(
+//                    properties: [
+//                        new OA\Property(property: "token", type: "string"),
+//                    ]
+//                )
+//            ),
+//            new OA\Response(response: 401, description: "Accès invalide"),
+//            new OA\Response(response: 500, description: "Erreur interne du serveur"),
+//        ]
+//    )]
     public function login(Request $request)
     {
         $credentials = $request->only('email', 'password');
@@ -107,33 +133,77 @@ class JWTAuthController extends Controller
                 return response()->json(['error' => 'Accès invalide'], 401);
             }
 
+            $ip = $request->header('X-Client-IP') ?? $request->ip();
             $user = auth()->user();
-            $token = JWTAuth::claims(['role' => $user->role])->fromUser($user);
+            $location = $this->getLocation($ip);
 
-            return response()->json(compact('token'));
+            // Mise à jour utilisateur
+            $user->update([
+                'last_login_at' => now(),
+                'last_activity_at' => now(),
+                'last_login_ip' => $ip,
+                'is_online' => true
+            ]);
+            $location = $this->getLocation($ip);
+            $countryCode = $location['country'] ?? null;
+            $countryName = $countryCode ? (new ISO3166())->alpha2($countryCode)['name'] : null;
+            // Enregistrement historique
+            LoginHistories::create([
+                'user_id' => $user->id,
+                'ip_address' => $ip,
+                'country' => $countryName,
+                'city' => $location['city'] ?? null,
+                'device' => $request->userAgent(),
+                'login_at' => now(),
+                'browser' => $this->getBrowser(),
+                'platform' => $this->getPlatform(),
+                'login_at' => now()
+            ]);
+
+            $token = JWTAuth::claims([
+                'role' => $user->role,
+                'ip' => $ip
+            ])->fromUser($user);
+
+            return response()->json([
+                'token' => $token,
+                'user' => $user->load('stagiaire')
+            ]);
         } catch (JWTException $e) {
             return response()->json(['error' => 'Impossible de créer le token'], 500);
         }
     }
+    private function getLocation($ip)
+    {
+        if ($ip === '127.0.0.1')
+            return [];
 
-    #[OA\Get(
-        path: "/api/user",
-        summary: "Recuperer le profil de l'utilisateur",
-        tags: ["Authentication"],
-        responses: [
-            new OA\Response(
-                response: 200,
-                description: "Données de l'utilisateur récupérées avec succès",
-                content: new OA\JsonContent(
-                    properties: [
-                        new OA\Property(property: "user", type: "object"),
-                    ]
-                )
-            ),
-            new OA\Response(response: 404, description: "Utilisateur non trouvé"),
-            new OA\Response(response: 400, description: "Token invalide"),
-        ]
-    )]
+        try {
+            $response = Http::get("https://ipinfo.io/{$ip}/json?token=" . config('services.ipinfo.token'));
+            return $response->json();
+        } catch (\Exception $e) {
+            Log::error("IP location failed: " . $e->getMessage());
+            return [];
+        }
+    }
+    //    #[OA\Get(
+//        path: "/api/user",
+//        summary: "Recuperer le profil de l'utilisateur",
+//        tags: ["Authentication"],
+//        responses: [
+//            new OA\Response(
+//                response: 200,
+//                description: "Données de l'utilisateur récupérées avec succès",
+//                content: new OA\JsonContent(
+//                    properties: [
+//                        new OA\Property(property: "user", type: "object"),
+//                    ]
+//                )
+//            ),
+//            new OA\Response(response: 404, description: "Utilisateur non trouvé"),
+//            new OA\Response(response: 400, description: "Token invalide"),
+//        ]
+//    )]
     public function getUser()
     {
         try {
@@ -147,25 +217,25 @@ class JWTAuthController extends Controller
         return response()->json(compact('user'));
     }
 
-    #[OA\Get(
-        path: "/api/me",
-        summary: "Récupérer les informations complètes de l'utilisateur connecté",
-        tags: ["Authentication"],
-        responses: [
-            new OA\Response(
-                response: 200,
-                description: "Données de l'utilisateur et du stagiaire récupérées avec succès",
-                content: new OA\JsonContent(
-                    properties: [
-                        new OA\Property(property: "user", type: "object"),
-                        new OA\Property(property: "stagiaire", type: "object"),
-                    ]
-                )
-            ),
-            new OA\Response(response: 404, description: "Utilisateur non trouvé"),
-            new OA\Response(response: 400, description: "Token invalide"),
-        ]
-    )]
+    //    #[OA\Get(
+//        path: "/api/me",
+//        summary: "Récupérer les informations complètes de l'utilisateur connecté",
+//        tags: ["Authentication"],
+//        responses: [
+//            new OA\Response(
+//                response: 200,
+//                description: "Données de l'utilisateur et du stagiaire récupérées avec succès",
+//                content: new OA\JsonContent(
+//                    properties: [
+//                        new OA\Property(property: "user", type: "object"),
+//                        new OA\Property(property: "stagiaire", type: "object"),
+//                    ]
+//                )
+//            ),
+//            new OA\Response(response: 404, description: "Utilisateur non trouvé"),
+//            new OA\Response(response: 400, description: "Token invalide"),
+//        ]
+//    )]
     public function getMe()
     {
         try {
@@ -184,27 +254,165 @@ class JWTAuthController extends Controller
             return response()->json(['error' => 'Token invalide'], 400);
         }
     }
-
-    #[OA\Post(
-        path: "/api/logout",
-        summary: "Déconnexion de l'utilisateur",
-        tags: ["Authentication"],
-        responses: [
-            new OA\Response(
-                response: 200,
-                description: "Déconnexion réussie",
-                content: new OA\JsonContent(
-                    properties: [
-                        new OA\Property(property: "message", type: "string", example: "Deconnexion réussie"),
-                    ]
-                )
-            ),
-        ]
-    )]
+    //
+//    #[OA\Post(
+//        path: "/api/logout",
+//        summary: "Déconnexion de l'utilisateur",
+//        tags: ["Authentication"],
+//        responses: [
+//            new OA\Response(
+//                response: 200,
+//                description: "Déconnexion réussie",
+//                content: new OA\JsonContent(
+//                    properties: [
+//                        new OA\Property(property: "message", type: "string", example: "Deconnexion réussie"),
+//                    ]
+//                )
+//            ),
+//        ]
+//    )]
     public function logout()
     {
-        JWTAuth::invalidate(JWTAuth::getToken());
+        try {
+            $user = auth()->user();
+            $token = JWTAuth::getToken();
 
-        return response()->json(['message' => 'Deconnexion réussie'], 200);
+            if ($user) {
+                // Mettre à jour le dernier historique de connexion
+                LoginHistories::where('user_id', $user->id)
+                    ->whereNull('logout_at')
+                    ->latest()
+                    ->first()
+                        ?->update([
+                        'logout_at' => now()
+                    ]);
+
+                $user->update([
+                    'is_online' => false,
+                    'last_activity_at' => now()
+                ]);
+            }
+
+            JWTAuth::invalidate($token);
+
+            return response()->json([
+                'message' => 'Déconnexion réussie',
+                'logout_at' => now()->toDateTimeString()
+            ], 200);
+        } catch (JWTException $e) {
+            return response()->json(['error' => 'Échec de la déconnexion'], 500);
+        }
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/forgot-password",
+     *     summary="Demande de réinitialisation de mot de passe",
+     *     tags={"Authentication"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"email"},
+     *             @OA\Property(property="email", type="string", format="email", example="user@example.com")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Lien envoyé avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Un lien de réinitialisation a été envoyé à votre adresse email")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Email non trouvé",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string", example="Email non trouvé")
+     *         )
+     *     )
+     * )
+     */
+    public function sendResetLink(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'reset_url' => 'required|url'
+        ]);
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            return response()->json(['error' => 'Email non trouvé'], 404);
+        }
+
+        $token = Str::random(60);
+
+        DB::table('password_reset_tokens')->updateOrInsert(
+            ['email' => $user->email],
+            ['token' => Hash::make($token), 'created_at' => now()]
+        );
+
+        $resetLink = $request->reset_url . '/reset-password?token=' . $token . '&email=' . urlencode($user->email);
+        Mail::to($user->email)->send(new PasswordResetMail($resetLink));
+        return response()->json(['message' => 'Email envoyé']);
+
+    }
+    /**
+     * @OA\Post(
+     *     path="/api/reset-password",
+     *     summary="Réinitialisation du mot de passe",
+     *     tags={"Authentication"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"token", "email", "password", "password_confirmation"},
+     *             @OA\Property(property="token", type="string", example="reset_token_123"),
+     *             @OA\Property(property="email", type="string", format="email", example="user@example.com"),
+     *             @OA\Property(property="password", type="string", example="newpassword123"),
+     *             @OA\Property(property="password_confirmation", type="string", example="newpassword123")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Mot de passe réinitialisé",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Mot de passe réinitialisé avec succès")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Token invalide ou expiré",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string", example="Token invalide ou expiré")
+     *         )
+     *     )
+     * )
+     */
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'token' => 'required',
+            'email' => 'required|email',
+            'password' => 'required|confirmed|min:8',
+        ]);
+
+        $record = DB::table('password_reset_tokens')
+            ->where('email', $request->email)
+            ->first();
+
+        if (!$record || !Hash::check($request->token, $record->token)) {
+            return response()->json(['error' => 'Token invalide ou expiré'], 400);
+        }
+
+        if (now()->subMinutes(60)->gt($record->created_at)) {
+            return response()->json(['error' => 'Token expiré'], 400);
+        }
+
+        $user = User::where('email', $request->email)->first();
+        $user->password = Hash::make($request->password);
+        $user->save();
+
+        DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+
+        return response()->json(['message' => 'Mot de passe réinitialisé avec succès']);
     }
 }

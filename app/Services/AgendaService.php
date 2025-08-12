@@ -6,12 +6,22 @@ use App\Repositories\Interfaces\AgendaRepositoryInterface;
 use App\Repositories\Interfaces\FormationRepositoryInterface;
 use App\Repositories\Interfaces\NotificationRepositoryInterface;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+
 
 class AgendaService
 {
     protected $agendaRepository;
     protected $formationRepository;
     protected $notificationRepository;
+
+    /**
+     * AgendaService constructor.
+     *
+     * @param AgendaRepositoryInterface $agendaRepository
+     * @param FormationRepositoryInterface $formationRepository
+     * @param NotificationRepositoryInterface $notificationRepository
+     */
 
     public function __construct(
         AgendaRepositoryInterface $agendaRepository,
@@ -57,4 +67,11 @@ class AgendaService
     {
         return $this->notificationRepository->getNotificationsByStagiaire($stagiaireId);
     }
-} 
+    public function markAllNotificationsAsRead($stagiaireId)
+    {
+        // Assuming notifications are stored in a database table
+        return \DB::table('notifications')
+            ->where('stagiaire_id', $stagiaireId)
+            ->update(['read_at' => now()]);
+    }
+}

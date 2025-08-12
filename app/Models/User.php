@@ -9,9 +9,10 @@ use Illuminate\Notifications\Notifiable;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\ApiResource;
 use Tymon\JWTAuth\Contracts\JWTSubject;
+
 #[ApiResource(
     paginationItemsPerPage: 10
-    )]
+)]
 class User extends Authenticatable implements JWTSubject
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
@@ -27,7 +28,13 @@ class User extends Authenticatable implements JWTSubject
         'email',
         'password',
         'role',
-        'image'
+        'image',
+        'last_login_at',
+        'last_activity_at',
+        'last_login_ip',
+        'is_online',
+        'fcm_token',
+        'adresse'
     ];
 
     /**
@@ -53,6 +60,11 @@ class User extends Authenticatable implements JWTSubject
         ];
     }
 
+    protected $dates = [
+        'last_login_at',
+        'last_activity_at'
+    ];
+
 
     public function getJWTIdentifier()
     {
@@ -63,7 +75,7 @@ class User extends Authenticatable implements JWTSubject
     {
         return [];
     }
-     public function hasAdminRole(): bool
+    public function hasAdminRole(): bool
     {
         return $this->role === 'administrateur';
     }
@@ -71,5 +83,57 @@ class User extends Authenticatable implements JWTSubject
     public function stagiaire()
     {
         return $this->hasOne(Stagiaire::class, 'user_id');
+    }
+
+    public function commercial()
+    {
+        return $this->hasOne(Commercial::class, 'user_id');
+    }
+    public function formateur()
+    {
+        return $this->hasOne(Formateur::class, 'user_id');
+    }
+    public function poleRelationClient()
+    {
+        return $this->hasOne(PoleRelationClient::class, 'user_id');
+    }
+
+    // Dans app/Models/User.php
+    public function getFormattedNameAttribute()
+    {
+        $parts = explode(' ', $this->name);
+
+        if (count($parts) <= 1) {
+            return $this->name;
+        }
+
+        $formatted = array_shift($parts);
+
+        foreach ($parts as $part) {
+            if (!empty($part)) {
+                $formatted .= ' ' . $part[0] . '.';
+            }
+        }
+
+        return $formatted;
+    }
+
+    public function parrainages()
+    {
+        return $this->hasMany(Parrainage::class, 'parrain_id');
+    }
+    public function filleuls()
+    {
+        return $this->hasMany(Parrainage::class, 'filleul_id');
+    }
+
+    public function loginHistories()
+    {
+        return $this->hasMany(LoginHistories::class);
+    }
+
+    public function lastLogin()
+    {
+        return $this->hasOne(LoginHistories::class)->latestOfMany();
     }
 }

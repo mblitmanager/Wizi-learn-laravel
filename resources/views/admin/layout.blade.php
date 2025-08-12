@@ -17,7 +17,11 @@
     <!-- Bootstrap CSS -->
     <link href="{{ asset('assets/css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/css/bootstrap-extended.css') }}" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Sono:wght@200..800&display=swap"
+        rel="stylesheet">
     <link href="{{ asset('assets/css/app.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/css/icons.css') }}" rel="stylesheet">
     <!-- Theme Style CSS -->
@@ -32,44 +36,34 @@
     <!-- Select2 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <script src="https://cdn.ckeditor.com/ckeditor5/23.0.0/classic/ckeditor.js"></script>
-    <title>Wize Learn</title>
+    <!-- Include Bootstrap and Font Awesome for icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+
+    {{--    <script src="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.20.0/js/mdb.min.js" --}}
+    {{--        integrity="sha512-XFd1m0eHgU1F05yOmuzEklFHtiacLVbtdBufAyZwFR0zfcq7vc6iJuxerGPyVFOXlPGgM8Uhem9gwzMI8SJ5uw==" --}}
+    {{--        crossorigin="anonymous" referrerpolicy="no-referrer"></script> --}}
+
+    {{--    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.20.0/css/mdb.min.css" --}}
+    {{--        integrity="sha512-hj9rznBPdFg9A4fACbJcp4ttzdinMDtPrtZ3gBD11DiY3O1xJfn0r1U5so/J0zwfGOzq9teIaH5rFmjFAFw8SA==" --}}
+    {{--        crossorigin="anonymous" referrerpolicy="no-referrer" /> --}}
+    {{-- @vite(['resources/css/app.css', 'resources/js/app.js']) --}}
+
+    <title>@yield('title', 'Wizi Learn')</title>
 </head>
 
 <body>
     <!--wrapper-->
     <div class="wrapper">
-        {{-- <div id="globalLoader" class="hourglassOverlay d-none">
-            <div class="hourglassBackground">
-                <div class="hourglassContainer">
-                    <div class="hourglassCurves"></div>
-                    <div class="hourglassCapTop"></div>
-                    <div class="hourglassGlassTop"></div>
-                    <div class="hourglassSand"></div>
-                    <div class="hourglassSandStream"></div>
-                    <div class="hourglassCapBottom"></div>
-                    <div class="hourglassGlass"></div>
-                </div>
-            </div>
-        </div> --}}
-
-        {{-- <div id="globalLoader" class="hourglassOverlay d-block">
-            <div class="hourglassBackground">
-                <div class="hourglassContainer">
-                    <div class="hourglassCurves"></div>
-                    <div class="hourglassCapTop"></div>
-                    <div class="hourglassGlassTop"></div>
-                    <div class="hourglassSand"></div>
-                    <div class="hourglassSandStream"></div>
-                    <div class="hourglassCapBottom"></div>
-                    <div class="hourglassGlass"></div>
-                </div>
-            </div>
-        </div> --}}
-
-
         <!--sidebar wrapper -->
         <div class="sidebar-wrapper" data-simplebar="true">
             @include('admin.partials.sidebar')
+            {{-- <ul class="nav flex-column mt-3">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('admin.achievements.index') }}">
+                        <i class="fas fa-trophy me-2"></i> Gestion des Succès
+                    </a>
+                </li>
+            </ul> --}}
         </div>
         <!--end sidebar wrapper -->
         <!--start header -->
@@ -93,6 +87,7 @@
         </footer>
     </div>
     <!--end wrapper-->
+    @yield('manual-scripts')
     <!-- Bootstrap JS -->
     @yield('scripts')
     @include('admin.partials.scripts')

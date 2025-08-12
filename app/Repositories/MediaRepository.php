@@ -7,34 +7,63 @@ use App\Repositories\Interfaces\MediaRepositoryInterface;
 
 class MediaRepository implements MediaRepositoryInterface
 {
-    public function getTutorials()
+    public function getTutorielsQuery(): \Illuminate\Database\Eloquent\Builder
     {
-        return Media::where('type', 'tutorial')
-            ->where('duration', '<=', 30) // 30 secondes max
-            ->orderBy('created_at', 'desc')
-            ->get();
+        return Media::where('categorie', 'tutoriel')->orderBy('ordre', 'asc');
     }
 
-    public function getLanguageSessions()
+    public function getAstucesQuery(): \Illuminate\Database\Eloquent\Builder
     {
-        return Media::where('type', 'language_session')
-            ->where('duration', '<=', 5) // 5 minutes max
-            ->orderBy('created_at', 'desc')
-            ->get();
+        return Media::where('categorie', 'astuce')->orderBy('ordre', 'asc');
     }
 
-    public function getInteractiveContent($formationId)
+    public function getTutorielsByFormationQuery($formationId): \Illuminate\Database\Eloquent\Builder
     {
-        return Media::where('type', 'interactive')
+        return Media::where('categorie', 'tutoriel')
             ->where('formation_id', $formationId)
-            ->orderBy('order', 'asc')
+            ->orderBy('ordre', 'asc');
+    }
+
+    public function getAstucesByFormationQuery($formationId): \Illuminate\Database\Eloquent\Builder
+    {
+        return Media::where('categorie', 'astuce')
+            ->where('formation_id', $formationId)
+            ->orderBy('ordre', 'asc');
+    }
+    public function getTutoriels()
+    {
+        return Media::where('categorie', 'tutoriel')
+            ->orderBy('ordre', 'asc')
+            ->get();
+    }
+
+    public function getAstuces()
+    {
+        return Media::where('categorie', 'astuce')
+            ->orderBy('ordre', 'asc')
+            ->get();
+    }
+
+    public function getTutorielsByFormation($formationId)
+    {
+        return Media::where('categorie', 'tutoriel')
+            ->where('formation_id', $formationId)
+            ->orderBy('ordre', 'asc')
+            ->get();
+    }
+
+    public function getAstucesByFormation($formationId)
+    {
+        return Media::where('categorie', 'astuce')
+            ->where('formation_id', $formationId)
+            ->orderBy('ordre', 'asc')
             ->get();
     }
 
     public function getMediaByType($type)
     {
         return Media::where('type', $type)
-            ->orderBy('created_at', 'desc')
+            ->orderBy('ordre', 'asc')
             ->get();
     }
 

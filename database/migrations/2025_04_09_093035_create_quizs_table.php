@@ -18,7 +18,7 @@ return new class extends Migration {
             $table->string('niveau')->nullable();
             $table->string('nb_points_total')->nullable();
             $table->foreignId('formation_id')->constrained('formations')->onDelete('cascade');
-            // $table->foreignId('question_id')->constrained('quizzes')->onDelete('cascade');
+            $table->enum('status', ['actif', 'inactif'])->default('inactif');
             $table->timestamps();
         });
     }

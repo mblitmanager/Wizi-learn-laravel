@@ -11,19 +11,36 @@ class JwtMiddleware
     public function handle($request, Closure $next)
     {
         // Routes exemptées de la vérification du token
-        $except = [
+        $exemptRoutes = [
             'api/login',
             'api/logout',
             'api',
             'api/docs',
+            'api/parrainage/generate-link',
+            'api/parrainage/get-data/*', // Utilisation du wildcard pour toutes les URLs sous ce path
+            'api/parrainage/register-filleul',
+            'api/formationParrainage',
+            'api/forgot-password',
+            'api/reset-password'
         ];
 
-        // Vérifier si la route commence par /api/ et n'est pas dans les exceptions
-        if (str_starts_with($request->path(), 'api/') && !in_array($request->path(), $except)) {
+        // Vérifier si la route actuelle correspond à une route exemptée
+        foreach ($exemptRoutes as $route) {
+            if ($request->is($route)) {
+                return $next($request);
+            }
+        }
+
+        // Traitement spécial pour le streaming média
+        if ($request->is('api/media/stream/*')) {
+            return $next($request);
+        }
+
+        // Appliquer le JWT pour toutes les autres routes API
+        if (str_starts_with($request->path(), 'api/')) {
             try {
                 $user = JWTAuth::parseToken()->authenticate();
 
-                // Charger la relation stagiaire pour les utilisateurs avec le rôle stagiaire
                 if ($user->role === 'stagiaire') {
                     $user->load('stagiaire');
                 }

@@ -39,7 +39,9 @@ class CommmercialStoreRequest extends FormRequest
             'role' => [
                 Rule::in(['commercial']),
             ],
-            'stagiaire_id' => 'required|exists:stagiaires,id',
+            'telephone' => 'nullable|string',
+            'stagiaire_id' => 'nullable|exists:stagiaires,id',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:16096',
         ];
     }
 
@@ -47,12 +49,16 @@ class CommmercialStoreRequest extends FormRequest
     {
         return [
             'name.required' => 'Le nom est obligatoire.',
+            'prenom.required' => 'Le prénom est obligatoire.',
             'name.string' => 'Le nom doit être une chaîne de caractères.',
             'prenom.string' => 'Le prenom doit être une chaîne de caractères.',
             'name.max' => 'Le nom ne doit pas dépasser 255 caractères.',
 
             'email.required' => 'L\'adresse e-mail est obligatoire.',
             'email.email' => 'L\'adresse e-mail n\'est pas valide.',
+            'image.image' => 'Le fichier doit être une image.',
+            'image.mimes' => 'L\'image doit être au format jpeg, png, jpg, gif ou webp.',
+            'image.max' => 'La taille de l\'image ne doit pas dépasser 2 Mo.',
         ];
     }
 }

@@ -19,6 +19,7 @@ return new class extends Migration {
             $table->string('evenement')->nullable();
             $table->string('commentaire')->nullable();
             $table->foreignId('stagiaire_id')->constrained()->onDelete('cascade');
+            $table->softDeletes();
             $table->timestamps();
         });
     }

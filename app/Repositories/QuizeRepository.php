@@ -41,11 +41,16 @@ class QuizeRepository implements QuizRepositoryInterface
 
     public function getQuizzesByStagiaire($stagiaireId): Collection
     {
-        return Quiz::whereHas('formation', function($query) use ($stagiaireId) {
-            $query->whereHas('stagiaires', function($q) use ($stagiaireId) {
-                $q->where('stagiaires.id', $stagiaireId);
-            });
-        })->with(['questions.reponses'])->get();
+        return Quiz::where('status', 'actif')
+            ->whereHas('formation', function($query) use ($stagiaireId) {
+                $query->whereHas('catalogueFormation', function($q) use ($stagiaireId) {
+                    $q->whereHas('stagiaires', function($q) use ($stagiaireId) {
+                        $q->where('stagiaires.id', $stagiaireId);
+                    });
+                });
+            })
+            ->with(['formation','questions.reponses'])
+            ->get();
     }
 
     public function getQuizQuestions($quizId): Collection
@@ -64,24 +69,48 @@ class QuizeRepository implements QuizRepositoryInterface
 
             $score = 0;
             $totalQuestions = $questions->count();
+            $submittedAnswersData = [];
 
-            foreach ($answers as $questionId => $reponseId) {
+            foreach ($answers as $questionId => $submittedAnswers) {
                 $question = $questions->firstWhere('id', $questionId);
-                $reponse = $question->reponses->firstWhere('id', $reponseId);
 
-                if ($reponse && $reponse->isCorrect) {
-                    $score++;
+                foreach ($submittedAnswers as $submittedAnswer) {
+                    $reponseId = $submittedAnswer['id'] ?? null;
+                    $reponseText = $submittedAnswer['text'] ?? null;
+
+                    $reponse = $question->reponses->firstWhere('id', $reponseId);
+
+                    if ($reponse) {
+                        $submittedAnswersData[] = [
+                            'question_id' => $questionId,
+                            'reponse_id' => $reponseId,
+                            'reponse_text' => $reponseText,
+                            'is_correct' => $reponse->isCorrect
+                        ];
+
+                        // Correct answer validation
+                        if ($reponse->isCorrect) {
+                            $score++;
+                        }
+                    } else {
+                        // Handle cases where the answer text matches but the ID is missing
+                        $correctReponse = $question->reponses->firstWhere('text', $reponseText);
+                        if ($correctReponse && $correctReponse->isCorrect) {
+                            $score++;
+                        }
+                    }
                 }
             }
 
             $percentage = ($score / $totalQuestions) * 100;
 
-            // Enregistrer la participation
+            // Enregistrer la participation avec les réponses soumises
             $participation = Participation::create([
                 'quiz_id' => $quizId,
                 'stagiaire_id' => $stagiaireId,
                 'score' => $percentage,
-                'completed' => true
+                'completed' => true,
+                'submitted_answers' => json_encode($submittedAnswersData) // Store submitted answers as JSON
             ]);
 
             DB::commit();

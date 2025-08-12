@@ -24,7 +24,6 @@ return new class extends Migration {
                 'vrai/faux',
                 'banque de mots',
             ]);
-            $table->string('reponse_correct')->nullable();
             $table->string('explication')->nullable();
             $table->string('points')->nullable();
             $table->string('astuce')->nullable();

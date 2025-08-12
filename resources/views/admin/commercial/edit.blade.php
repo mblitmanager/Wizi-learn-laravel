@@ -8,7 +8,8 @@
                 <ol class="breadcrumb mb-0 p-0">
                     <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
                     </li>
-                    <li class="breadcrumb-item active" aria-current="page">commercial</li>
+                    <li class="breadcrumb-item active text-uppercase fw-bold" aria-current="page">Modification d'un commercial
+                    </li>
                 </ol>
             </nav>
         </div>
@@ -16,6 +17,11 @@
             <div class="btn-group">
                 <a href="{{ route('commercials.index') }}" type="button" class="btn btn-sm btn-primary"><i
                         class="fadeIn animated bx bx-chevron-left-circle"></i>Retour</a>
+                <form action="{{ route('commercials.destroy', $commercial->id) }}" method="POST" style="display:inline-block; margin-left:8px;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce commercial ?');">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-sm btn-danger"><i class="lni lni-trash"></i> Supprimer</button>
+                </form>
             </div>
         </div>
     </div>
@@ -25,8 +31,21 @@
         @if ($errors->any())
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
                 <strong class="font-bold">Whoops!</strong>
-                <span class="block sm:inline">There were some problems with your input.</span>
-                <ul class="mt-2 list-disc list-inside">
+                    <div class="col-md-4">
+                        <!-- Photo de profil -->
+                        <div class="mb-3">
+                            <label for="photo" class="form-label">Photo de profil</label>
+                            <input type="file" class="form-control" id="photo" name="photo" accept="image/*">
+                            @if(isset($commercial->user->image) && $commercial->user->image)
+                                <div class="mt-2">
+                                    <img src="{{ asset($commercial->user->image) }}" alt="Photo actuelle" style="max-width: 120px; max-height: 120px; object-fit: cover;">
+                                </div>
+                            @endif
+                            @error('photo')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
                     @foreach ($errors->all() as $error)
                         <li>{{ $error }}</li>
                     @endforeach
@@ -41,9 +60,10 @@
                 </div>
             @endif
             <div class="card-body p-4 border rounded">
-                <form class="row g-3" action="{{ route('commercials.update', $commercial->id) }}" method="POST">
+                <form class="row g-3" action="{{ route('commercials.update', $commercial->id) }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
+
                     <div class="col-md-4">
                         <!-- Nom -->
                         <div class="mb-3">
@@ -81,6 +101,19 @@
                         </div>
                     </div>
 
+                    <div class="col-md-4">
+                        <!-- Mot de passe -->
+                        <div class="mb-3">
+                            <label for="telephone">Téléphone</label>
+                            <input type="text" name="telephone" id="telephone"
+                                class="form-control @error('telephone') is-invalid @enderror"
+                                value="{{ old('telephone', $commercial->telephone ?? '') }}">
+                            @error('telephone')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+
 
                     <div class="col-md-4">
                         <!-- Mot de passe -->
@@ -112,6 +145,22 @@
                             @enderror
                         </div>
                     </div>
+                     <div class="col-md-4">
+                        <!-- Photo de profil -->
+                        <div class="mb-3">
+                            <label for="photo" class="form-label">Photo de profil</label>
+                            <input type="file" class="form-control" id="photo" name="image" accept="image/*">
+                            @if(isset($commercial->user->image) && $commercial->user->image)
+                                <div class="mt-2">
+                                    <img src="{{ asset($commercial->user->image) }}" alt="Photo actuelle" style="max-width: 120px; max-height: 120px; object-fit: cover;">
+                                </div>
+                            @endif
+                            @error('image')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
+                    <hr>
                     <div class="text-center">
                         <button type="submit" class="btn btn-sm btn-primary px-4"><i class="lni lni-save"></i>Mettre à
                             jour</button>

@@ -8,8 +8,7 @@
                     <div class="d-flex align-items-center">
                         <div>
                             <p class="mb-0 text-secondary">Total Stagiaire</p>
-                            <h4 class="my-1 text-info">4805</h4>
-                            <p class="mb-0 font-13">+2.5% from last week</p>
+                            <h4 class="my-1 text-info">{{ $totalStagiaires }}</h4>
                         </div>
                         <div class="widgets-icons-2 rounded-circle bg-gradient-orange text-white ms-auto"><i
                                 class="bx bxs-group"></i>
@@ -24,8 +23,8 @@
                     <div class="d-flex align-items-center">
                         <div>
                             <p class="mb-0 text-secondary">Total commerciaux</p>
-                            <h4 class="my-1 text-danger">$84,245</h4>
-                            <p class="mb-0 font-13">+5.4% from last week</p>
+                            <h4 class="my-1 text-danger">{{ $totalCommerciaux }}</h4>
+
                         </div>
                         <div class="widgets-icons-2 rounded-circle bg-gradient-orange text-white ms-auto"><i
                                 class="bx bxs-group"></i>
@@ -40,8 +39,8 @@
                     <div class="d-flex align-items-center">
                         <div>
                             <p class="mb-0 text-secondary">Total formateurs</p>
-                            <h4 class="my-1 text-success">34.6%</h4>
-                            <p class="mb-0 font-13">-4.5% from last week</p>
+                            <h4 class="my-1 text-success">{{ $totalFormateurs }}</h4>
+
                         </div>
                         <div class="widgets-icons-2 rounded-circle bg-gradient-orange text-white ms-auto"><i
                                 class="bx bxs-group"></i>
@@ -56,8 +55,8 @@
                     <div class="d-flex align-items-center">
                         <div>
                             <p class="mb-0 text-secondary">Total pôle relation client</p>
-                            <h4 class="my-1 text-warning">8.4K</h4>
-                            <p class="mb-0 font-13">+8.4% from last week</p>
+                            <h4 class="my-1 text-warning">{{ $totalPoleRelationClient }}</h4>
+
                         </div>
                         <div class="widgets-icons-2 rounded-circle bg-gradient-orange text-white ms-auto"><i
                                 class="bx bxs-group"></i>
@@ -67,118 +66,483 @@
             </div>
         </div>
     </div>
-    <div class="row">
-        <div class="col-12 col-lg-8 d-flex">
-            <div class="card radius-10 w-100">
-                <div class="card-header">
+
+
+
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-4">
+        <div class="col">
+            <div class="card radius-10 border-start border-0 border-4 border-danger">
+                <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div>
-                            <h6 class="mb-0">Fréquence formation</h6>
+                            <p class="mb-0 text-secondary">App téléchargée</p>
+                            <h4 class="my-1 text-danger">{{ $totalAppDownloads ?? 0 }}</h4>
                         </div>
-                        <div class="dropdown ms-auto">
-                            <a class="dropdown-toggle dropdown-toggle-nocaret" href="#" data-bs-toggle="dropdown"><i
-                                    class="bx bx-dots-horizontal-rounded font-22 text-option"></i>
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="javascript:;">Action</a>
-                                </li>
-                                <li><a class="dropdown-item" href="javascript:;">Another action</a>
-                                </li>
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
-                                <li><a class="dropdown-item" href="javascript:;">Something else here</a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div class="d-flex align-items-center ms-auto font-13 gap-2 mb-3">
-                        <span class="border px-1 rounded cursor-pointer"><i class="bx bxs-circle me-1"
-                                style="color: #14abef"></i>Sales</span>
-                        <span class="border px-1 rounded cursor-pointer"><i class="bx bxs-circle me-1"
-                                style="color: #ffc107"></i>Visits</span>
-                    </div>
-                    <div class="chart-container-1">
-                        <canvas id="chart1" width="1026" height="260"
-                            style="display: block; box-sizing: border-box; height: 260px; width: 1026px;"></canvas>
-                    </div>
-                </div>
-                <div class="row row-cols-1 row-cols-md-3 row-cols-xl-3 g-0 row-group text-center border-top">
-                    <div class="col">
-                        <div class="p-3">
-                            <h5 class="mb-0">24.15M</h5>
-                            <small class="mb-0">Bureautique<span> <i class="bx bx-up-arrow-alt align-middle"></i>
-                                    2.43%</span></small>
-                        </div>
-                    </div>
-                    <div class="col">
-                        <div class="p-3">
-                            <h5 class="mb-0">12:38</h5>
-                            <small class="mb-0">Langues<span> <i class="bx bx-up-arrow-alt align-middle"></i>
-                                    12.65%</span></small>
-                        </div>
-                    </div>
-                    <div class="col">
-                        <div class="p-3">
-                            <h5 class="mb-0">639.82</h5>
-                            <small class="mb-0">Création<span> <i class="bx bx-up-arrow-alt align-middle"></i>
-                                    5.62%</span></small>
-                        </div>
+                        <div class="widgets-icons-2 rounded-circle bg-gradient-orange text-white ms-auto"><i
+                                class="bx bx-download"></i></div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-12 col-lg-4 d-flex">
-            <div class="card radius-10 w-100">
-                <div class="card-header">
+        <div class="col">
+            <div class="card radius-10 border-start border-0 border-4 border-warning">
+                <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div>
-                            <h6 class="mb-0">Top 5 Formations</h6>
+                            <p class="mb-0 text-secondary">Première connexion</p>
+                            <h4 class="my-1 text-warning">{{ $totalFirstLogins ?? 0 }}</h4>
                         </div>
-                        <div class="dropdown ms-auto">
-                            <a class="dropdown-toggle dropdown-toggle-nocaret" href="#" data-bs-toggle="dropdown"><i
-                                    class="bx bx-dots-horizontal-rounded font-22 text-option"></i>
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="javascript:;">Action</a>
-                                </li>
-                                <li><a class="dropdown-item" href="javascript:;">Another action</a>
-                                </li>
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
-                                <li><a class="dropdown-item" href="javascript:;">Something else here</a>
-                                </li>
-                            </ul>
-                        </div>
+                        <div class="widgets-icons-2 rounded-circle bg-gradient-orange text-white ms-auto"><i
+                                class="bx bx-log-in"></i></div>
                     </div>
                 </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card radius-10 border-start border-0 border-4 border-success">
                 <div class="card-body">
-                    <div class="chart-container-2">
-                        <canvas id="chart2" width="485" height="220"
-                            style="display: block; box-sizing: border-box; height: 220px; width: 485px;"></canvas>
+                    <div class="d-flex align-items-center">
+                        <div>
+                            <p class="mb-0 text-secondary">Quiz joués</p>
+                            <h4 class="my-1 text-success">{{ $totalQuizzesPlayed ?? 0 }}</h4>
+                        </div>
+                        <div class="widgets-icons-2 rounded-circle bg-gradient-orange text-white ms-auto"><i
+                                class="bx bx-play-circle"></i></div>
                     </div>
                 </div>
-                <ul class="list-group list-group-flush">
-                    <li
-                        class="list-group-item d-flex bg-transparent justify-content-between align-items-center border-top">
-                        Bureautique <span class="badge bg-success rounded-pill">25</span>
-                    </li>
-                    <li class="list-group-item d-flex bg-transparent justify-content-between align-items-center">Langues
-                        <span class="badge bg-danger rounded-pill">10</span>
-                    </li>
-                    <li class="list-group-item d-flex bg-transparent justify-content-between align-items-center">Internet
-                        <span class="badge bg-primary rounded-pill">65</span>
-                    </li>
-                    <li class="list-group-item d-flex bg-transparent justify-content-between align-items-center">Création
-                        <span class="badge bg-warning text-dark rounded-pill">14</span>
-                    </li>
-                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="card-title">Statistiques de quiz par jour</h5>
+
+                    <!-- Filtres supplémentaires -->
+                    <div class="row mb-3">
+                        <div class="col-md-4 mb-2">
+                            <label for="formateurFilterDaily" class="form-label">Formateur :</label>
+                            <select id="formateurFilterDaily" class="form-select">
+                                <option value="">Tous</option>
+                                @foreach ($formateurs ?? [] as $formateur)
+                                    <option value="{{ $formateur->id }}">{{ $formateur->user->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <label for="commercialFilterDaily" class="form-label">Commercial :</label>
+                            <select id="commercialFilterDaily" class="form-select">
+                                <option value="">Tous</option>
+                                @foreach ($commerciaux ?? [] as $commercial)
+                                    <option value="{{ $commercial->id }}">{{ $commercial->user->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <label for="poleFilterDaily" class="form-label">Pôle relation client :</label>
+                            <select id="poleFilterDaily" class="form-select">
+                                <option value="">Tous</option>
+                                @foreach ($poles ?? [] as $pole)
+                                    <option value="{{ $pole->id }}">{{ $pole->user->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="quizSelectorDaily" class="form-label">Choisir un quiz :</label>
+                        <select id="quizSelectorDaily" class="form-select">
+                            <option value="" selected>-- Tous les quiz --</option>
+                        </select>
+                    </div>
+
+                    <div style="height: 450px;">
+                        <canvas id="filteredDailyChart"></canvas>
+                    </div>
+                    <div class="mt-3 text-end">
+                        <button id="exportDailyCSV" class="btn btn-outline-primary btn-sm">Exporter CSV</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="card-title">Statistiques de quiz par mois</h5>
+
+                    <!-- Filtres supplémentaires -->
+                    <div class="row mb-3">
+                        <div class="col-md-4 mb-2">
+                            <label for="formateurFilterMonthly" class="form-label">Formateur :</label>
+                            <select id="formateurFilterMonthly" class="form-select">
+                                <option value="">Tous</option>
+                                @foreach ($formateurs ?? [] as $formateur)
+                                    <option value="{{ $formateur->id }}">{{ $formateur->user->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <label for="commercialFilterMonthly" class="form-label">Commercial :</label>
+                            <select id="commercialFilterMonthly" class="form-select">
+                                <option value="">Tous</option>
+                                @foreach ($commerciaux ?? [] as $commercial)
+                                    <option value="{{ $commercial->id }}">{{ $commercial->user->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <label for="poleFilterMonthly" class="form-label">Pôle relation client :</label>
+                            <select id="poleFilterMonthly" class="form-select">
+                                <option value="">Tous</option>
+                                @foreach ($poles ?? [] as $pole)
+                                    <option value="{{ $pole->id }}">{{ $pole->user->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="quizSelectorMonthly" class="form-label">Choisir un quiz :</label>
+                        <select id="quizSelectorMonthly" class="form-select shadow-sm border border-primary">
+                            <option value="" selected>-- Tous les quiz --</option>
+                        </select>
+                    </div>
+
+                    <div style="height: 450px;">
+                        <canvas id="filteredMonthlyChart"></canvas>
+                    </div>
+                    <div class="mt-3 text-end">
+                        <button id="exportMonthlyCSV" class="btn btn-outline-primary btn-sm">Exporter CSV</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="card-title">Répartition des participations par quiz</h5>
+                    <div style="height: 350px;">
+                        <canvas id="pieQuizParticipation"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="card-title">Utilisateurs connectés</h5>
+                    <ul id="connectedUsersList" class="list-group">
+                        @foreach ($connectedUsers ?? [] as $user)
+                            <li class="list-group-item d-flex align-items-center">
+                                <span class="badge bg-success rounded-circle me-2" style="width:10px;height:10px;"></span>
+                                {{ $user->name }} <span class="text-muted ms-2">({{ $user->role }})</span>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="card-title">Quiz récemment joués</h5>
+                    <ul class="list-group">
+                        @forelse($recentQuizzes ?? [] as $quiz)
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>
+                                    <strong>{{ $quiz->quiz_title }}</strong> par {{ $quiz->user_name }}
+                                </span>
+                                <span
+                                    class="badge bg-primary">{{ $quiz->completed_at ? \Carbon\Carbon::parse($quiz->completed_at)->format('d/m/Y H:i') : '' }}</span>
+                            </li>
+                        @empty
+                            <li class="list-group-item">Aucun quiz récemment joué.</li>
+                        @endforelse
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="card-title">Quiz en cours</h5>
+                    <ul class="list-group">
+                        @forelse($activeQuizzes ?? [] as $quiz)
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>
+                                    <strong>{{ $quiz->quiz_title }}</strong> par {{ $quiz->user_name }}
+                                </span>
+                                <span
+                                    class="badge bg-warning">{{ $quiz->started_at ? \Carbon\Carbon::parse($quiz->started_at)->format('d/m/Y H:i') : '' }}</span>
+                            </li>
+                        @empty
+                            <li class="list-group-item">Aucun quiz en cours.</li>
+                        @endforelse
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
 @endsection
+
 @section('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        const dailyStats = @json($dailyStats);
+        const monthlyStats = @json($monthlyStats);
+
+        const groupByQuiz = (data, labelKey) => {
+            const grouped = {};
+            data.forEach(item => {
+                if (!grouped[item.titre]) grouped[item.titre] = [];
+                grouped[item.titre].push({
+                    label: item[labelKey],
+                    total: item.total
+                });
+            });
+            return grouped;
+        };
+
+        const mergeDataByLabel = (groupedData) => {
+            const merged = {};
+            for (const [quiz, entries] of Object.entries(groupedData)) {
+                entries.forEach(entry => {
+                    if (!merged[entry.label]) merged[entry.label] = 0;
+                    merged[entry.label] += entry.total;
+                });
+            }
+            return Object.entries(merged).map(([label, total]) => ({
+                label,
+                total
+            }));
+        };
+
+        const dailyGrouped = groupByQuiz(dailyStats, 'date');
+        const monthlyGrouped = groupByQuiz(monthlyStats, 'month');
+
+        const dailySelect = document.getElementById('quizSelectorDaily');
+        const monthlySelect = document.getElementById('quizSelectorMonthly');
+
+        const fillSelect = (selectElement, quizTitles) => {
+            quizTitles.forEach(title => {
+                const opt = document.createElement('option');
+                opt.value = title;
+                opt.textContent = title;
+                selectElement.appendChild(opt);
+            });
+        };
+
+        fillSelect(dailySelect, Object.keys(dailyGrouped));
+        fillSelect(monthlySelect, Object.keys(monthlyGrouped));
+
+        let dailyChart = null;
+        let monthlyChart = null;
+
+        const createChart = (ctx, data, label) => {
+            return new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.map(item => item.label),
+                    datasets: [{
+                        label: label,
+                        data: data.map(item => item.total),
+                        backgroundColor: '#FEB823',
+                        borderWidth: 1,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            labels: {
+                                color: '#000000' // légende en noir
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: (context) => label,
+                                label: (context) => {
+                                    const dateOrMonth = context.label;
+                                    const value = context.formattedValue;
+                                    return `Date: ${dateOrMonth} — ${value} participations`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                color: '#000000'
+                            },
+                            grid: {
+                                color: 'rgba(0,0,0,0.1)'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Nombre de participations',
+                                color: '#000000'
+                            },
+                            ticks: {
+                                color: '#000000'
+                            },
+                            grid: {
+                                color: 'rgba(0,0,0,0.1)'
+                            }
+                        }
+                    }
+                }
+            });
+        };
+
+        // Ajout du filtrage et de l'export CSV
+        function filterStats(stats, filters) {
+            return stats.filter(item => {
+                let ok = true;
+                if (filters.formateur && item.formateur_id != filters.formateur) ok = false;
+                if (filters.commercial && item.commercial_id != filters.commercial) ok = false;
+                if (filters.pole && item.pole_id != filters.pole) ok = false;
+                return ok;
+            });
+        }
+
+        function exportToCSV(data, filename) {
+            if (!data.length) return;
+            const csvRows = [];
+            const headers = Object.keys(data[0]);
+            csvRows.push(headers.join(','));
+            data.forEach(row => {
+                csvRows.push(headers.map(field => '"' + (row[field] ?? '') + '"').join(','));
+            });
+            const csvString = csvRows.join('\n');
+            const blob = new Blob([csvString], {
+                type: 'text/csv'
+            });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Gestion des filtres et export pour le graphique journalier
+        function updateDailyChart() {
+            if (dailyChart) dailyChart.destroy();
+            const filters = {
+                formateur: document.getElementById('formateurFilterDaily').value,
+                commercial: document.getElementById('commercialFilterDaily').value,
+                pole: document.getElementById('poleFilterDaily').value
+            };
+            let filtered = filterStats(dailyStats, filters);
+            const quiz = dailySelect.value;
+            if (quiz) filtered = filtered.filter(item => item.titre === quiz);
+            const grouped = groupByQuiz(filtered, 'date');
+            const data = quiz ? grouped[quiz] || [] : mergeDataByLabel(grouped);
+            dailyChart = createChart(
+                document.getElementById('filteredDailyChart'),
+                data,
+                quiz || 'Tous les quiz (par jour)'
+            );
+            // Stocker les données filtrées pour l'export
+            window._lastDailyExport = data;
+        }
+
+        document.getElementById('formateurFilterDaily').addEventListener('change', updateDailyChart);
+        document.getElementById('commercialFilterDaily').addEventListener('change', updateDailyChart);
+        document.getElementById('poleFilterDaily').addEventListener('change', updateDailyChart);
+        dailySelect.addEventListener('change', updateDailyChart);
+        document.getElementById('exportDailyCSV').addEventListener('click', function() {
+            exportToCSV(window._lastDailyExport || [], 'statistiques-quiz-jour.csv');
+        });
+
+        // Gestion des filtres et export pour le graphique mensuel
+        function updateMonthlyChart() {
+            if (monthlyChart) monthlyChart.destroy();
+            const filters = {
+                formateur: document.getElementById('formateurFilterMonthly').value,
+                commercial: document.getElementById('commercialFilterMonthly').value,
+                pole: document.getElementById('poleFilterMonthly').value
+            };
+            let filtered = filterStats(monthlyStats, filters);
+            const quiz = monthlySelect.value;
+            if (quiz) filtered = filtered.filter(item => item.titre === quiz);
+            const grouped = groupByQuiz(filtered, 'month');
+            const data = quiz ? grouped[quiz] || [] : mergeDataByLabel(grouped);
+            monthlyChart = createChart(
+                document.getElementById('filteredMonthlyChart'),
+                data,
+                quiz || 'Tous les quiz (par mois)'
+            );
+            window._lastMonthlyExport = data;
+        }
+
+        document.getElementById('formateurFilterMonthly').addEventListener('change', updateMonthlyChart);
+        document.getElementById('commercialFilterMonthly').addEventListener('change', updateMonthlyChart);
+        document.getElementById('poleFilterMonthly').addEventListener('change', updateMonthlyChart);
+        monthlySelect.addEventListener('change', updateMonthlyChart);
+        document.getElementById('exportMonthlyCSV').addEventListener('click', function() {
+            exportToCSV(window._lastMonthlyExport || [], 'statistiques-quiz-mois.csv');
+        });
+
+        // Initialisation
+        window.addEventListener('DOMContentLoaded', function() {
+            initCharts();
+            // Stockage initial pour l'export
+            window._lastDailyExport = mergeDataByLabel(dailyGrouped);
+            window._lastMonthlyExport = mergeDataByLabel(monthlyGrouped);
+        });
+
+        // Camembert de répartition des participations par quiz
+        document.addEventListener('DOMContentLoaded', function() {
+            const pieData = {};
+            (window.dailyStats || []).forEach(item => {
+                if (!pieData[item.titre]) pieData[item.titre] = 0;
+                pieData[item.titre] += item.total;
+            });
+            const pieLabels = Object.keys(pieData);
+            const pieValues = Object.values(pieData);
+            if (document.getElementById('pieQuizParticipation')) {
+                new Chart(document.getElementById('pieQuizParticipation'), {
+                    type: 'pie',
+                    data: {
+                        labels: pieLabels,
+                        datasets: [{
+                            data: pieValues,
+                            backgroundColor: [
+                                '#0d6efd', '#17a00e', '#f41127', '#ffc107', '#212529',
+                                '#FEB823', '#6c757d', '#20c997', '#6610f2', '#fd7e14'
+                            ],
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            },
+                            title: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    </script>
 @endsection

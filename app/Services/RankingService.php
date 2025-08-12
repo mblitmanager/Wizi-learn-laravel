@@ -35,19 +35,36 @@ class RankingService
 
     public function getStagiaireProgress($stagiaireId)
     {
-        $quizzes = $this->quizRepository->getQuizzesByStagiaire($stagiaireId);
+
+        // Récupérer les participations du stagiaire
+        $userId = \App\Models\Stagiaire::where('id', $stagiaireId)->value('user_id');
+        $participations = \App\Models\QuizParticipation::where('user_id', $userId)->get();
+
+        $total_quizzes = $participations->count();
+
+        $completed_quizzes = $participations->where('status', 'completed')->count();
+        $average_score = $participations->avg('score');
+        $total_points = $participations->sum('score');
+        $total_time_spent = $participations->sum('time_spent');
+
+        // Récupérer le rang et les points depuis Classement si besoin
+        $classement = \App\Models\Classement::where('stagiaire_id', $stagiaireId)->first();
+        $rang = $classement ? $classement->rang : null;
+
         $progress = [
-            'total_quizzes' => $quizzes->count(),
-            'completed_quizzes' => $quizzes->where('completed', true)->count(),
-            'average_score' => $quizzes->avg('score'),
-            'total_points' => $quizzes->sum('points'),
-            'level' => $this->calculateLevel($quizzes->sum('points'))
+            'total_quizzes' => $total_quizzes,
+            'completed_quizzes' => $completed_quizzes,
+            'average_score' => $average_score,
+            'total_points' => $total_points,
+            'total_time_spent' => $total_time_spent,
+            'rang' => $rang,
+            'level' => $this->calculateLevel($total_points)
         ];
 
         return $progress;
     }
 
-    private function calculateLevel($points)
+    public function calculateLevel($points)
     {
         // Configuration des niveaux
         $basePoints = 10; // Points nécessaires pour chaque niveau

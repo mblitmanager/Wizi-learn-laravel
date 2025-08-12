@@ -39,8 +39,11 @@ class FormateurStoreRequest extends FormRequest
             'role' => [
                 Rule::in(['formateur']),
             ],
-            'formation_id' => 'required|exists:formations,id',
-            'stagiaire_id' => 'required|exists:stagiaires,id',
+            'telephone' => 'nullable|string',
+
+            'catalogue_formation_id' => 'required|exists:catalogue_formations,id',
+            'stagiaire_id' => 'nullable|exists:stagiaires,id',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,ico,webp|max:16096',
         ];
     }
 
@@ -48,6 +51,8 @@ class FormateurStoreRequest extends FormRequest
     {
         return [
             'name.required' => 'Le nom est obligatoire.',
+            'prenom.required' => 'Le prénom est obligatoire.',
+
             'name.string' => 'Le nom doit être une chaîne de caractères.',
             'prenom.string' => 'Le prenom doit être une chaîne de caractères.',
             'name.max' => 'Le nom ne doit pas dépasser 255 caractères.',
@@ -56,6 +61,9 @@ class FormateurStoreRequest extends FormRequest
             'email.email' => 'L\'adresse e-mail n\'est pas valide.',
             'email.unique' => 'Cette adresse e-mail est déjà utilisée.',
             'password.required' => 'Le mot de passe est obligatoire.',
+            'image.image' => 'Le fichier doit être une image.',
+            'image.mimes' => 'L\'image doit être au format jpeg, png, jpg, gif ou webp.',
+            'image.max' => 'La taille de l\'image ne doit pas dépasser 16 Mo.',
         ];
     }
 }
