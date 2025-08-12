@@ -10,11 +10,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Controllers\Controller;
+use App\Mail\CommercialFilleulInscriptionNotification;
 use App\Mail\FilleulInscriptionConfirmation;
 use App\Models\CatalogueFormation;
 use App\Models\DemandeInscription;
 use App\Models\DemandeInscriptionParrainage;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class ParrainageController extends Controller
@@ -82,7 +84,7 @@ class ParrainageController extends Controller
             'parrain_id' => 'required|exists:users,id',
             'catalogue_formation_id' => 'required|exists:catalogue_formations,id',
             'lien_parrainage' => 'nullable|string',
-            'motif' => 'required', // Validation du motif
+            'motif' => 'required',
         ], [
             'parrain_id.required' => 'Le parrain est requis',
             'catalogue_formation_id.required' => 'Le catalogue de formation est requis',
@@ -99,86 +101,131 @@ class ParrainageController extends Controller
             ], 422);
         }
 
-        // Création du user
-        $user = User::create([
-            'name' => $request->nom,
-            'email' => $request->email,
-            'password' => bcrypt(Str::random(12)),
-            'role' => 'stagiaire'
-        ]);
+        DB::beginTransaction();
 
-        // Création du stagiaire
-        $stagiaire = Stagiaire::create([
-            'user_id' => $user->id,
-            'civilite' => $request->civilite,
-            'prenom' => $request->prenom,
-            'nom' => $request->nom,
-            'telephone' => $request->telephone,
-            'adresse' => $request->adresse,
-            'code_postal' => $request->code_postal,
-            'ville' => $request->ville,
-            'date_naissance' => $request->date_naissance,
-            'date_debut_formation' => $request->date_debut_formation ?? null,
-            'date_inscription' => $request->date_inscription ?? now(),
-            'statut' => $request->statut ?? 'en_attente',
-        ]);
+        try {
+            // Création du user
+            $user = User::create([
+                'name' => $request->nom,
+                'email' => $request->email,
+                'password' => bcrypt(Str::random(12)),
+                'role' => 'stagiaire'
+            ]);
 
-        // Enregistrement du parrainage
-        $parrainage = Parrainage::create([
-            'parrain_id' => $request->parrain_id,
-            'filleul_id' => $user->id,
-            'date_parrainage' => now(),
-            'points' => 2,
-            'gains' => 50.00
-        ]);
+            // Création du stagiaire
+            $stagiaire = Stagiaire::create([
+                'user_id' => $user->id,
+                'civilite' => $request->civilite,
+                'prenom' => $request->prenom,
+                'nom' => $request->nom,
+                'telephone' => $request->telephone,
+                'adresse' => $request->adresse,
+                'code_postal' => $request->code_postal,
+                'ville' => $request->ville,
+                'date_naissance' => $request->date_naissance,
+                'date_debut_formation' => $request->date_debut_formation ?? null,
+                'date_inscription' => $request->date_inscription ?? now(),
+                'statut' => $request->statut ?? 'en_attente',
+            ]);
 
-        // Association avec la formation
-        DB::table('stagiaire_catalogue_formations')->insert([
-            'stagiaire_id' => $stagiaire->id,
-            'catalogue_formation_id' => $request->catalogue_formation_id,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+            // Enregistrement du parrainage
+            Parrainage::create([
+                'parrain_id' => $request->parrain_id,
+                'filleul_id' => $user->id,
+                'date_parrainage' => now(),
+                'points' => 2,
+                'gains' => 50.00
+            ]);
 
-        // Enregistrement de la demande de parrainage avec les nouveaux champs
-        DemandeInscription::create([
-            'parrain_id' => $request->parrain_id,
-            'filleul_id' => $user->id,
-            'formation_id' => $request->catalogue_formation_id,
-            'statut' => 'complete',
-            'donnees_formulaire' => json_encode($request->all()),
-            'lien_parrainage' => $request->lien_parrainage,
-            'motif' => $request->motif,
-            'date_demande' => now(),
-            'date_inscription' => now(),
-        ]);
+            // Association avec la formation
+            DB::table('stagiaire_catalogue_formations')->insert([
+                'stagiaire_id' => $stagiaire->id,
+                'catalogue_formation_id' => $request->catalogue_formation_id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
 
-        $parrain = User::find($request->parrain_id);
-        $formation = CatalogueFormation::find($request->catalogue_formation_id);
+            // Enregistrement de la demande de parrainage
+            DemandeInscription::create([
+                'parrain_id' => $request->parrain_id,
+                'filleul_id' => $user->id,
+                'formation_id' => $request->catalogue_formation_id,
+                'statut' => 'complete',
+                'donnees_formulaire' => json_encode($request->all()),
+                'lien_parrainage' => $request->lien_parrainage,
+                'motif' => $request->motif,
+                'date_demande' => now(),
+                'date_inscription' => now(),
+            ]);
 
-        // Envoyer l'email de confirmation
-        if ($user->email) {
-            Mail::to($user->email)->send(new FilleulInscriptionConfirmation($user, $parrain, $formation));
+            $parrain = User::with('stagiaire.commercial')->find($request->parrain_id);
+            $formation = CatalogueFormation::find($request->catalogue_formation_id);
+
+            // Envoyer l'email de confirmation
+            // if ($user->email) {
+            //     Mail::to($user->email)->send(new FilleulInscriptionConfirmation($user, $parrain, $formation));
+            // }
+
+            // Envoyer une notification au parrain
+            if ($parrain) {
+                app(\App\Services\NotificationService::class)->sendFcmToUser(
+                    $parrain,
+                    'Nouveau filleul',
+                    'Vous avez reçu un nouveau filleul !',
+                    ['type' => 'parrainage', 'filleul_id' => $user->id]
+                );
+
+                // Récupérer le commercial associé au parrain
+                $commerciaux = $parrain->stagiaire->commercial()->with('user')->get();
+                // Si le parrain a un commercial associé et que le commercial a un email
+                // Dans la partie où vous envoyez l'email au commercial
+                if ($commerciaux->isNotEmpty()) {
+                    foreach ($commerciaux as $commercial) {
+                        if ($commercial->user?->email) {
+                            try {
+                                if (view()->exists('emails.commercial_inscription')) {
+                                    Mail::to($commercial->user->email)->send(
+                                        new CommercialFilleulInscriptionNotification(
+                                            $user,
+                                            $parrain,
+                                            $formation,
+                                            $commercial
+                                        )
+                                    );
+                                } else {
+                                    Log::error("Email template commercial_inscription not found");
+                                }
+                            } catch (\Exception $e) {
+                                Log::error("Failed to send email to commercial: " . $e->getMessage());
+                                continue; // Continue avec le prochain commercial
+                            }
+                        }
+                    }
+                }
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Inscription réussie! Un email de confirmation a été envoyé.',
+                'data' => [
+                    'user' => $user,
+                    'stagiaire' => $stagiaire
+                ]
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error("Erreur lors de l'inscription du filleul: " . $e->getMessage());
+            Log::error($e->getTraceAsString());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Une erreur est survenue lors de l\'inscription.',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        // Envoyer une notification au parrain
-        if ($parrain) {
-            app(\App\Services\NotificationService::class)->sendFcmToUser(
-                $parrain,
-                'Nouveau filleul',
-                'Vous avez reçu un nouveau filleul !',
-                ['type' => 'parrainage', 'filleul_id' => $user->id]
-            );
-        }
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Inscription réussie! Un email de confirmation a été envoyé.',
-            'data' => [
-                'user' => $user,
-                'stagiaire' => $stagiaire
-            ]
-        ]);
     }
     public function getStatsParrain(Request $request)
     {

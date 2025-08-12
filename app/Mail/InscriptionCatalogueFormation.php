@@ -24,6 +24,7 @@ class InscriptionCatalogueFormation extends Mailable
     public function build()
     {
         return $this->subject('Nouvelle inscription à une formation')
+            ->from('contact@wizi-learn.com', 'Wizi-Learn')
             ->view('emails.inscription_catalogue_formation');
     }
 }
