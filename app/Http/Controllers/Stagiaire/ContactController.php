@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use App\Models\Commercial;
 use App\Models\Formateur;
 use App\Models\PoleRelationClient;
+use Illuminate\Support\Facades\DB;
 
 class ContactController extends Controller
 {
@@ -47,13 +48,13 @@ class ContactController extends Controller
             $formateursArr = $formateurs->map(function ($formateur) use ($stagiaireId) {
                 $formations = [];
                 // Récupération directe des formations depuis la table pivot
-                $pivotFormations = \DB::table('stagiaire_catalogue_formations')
+                $pivotFormations = DB::table('stagiaire_catalogue_formations')
                     ->where('formateur_id', $formateur->id)
                     ->where('stagiaire_id', $stagiaireId)
                     ->get();
                 foreach ($pivotFormations as $pivot) {
                     // On récupère la formation associée à l'ID du pivot
-                    $formation = \DB::table('catalogue_formations')->where('id', $pivot->catalogue_formation_id)->first();
+                    $formation = DB::table('catalogue_formations')->where('id', $pivot->catalogue_formation_id)->first();
                     if ($formation) {
                         $formations[] = [
                             'id' => $formation->id,
@@ -61,6 +62,7 @@ class ContactController extends Controller
                             'dateDebut' => $pivot->date_debut ?? null,
                             'dateFin' => $pivot->date_fin ?? null,
                             'formateur' => $formateur->user->name,
+                            'image' => $formation->user->image ?? '/images/default-formation.png',
                         ];
                     }
                 }
@@ -71,6 +73,7 @@ class ContactController extends Controller
                     'email' => $formateur->user->email,
                     'telephone' => $formateur->telephone ?? '',
                     'formations' => $formations,
+                    'image' => $formateur->user->image ?? '/images/default-avatar.png',
                 ];
             });
 
@@ -82,7 +85,7 @@ class ContactController extends Controller
                     'name' => $commercial->user->name,
                     'email' => $commercial->user->email,
                     'telephone' => $commercial->telephone ?? '',
-                    // 'role' => $commercial->role ?? ($commercial->user->role ?? 'commercial'),
+                    'image' => $commercial->user->image ?? '/images/default-avatar.png',
                 ];
             });
 
@@ -95,7 +98,7 @@ class ContactController extends Controller
                     'name' => $pole->user->name,
                     'email' => $pole->user->email,
                     'telephone' => $pole->telephone ?? '',
-                    // 'role' => $pole->role ?? ($pole->user->role ?? 'pole relation client'),
+                    'image' => $pole->user->image ?? '/images/default-avatar.png',
                 ];
             });
 
@@ -136,13 +139,13 @@ class ContactController extends Controller
             $formateursArr = $formateurs->map(function ($formateur) use ($stagiaireId) {
                 $formations = [];
                 // Récupération directe des formations depuis la table pivot
-                $pivotFormations = \DB::table('stagiaire_catalogue_formations')
+                $pivotFormations = DB::table('stagiaire_catalogue_formations')
                     ->where('formateur_id', $formateur->id)
                     ->where('stagiaire_id', $stagiaireId)
                     ->get();
                 foreach ($pivotFormations as $pivot) {
                     // On récupère la formation associée à l'ID du pivot
-                    $formation = \DB::table('catalogue_formations')->where('id', $pivot->catalogue_formation_id)->first();
+                    $formation = DB::table('catalogue_formations')->where('id', $pivot->catalogue_formation_id)->first();
                     if ($formation) {
                         $formations[] = [
                             'id' => $formation->id,

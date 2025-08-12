@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Confirmation d'inscription par parrainage</title>
+    <title>Nouveau filleul inscrit</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
@@ -165,53 +165,27 @@
     <div class="email-container">
         <div class="header">
             <img src="{{ $message->embed($logo) }}" alt="Logo" class="logo">
-            <h1>Bienvenue {{ $filleul->stagiaire->prenom }},</h1>
+            <h1>Nouveau filleul inscrit</h1>
         </div>
 
         <div class="content">
-            <p>Votre inscription à la formation <strong class="text-accent">{{ $formation->titre }}</strong> a bien été
-                enregistrée grâce au parrainage de <strong>{{ $parrain->name }}</strong>.</p>
+            <p>Bonjour <strong>{{ $commercial->user->name }}</strong>,</p>
+            <p>Un nouveau filleul a été inscrit pour votre parrain <strong>{{ $parrain->name }}</strong>.</p>
 
             <div class="highlight-box">
-                <h2>Votre mentorat personnalisé</h2>
-                <p>Votre parrain <strong>{{ $parrain->name }}</strong>, expert reconnu, vous apportera un soutien
-                    privilégié :</p>
+                <h2>Détails du filleul</h2>
                 <ul>
-                    <li>Guidage pour un démarrage efficace</li>
-                    <li>Réponses à vos interrogations techniques</li>
-                    <li>Transmission des meilleures pratiques métier</li>
+                    <li><strong>Nom :</strong> {{ $filleul->name }}</li>
+                    <li><strong>Email :</strong> {{ $filleul->email }}</li>
+                    <li><strong>Formation :</strong> {{ $formation->titre }}</li>
                 </ul>
             </div>
-
-            <div class="info-card">
-                <h3>Caractéristiques de la formation</h3>
-                <ul>
-                    <li><strong>Durée :</strong> {{ $formation->duree }}</li>
-                    @if ($formation->certification)
-                        <li><strong>Certification :</strong> {{ $formation->certification }}</li>
-                    @endif
-                    <li><strong>Accès :</strong> Actif dans les 24 heures</li>
-                </ul>
-            </div>
-
-            <div class="divider"></div>
-
-            <h3>Démarrage de votre parcours</h3>
-            <ul>
-                <li>Recevez vos codes d'accès par email</li>
-                <li>Connectez-vous à notre plateforme</li>
-                <li>Échangez avec votre parrain</li>
-            </ul>
 
             <div class="text-center">
-                <a href="{{ config('app.url') }}" class="cta-button">Accéder à la plateforme</a>
+                <a href="{{ url('/commercial/parrainage') }}" class="cta-button">Voir les détails</a>
             </div>
 
-            <p class="signature">L'équipe pédagogique<br>{{ config('app.name') }}</p>
-
-            <p>Pour toute assistance :<br>
-                <a href="mailto:support@example.com">support@example.com</a> | 01 23 45 67 89
-            </p>
+            <p class="signature">L'équipe {{ config('app.name') }}</p>
         </div>
 
         <div class="footer">
