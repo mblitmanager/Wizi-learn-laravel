@@ -311,10 +311,20 @@
                             <label for="partenaire_id" class="form-label">Partenaire</label>
                             <select name="partenaire_id" class="form-select">
                                 <option value="">-- Aucun --</option>
-                                @foreach($partenaires as $partenaire)
-                                    <option value="{{ $partenaire->id }}" @if($stagiaire->partenaire_id == $partenaire->id) selected @endif>{{ $partenaire->identifiant }}</option>
+                                @foreach ($partenaires as $partenaire)
+                                    <option value="{{ $partenaire->id }}"
+                                        @if ($stagiaire->partenaire_id == $partenaire->id) selected @endif>{{ $partenaire->identifiant }}
+                                    </option>
                                 @endforeach
                             </select>
+                            @if ($stagiaire->partenaire)
+                                <div class="mt-2">
+                                    <a href="{{ route('partenaires.show', $stagiaire->partenaire->id) }}"
+                                        class="btn btn-sm btn-info text-white">
+                                        <i class="bx bx-user"></i> Voir contacts du partenaire
+                                    </a>
+                                </div>
+                            @endif
                         </div>
                         <div class="text-center">
                             <button type="submit" class="btn  btn-sm btn-success px-4"><i

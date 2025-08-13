@@ -10,6 +10,7 @@ use App\Http\Controllers\Stagiaire\QuizStagiaireController;
 use App\Http\Controllers\Stagiaire\ContactController;
 use App\Http\Controllers\Stagiaire\RankingController;
 use App\Http\Controllers\Stagiaire\ParrainageController;
+use App\Http\Controllers\Stagiaire\PartnerController;
 use App\Http\Controllers\QuizController;
 use App\Http\Controllers\Stagiaire\FormationController;
 use App\Http\Controllers\Stagiaire\ProfileController;
@@ -74,6 +75,7 @@ Route::middleware(['auth:api'])->group(function () {
         // Route::get('/formations', [FormationStagiaireController::class, 'getFormations']);
         Route::get('/show', [ProfileController::class, 'show']);
         Route::post('/profile/photo', [ProfileController::class, 'uploadAvatar']);
+        Route::get('/partner', [PartnerController::class, 'getMyPartner']);
     });
     Route::post('/stagiaire/inscription-catalogue-formation', [InscriptionCatalogueFormationController::class, 'inscrire']);
     // New route for getting responses to a question

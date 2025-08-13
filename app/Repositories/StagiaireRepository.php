@@ -11,12 +11,12 @@ class StagiaireRepository implements StagiaireRepositoryInterface
 {
     public function all(): Collection
     {
-        return Stagiaire::with(['catalogue_formations'])->get();
+        return Stagiaire::with(['catalogue_formations', 'partenaire'])->get();
     }
 
     public function find($id): ?Stagiaire
     {
-        return Stagiaire::with('user', 'catalogue_formations')->where('id', $id)->first();
+        return Stagiaire::with('user', 'catalogue_formations', 'partenaire')->where('id', $id)->first();
     }
 
     public function create(array $data): Stagiaire

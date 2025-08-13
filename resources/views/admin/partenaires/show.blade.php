@@ -101,6 +101,7 @@
                                                         <th>Nom</th>
                                                         <th>Prénom</th>
                                                         <th>Email</th>
+                                                        <th>Téléphone</th>
                                                         <th>Ville</th>
                                                         <th>Actions</th>
                                                     </tr>
@@ -108,9 +109,11 @@
                                                 <tbody>
                                                     @foreach ($partenaire->stagiaires as $stagiaire)
                                                         <tr>
-                                                            <td>{{ $stagiaire->nom }}</td>
+                                                            <td>{{ strtoupper($stagiaire->user->name ?? $stagiaire->nom) }}
+                                                            </td>
                                                             <td>{{ $stagiaire->prenom }}</td>
                                                             <td>{{ $stagiaire->user->email ?? '-' }}</td>
+                                                            <td>{{ $stagiaire->telephone ?? '-' }}</td>
                                                             <td>{{ $stagiaire->ville }}</td>
                                                             <td>
                                                                 <a href="{{ route('stagiaires.show', $stagiaire->id) }}"

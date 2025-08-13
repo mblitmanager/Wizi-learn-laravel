@@ -109,8 +109,16 @@
                                 <label for="stagiaires" class="form-label">Stagiaires associés</label>
                                 <select name="stagiaires[]" class="form-control select2" multiple>
                                     @foreach ($stagiaires as $stagiaire)
-                                        <option value="{{ $stagiaire->id }}">{{ $stagiaire->prenom }}
-                                            {{ $stagiaire->nom }}
+                                        <option value="{{ $stagiaire->id }}">
+                                            {{ strtoupper($stagiaire->user->name ?? $stagiaire->nom) }}
+                                            {{ $stagiaire->prenom }}
+                                            @php($email = $stagiaire->user->email ?? null)
+                                            @php($phone = $stagiaire->telephone ?? null)
+                                            @if ($email || $phone)
+                                                - {{ $email ?? '-' }} @if ($phone)
+                                                    • {{ $phone }}
+                                                @endif
+                                            @endif
                                         </option>
                                     @endforeach
                                 </select>

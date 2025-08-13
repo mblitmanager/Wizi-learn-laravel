@@ -130,8 +130,17 @@
                                 <select name="stagiaires[]" class="form-control select2" multiple>
                                     @foreach ($stagiaires as $stagiaire)
                                         <option value="{{ $stagiaire->id }}"
-                                            @if ($partenaire->stagiaires->contains($stagiaire->id)) selected @endif>{{ $stagiaire->prenom }}
-                                            {{ $stagiaire->nom }}</option>
+                                            @if ($partenaire->stagiaires->contains($stagiaire->id)) selected @endif>
+                                            {{ strtoupper($stagiaire->user->name ?? $stagiaire->nom) }}
+                                            {{ $stagiaire->prenom }}
+                                            @php($email = $stagiaire->user->email ?? null)
+                                            @php($phone = $stagiaire->telephone ?? null)
+                                            @if ($email || $phone)
+                                                - {{ $email ?? '-' }} @if ($phone)
+                                                    • {{ $phone }}
+                                                @endif
+                                            @endif
+                                        </option>
                                     @endforeach
                                 </select>
                             </div>
