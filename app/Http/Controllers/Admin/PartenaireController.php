@@ -29,6 +29,21 @@ class PartenaireController extends Controller
 
     public function store(Request $request)
     {
+        // Pré-filtrer les contacts vides avant validation
+        $rawContacts = $request->input('contacts', []);
+        if (is_array($rawContacts)) {
+            $filteredContacts = array_values(array_filter($rawContacts, function ($c) {
+                return is_array($c) && (
+                    !empty(trim($c['nom'] ?? '')) ||
+                    !empty(trim($c['prenom'] ?? '')) ||
+                    !empty(trim($c['fonction'] ?? '')) ||
+                    !empty(trim($c['email'] ?? '')) ||
+                    !empty(trim($c['tel'] ?? ''))
+                );
+            }));
+            $request->merge(['contacts' => $filteredContacts]);
+        }
+
         $data = $request->validate([
             'identifiant' => 'required|unique:partenaires',
             'adresse' => 'required',
@@ -39,8 +54,8 @@ class PartenaireController extends Controller
             'stagiaires' => 'array',
             'logo' => 'nullable|image|max:2048',
             'contacts' => 'nullable|array|max:3',
-            'contacts.*.nom' => 'required_with:contacts|string|max:255',
-            'contacts.*.prenom' => 'required_with:contacts|string|max:255',
+            'contacts.*.nom' => 'nullable|string|max:255',
+            'contacts.*.prenom' => 'nullable|string|max:255',
             'contacts.*.fonction' => 'nullable|string|max:255',
             'contacts.*.email' => 'nullable|email|max:255',
             'contacts.*.tel' => 'nullable|string|max:50',
@@ -49,16 +64,15 @@ class PartenaireController extends Controller
         if ($request->hasFile('logo')) {
             $logoFile = $request->file('logo');
             $logoName = uniqid('logo_') . '.' . $logoFile->getClientOriginalExtension();
-            $logoFile->move(public_path('partenaires'), $logoName);
+            $destination = public_path('partenaires');
+            if (!is_dir($destination)) {
+                @mkdir($destination, 0775, true);
+            }
+            $logoFile->move($destination, $logoName);
             $data['logo'] = 'partenaires/' . $logoName;
         }
 
-        // Nettoyer contacts: retirer entrées vides
-        if (!empty($data['contacts'])) {
-            $data['contacts'] = array_values(array_filter($data['contacts'], function ($c) {
-                return !empty($c['nom']) || !empty($c['prenom']) || !empty($c['email']) || !empty($c['tel']);
-            }));
-        }
+        // Les contacts sont déjà filtrés avant validation
 
         $partenaire = Partenaire::create($data);
         if (!empty($data['stagiaires'])) {
@@ -76,6 +90,21 @@ class PartenaireController extends Controller
 
     public function update(Request $request, $id)
     {
+        // Pré-filtrer les contacts vides avant validation
+        $rawContacts = $request->input('contacts', []);
+        if (is_array($rawContacts)) {
+            $filteredContacts = array_values(array_filter($rawContacts, function ($c) {
+                return is_array($c) && (
+                    !empty(trim($c['nom'] ?? '')) ||
+                    !empty(trim($c['prenom'] ?? '')) ||
+                    !empty(trim($c['fonction'] ?? '')) ||
+                    !empty(trim($c['email'] ?? '')) ||
+                    !empty(trim($c['tel'] ?? ''))
+                );
+            }));
+            $request->merge(['contacts' => $filteredContacts]);
+        }
+
         $data = $request->validate([
             'identifiant' => 'required|unique:partenaires,identifiant,' . $id,
             'adresse' => 'required',
@@ -86,8 +115,8 @@ class PartenaireController extends Controller
             'stagiaires' => 'array',
             'logo' => 'nullable|image|max:2048',
             'contacts' => 'nullable|array|max:3',
-            'contacts.*.nom' => 'required_with:contacts|string|max:255',
-            'contacts.*.prenom' => 'required_with:contacts|string|max:255',
+            'contacts.*.nom' => 'nullable|string|max:255',
+            'contacts.*.prenom' => 'nullable|string|max:255',
             'contacts.*.fonction' => 'nullable|string|max:255',
             'contacts.*.email' => 'nullable|email|max:255',
             'contacts.*.tel' => 'nullable|string|max:50',
@@ -97,15 +126,15 @@ class PartenaireController extends Controller
         if ($request->hasFile('logo')) {
             $logoFile = $request->file('logo');
             $logoName = uniqid('logo_') . '.' . $logoFile->getClientOriginalExtension();
-            $logoFile->move(public_path('partenaires'), $logoName);
+            $destination = public_path('partenaires');
+            if (!is_dir($destination)) {
+                @mkdir($destination, 0775, true);
+            }
+            $logoFile->move($destination, $logoName);
             $data['logo'] = 'partenaires/' . $logoName;
         }
 
-        if (!empty($data['contacts'])) {
-            $data['contacts'] = array_values(array_filter($data['contacts'], function ($c) {
-                return !empty($c['nom']) || !empty($c['prenom']) || !empty($c['email']) || !empty($c['tel']);
-            }));
-        }
+        // Les contacts sont déjà filtrés avant validation
 
         $partenaire->update($data);
         if (!empty($data['stagiaires'])) {

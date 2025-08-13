@@ -57,7 +57,7 @@
                                                         {{ $partenaire->identifiant }}
                                                     </a>
                                                 </td>
-                                                <td class="text-break">{{ $partenaire->adresse }}</td>
+                                                <td class="text-break">{{ $partenaire->ville }}</td>
                                                 <td>{{ $partenaire->departement }}</td>
                                                 <td>{{ $partenaire->code_postal }}</td>
                                                 <td>{{ $partenaire->type }}</td>

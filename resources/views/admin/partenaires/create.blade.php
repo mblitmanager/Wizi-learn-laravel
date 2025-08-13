@@ -37,6 +37,15 @@
                         style="box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;">
                         <form action="{{ route('partenaires.store') }}" method="POST" enctype="multipart/form-data">
                             @csrf
+                            @if ($errors->any())
+                                <div class="alert alert-danger">
+                                    <ul class="mb-0">
+                                        @foreach ($errors->all() as $error)
+                                            <li>{{ $error }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
                             <div class="mb-3">
                                 <label for="identifiant" class="form-label">Identifiant</label>
                                 <input type="text" name="identifiant" class="form-control" required>

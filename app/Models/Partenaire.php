@@ -18,10 +18,12 @@ class Partenaire extends Model
         'type',
         'logo',
         'contacts',
+        'actif',
     ];
 
     protected $casts = [
         'contacts' => 'array',
+        'actif' => 'boolean',
     ];
 
     public function stagiaires()
