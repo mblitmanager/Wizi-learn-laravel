@@ -16,7 +16,12 @@ class Partenaire extends Model
         'departement',
         'code_postal',
         'type',
-        'logo'
+        'logo',
+        'contacts',
+    ];
+
+    protected $casts = [
+        'contacts' => 'array',
     ];
 
     public function stagiaires()

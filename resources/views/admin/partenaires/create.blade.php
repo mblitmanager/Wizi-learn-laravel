@@ -65,11 +65,43 @@
                                 <label for="logo" class="form-label">Logo</label>
                                 <input type="file" name="logo" class="form-control" accept="image/*">
                             </div>
+
+                            <div class="mb-3">
+                                <label class="form-label d-block">Contacts (jusqu'à 3)</label>
+                                @for ($i = 0; $i < 3; $i++)
+                                    <div class="border rounded p-3 mb-2">
+                                        <div class="row g-2">
+                                            <div class="col-md-3">
+                                                <input type="text" name="contacts[{{ $i }}][nom]"
+                                                    class="form-control" placeholder="Nom">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" name="contacts[{{ $i }}][prenom]"
+                                                    class="form-control" placeholder="Prénom">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" name="contacts[{{ $i }}][fonction]"
+                                                    class="form-control" placeholder="Fonction">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="email" name="contacts[{{ $i }}][email]"
+                                                    class="form-control" placeholder="Email">
+                                            </div>
+                                            <div class="col-md-3 mt-2">
+                                                <input type="text" name="contacts[{{ $i }}][tel]"
+                                                    class="form-control" placeholder="Téléphone">
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endfor
+                            </div>
+
                             <div class="mb-3">
                                 <label for="stagiaires" class="form-label">Stagiaires associés</label>
                                 <select name="stagiaires[]" class="form-control select2" multiple>
                                     @foreach ($stagiaires as $stagiaire)
-                                        <option value="{{ $stagiaire->id }}">{{ $stagiaire->prenom }} {{ $stagiaire->nom }}
+                                        <option value="{{ $stagiaire->id }}">{{ $stagiaire->prenom }}
+                                            {{ $stagiaire->nom }}
                                         </option>
                                     @endforeach
                                 </select>

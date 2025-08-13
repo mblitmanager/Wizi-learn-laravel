@@ -36,54 +36,78 @@
                             <div class="px-4 py-4">
                                 <table class="table table-bordered table-hover w-100 text-wrap align-middle">
                                     <thead>
-                                    <tr>
-                                        <th>Identifiant</th>
-                                        <th>Ville</th>
-                                        <th>Département</th>
-                                        <th>Code postal</th>
-                                        <th>Type</th>
-                                        <th>Logo</th>
-                                        <th>Stagiaires</th>
-                                        <th>Actions</th>
-                                    </tr>
+                                        <tr>
+                                            <th>Identifiant</th>
+                                            <th>Ville</th>
+                                            <th>Département</th>
+                                            <th>Code postal</th>
+                                            <th>Type</th>
+                                            <th>Logo</th>
+                                            <th>Stagiaires</th>
+                                            <th>Contact</th>
+                                            <th>Actions</th>
+                                        </tr>
                                     </thead>
                                     <tbody>
-                                    @foreach ($partenaires as $partenaire)
-                                        <tr>
-                                            <td class="text-break">
-                                                <a href="{{ route('partenaires.show', $partenaire->id) }}" class="text-decoration-underline">
-                                                    {{ $partenaire->identifiant }}
-                                                </a>
-                                            </td>
-                                            <td class="text-break">{{ $partenaire->adresse }}</td>
-                                            <td>{{ $partenaire->departement }}</td>
-                                            <td>{{ $partenaire->code_postal }}</td>
-                                            <td>{{ $partenaire->type }}</td>
-                                            <td>
-                                                @if ($partenaire->logo)
-                                                    <img src="{{ asset($partenaire->logo) }}" alt="Logo"
-                                                         style="max-width:60px; max-height:60px;" class="img-fluid rounded">
-                                                @endif
-                                            </td>
-                                            <td class="text-break">
-                                                @foreach ($partenaire->stagiaires as $stagiaire)
-                                                    <span class="badge bg-info mb-1">
-                                {{ $stagiaire->prenom }} {{ $stagiaire->nom }}
-                            </span>
-                                                @endforeach
-                                            </td>
-                                            <td class="text-nowrap">
-                                                <a href="{{ route('partenaires.show', $partenaire->id) }}" class="btn btn-sm btn-info text-white mb-1">Afficher</a>
-                                                <a href="{{ route('partenaires.edit', $partenaire->id) }}" class="btn btn-sm btn-success mb-1">Modifier</a>
-                                                <form action="{{ route('partenaires.destroy', $partenaire->id) }}" method="POST" style="display:inline-block;">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn btn-sm btn-danger mb-1"
+                                        @foreach ($partenaires as $partenaire)
+                                            <tr>
+                                                <td class="text-break">
+                                                    <a href="{{ route('partenaires.show', $partenaire->id) }}"
+                                                        class="text-decoration-underline">
+                                                        {{ $partenaire->identifiant }}
+                                                    </a>
+                                                </td>
+                                                <td class="text-break">{{ $partenaire->adresse }}</td>
+                                                <td>{{ $partenaire->departement }}</td>
+                                                <td>{{ $partenaire->code_postal }}</td>
+                                                <td>{{ $partenaire->type }}</td>
+                                                <td>
+                                                    @if ($partenaire->logo)
+                                                        <img src="{{ asset($partenaire->logo) }}" alt="Logo"
+                                                            style="max-width:60px; max-height:60px;"
+                                                            class="img-fluid rounded">
+                                                    @endif
+                                                </td>
+                                                <td class="text-break">
+                                                    @foreach ($partenaire->stagiaires as $stagiaire)
+                                                        <span class="badge bg-info mb-1">
+                                                            {{ $stagiaire->prenom }} {{ $stagiaire->nom }}
+                                                        </span>
+                                                    @endforeach
+                                                </td>
+                                                <td class="text-break">
+                                                    @php($c = is_array($partenaire->contacts ?? null) && count($partenaire->contacts) ? $partenaire->contacts[0] : null)
+                                                    @if ($c)
+                                                        <div><strong>{{ $c['prenom'] ?? '' }}
+                                                                {{ $c['nom'] ?? '' }}</strong></div>
+                                                        @if (!empty($c['fonction']))
+                                                            <div>{{ $c['fonction'] }}</div>
+                                                        @endif
+                                                        @if (!empty($c['tel']))
+                                                            <div>{{ $c['tel'] }}</div>
+                                                        @endif
+                                                        @if (!empty($c['email']))
+                                                            <div>{{ $c['email'] }}</div>
+                                                        @endif
+                                                    @else
+                                                        <span class="text-muted">-</span>
+                                                    @endif
+                                                </td>
+                                                <td class="text-nowrap">
+                                                    <a href="{{ route('partenaires.show', $partenaire->id) }}"
+                                                        class="btn btn-sm btn-info text-white mb-1">Afficher</a>
+                                                    <a href="{{ route('partenaires.edit', $partenaire->id) }}"
+                                                        class="btn btn-sm btn-success mb-1">Modifier</a>
+                                                    <form action="{{ route('partenaires.destroy', $partenaire->id) }}"
+                                                        method="POST" style="display:inline-block;">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn btn-sm btn-danger mb-1"
                                                             onclick="return confirm('Supprimer ce partenaire ?')">Supprimer</button>
-                                                </form>
-                                            </td>
-                                        </tr>
-                                    @endforeach
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        @endforeach
                                     </tbody>
                                 </table>
                             </div>
@@ -94,5 +118,4 @@
             </div>
         </div>
     </div>
-
 @endsection

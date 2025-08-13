@@ -38,13 +38,28 @@ class PartenaireController extends Controller
             'type' => 'required',
             'stagiaires' => 'array',
             'logo' => 'nullable|image|max:2048',
+            'contacts' => 'nullable|array|max:3',
+            'contacts.*.nom' => 'required_with:contacts|string|max:255',
+            'contacts.*.prenom' => 'required_with:contacts|string|max:255',
+            'contacts.*.fonction' => 'nullable|string|max:255',
+            'contacts.*.email' => 'nullable|email|max:255',
+            'contacts.*.tel' => 'nullable|string|max:50',
         ]);
+
         if ($request->hasFile('logo')) {
             $logoFile = $request->file('logo');
             $logoName = uniqid('logo_') . '.' . $logoFile->getClientOriginalExtension();
             $logoFile->move(public_path('partenaires'), $logoName);
             $data['logo'] = 'partenaires/' . $logoName;
         }
+
+        // Nettoyer contacts: retirer entrées vides
+        if (!empty($data['contacts'])) {
+            $data['contacts'] = array_values(array_filter($data['contacts'], function ($c) {
+                return !empty($c['nom']) || !empty($c['prenom']) || !empty($c['email']) || !empty($c['tel']);
+            }));
+        }
+
         $partenaire = Partenaire::create($data);
         if (!empty($data['stagiaires'])) {
             $partenaire->stagiaires()->sync($data['stagiaires']);
@@ -70,7 +85,14 @@ class PartenaireController extends Controller
             'type' => 'required',
             'stagiaires' => 'array',
             'logo' => 'nullable|image|max:2048',
+            'contacts' => 'nullable|array|max:3',
+            'contacts.*.nom' => 'required_with:contacts|string|max:255',
+            'contacts.*.prenom' => 'required_with:contacts|string|max:255',
+            'contacts.*.fonction' => 'nullable|string|max:255',
+            'contacts.*.email' => 'nullable|email|max:255',
+            'contacts.*.tel' => 'nullable|string|max:50',
         ]);
+
         $partenaire = Partenaire::findOrFail($id);
         if ($request->hasFile('logo')) {
             $logoFile = $request->file('logo');
@@ -78,6 +100,13 @@ class PartenaireController extends Controller
             $logoFile->move(public_path('partenaires'), $logoName);
             $data['logo'] = 'partenaires/' . $logoName;
         }
+
+        if (!empty($data['contacts'])) {
+            $data['contacts'] = array_values(array_filter($data['contacts'], function ($c) {
+                return !empty($c['nom']) || !empty($c['prenom']) || !empty($c['email']) || !empty($c['tel']);
+            }));
+        }
+
         $partenaire->update($data);
         if (!empty($data['stagiaires'])) {
             $partenaire->stagiaires()->sync($data['stagiaires']);
