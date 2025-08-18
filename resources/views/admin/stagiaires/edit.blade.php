@@ -16,6 +16,15 @@
                 </div>
                 <div class="ms-auto">
                     <div class="btn-group">
+                        <form action="{{ route('stagiaires.destroy', $stagiaire->id) }}" method="post">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-sm btn-danger"><i
+                                    class="fadeIn animated bx bx-trash"></i>Supprimé</button>
+                        </form>
+
+                    </div>
+                    <div class="btn-group">
                         <a href="{{ route('stagiaires.index') }}" type="button" class="btn btn-sm btn-primary"><i
                                 class="fadeIn animated bx bx-chevron-left-circle"></i>Retour</a>
                     </div>
