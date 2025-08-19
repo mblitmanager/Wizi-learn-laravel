@@ -6,6 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Partenaire;
 use App\Models\Stagiaire;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\HtmlString;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class PartenaireController extends Controller
 {
@@ -15,6 +19,8 @@ class PartenaireController extends Controller
         return view('admin.partenaires.show', compact('partenaire'));
     }
 
+    /*************  ✨ Windsurf Command ⭐  *************/
+    /*******  9df1d27e-2ae9-45c1-b4b4-1b9537456af1  *******/
     public function index()
     {
         $partenaires = Partenaire::with('stagiaires')->get();
@@ -151,5 +157,177 @@ class PartenaireController extends Controller
         $partenaire->stagiaires()->detach();
         $partenaire->delete();
         return redirect()->route('partenaires.index')->with('success', 'Partenaire supprimé avec succès');
+    }
+
+
+    public function import(Request $request)
+    {
+        set_time_limit(0);
+
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls'
+        ]);
+
+        try {
+            $file = $request->file('file');
+            $spreadsheet = IOFactory::load($file->getRealPath());
+            $sheet = $spreadsheet->getActiveSheet();
+
+            $invalidRows = [];
+            $importedCount = 0;
+
+            // Vérifier l'en-tête
+            $headerRow = $sheet->getRowIterator()->current();
+            $headerCells = $headerRow->getCellIterator();
+            $expectedHeaders = [
+                'Identifiant',
+                'Adresse',
+                'Ville',
+                'Département',
+                'Code postal',
+                'Type',
+                'Logo',
+                'Contacts',
+                'Actif'
+            ];
+
+            $headerValues = [];
+            $headerCells->rewind();
+            for ($i = 0; $i < 9; $i++) {
+                if ($headerCells->valid()) {
+                    $headerValues[] = preg_replace('/\s+/', '', strtolower(trim($headerCells->current()->getValue())));
+                    $headerCells->next();
+                } else {
+                    $headerValues[] = '';
+                }
+            }
+
+            $expectedHeadersNormalized = [];
+            foreach ($expectedHeaders as $header) {
+                $expectedHeadersNormalized[] = [preg_replace('/\s+/', '', strtolower($header))];
+            }
+
+            $headerErrors = [];
+            $headerIsValid = true;
+            foreach ($expectedHeadersNormalized as $index => $possibleHeaders) {
+                if (!isset($headerValues[$index]) || !in_array($headerValues[$index], $possibleHeaders)) {
+                    $officialHeader = $expectedHeaders[$index];
+                    $headerErrors[] = 'Colonne ' . ($index + 1) . ": Attendu '{$officialHeader}'";
+                    $headerIsValid = false;
+                }
+            }
+
+            if (!$headerIsValid) {
+                return redirect()->route('partenaires.index')
+                    ->with('error', new HtmlString(
+                        'En-têtes incorrects:<br>' . implode('<br>', $headerErrors) .
+                            '<br>Veuillez utiliser le modèle fourni.'
+                    ));
+            }
+
+            foreach ($sheet->getRowIterator(2) as $row) {
+                $cellIterator = $row->getCellIterator();
+                $cellIterator->setIterateOnlyExistingCells(false);
+                $data = [];
+
+                foreach ($cellIterator as $cell) {
+                    $value = trim($cell->getValue());
+                    $data[] = $value;
+                    if (count($data) === 9) {
+                        break;
+                    }
+                }
+
+                while (count($data) < 9) {
+                    $data[] = '';
+                }
+
+                $rowIndex = $row->getRowIndex();
+
+                if (count($data) !== 9) {
+                    $invalidRows[] = ['ligne' => $rowIndex, 'erreur' => 'Nombre de colonnes incorrect'];
+                    continue;
+                }
+
+                list($identifiant, $adresse, $ville, $departement, $codePostal, $type, $logo, $contacts, $actif) = $data;
+
+                // Validation des champs obligatoires
+                if (empty($identifiant) || empty($type)) {
+                    $invalidRows[] = ['ligne' => $rowIndex, 'erreur' => 'Champs obligatoires manquants (identifiant ou type)'];
+                    continue;
+                }
+
+                // Vérifier si l'identifiant existe déjà
+                if (Partenaire::where('identifiant', $identifiant)->exists()) {
+                    $invalidRows[] = ['ligne' => $rowIndex, 'erreur' => 'Identifiant déjà existant'];
+                    continue;
+                }
+
+                // Traitement du champ actif
+                $actif = strtolower(trim($actif));
+                $actif = in_array($actif, ['oui', 'yes', 'true', '1', 'vrai']) ? true : false;
+
+                // Traitement des contacts (format JSON ou chaîne séparée)
+                $contactsArray = [];
+                if (!empty($contacts)) {
+                    try {
+                        // Essayer de parser comme JSON
+                        $contactsArray = json_decode($contacts, true);
+                        if (json_last_error() !== JSON_ERROR_NONE) {
+                            throw new \Exception('Format JSON invalide');
+                        }
+
+                        // Valider la structure des contacts
+                        foreach ($contactsArray as $contact) {
+                            if (!isset($contact['nom']) || !isset($contact['prenom']) || !isset($contact['email'])) {
+                                throw new \Exception('Structure de contact invalide');
+                            }
+                        }
+                    } catch (\Exception $e) {
+                        $invalidRows[] = ['ligne' => $rowIndex, 'erreur' => 'Format de contacts invalide: ' . $e->getMessage()];
+                        continue;
+                    }
+                }
+
+                DB::beginTransaction();
+                try {
+                    $partenaire = Partenaire::create([
+                        'identifiant' => $identifiant,
+                        'adresse' => $adresse,
+                        'ville' => $ville,
+                        'departement' => $departement,
+                        'code_postal' => $codePostal,
+                        'type' => $type,
+                        'logo' => $logo,
+                        'contacts' => json_encode($contactsArray),
+                        'actif' => $actif,
+                    ]);
+
+                    DB::commit();
+                    $importedCount++;
+                } catch (\Exception $e) {
+                    DB::rollBack();
+                    $invalidRows[] = ['ligne' => $rowIndex, 'erreur' => 'Erreur lors de la création : ' . $e->getMessage()];
+                }
+            }
+
+            $message = 'Importation terminée.';
+            if ($importedCount > 0) {
+                $message .= " <strong>$importedCount</strong> partenaires importés.";
+            }
+
+            if (count($invalidRows) > 0) {
+                Log::warning('Erreurs import partenaires : ' . json_encode($invalidRows));
+                $message .= '<br><strong>' . count($invalidRows) . '</strong> erreurs détectées.';
+                session()->flash('import_errors', $invalidRows);
+            }
+
+            return redirect()->route('partenaires.index')
+                ->with($importedCount > 0 ? 'success' : 'error', new HtmlString($message));
+        } catch (\Exception $e) {
+            Log::error('Erreur import partenaires : ' . $e->getMessage());
+            return redirect()->route('partenaires.index')
+                ->with('error', 'Erreur lors de l\'import: ' . $e->getMessage());
+        }
     }
 }

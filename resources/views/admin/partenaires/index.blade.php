@@ -19,15 +19,62 @@
                 <div class="ms-auto">
                     <div class="btn-group">
 
-
+                        <button class="btn btn-sm text-white btn-info mx-2" data-bs-toggle="modal"
+                            data-bs-target="#importModal"><i class="lni lni-cloud-download"></i>importer partenaire</button>
                         <a href="{{ route('partenaires.create') }}" type="button" class="btn btn-sm btn-primary px-4">
                             <i class="fadeIn animated bx bx-plus"></i> Nouveau partenaire</a>
                     </div>
                 </div>
             </div>
         </div>
+        @if (session('import_errors'))
+            <div class="alert alert-danger border-0 bg-danger alert-dismissible fade show">
+                <div class="text-white">
+                    <strong>Erreurs détectées durant l'import :</strong>
+                    <ul class="mt-2 mb-0 ps-4">
+                        @foreach (session('import_errors') as $err)
+                            <li>
+                                <strong>Ligne {{ $err['ligne'] }} :</strong> {{ $err['erreur'] }}
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+        <div>
+            <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header  bg-primary">
+                            <h5 class="modal-title text-white" id="exampleModalLabel">Importer des partenaires</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form action="{{ route('partenaires.import') }}" method="POST" enctype="multipart/form-data">
+                                @csrf
+
+                                <div class="mb-3">
+                                    <label for="file" class="form-label">Fichier Excel (.xlsx)</label>
+                                    <input type="file" name="file" id="file" class="form-control" required
+                                        accept=".xlsx,.xls">
+                                </div>
+
+                                <div class="progress mb-3 d-none" id="progressBarWrapper">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                                        style="width: 100%;" id="progressBar">
+                                        Importation en cours...
+                                    </div>
+                                </div>
 
 
+                                <button type="submit" class="btn btn-sm btn-primary">Importer</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="col-md-12">
             <div class="card">
                 <div class="card-body">
