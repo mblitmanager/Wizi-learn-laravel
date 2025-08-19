@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Achievement extends Model
 {
@@ -44,5 +45,20 @@ class Achievement extends Model
     public function users()
     {
         return $this->belongsToMany(Stagiaire::class, 'stagiaire_achievements', 'achievement_id', 'stagiaire_id');
+    }
+
+    /**
+     * Accessor pour retourner une URL absolue pour l'icône si une valeur relative est stockée.
+     */
+    public function getIconAttribute($value)
+    {
+        if (empty($value)) {
+            return $value;
+        }
+        if (Str::startsWith($value, ['http://', 'https://'])) {
+            return $value;
+        }
+        $path = ltrim($value, '/');
+        return url('/storage/achievements/' . $path);
     }
 }

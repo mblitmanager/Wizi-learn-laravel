@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Stagiaire;
 
 use App\Http\Controllers\Controller;
@@ -26,6 +27,7 @@ class AchievementController extends Controller
             if (!$stagiaire) {
                 return response()->json(['error' => 'Stagiaire non trouvé'], 404);
             }
+            // Récupérer les achievements; l'accessor getIconAttribute fournira une URL complète
             $achievements = $stagiaire->achievements()->get();
             return response()->json(['achievements' => $achievements]);
         } catch (JWTException $e) {
@@ -46,7 +48,7 @@ class AchievementController extends Controller
             // Si un code d'achievement est passé (ex: android_download)
             $code = $request->input('code');
             $quizId = $request->input('quiz_id');
-            
+
             if ($code) {
                 $newAchievements = $this->achievementService->unlockAchievementByCode($stagiaire, $code);
             } else {
