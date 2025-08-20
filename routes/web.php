@@ -139,6 +139,7 @@ Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function
     Route::get('classements', [\App\Http\Controllers\Admin\ClassementController::class, 'index'])->name('classement.index');
     Route::get('demande/historique', [DemandeHistoriqueController::class, 'index'])->name('demande.historique.index');
     Route::get('demande/historique/{id}', [DemandeHistoriqueController::class, 'show'])->name('demande.historique.show');
+    Route::post('partenaires/import', [PartenaireController::class, 'import'])->name('partenaires.import');
 });
 
 // // Route pour enregistrer le token FCM
