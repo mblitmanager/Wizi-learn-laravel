@@ -20,7 +20,6 @@ class PartenaireController extends Controller
     }
 
     /*************  ✨ Windsurf Command ⭐  *************/
-    /*******  9df1d27e-2ae9-45c1-b4b4-1b9537456af1  *******/
     public function index()
     {
         $partenaires = Partenaire::with('stagiaires')->get();
@@ -163,6 +162,7 @@ class PartenaireController extends Controller
     public function import(Request $request)
     {
         set_time_limit(0);
+        ini_set('memory_limit', '256M'); // Augmenter la mémoire
 
         $request->validate([
             'file' => 'required|file|mimes:xlsx,xls'
@@ -170,15 +170,24 @@ class PartenaireController extends Controller
 
         try {
             $file = $request->file('file');
-            $spreadsheet = IOFactory::load($file->getRealPath());
+
+            // Utiliser un reader avec optimisation mémoire
+            $reader = IOFactory::createReaderForFile($file->getRealPath());
+            $reader->setReadDataOnly(true); // IMPORTANT: Ne lire que les données
+            $reader->setReadEmptyCells(false); // Ignorer les cellules vides
+
+            $spreadsheet = $reader->load($file->getRealPath());
             $sheet = $spreadsheet->getActiveSheet();
 
             $invalidRows = [];
             $importedCount = 0;
 
-            // Vérifier l'en-tête
-            $headerRow = $sheet->getRowIterator()->current();
-            $headerCells = $headerRow->getCellIterator();
+            // OPTIMISATION: Lire l'en-tête directement sans itérateur
+            $headerData = $sheet->rangeToArray('A1:M1')[0];
+            $headerValues = array_map(function ($value) {
+                return preg_replace('/\s+/', '', strtolower(trim($value ?? '')));
+            }, $headerData);
+
             $expectedHeaders = [
                 'Identifiant',
                 'Adresse',
@@ -187,32 +196,23 @@ class PartenaireController extends Controller
                 'Code postal',
                 'Type',
                 'Logo',
-                'Contacts',
-                'Actif'
+                'Nom du contact',
+                'Prénom du contact',
+                'Fonction du contact',
+                'Mail',
+                'Tél portable',
+                'Statut'
             ];
 
-            $headerValues = [];
-            $headerCells->rewind();
-            for ($i = 0; $i < 9; $i++) {
-                if ($headerCells->valid()) {
-                    $headerValues[] = preg_replace('/\s+/', '', strtolower(trim($headerCells->current()->getValue())));
-                    $headerCells->next();
-                } else {
-                    $headerValues[] = '';
-                }
-            }
-
-            $expectedHeadersNormalized = [];
-            foreach ($expectedHeaders as $header) {
-                $expectedHeadersNormalized[] = [preg_replace('/\s+/', '', strtolower($header))];
-            }
+            $expectedHeadersNormalized = array_map(function ($header) {
+                return [preg_replace('/\s+/', '', strtolower($header))];
+            }, $expectedHeaders);
 
             $headerErrors = [];
             $headerIsValid = true;
             foreach ($expectedHeadersNormalized as $index => $possibleHeaders) {
                 if (!isset($headerValues[$index]) || !in_array($headerValues[$index], $possibleHeaders)) {
-                    $officialHeader = $expectedHeaders[$index];
-                    $headerErrors[] = 'Colonne ' . ($index + 1) . ": Attendu '{$officialHeader}'";
+                    $headerErrors[] = 'Colonne ' . ($index + 1) . ": Attendu '{$expectedHeaders[$index]}'";
                     $headerIsValid = false;
                 }
             }
@@ -225,36 +225,57 @@ class PartenaireController extends Controller
                     ));
             }
 
-            foreach ($sheet->getRowIterator(2) as $row) {
-                $cellIterator = $row->getCellIterator();
-                $cellIterator->setIterateOnlyExistingCells(false);
-                $data = [];
+            // OPTIMISATION: Utiliser getHighestDataRow() au lieu de l'itérateur
+            $highestRow = $sheet->getHighestDataRow();
 
-                foreach ($cellIterator as $cell) {
-                    $value = trim($cell->getValue());
-                    $data[] = $value;
-                    if (count($data) === 9) {
+            for ($rowIndex = 2; $rowIndex <= $highestRow; $rowIndex++) {
+                // OPTIMISATION: Lire toute la ligne en une fois
+                $rowData = $sheet->rangeToArray('A' . $rowIndex . ':M' . $rowIndex)[0];
+                $rowData = array_map('trim', $rowData);
+
+                // Vérifier si la ligne est vide
+                $isRowEmpty = true;
+                foreach ($rowData as $value) {
+                    if (!empty($value)) {
+                        $isRowEmpty = false;
                         break;
                     }
                 }
 
-                while (count($data) < 9) {
-                    $data[] = '';
+                if ($isRowEmpty) {
+                    continue;
                 }
 
-                $rowIndex = $row->getRowIndex();
-
-                if (count($data) !== 9) {
+                if (count($rowData) < 13) {
                     $invalidRows[] = ['ligne' => $rowIndex, 'erreur' => 'Nombre de colonnes incorrect'];
                     continue;
                 }
 
-                list($identifiant, $adresse, $ville, $departement, $codePostal, $type, $logo, $contacts, $actif) = $data;
+                list(
+                    $identifiant,
+                    $adresse,
+                    $ville,
+                    $departement,
+                    $codePostal,
+                    $type,
+                    $logo,
+                    $nomContact,
+                    $prenomContact,
+                    $fonctionContact,
+                    $mail,
+                    $telPortable,
+                    $statut
+                ) = $rowData;
 
                 // Validation des champs obligatoires
-                if (empty($identifiant) || empty($type)) {
-                    $invalidRows[] = ['ligne' => $rowIndex, 'erreur' => 'Champs obligatoires manquants (identifiant ou type)'];
+                if (empty($identifiant)) {
+                    $invalidRows[] = ['ligne' => $rowIndex, 'erreur' => 'Champ obligatoire manquant (identifiant)'];
                     continue;
+                }
+
+                // Si le type est vide, mettre "CSE" par défaut
+                if (empty($type)) {
+                    $type = 'CSE';
                 }
 
                 // Vérifier si l'identifiant existe déjà
@@ -264,34 +285,14 @@ class PartenaireController extends Controller
                 }
 
                 // Traitement du champ actif
-                $actif = strtolower(trim($actif));
-                $actif = in_array($actif, ['oui', 'yes', 'true', '1', 'vrai']) ? true : false;
+                $actif = strtolower(trim($statut));
+                $actif = in_array($actif, ['signée', 'oui', 'yes', 'true', '1', 'vrai', 'actif']) ? true : false;
 
-                // Traitement des contacts (format JSON ou chaîne séparée)
-                $contactsArray = [];
-                if (!empty($contacts)) {
-                    try {
-                        // Essayer de parser comme JSON
-                        $contactsArray = json_decode($contacts, true);
-                        if (json_last_error() !== JSON_ERROR_NONE) {
-                            throw new \Exception('Format JSON invalide');
-                        }
+                // Traitement des contacts
+                $contactsArray = $this->processContacts($nomContact, $prenomContact, $fonctionContact, $mail, $telPortable);
 
-                        // Valider la structure des contacts
-                        foreach ($contactsArray as $contact) {
-                            if (!isset($contact['nom']) || !isset($contact['prenom']) || !isset($contact['email'])) {
-                                throw new \Exception('Structure de contact invalide');
-                            }
-                        }
-                    } catch (\Exception $e) {
-                        $invalidRows[] = ['ligne' => $rowIndex, 'erreur' => 'Format de contacts invalide: ' . $e->getMessage()];
-                        continue;
-                    }
-                }
-
-                DB::beginTransaction();
                 try {
-                    $partenaire = Partenaire::create([
+                    Partenaire::create([
                         'identifiant' => $identifiant,
                         'adresse' => $adresse,
                         'ville' => $ville,
@@ -303,13 +304,20 @@ class PartenaireController extends Controller
                         'actif' => $actif,
                     ]);
 
-                    DB::commit();
                     $importedCount++;
+
+                    // Libérer la mémoire périodiquement
+                    if ($importedCount % 50 === 0) {
+                        gc_collect_cycles();
+                    }
                 } catch (\Exception $e) {
-                    DB::rollBack();
                     $invalidRows[] = ['ligne' => $rowIndex, 'erreur' => 'Erreur lors de la création : ' . $e->getMessage()];
                 }
             }
+
+            // Libérer explicitement la mémoire
+            $spreadsheet->disconnectWorksheets();
+            unset($spreadsheet, $reader, $sheet);
 
             $message = 'Importation terminée.';
             if ($importedCount > 0) {
@@ -329,5 +337,52 @@ class PartenaireController extends Controller
             return redirect()->route('partenaires.index')
                 ->with('error', 'Erreur lors de l\'import: ' . $e->getMessage());
         }
+    }
+
+    private function processContacts($nomContact, $prenomContact, $fonctionContact, $mail, $telPortable)
+    {
+        $contactsArray = [];
+
+        $noms = preg_split('/\r\n|\n|\r|<br\s*\/?>/', $nomContact);
+        $prenoms = preg_split('/\r\n|\n|\r|<br\s*\/?>/', $prenomContact);
+        $fonctions = preg_split('/\r\n|\n|\r|<br\s*\/?>/', $fonctionContact);
+
+        $mails = [];
+        $mailLines = preg_split('/\r\n|\n|\r|<br\s*\/?>/', $mail);
+        foreach ($mailLines as $mailLine) {
+            $splitMails = explode(',', $mailLine);
+            foreach ($splitMails as $splitMail) {
+                $trimmedMail = trim($splitMail);
+                if (!empty($trimmedMail)) {
+                    $mails[] = $trimmedMail;
+                }
+            }
+        }
+
+        $telephones = preg_split('/\r\n|\n|\r|<br\s*\/?>/', $telPortable);
+
+        $noms = array_map('trim', $noms);
+        $prenoms = array_map('trim', $prenoms);
+        $fonctions = array_map('trim', $fonctions);
+        $mails = array_map('trim', $mails);
+        $telephones = array_map('trim', $telephones);
+
+        $maxContacts = max(count($noms), count($prenoms), count($fonctions));
+
+        for ($i = 0; $i < $maxContacts; $i++) {
+            $contact = [
+                'nom' => $noms[$i] ?? '',
+                'prenom' => $prenoms[$i] ?? '',
+                'fonction' => $fonctions[$i] ?? '',
+                'email' => $mails[$i] ?? '',
+                'tel' => $telephones[$i] ?? ''
+            ];
+
+            if (!empty($contact['nom']) || !empty($contact['prenom']) || !empty($contact['email'])) {
+                $contactsArray[] = $contact;
+            }
+        }
+
+        return $contactsArray;
     }
 }
