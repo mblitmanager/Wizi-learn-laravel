@@ -61,29 +61,139 @@
                                         <h5 class="mb-0"><i class="bx bx-user me-2"></i> Contacts</h5>
                                     </div>
                                     <div class="card-body">
-                                        @php($contacts = is_array($partenaire->contacts ?? null) ? $partenaire->contacts : [])
+                                        @php
+                                            $contacts = [];
+                                            if (!empty($partenaire->contacts)) {
+                                                $contactsData = is_array($partenaire->contacts)
+                                                    ? $partenaire->contacts
+                                                    : json_decode($partenaire->contacts, true);
+
+                                                // Si c'est un tableau avec des contacts fusionnés (ancien format)
+    if (
+        isset($contactsData[0]['nom']) &&
+        strpos($contactsData[0]['nom'], "\n") !== false
+    ) {
+        // Reconstruire les contacts correctement
+        $noms = explode("\n", $contactsData[0]['nom'] ?? '');
+        $prenoms = explode("\n", $contactsData[0]['prenom'] ?? '');
+        $fonctions = explode("\n", $contactsData[0]['fonction'] ?? '');
+
+        $emails = $contactsData[0]['emails'] ?? [];
+        $telephones = $contactsData[0]['telephones'] ?? [];
+
+        for (
+            $i = 0;
+            $i < max(count($noms), count($prenoms), count($fonctions));
+            $i++
+        ) {
+            $contact = [
+                'nom' => trim($noms[$i] ?? ''),
+                'prenom' => trim($prenoms[$i] ?? ''),
+                'fonction' => trim($fonctions[$i] ?? ''),
+                'email' => $emails[$i] ?? '',
+                'tel' => $telephones[$i] ?? '',
+            ];
+
+            if (!empty($contact['nom']) || !empty($contact['prenom'])) {
+                $contacts[] = $contact;
+            }
+        }
+    } else {
+        // Format normal - traiter chaque contact individuellement
+        foreach ($contactsData as $contact) {
+            // Gérer l'ancien format (email/tel) et le nouveau format (emails/telephones)
+                                                        $processedContact = [
+                                                            'nom' => $contact['nom'] ?? '',
+                                                            'prenom' => $contact['prenom'] ?? '',
+                                                            'fonction' => $contact['fonction'] ?? '',
+                                                        ];
+
+                                                        // Gérer les emails (ancien et nouveau format)
+                                                        if (isset($contact['emails']) && is_array($contact['emails'])) {
+                                                            $processedContact['email'] = implode(
+                                                                ', ',
+                                                                array_filter($contact['emails']),
+                                                            );
+                                                        } else {
+                                                            $processedContact['email'] = $contact['email'] ?? '';
+                                                        }
+
+                                                        // Gérer les téléphones (ancien et nouveau format)
+                                                        if (
+                                                            isset($contact['telephones']) &&
+                                                            is_array($contact['telephones'])
+                                                        ) {
+                                                            $processedContact['tel'] = implode(
+                                                                ', ',
+                                                                array_filter($contact['telephones']),
+                                                            );
+                                                        } else {
+                                                            $processedContact['tel'] =
+                                                                $contact['tel'] ?? ($contact['telephone'] ?? '');
+                                                        }
+
+                                                        $contacts[] = $processedContact;
+                                                    }
+                                                }
+                                            }
+                                        @endphp
+
                                         @if (count($contacts))
                                             <div class="row">
                                                 @foreach ($contacts as $c)
                                                     <div class="col-md-4 mb-3">
                                                         <div class="border rounded p-3 h-100">
                                                             <div class="fw-bold">
-                                                                {{ ($c['prenom'] ?? '') . ' ' . ($c['nom'] ?? '') }}</div>
+                                                                {{ trim(($c['prenom'] ?? '') . ' ' . ($c['nom'] ?? '')) }}
+                                                            </div>
+
                                                             @if (!empty($c['fonction']))
-                                                                <div class="text-muted">{{ $c['fonction'] }}</div>
+                                                                <div class="text-muted small">{{ $c['fonction'] }}</div>
                                                             @endif
+
                                                             @if (!empty($c['email']))
-                                                                <div><i class="bx bx-at"></i> {{ $c['email'] }}</div>
+                                                                <div class="mt-2">
+                                                                    <i class="bx bx-at"></i>
+                                                                    @foreach (explode(',', $c['email']) as $email)
+                                                                        @if (!empty(trim($email)))
+                                                                            <div class="d-inline-block">
+                                                                                <a href="mailto:{{ trim($email) }}"
+                                                                                    class="text-decoration-none">
+                                                                                    {{ trim($email) }}
+                                                                                </a>
+                                                                            </div>
+                                                                            @if (!$loop->last)
+                                                                                ,
+                                                                            @endif
+                                                                        @endif
+                                                                    @endforeach
+                                                                </div>
                                                             @endif
+
                                                             @if (!empty($c['tel']))
-                                                                <div><i class="bx bx-phone"></i> {{ $c['tel'] }}</div>
+                                                                <div class="mt-2">
+                                                                    <i class="bx bx-phone"></i>
+                                                                    @foreach (explode(',', $c['tel']) as $tel)
+                                                                        @if (!empty(trim($tel)))
+                                                                            <div class="d-inline-block">
+                                                                                <a href="tel:{{ preg_replace('/[^0-9+]/', '', trim($tel)) }}"
+                                                                                    class="text-decoration-none">
+                                                                                    {{ trim($tel) }}
+                                                                                </a>
+                                                                            </div>
+                                                                            @if (!$loop->last)
+                                                                                ,
+                                                                            @endif
+                                                                        @endif
+                                                                    @endforeach
+                                                                </div>
                                                             @endif
                                                         </div>
                                                     </div>
                                                 @endforeach
                                             </div>
                                         @else
-                                            <div class="text-muted">Aucun contact renseigné.</div>
+                                            <div class="text-muted">Aucun contact</div>
                                         @endif
                                     </div>
                                 </div>
