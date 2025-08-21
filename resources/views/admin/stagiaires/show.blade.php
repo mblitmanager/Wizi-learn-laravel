@@ -84,34 +84,50 @@
                                             </div>
                                         </div>
                                         <div class="row mb-3">
-        <!-- Partenaire Section -->
-        @if($stagiaire->partenaire)
-            <div class="card mb-4 shadow-sm">
-                <div class="card-header text-dark">
-                    <h5 class="mb-0"><i class="bx bx-building me-2"></i> Partenaire Associé</h5>
-                </div>
-                <div class="card-body" style="box-shadow: rgba(17, 12, 46, 0.15) 0px 48px 100px 0px;">
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item"><strong>Identifiant :</strong> {{ $stagiaire->partenaire->identifiant }}</li>
-                        <li class="list-group-item"><strong>Adresse :</strong> {{ $stagiaire->partenaire->adresse }}</li>
-                        <li class="list-group-item"><strong>Ville :</strong> {{ $stagiaire->partenaire->ville }}</li>
-                        <li class="list-group-item"><strong>Département :</strong> {{ $stagiaire->partenaire->departement }}</li>
-                        <li class="list-group-item"><strong>Code postal :</strong> {{ $stagiaire->partenaire->code_postal }}</li>
-                        <li class="list-group-item"><strong>Type :</strong> {{ $stagiaire->partenaire->type }}</li>
-                        @if($stagiaire->partenaire->logo)
-                            <li class="list-group-item"><strong>Logo :</strong><br>
-                                <img src="{{ asset('storage/' . $stagiaire->partenaire->logo) }}" alt="Logo Partenaire" style="max-width:120px;max-height:120px;">
-                            </li>
-                        @endif
-                    </ul>
-                </div>
-            </div>
-        @else
-            <div class="alert alert-warning mt-4">
-                <strong>Aucun partenaire associé à ce stagiaire.</strong> <br>
-                Stagiaire : <strong>{{ $stagiaire->prenom }}</strong>
-            </div>
-        @endif
+                                            <!-- Partenaire Section -->
+                                            @if ($stagiaire->partenaire)
+                                                <div class="card mb-4 shadow-sm">
+                                                    <div class="card-header text-dark">
+                                                        <h5 class="mb-0"><i class="bx bx-building me-2"></i> Partenaire
+                                                            Associé</h5>
+                                                    </div>
+                                                    <div class="card-body"
+                                                        style="box-shadow: rgba(17, 12, 46, 0.15) 0px 48px 100px 0px;">
+                                                        <ul class="list-group list-group-flush">
+                                                            <li class="list-group-item"><strong>Identifiant :</strong>
+                                                                {{ $stagiaire->partenaire->identifiant }}</li>
+                                                            <li class="list-group-item"><strong>Adresse :</strong>
+                                                                {{ $stagiaire->partenaire->adresse }}</li>
+                                                            <li class="list-group-item"><strong>Ville :</strong>
+                                                                {{ $stagiaire->partenaire->ville }}</li>
+                                                            <li class="list-group-item"><strong>Département :</strong>
+                                                                {{ $stagiaire->partenaire->departement }}</li>
+                                                            <li class="list-group-item"><strong>Code postal :</strong>
+                                                                {{ $stagiaire->partenaire->code_postal }}</li>
+                                                            <li class="list-group-item"><strong>Type :</strong>
+                                                                {{ $stagiaire->partenaire->type }}</li>
+                                                            @if ($stagiaire->partenaire->logo)
+                                                                <li class="list-group-item"><strong>Logo :</strong><br>
+                                                                    <img src="{{ asset('storage/' . $stagiaire->partenaire->logo) }}"
+                                                                        alt="Logo Partenaire"
+                                                                        style="max-width:120px;max-height:120px;">
+                                                                </li>
+                                                            @endif
+                                                        </ul>
+                                                        <div class="mt-3">
+                                                            <a href="{{ route('partenaires.show', $stagiaire->partenaire->id) }}"
+                                                                class="btn btn-sm btn-info text-white">
+                                                                <i class="bx bx-user"></i> Voir contacts du partenaire
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            @else
+                                                <div class="alert alert-warning mt-4">
+                                                    <strong>Aucun partenaire associé à ce stagiaire.</strong> <br>
+                                                    Stagiaire : <strong>{{ $stagiaire->prenom }}</strong>
+                                                </div>
+                                            @endif
                                             <label class="col-sm-4 ">Prénom :</label>
                                             <div class="col-sm-8">
                                                 {{ $stagiaire->prenom }}

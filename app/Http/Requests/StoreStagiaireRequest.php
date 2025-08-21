@@ -46,6 +46,7 @@ class StoreStagiaireRequest extends FormRequest
             'commercial_id' => 'nullable|exists:commercials,id',
             'pole_relation_client_id' => 'nullable|array',
             'pole_relation_client_id.*' => 'exists:pole_relation_clients,id',
+            'partenaire_id' => 'nullable|exists:partenaires,id',
             'date_debut_formation' => 'nullable|date',
             'date_inscription' => 'nullable|date',
             'formations' => ['required', 'array', function ($attribute, $value, $fail) {
@@ -91,6 +92,7 @@ class StoreStagiaireRequest extends FormRequest
             'formateur_id.exists' => 'Le formateur sélectionné est invalide.',
             'commercial_id.exists' => 'Le commercial sélectionné est invalide.',
             'formations.required' => 'La formation est obligatoire.',
+            'partenaire_id.exists' => 'Le partenaire sélectionné est invalide.',
         ];
     }
 }

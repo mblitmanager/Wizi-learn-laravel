@@ -47,16 +47,26 @@ Route::prefix('administrateur')->group(function () {
 });
 
 Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function () {
+
+
     Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
     Route::get('dashboard/activity-user', [AdminController::class, 'getUserActivity'])->name('dashboard.activity-user');
-
+    Route::get('/logout', [AdminController::class, 'logout'])->name('logout');
     Route::get('dashboard/activity', [AdminController::class, 'showLoginStats'])->name('dashboard.activity');
 
-
-    Route::get('/logout', [AdminController::class, 'logout'])->name('logout');
+    /**
+     * Route Stagiaire
+     * */
     Route::resource('stagiaires', StagiaireController::class);
     Route::patch('/stagiaires/{id}/desactive', [StagiaireController::class, 'desactive'])->name('stagiaires.desactive');
     Route::patch('/stagiaires/{id}/active', [StagiaireController::class, 'active'])->name('stagiaires.active');
+    Route::post('/import/stagiaires', [StagiaireController::class, 'import'])->name('stagiaires.import');
+    Route::get('/telecharger-modele-stagiaire', [StagiaireController::class, 'downloadStagiaireModel'])->name('download.stagiaire.model');
+    /*
+    *end of Route Stagiaire
+    **/
+
+
 
     Route::resource('quiz', QuizController::class);
     Route::post('/quiz/{id}/duplicate', [QuizController::class, 'duplicate'])->name('quiz.duplicate');
@@ -79,7 +89,6 @@ Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function
     Route::post('/quiz/create-all', [QuizController::class, 'storeAll'])->name('quiz.storeAll');
     Route::post('/quiz/question-import', [QuizController::class, 'importQuestionReponseForQuiz'])->name('quiz_question.import');
 
-    Route::post('/import/stagiaires', [StagiaireController::class, 'import'])->name('stagiaires.import');
     Route::post('/import/commercials', [CommercialController::class, 'import'])->name('commercials.import');
     Route::post('/import/formateur', [FormateurController::class, 'import'])->name('formateur.import');
     Route::post('/import/quiz', [QuizController::class, 'import'])->name('quiz.import');
@@ -105,7 +114,6 @@ Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function
 
     Route::post('/import/prc', [PoleRelationClientController::class, 'import'])->name('prc.import');
     Route::post('/quiz-question/new', [QuizController::class, 'storeNewQuestion'])->name('quiz_question.new');
-    Route::get('/telecharger-modele-stagiaire', [StagiaireController::class, 'downloadStagiaireModel'])->name('download.stagiaire.model');
     Route::get('/telecharger-modele-commercial', [CommercialController::class, 'downloadCommercialModel'])->name('download.commercial.model');
     Route::get('/telecharger-modele-prc', [PoleRelationClientController::class, 'downloadPrcModel'])->name('download.prc.model');
     Route::get('/telecharger-modele-formateur', [FormateurController::class, 'downloadFormateurModel'])->name('download.formateur.model');
@@ -131,6 +139,7 @@ Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function
     Route::get('classements', [\App\Http\Controllers\Admin\ClassementController::class, 'index'])->name('classement.index');
     Route::get('demande/historique', [DemandeHistoriqueController::class, 'index'])->name('demande.historique.index');
     Route::get('demande/historique/{id}', [DemandeHistoriqueController::class, 'show'])->name('demande.historique.show');
+    Route::post('partenaires/import', [PartenaireController::class, 'import'])->name('partenaires.import');
 });
 
 // // Route pour enregistrer le token FCM

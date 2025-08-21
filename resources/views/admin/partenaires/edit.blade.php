@@ -39,6 +39,15 @@
                             enctype="multipart/form-data">
                             @csrf
                             @method('PUT')
+                            @if ($errors->any())
+                                <div class="alert alert-danger">
+                                    <ul class="mb-0">
+                                        @foreach ($errors->all() as $error)
+                                            <li>{{ $error }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
                             <div class="mb-3">
                                 <label for="identifiant" class="form-label">Identifiant</label>
                                 <input type="text" name="identifiant" class="form-control"
@@ -73,19 +82,65 @@
                                 <label for="logo" class="form-label">Logo</label>
                                 @if ($partenaire->logo)
                                     <div class="mb-2">
-                                        <img src="{{ asset('storage/' . $partenaire->logo) }}" alt="Logo"
+                                        <img src="{{ asset($partenaire->logo) }}" alt="Logo"
                                             style="max-width:120px;max-height:120px;">
                                     </div>
                                 @endif
                                 <input type="file" name="logo" class="form-control" accept="image/*">
                             </div>
+
+                            <div class="mb-3">
+                                <label class="form-label d-block">Contacts (jusqu'à 3)</label>
+                                @php($contacts = is_array($partenaire->contacts ?? null) ? $partenaire->contacts : [])
+                                @for ($i = 0; $i < 3; $i++)
+                                    @php($c = $contacts[$i] ?? [])
+                                    <div class="border rounded p-3 mb-2">
+                                        <div class="row g-2">
+                                            <div class="col-md-3">
+                                                <input type="text" name="contacts[{{ $i }}][nom]"
+                                                    class="form-control" placeholder="Nom" value="{{ $c['nom'] ?? '' }}">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" name="contacts[{{ $i }}][prenom]"
+                                                    class="form-control" placeholder="Prénom"
+                                                    value="{{ $c['prenom'] ?? '' }}">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" name="contacts[{{ $i }}][fonction]"
+                                                    class="form-control" placeholder="Fonction"
+                                                    value="{{ $c['fonction'] ?? '' }}">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="email" name="contacts[{{ $i }}][email]"
+                                                    class="form-control" placeholder="Email"
+                                                    value="{{ $c['email'] ?? '' }}">
+                                            </div>
+                                            <div class="col-md-3 mt-2">
+                                                <input type="text" name="contacts[{{ $i }}][tel]"
+                                                    class="form-control" placeholder="Téléphone"
+                                                    value="{{ $c['tel'] ?? '' }}">
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endfor
+                            </div>
+
                             <div class="mb-3">
                                 <label for="stagiaires" class="form-label">Stagiaires associés</label>
                                 <select name="stagiaires[]" class="form-control select2" multiple>
                                     @foreach ($stagiaires as $stagiaire)
                                         <option value="{{ $stagiaire->id }}"
-                                            @if ($partenaire->stagiaires->contains($stagiaire->id)) selected @endif>{{ $stagiaire->prenom }}
-                                            {{ $stagiaire->nom }}</option>
+                                            @if ($partenaire->stagiaires->contains($stagiaire->id)) selected @endif>
+                                            {{ strtoupper($stagiaire->user->name ?? $stagiaire->nom) }}
+                                            {{ $stagiaire->prenom }}
+                                            @php($email = $stagiaire->user->email ?? null)
+                                            @php($phone = $stagiaire->telephone ?? null)
+                                            @if ($email || $phone)
+                                                - {{ $email ?? '-' }} @if ($phone)
+                                                    • {{ $phone }}
+                                                @endif
+                                            @endif
+                                        </option>
                                     @endforeach
                                 </select>
                             </div>

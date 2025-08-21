@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\ApiResource;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[ApiResource(
     paginationItemsPerPage: 10
@@ -115,6 +116,7 @@ class Stagiaire extends Model
     {
         return $this->hasMany(Progression::class);
     }
+    use SoftDeletes;
 
     public function referrals()
     {

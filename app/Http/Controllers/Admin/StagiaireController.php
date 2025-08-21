@@ -124,7 +124,9 @@ class StagiaireController extends Controller
 
     public function destroy($id): RedirectResponse
     {
-        $this->stagiaireService->delete($id);
+
+        $stagiaire = Stagiaire::find($id);
+        $stagiaire->delete();
 
         return redirect()->route('stagiaires.index')
             ->with('success', 'Le stagiaire a été supprimé avec succès.');
@@ -238,11 +240,12 @@ class StagiaireController extends Controller
                 'Formation',
                 'Date de début de formation',
                 'Date de fin de formation',
-                'Date d\'inscriptions'
+                'Date d\'inscriptions',
+                'mot de passe',
             ];
             $headerValues = [];
             $headerCells->rewind();
-            for ($i = 0; $i < 12; $i++) {
+            for ($i = 0; $i < 13; $i++) {
                 if ($headerCells->valid()) {
                     $headerValues[] = preg_replace('/\s+/', '', strtolower(trim($headerCells->current()->getValue())));
                     $headerCells->next();
@@ -277,7 +280,7 @@ class StagiaireController extends Controller
                 return redirect()->route('stagiaires.index')
                     ->with('error', new \Illuminate\Support\HtmlString(
                         'En-têtes incorrects:<br>' . implode('<br>', $headerErrors) .
-                        '<br>Veuillez utiliser le modèle fourni.'
+                            '<br>Veuillez utiliser le modèle fourni.'
                     ));
             }
 
@@ -289,23 +292,23 @@ class StagiaireController extends Controller
                 foreach ($cellIterator as $cell) {
                     $value = trim($cell->getValue());
                     $data[] = $value;
-                    if (count($data) === 12) {
+                    if (count($data) === 13) {
                         break;
                     }
                 }
 
-                while (count($data) < 12) {
+                while (count($data) < 13) {
                     $data[] = '';
                 }
 
                 $rowIndex = $row->getRowIndex();
 
-                if (count($data) !== 12) {
+                if (count($data) !== 13) {
                     $invalidRows[] = ['ligne' => $rowIndex, 'erreur' => 'Nombre de colonnes incorrect'];
                     continue;
                 }
 
-                list($civilite, $tiers, $email, $telephone, $ville, $codePostal, $adresse, $dateNaissance, $formation, $dateDebutFormation, $dateFinFormation, $dateInscription) = $data;
+                list($civilite, $tiers, $email, $telephone, $ville, $codePostal, $adresse, $dateNaissance, $formation, $dateDebutFormation, $dateFinFormation, $dateInscription, $password) = $data;
 
                 if (empty($email) || empty($tiers) || empty($civilite)) {
                     $invalidRows[] = ['ligne' => $rowIndex, 'erreur' => 'Champs obligatoires manquants (civilité, tiers ou email)'];
@@ -343,7 +346,7 @@ class StagiaireController extends Controller
                     $user = User::create([
                         'name' => $np['nom'],
                         'email' => $email,
-                        'password' => bcrypt('stagiaire123'),
+                        'password' => bcrypt($password) ?? bcrypt('password'),
                         'role' => 'stagiaire',
                     ]);
 
@@ -416,7 +419,6 @@ class StagiaireController extends Controller
 
             return redirect()->route('stagiaires.index')
                 ->with($importedCount > 0 ? 'success' : 'error', new HtmlString($message));
-
         } catch (\Exception $e) {
             Log::error('Erreur import : ' . $e->getMessage());
             return redirect()->route('stagiaires.index')
