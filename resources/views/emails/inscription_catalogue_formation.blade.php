@@ -4,6 +4,11 @@
 
     <head>
         <style>
+            * {
+                font-family: monospace;
+                font-size: 12px;
+            }
+
             body {
                 font-family: 'Helvetica Neue', Arial, sans-serif;
                 line-height: 1.6;

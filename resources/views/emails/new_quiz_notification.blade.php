@@ -3,29 +3,41 @@
 
 <head>
     <title>NOUVEAU QUIZ EXCLUSIF</title>
+    <style>
+        * {
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
 </head>
 
 <body style="font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f0f2f5;">
     <!-- Container principal -->
-    <div style="max-width: 650px; margin: 20px auto; overflow: hidden; position: relative; border-radius: 15px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); background: #fff;">
+    <div
+        style="max-width: 650px; margin: 20px auto; overflow: hidden; position: relative; border-radius: 15px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); background: #fff;">
         <!-- Bannière de vente -->
-        <div style="background: linear-gradient(135deg, #fb3402, #f9790c); padding: 31px 15px; text-align: center; position: relative; overflow: hidden; border-top: 8px solid #ffcc00;">
+        <div
+            style="background: linear-gradient(135deg, #fb3402, #f9790c); padding: 31px 15px; text-align: center; position: relative; overflow: hidden; border-top: 8px solid #ffcc00;">
 
             <!-- Titres -->
-            <div style="font-family: Arial, sans-serif; font-size: 2.5rem; font-weight: bold; color: #fff; margin: 10px 0; line-height: 1; text-transform: uppercase; letter-spacing: -1px;">
+            <div
+                style="font-family: Arial, sans-serif; font-size: 2.5rem; font-weight: bold; color: #fff; margin: 10px 0; line-height: 1; text-transform: uppercase; letter-spacing: -1px;">
                 Nouveau
             </div>
-            <div style="font-size: 1.8rem; font-weight: bold; color: #ffcc00; margin: 5px 0 20px; text-transform: uppercase;">
+            <div
+                style="font-size: 1.8rem; font-weight: bold; color: #ffcc00; margin: 5px 0 20px; text-transform: uppercase;">
                 Quiz Disponible
             </div>
         </div>
 
         <!-- Image du quiz -->
-        <img src="{{ $message->embed($onlineImagePath) }}" alt="Illustration du quiz" style="width: 100%; max-height: 300px; object-fit: contain; border-bottom: 8px solid #ffcc00;" />
+        <img src="{{ $message->embed($onlineImagePath) }}" alt="Illustration du quiz"
+            style="width: 100%; max-height: 300px; object-fit: contain; border-bottom: 8px solid #ffcc00;" />
 
         <!-- Contenu -->
         <div style="padding: 30px; text-align: center;">
-            <h2 style="font-size: 1.8rem; color: #f60707; font-weight: bold; margin: 0 0 15px; text-transform: uppercase; line-height: 1;">
+            <h2
+                style="font-size: 1.8rem; color: #f60707; font-weight: bold; margin: 0 0 15px; text-transform: uppercase; line-height: 1;">
                 {{ $quiz->titre }}
             </h2>
 
@@ -36,12 +48,14 @@
             </p>
 
             <!-- Bouton CTA -->
-            <a href="{{ route('quiz.show', $quiz->id) }}" style="display: inline-block; background: #f60707; color: white !important; padding: 12px 30px; font-size: 1rem; font-weight: bold; text-decoration: none; border-radius: 50px; margin: 20px 0; border: none; cursor: pointer; text-transform: uppercase;">
+            <a href="{{ route('quiz.show', $quiz->id) }}"
+                style="display: inline-block; background: #f60707; color: white !important; padding: 12px 30px; font-size: 1rem; font-weight: bold; text-decoration: none; border-radius: 50px; margin: 20px 0; border: none; cursor: pointer; text-transform: uppercase;">
                 Commencer le quiz
             </a>
 
             <!-- Badge durée -->
-            <div style="display: inline-block; background: #011f43; color: #ffcc00; padding: 8px 25px; border-radius: 50px; font-weight: bold; margin-top: 15px; font-size: 1.1rem;">
+            <div
+                style="display: inline-block; background: #011f43; color: #ffcc00; padding: 8px 25px; border-radius: 50px; font-weight: bold; margin-top: 15px; font-size: 1.1rem;">
                 Durée: {{ $quiz->duree }}
             </div>
         </div>
