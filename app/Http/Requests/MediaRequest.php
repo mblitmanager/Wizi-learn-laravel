@@ -28,19 +28,31 @@ class MediaRequest extends FormRequest
                 'nullable',
                 function ($attribute, $value, $fail) {
                     $sourceType = request()->input('source_type');
+                    $mediaId = request()->route('media'); // ou request()->route('id')
+
+                    // Si on est en mode édition et qu'aucun nouveau fichier n'est fourni, on skip la validation
+                    if ($mediaId && !request()->hasFile('url') && $sourceType === 'file') {
+                        return;
+                    }
+
                     if ($sourceType === 'file') {
                         if (!request()->hasFile('url')) {
                             $fail('Le fichier est requis lorsque vous choisissez de téléverser un fichier.');
+                            return;
                         }
                         $file = request()->file('url');
-                        $allowedMimes = ['jpg', 'jpeg', 'png', 'gif', 'mp4', 'avi', 'mov', 'pdf', 'mp3'];
-                        if (!in_array($file->getClientOriginalExtension(), $allowedMimes)) {
-                            $fail('Le fichier doit être au format jpg, jpeg, png, gif, mp4, avi, mov, pdf ou mp3.');
+                        $allowedMimes = ['jpg', 'jpeg', 'png', 'gif', 'mp4', 'avi', 'mov', 'pdf', 'mp3', 'wav', 'ogg'];
+                        if (!in_array(strtolower($file->getClientOriginalExtension()), $allowedMimes)) {
+                            $fail('Le fichier doit être au format jpg, jpeg, png, gif, mp4, avi, mov, pdf, mp3, wav ou ogg');
                         }
                         if ($file->getSize() > 102400 * 1024) { // 100MB en octets
                             $fail('Le fichier ne doit pas dépasser 100 Mo.');
                         }
                     } elseif ($sourceType === 'url') {
+                        if (empty($value)) {
+                            $fail('L\'URL est requise lorsque vous choisissez d\'utiliser un lien.');
+                            return;
+                        }
                         if (!filter_var($value, FILTER_VALIDATE_URL)) {
                             $fail('L\'URL fournie n\'est pas valide.');
                         }

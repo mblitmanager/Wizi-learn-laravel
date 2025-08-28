@@ -101,34 +101,64 @@ class MediaController extends Controller
      * Store a newly created resource in storage.
      */
 
-    public function update(MediaRequest $request, string $id)
+    public function update(Request $request, string $id)
     {
+        // Valider les données
+        $validated = $request->validate([
+            'titre' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'file' => [
+                'nullable',
+                'file',
+                'max:102400', // 100 Mo
+                'mimes:jpg,jpeg,png,gif,mp4,avi,mov,pdf,mp3,wav,ogg'
+            ],
+            'url_text' => [
+                'nullable',
+                'url'
+            ],
+            'type' => 'required|string|in:video,document,image,audio',
+            'categorie' => 'required|string|in:tutoriel,astuce',
+            'duree' => 'nullable|integer|min:1',
+            'ordre' => 'nullable|integer|min:0',
+            'formation_id' => 'required|exists:formations,id',
+            'source_type' => 'required|in:file,url',
+        ]);
 
-        $validated = $request->validated();
-
+        $media = $this->mediaService->show($id);
         $sourceType = $request->input('source_type', 'file');
 
-        if ($sourceType === 'file' && $request->hasFile('url')) {
-            $file = $request->file('url');
-            $fileName = time() . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('uploads/medias'), $fileName);
-            $validated['url'] = 'uploads/medias/' . $fileName;
-        } elseif ($sourceType === 'url' && $request->filled('url')) {
-            $validated['url'] = $request->input('url');
-            // Optionnel : ajouter une validation supplémentaire pour l'URL ici si nécessaire
-        } else {
-            // Gérer le cas où aucune source valide n'est fournie (optionnel)
+        // Gestion de l'URL selon le type de source
+        if ($sourceType === 'file') {
+            if ($request->hasFile('file')) {
+                // Nouveau fichier uploadé
+                $file = $request->file('file');
+                $fileName = time() . '.' . $file->getClientOriginalExtension();
+                $file->move(public_path('uploads/medias'), $fileName);
+                $validated['url'] = 'uploads/medias/' . $fileName;
+            } else {
+                // Aucun nouveau fichier, conserver l'ancien
+                $validated['url'] = $media->url;
+            }
+        } elseif ($sourceType === 'url' && $request->filled('url_text')) {
+            // URL fournie
+            $validated['url'] = $request->input('url_text');
         }
+
+        // Nettoyer les données avant mise à jour
+        unset($validated['file']);
+        unset($validated['url_text']);
 
         $this->mediaService->update($id, $validated);
 
-        // Notification FCM + historique lors de la mise à jour du média
+        // Reste du code pour les notifications...
         $media = $this->mediaService->show($id);
         if ($media && $media->formation_id) {
             $catalogueIds = \App\Models\CatalogueFormation::where('formation_id', $media->formation_id)->pluck('id');
             $stagiaires = \App\Models\Stagiaire::whereHas('catalogue_formations', function ($q) use ($catalogueIds) {
                 $q->whereIn('catalogue_formation_id', $catalogueIds);
             })->with('user')->get();
+
             foreach ($stagiaires as $stagiaire) {
                 if ($stagiaire->user) {
                     $title = 'Média mis à jour';
@@ -136,7 +166,7 @@ class MediaController extends Controller
                     $iconUrl = url('media/wizi.png');
                     $data = [
                         'type' => 'media',
-                        'media_id' => (string)$media->id, // bien présent
+                        'media_id' => (string)$media->id,
                         'icon' => $iconUrl
                     ];
                     $this->notificationService->sendFcmToUser(
@@ -150,7 +180,7 @@ class MediaController extends Controller
                         'type' => $data['type'],
                         'title' => $title,
                         'message' => $body,
-                        'data' => $data, // data contient bien media_id
+                        'data' => $data,
                         'read' => false,
                     ]);
                 }

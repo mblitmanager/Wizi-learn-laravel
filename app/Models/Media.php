@@ -36,4 +36,9 @@ class Media extends Model
             ->withPivot('is_watched', 'watched_at')
             ->withTimestamps();
     }
+
+    public function getIsUrlAttribute()
+    {
+        return filter_var($this->url, FILTER_VALIDATE_URL);
+    }
 }
