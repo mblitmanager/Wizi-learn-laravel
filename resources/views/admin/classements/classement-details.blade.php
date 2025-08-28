@@ -2,13 +2,14 @@
 
 @section('content')
     <div class="container-fluid py-4">
+        <!-- En-tête avec informations du partenaire -->
         <div class="row mb-4">
             <div class="col-md-8">
                 <div class="d-flex align-items-center">
                     @if ($partenaire->logo)
                         <div class="me-3">
                             <img src="{{ asset('storage/' . $partenaire->logo) }}" alt="Logo {{ $partenaire->identifiant }}"
-                                class="rounded-circle" width="60">
+                                class="rounded-circle" width="60" height="60">
                         </div>
                     @endif
                     <div>
@@ -57,7 +58,7 @@
             </form>
         </div>
 
-        <!-- Statistiques -->
+        <!-- Cartes de statistiques -->
         <div class="row mb-4">
             <div class="col-xl-3 col-md-6 mb-4">
                 <div class="card border-start border-primary border-4 h-100">
@@ -68,7 +69,7 @@
                                 <h4 class="mb-0">{{ $partenaire->stagiaires->count() }}</h4>
                             </div>
                             <div class="bg-primary bg-opacity-10 p-3 rounded">
-                                <i class="fas fa-users text-primary"></i>
+                                <i class="fa fa-users"></i>
                             </div>
                         </div>
                     </div>
@@ -83,7 +84,7 @@
                                 <h4 class="mb-0">{{ number_format($classements->sum('total_points')) }}</h4>
                             </div>
                             <div class="bg-success bg-opacity-10 p-3 rounded">
-                                <i class="fas fa-star text-success"></i>
+                                <i class="fas fa-star"></i>
                             </div>
                         </div>
                     </div>
@@ -104,7 +105,7 @@
                                 </h4>
                             </div>
                             <div class="bg-info bg-opacity-10 p-3 rounded">
-                                <i class="fas fa-chart-line text-info"></i>
+                                <i class="fas fa-chart-line "></i>
                             </div>
                         </div>
                     </div>
@@ -125,7 +126,7 @@
                                 </h4>
                             </div>
                             <div class="bg-warning bg-opacity-10 p-3 rounded">
-                                <i class="fas fa-trophy text-warning"></i>
+                                <i class="fas fa-trophy"></i>
                             </div>
                         </div>
                     </div>
@@ -139,13 +140,13 @@
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">
-                            <i class="fas fa-trophy text-warning me-2"></i>
+                            <i class="fas fa-trophy me-2"></i>
                             Classement
                             @if ($periode !== 'global')
                                 <small class="text-muted">({{ ucfirst($periode) }})</small>
                             @endif
                         </h5>
-                        <span class="badge bg-primary bg-opacity-10 text-primary">
+                        <span class="badge bg-primary bg-opacity-10">
                             {{ count($classements) }} stagiaires
                         </span>
                     </div>
@@ -166,18 +167,21 @@
                                         <tr>
                                             <td class="ps-4">
                                                 @if ($classement['rang'] == 1)
-                                                    <span class="badge bg-warning bg-opacity-15 text-warning p-2 w-100">🥇
-                                                        1er</span>
+                                                    <span class="badge bg-warning bg-opacity-15  p-2 w-100">
+                                                        <i class="fas fa-medal me-1"></i> 1er
+                                                    </span>
                                                 @elseif($classement['rang'] == 2)
-                                                    <span
-                                                        class="badge bg-secondary bg-opacity-15 text-secondary p-2 w-100">🥈
-                                                        2ème</span>
+                                                    <span class="badge bg-secondary bg-opacity-15  p-2 w-100">
+                                                        <i class="fas fa-medal me-1"></i> 2ème
+                                                    </span>
                                                 @elseif($classement['rang'] == 3)
-                                                    <span class="badge bg-danger bg-opacity-15 text-danger p-2 w-100">🥉
-                                                        3ème</span>
+                                                    <span class="badge bg-danger bg-opacity-15  p-2 w-100">
+                                                        <i class="fas fa-medal me-1"></i> 3ème
+                                                    </span>
                                                 @else
-                                                    <span
-                                                        class="badge bg-light text-dark p-2 w-100">{{ $classement['rang'] }}ème</span>
+                                                    <span class="badge bg-light text-dark p-2 w-100">
+                                                        {{ $classement['rang'] }}ème
+                                                    </span>
                                                 @endif
                                             </td>
                                             <td>
@@ -188,7 +192,7 @@
                                                                 class="rounded-circle" width="40"
                                                                 alt="{{ $classement['stagiaire']->prenom }}">
                                                         @else
-                                                            <div class="avatar-initials bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center"
+                                                            <div class="avatar-initials bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center"
                                                                 style="width: 40px; height: 40px;">
                                                                 {{ substr($classement['stagiaire']->prenom, 0, 1) }}{{ substr($classement['stagiaire']->nom, 0, 1) }}
                                                             </div>
@@ -203,20 +207,21 @@
                                                 </div>
                                             </td>
                                             <td class="text-center">
-                                                <span
-                                                    class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-1">
-                                                    {{ number_format($classement['total_points']) }}
+                                                <span class="badge bg-success bg-opacity-10  rounded-pill px-3 py-1">
+                                                    <i
+                                                        class="fas fa-star me-1"></i>{{ number_format($classement['total_points']) }}
                                                 </span>
                                             </td>
                                             <td class="text-center">
-                                                <span class="badge bg-info bg-opacity-10 text-info rounded-pill px-3 py-1">
-                                                    {{ $classement['stagiaire']->catalogue_formations_count ?? $classement['stagiaire']->catalogue_formations->count() }}
+                                                <span class="badge bg-info bg-opacity-10 rounded-pill px-3 py-1">
+                                                    <i
+                                                        class="fas fa-book me-1"></i>{{ $classement['stagiaire']->catalogue_formations_count ?? $classement['stagiaire']->catalogue_formations->count() }}
                                                 </span>
                                             </td>
                                             <td class="text-center pe-4">
                                                 <button class="btn btn-sm btn-outline-primary px-3" data-bs-toggle="modal"
                                                     data-bs-target="#detailsModal{{ $classement['stagiaire']->id }}">
-                                                    <i class="fas fa-eye"></i>
+                                                    <i class="fas fa-eye"></i> Détails
                                                 </button>
                                             </td>
                                         </tr>
@@ -256,7 +261,7 @@
         </div>
     </div>
 
-    <!-- Modals -->
+    <!-- Modals pour les détails des stagiaires -->
     @foreach ($classements as $classement)
         <div class="modal fade" id="detailsModal{{ $classement['stagiaire']->id }}" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-lg">
@@ -270,6 +275,7 @@
                             aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
+                        <!-- Cartes de résumé -->
                         <div class="row mb-4">
                             <div class="col-md-4 mb-3">
                                 <div class="card border-primary border-2 h-100">
@@ -283,7 +289,7 @@
                                 <div class="card border-success border-2 h-100">
                                     <div class="card-body text-center py-3">
                                         <p class="text-muted mb-1 small">Points totaux</p>
-                                        <h3 class="text-success mb-0">{{ number_format($classement['total_points']) }}
+                                        <h3 class="text-black mb-0">{{ number_format($classement['total_points']) }}
                                         </h3>
                                     </div>
                                 </div>
@@ -300,8 +306,10 @@
                             </div>
                         </div>
 
+                        <!-- Détails des performances -->
+                        <h6 class="mb-3"><i class="fas fa-list-alt me-2 text-muted"></i>Détail des performances</h6>
                         <div class="table-responsive">
-                            <table class="table table-sm">
+                            <table class="table table-sm table-hover">
                                 <thead class="bg-light">
                                     <tr>
                                         <th>Date</th>
@@ -311,15 +319,32 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($classement['classements'] as $detail)
+                                    @if (count($classement['classements']) > 0)
+                                        @foreach ($classement['classements'] as $detail)
+                                            <tr>
+                                                <td>{{ $detail->created_at->format('d/m/Y H:i') }}</td>
+                                                <td>{{ $detail->quiz->titre }}</td>
+                                                <td>{{ $detail->quiz->formation->titre }}</td>
+                                                <td class="text-end">{{ number_format($detail->points) }}</td>
+                                            </tr>
+                                        @endforeach
+                                    @else
                                         <tr>
-                                            <td>{{ $detail->created_at->format('d/m/Y H:i') }}</td>
-                                            <td>{{ $detail->quiz->titre }}</td>
-                                            <td>{{ $detail->quiz->formation->titre }}</td>
-                                            <td class="text-end">{{ number_format($detail->points) }}</td>
+                                            <td colspan="4" class="text-center py-3 text-muted">
+                                                <i class="fas fa-info-circle me-2"></i>Aucun détail de performance
+                                                disponible
+                                            </td>
                                         </tr>
-                                    @endforeach
+                                    @endif
                                 </tbody>
+                                @if (count($classement['classements']) > 0)
+                                    <tfoot class="bg-light fw-bold">
+                                        <tr>
+                                            <td colspan="3" class="text-end">Total:</td>
+                                            <td class="text-end">{{ number_format($classement['total_points']) }}</td>
+                                        </tr>
+                                    </tfoot>
+                                @endif
                             </table>
                         </div>
                     </div>
@@ -440,6 +465,10 @@
 
         .table-responsive::-webkit-scrollbar-thumb:hover {
             background: #a8a8a8;
+        }
+
+        .badge i {
+            font-size: 0.9em;
         }
     </style>
 @endpush
