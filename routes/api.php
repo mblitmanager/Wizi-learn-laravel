@@ -234,4 +234,8 @@ Route::get('/test-fcm', function () {
     ) ? 'OK' : 'Erreur';
 });
 
+// Quick test endpoint to send an arbitrary FCM payload. Provide either 'token' OR 'user_id'.
+// NOTE: This route is public for convenience — protect it or remove in production.
+Route::post('/test-fcm', [App\Http\Controllers\Api\TestFcmController::class, 'send']);
+
 Route::middleware('auth:api')->post('/stagiaire/onboarding-seen', [StagiaireController::class, 'setOnboardingSeen']);
