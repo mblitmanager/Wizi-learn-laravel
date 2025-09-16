@@ -167,6 +167,8 @@ class NotificationService
             // Convertir toutes les valeurs du data en string pour FCM
             $data = array_map('strval', $data);
 
+            // Build FCM HTTP v1 payload with platform-specific options
+            $appUrl = env('APP_URL', '/');
             $payload = [
                 'message' => [
                     'token' => $user->fcm_token,
@@ -174,7 +176,38 @@ class NotificationService
                         'title' => $title,
                         'body' => $body,
                     ],
+                    // data payload (all values already converted to string)
                     'data' => $data,
+                    // Android specific options - helps Android display & click handling
+                    'android' => [
+                        'notification' => [
+                            'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
+                            'icon' => '/logo.png',
+                        ],
+                    ],
+                    // Web push specific options - ensures browser service worker receives notification
+                    'webpush' => [
+                        'headers' => [
+                            'TTL' => '86400'
+                        ],
+                        'notification' => [
+                            'title' => $title,
+                            'body' => $body,
+                            'icon' => '/logo.png',
+                        ],
+                        'fcm_options' => [
+                            'link' => $appUrl,
+                        ],
+                    ],
+                    // APNs (iOS) options - basic sound/badge
+                    'apns' => [
+                        'payload' => [
+                            'aps' => [
+                                'sound' => 'default',
+                                'badge' => 1,
+                            ],
+                        ],
+                    ],
                 ],
             ];
 
