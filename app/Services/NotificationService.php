@@ -199,7 +199,7 @@ class NotificationService
                     'android' => [
                         'notification' => [
                             'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
-                            'icon' => '/logo.png',
+                            'icon' => '/favicon.ico',
                         ],
                     ],
                     // Web push specific options - ensures browser service worker receives notification
@@ -210,7 +210,7 @@ class NotificationService
                         'notification' => [
                             'title' => $title,
                             'body' => $body,
-                            'icon' => '/logo.png',
+                            'icon' => '/favicon.ico',
                         ],
                         'fcm_options' => [
                             'link' => $appUrl,
