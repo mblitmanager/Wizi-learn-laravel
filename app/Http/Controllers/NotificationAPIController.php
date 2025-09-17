@@ -44,8 +44,25 @@ class NotificationAPIController extends Controller
             try {
                 $serviceAccountPath = storage_path('app/firebase-service-account.json');
                 $projectId = env('FIREBASE_PROJECT_ID');
-                if (!file_exists($serviceAccountPath) || !$projectId) {
-                    throw new \Exception('Service account file or project ID missing');
+                if (!file_exists($serviceAccountPath)) {
+                    throw new \Exception('Service account file missing: ' . $serviceAccountPath);
+                }
+
+                // If project id is not set in env, try to read it from the service account JSON
+                if (!$projectId) {
+                    try {
+                        $saContent = file_get_contents($serviceAccountPath);
+                        $saJson = json_decode($saContent, true);
+                        if (is_array($saJson) && !empty($saJson['project_id'])) {
+                            $projectId = $saJson['project_id'];
+                        }
+                    } catch (\Exception $e) {
+                        // ignore and let the next check throw
+                    }
+                }
+
+                if (!$projectId) {
+                    throw new \Exception('Project ID missing: set FIREBASE_PROJECT_ID or include project_id in service account JSON');
                 }
 
                 // Get Google access token

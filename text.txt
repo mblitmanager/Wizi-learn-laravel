@@ -1,0 +1,299 @@
+
+  GET|HEAD        / ..................................................................................................................................................................
+  GET|HEAD        admin ..............................................................................................................................................................
+  GET|HEAD        administrateur .....................................................................................................................................................
+  GET|HEAD        administrateur/catalogue_formation ............................................................ catalogue_formation.index › Admin\CatalogueFormationController@index
+  POST            administrateur/catalogue_formation ............................................................ catalogue_formation.store › Admin\CatalogueFormationController@store
+  GET|HEAD        administrateur/catalogue_formation/create ................................................... catalogue_formation.create › Admin\CatalogueFormationController@create
+  GET|HEAD        administrateur/catalogue_formation/{catalogue_formation} ........................................ catalogue_formation.show › Admin\CatalogueFormationController@show
+  PUT|PATCH       administrateur/catalogue_formation/{catalogue_formation} .................................... catalogue_formation.update › Admin\CatalogueFormationController@update
+  DELETE          administrateur/catalogue_formation/{catalogue_formation} .................................. catalogue_formation.destroy › Admin\CatalogueFormationController@destroy
+  GET|HEAD        administrateur/catalogue_formation/{catalogue_formation}/edit ................................... catalogue_formation.edit › Admin\CatalogueFormationController@edit
+  GET|HEAD        administrateur/catalogue_formation/{id}/download-pdf ............................. catalogue_formation.download-pdf › Admin\CatalogueFormationController@downloadPdf
+  POST            administrateur/catalogue_formation/{id}/duplicate ..................................... catalogue_formation.duplicate › Admin\CatalogueFormationController@duplicate
+  GET|HEAD        administrateur/commercials .................................................................................... commercials.index › Admin\CommercialController@index
+  POST            administrateur/commercials .................................................................................... commercials.store › Admin\CommercialController@store
+  GET|HEAD        administrateur/commercials/create ........................................................................... commercials.create › Admin\CommercialController@create
+  GET|HEAD        administrateur/commercials/{commercial} ......................................................................... commercials.show › Admin\CommercialController@show
+  PUT|PATCH       administrateur/commercials/{commercial} ..................................................................... commercials.update › Admin\CommercialController@update
+  DELETE          administrateur/commercials/{commercial} ................................................................... commercials.destroy › Admin\CommercialController@destroy
+  GET|HEAD        administrateur/commercials/{commercial}/edit .................................................................... commercials.edit › Admin\CommercialController@edit
+  GET|HEAD        administrateur/dashboard ................................................................................................... dashboard › Admin\AdminController@index
+  GET|HEAD        administrateur/dashboard/activity ........................................................................ dashboard.activity › Admin\AdminController@showLoginStats
+  GET|HEAD        administrateur/dashboard/activity-user ............................................................. dashboard.activity-user › Admin\AdminController@getUserActivity
+  GET|HEAD        administrateur/formateur ......................................................................................... formateur.index › Admin\FormateurController@index
+  POST            administrateur/formateur ......................................................................................... formateur.store › Admin\FormateurController@store
+  GET|HEAD        administrateur/formateur/create ................................................................................ formateur.create › Admin\FormateurController@create
+  GET|HEAD        administrateur/formateur/{formateur} ............................................................................... formateur.show › Admin\FormateurController@show
+  PUT|PATCH       administrateur/formateur/{formateur} ........................................................................... formateur.update › Admin\FormateurController@update
+  DELETE          administrateur/formateur/{formateur} ......................................................................... formateur.destroy › Admin\FormateurController@destroy
+  GET|HEAD        administrateur/formateur/{formateur}/edit .......................................................................... formateur.edit › Admin\FormateurController@edit
+  GET|HEAD        administrateur/formations ....................................................................................... formations.index › Admin\FormationController@index
+  POST            administrateur/formations ....................................................................................... formations.store › Admin\FormationController@store
+  GET|HEAD        administrateur/formations/create .............................................................................. formations.create › Admin\FormationController@create
+  GET|HEAD        administrateur/formations/{formation} ............................................................................. formations.show › Admin\FormationController@show
+  PUT|PATCH       administrateur/formations/{formation} ......................................................................... formations.update › Admin\FormationController@update
+  DELETE          administrateur/formations/{formation} ....................................................................... formations.destroy › Admin\FormationController@destroy
+  GET|HEAD        administrateur/formations/{formation}/edit ........................................................................ formations.edit › Admin\FormationController@edit
+  POST            administrateur/formations/{id}/duplicate ................................................................ formations.duplicate › Admin\FormationController@duplicate
+  POST            administrateur/import/commercials ........................................................................... commercials.import › Admin\CommercialController@import
+  POST            administrateur/import/formateur ................................................................................ formateur.import › Admin\FormateurController@import
+  POST            administrateur/import/prc ................................................................................... prc.import › Admin\PoleRelationClientController@import
+  POST            administrateur/import/quiz ............................................................................................... quiz.import › Admin\QuizController@import
+  POST            administrateur/import/stagiaires .............................................................................. stagiaires.import › Admin\StagiaireController@import
+  GET|HEAD        administrateur/login ................................................................................................... login › Admin\AdminController@showLoginForm
+  POST            administrateur/login ...................................................................................................... login.post › Admin\AdminController@login
+  GET|HEAD        administrateur/logout ........................................................................................................ logout › Admin\AdminController@logout
+  GET|HEAD        administrateur/medias ................................................................................................... medias.index › Admin\MediaController@index
+  POST            administrateur/medias ................................................................................................... medias.store › Admin\MediaController@store
+  GET|HEAD        administrateur/medias/create .......................................................................................... medias.create › Admin\MediaController@create
+  GET|HEAD        administrateur/medias/{media} ............................................................................................. medias.show › Admin\MediaController@show
+  PUT|PATCH       administrateur/medias/{media} ......................................................................................... medias.update › Admin\MediaController@update
+  DELETE          administrateur/medias/{media} ....................................................................................... medias.destroy › Admin\MediaController@destroy
+  GET|HEAD        administrateur/medias/{media}/edit ........................................................................................ medias.edit › Admin\MediaController@edit
+  GET|HEAD        administrateur/parametre .................................................................................... parametre.index › Admin\ParametreAdminController@index
+  POST            administrateur/parametre .................................................................................... parametre.store › Admin\ParametreAdminController@store
+  GET|HEAD        administrateur/parametre/create ........................................................................... parametre.create › Admin\ParametreAdminController@create
+  GET|HEAD        administrateur/parametre/reset-data ...................................................... admin.parametre.reset-data › Admin\ParametreAdminController@showResetData
+  POST            administrateur/parametre/reset-data ..................................................... admin.parametre.reset-data.post › Admin\ParametreAdminController@resetData
+  PUT             administrateur/parametre/{id}/update-image ...................................................... parametre.updateImage › Admin\ParametreAdminController@updateImage
+  GET|HEAD        administrateur/parametre/{parametre} .......................................................................... parametre.show › Admin\ParametreAdminController@show
+  PUT|PATCH       administrateur/parametre/{parametre} ...................................................................... parametre.update › Admin\ParametreAdminController@update
+  DELETE          administrateur/parametre/{parametre} .................................................................... parametre.destroy › Admin\ParametreAdminController@destroy
+  GET|HEAD        administrateur/parametre/{parametre}/edit ..................................................................... parametre.edit › Admin\ParametreAdminController@edit
+  GET|HEAD        administrateur/parrainage ...................................................................................... parrainage.index › Admin\ParrainageController@index
+  GET|HEAD        administrateur/parrainage/{id} ................................................................................... parrainage.show › Admin\ParrainageController@show
+  GET|HEAD        administrateur/pole_relation_clients ........................................................ pole_relation_clients.index › Admin\PoleRelationClientController@index
+  POST            administrateur/pole_relation_clients ........................................................ pole_relation_clients.store › Admin\PoleRelationClientController@store
+  GET|HEAD        administrateur/pole_relation_clients/create ............................................... pole_relation_clients.create › Admin\PoleRelationClientController@create
+  GET|HEAD        administrateur/pole_relation_clients/{pole_relation_client} ................................... pole_relation_clients.show › Admin\PoleRelationClientController@show
+  PUT|PATCH       administrateur/pole_relation_clients/{pole_relation_client} ............................... pole_relation_clients.update › Admin\PoleRelationClientController@update
+  DELETE          administrateur/pole_relation_clients/{pole_relation_client} ............................. pole_relation_clients.destroy › Admin\PoleRelationClientController@destroy
+  GET|HEAD        administrateur/pole_relation_clients/{pole_relation_client}/edit .............................. pole_relation_clients.edit › Admin\PoleRelationClientController@edit
+  GET|HEAD        administrateur/question ............................................................................................ question.index › Admin\QuestionController@index
+  POST            administrateur/question ............................................................................................ question.store › Admin\QuestionController@store
+  GET|HEAD        administrateur/question/create ................................................................................... question.create › Admin\QuestionController@create
+  GET|HEAD        administrateur/question/{question} ................................................................................... question.show › Admin\QuestionController@show
+  PUT|PATCH       administrateur/question/{question} ............................................................................... question.update › Admin\QuestionController@update
+  DELETE          administrateur/question/{question} ............................................................................. question.destroy › Admin\QuestionController@destroy
+  GET|HEAD        administrateur/question/{question}/edit .............................................................................. question.edit › Admin\QuestionController@edit
+  GET|HEAD        administrateur/quiz ........................................................................................................ quiz.index › Admin\QuizController@index
+  POST            administrateur/quiz ........................................................................................................ quiz.store › Admin\QuizController@store
+  POST            administrateur/quiz-question/new ......................................................................... quiz_question.new › Admin\QuizController@storeNewQuestion
+  GET|HEAD        administrateur/quiz/create ............................................................................................... quiz.create › Admin\QuizController@create
+  POST            administrateur/quiz/create-all ....................................................................................... quiz.storeAll › Admin\QuizController@storeAll
+  POST            administrateur/quiz/export-multiple ............................................................... quiz.exportMultiple › Admin\QuizController@exportMultipleQuizzes
+  POST            administrateur/quiz/question-import ....................................................... quiz_question.import › Admin\QuizController@importQuestionReponseForQuiz
+  POST            administrateur/quiz/{id}/duplicate ................................................................................. quiz.duplicate › Admin\QuizController@duplicate
+  GET|HEAD        administrateur/quiz/{quiz} ................................................................................................... quiz.show › Admin\QuizController@show
+  PUT|PATCH       administrateur/quiz/{quiz} ............................................................................................... quiz.update › Admin\QuizController@update
+  DELETE          administrateur/quiz/{quiz} ............................................................................................. quiz.destroy › Admin\QuizController@destroy
+  POST            administrateur/quiz/{quiz}/disable ..................................................................................... quiz.disable › Admin\QuizController@disable
+  GET|HEAD        administrateur/quiz/{quiz}/edit .............................................................................................. quiz.edit › Admin\QuizController@edit
+  POST            administrateur/quiz/{quiz}/enable ........................................................................................ quiz.enable › Admin\QuizController@enable
+  GET|HEAD        administrateur/quiz/{quiz}/export .................................................................................... quiz.export › Admin\QuizController@exportQuiz
+  GET|HEAD        administrateur/register .......................................................................................... register › Admin\AdminController@showRegisterForm
+  POST            administrateur/register ............................................................................................. register.post › Admin\AdminController@register
+  GET|HEAD        administrateur/stagiaires ....................................................................................... stagiaires.index › Admin\StagiaireController@index
+  POST            administrateur/stagiaires ....................................................................................... stagiaires.store › Admin\StagiaireController@store
+  GET|HEAD        administrateur/stagiaires/create .............................................................................. stagiaires.create › Admin\StagiaireController@create
+  PATCH           administrateur/stagiaires/{id}/active ......................................................................... stagiaires.active › Admin\StagiaireController@active
+  PATCH           administrateur/stagiaires/{id}/desactive ................................................................ stagiaires.desactive › Admin\StagiaireController@desactive
+  GET|HEAD        administrateur/stagiaires/{stagiaire} ............................................................................. stagiaires.show › Admin\StagiaireController@show
+  PUT|PATCH       administrateur/stagiaires/{stagiaire} ......................................................................... stagiaires.update › Admin\StagiaireController@update
+  DELETE          administrateur/stagiaires/{stagiaire} ....................................................................... stagiaires.destroy › Admin\StagiaireController@destroy
+  GET|HEAD        administrateur/stagiaires/{stagiaire}/edit ........................................................................ stagiaires.edit › Admin\StagiaireController@edit
+  GET|HEAD        administrateur/telecharger-modele-commercial ........................................ download.commercial.model › Admin\CommercialController@downloadCommercialModel
+  GET|HEAD        administrateur/telecharger-modele-formateur ............................................ download.formateur.model › Admin\FormateurController@downloadFormateurModel
+  GET|HEAD        administrateur/telecharger-modele-prc ..................................................... download.prc.model › Admin\PoleRelationClientController@downloadPrcModel
+  GET|HEAD        administrateur/telecharger-modele-quiz ................................................................ download.quiz.model › Admin\QuizController@downloadQuizModel
+  GET|HEAD        administrateur/telecharger-modele-stagiaire ............................................ download.stagiaire.model › Admin\StagiaireController@downloadStagiaireModel
+  GET|HEAD        api/.well-known/genid/{id} ............................................................................................................................... api_genid
+  GET|HEAD        api/agendas/{id}{_format?} ...................................................... _api_/api/agendas/{id}{._format}_get › ApiPlatform\Laravel › ApiPlatformController
+  PATCH           api/agendas/{id}{_format?} .................................................... _api_/api/agendas/{id}{._format}_patch › ApiPlatform\Laravel › ApiPlatformController
+  DELETE          api/agendas/{id}{_format?} ................................................... _api_/api/agendas/{id}{._format}_delete › ApiPlatform\Laravel › ApiPlatformController
+  GET|HEAD        api/agendas{_format?} ..................................................... _api_/api/agendas{._format}_get_collection › ApiPlatform\Laravel › ApiPlatformController
+  POST            api/agendas{_format?} ............................................................... _api_/api/agendas{._format}_post › ApiPlatform\Laravel › ApiPlatformController
+  POST            api/avatar/{id}/update-profile .................................................................................. Stagiaire\FormationStagiaireController@updateImage
+  POST            api/broadcasting/auth .................................................................................................................. BroadcastingController@auth
+  GET|HEAD        api/catalogueFormations/formations ................................................................ Stagiaire\CatalogueFormationController@getAllCatalogueFormations
+  GET|HEAD        api/catalogueFormations/formations/{id} ........................................................... Stagiaire\CatalogueFormationController@getCatalogueFormationById
+  GET|HEAD        api/catalogueFormations/formations/{id}/pdf ................................................................. Stagiaire\CatalogueFormationController@getCataloguePdf
+  GET|HEAD        api/catalogueFormations/stagiaire ................................................................ Stagiaire\CatalogueFormationController@getFormationsAndCatalogues
+  GET|HEAD        api/catalogueFormations/with-formations ......................................................... Stagiaire\CatalogueFormationController@getCataloguesWithFormations
+  GET|HEAD        api/catalogue_formations/{id}{_format?} ............................ _api_/api/catalogue_formations/{id}{._format}_get › ApiPlatform\Laravel › ApiPlatformController
+  PATCH           api/catalogue_formations/{id}{_format?} .......................... _api_/api/catalogue_formations/{id}{._format}_patch › ApiPlatform\Laravel › ApiPlatformController
+  DELETE          api/catalogue_formations/{id}{_format?} ......................... _api_/api/catalogue_formations/{id}{._format}_delete › ApiPlatform\Laravel › ApiPlatformController
+  GET|HEAD        api/catalogue_formations{_format?} ........................... _api_/api/catalogue_formations{._format}_get_collection › ApiPlatform\Laravel › ApiPlatformController
+  POST            api/catalogue_formations{_format?} ..................................... _api_/api/catalogue_formations{._format}_post › ApiPlatform\Laravel › ApiPlatformController
+  GET|HEAD        api/challenges/{id}{_format?} ................................................ _api_/api/challenges/{id}{._format}_get › ApiPlatform\Laravel › ApiPlatformController
+  PATCH           api/challenges/{id}{_format?} .............................................. _api_/api/challenges/{id}{._format}_patch › ApiPlatform\Laravel › ApiPlatformController
+  DELETE          api/challenges/{id}{_format?} ............................................. _api_/api/challenges/{id}{._format}_delete › ApiPlatform\Laravel › ApiPlatformController
+  GET|HEAD        api/challenges{_format?} ............................................... _api_/api/challenges{._format}_get_collection › ApiPlatform\Laravel › ApiPlatformController
+  POST            api/challenges{_format?} ......................................................... _api_/api/challenges{._format}_post › ApiPlatform\Laravel › ApiPlatformController
+  GET|HEAD        api/classements/{id}{_format?} .............................................. _api_/api/classements/{id}{._format}_get › ApiPlatform\Laravel › ApiPlatformController
+  PATCH           api/classements/{id}{_format?} ............................................ _api_/api/classements/{id}{._format}_patch › ApiPlatform\Laravel › ApiPlatformController
+  DELETE          api/classements/{id}{_format?} ........................................... _api_/api/classements/{id}{._format}_delete › ApiPlatform\Laravel › ApiPlatformController
+  GET|HEAD        api/classements{_format?} ............................................. _api_/api/classements{._format}_get_collection › ApiPlatform\Laravel › ApiPlatformController
+  POST            api/classements{_format?} ....................................................... _api_/api/classements{._format}_post › ApiPlatform\Laravel › ApiPlatformController
+  GET|HEAD        api/commercials/{id}{_format?} .............................................. _api_/api/commercials/{id}{._format}_get › ApiPlatform\Laravel › ApiPlatformController
+  PATCH           api/commercials/{id}{_format?} ............................................ _api_/api/commercials/{id}{._format}_patch › ApiPlatform\Laravel › ApiPlatformController
+  DELETE          api/commercials/{id}{_format?} ........................................... _api_/api/commercials/{id}{._format}_delete › ApiPlatform\Laravel › ApiPlatformController
+  GET|HEAD        api/commercials{_format?} ............................................. _api_/api/commercials{._format}_get_collection › ApiPlatform\Laravel › ApiPlatformController
+  POST            api/commercials{_format?} ....................................................... _api_/api/commercials{._format}_post › ApiPlatform\Laravel › ApiPlatformController
+  GET|HEAD        api/contexts/{shortName?}{_format?} ........................................................................ api_jsonld_context › ApiPlatform\JsonLd › ContextAction
+  GET|HEAD        api/docs{_format?} ......................................................................................... api_doc › ApiPlatform\Laravel › DocumentationController
+  GET|HEAD        api/documentation .................................................................................. l5-swagger.default.api › L5Swagger\Http › SwaggerController@api
+  GET|HEAD        api/errors/{status}{_format?} ............................................................................ _api_errors › ApiPlatform\Laravel › ApiPlatformController
+  POST            api/fcm-token ............................................................................................................................. FcmTokenController@store
+  POST            api/forgot-password ................................................................................................................ JWTAuthController@sendResetLink
+  GET|HEAD        api/formateurs/{id}{_format?} ................................................ _api_/api/formateurs/{id}{._format}_get › ApiPlatform\Laravel › ApiPlatformController
+  PATCH           api/formateurs/{id}{_format?} .............................................. _api_/api/formateurs/{id}{._format}_patch › ApiPlatform\Laravel › ApiPlatformController
+  DELETE          api/formateurs/{id}{_format?} ............................................. _api_/api/formateurs/{id}{._format}_delete › ApiPlatform\Laravel › ApiPlatformController
+  GET|HEAD        api/formateurs{_format?} ............................................... _api_/api/formateurs{._format}_get_collection › ApiPlatform\Laravel › ApiPlatformController
+  POST            api/formateurs{_format?} ......................................................... _api_/api/formateurs{._format}_post › ApiPlatform\Laravel › ApiPlatformController
+  GET|HEAD        api/formation/categories ...................................................................................... Stagiaire\FormationStagiaireController@getCategories
+  GET|HEAD        api/formation/listFormation ......................................................................................... Stagiaire\FormationController@getAllFormations
+  GET|HEAD        api/formationParrainage ........................................................................... Stagiaire\CatalogueFormationController@getAllCatalogueFormations
+  GET|HEAD        api/formations/categories/{categoryId} .............................................................. Stagiaire\FormationStagiaireController@getFormationsByCategory
+  GET|HEAD        api/formations/{id}{_format?} ................................................ _api_/api/formations/{id}{._format}_get › ApiPlatform\Laravel › ApiPlatformController
+  PATCH           api/formations/{id}{_format?} .............................................. _api_/api/formations/{id}{._format}_patch › ApiPlatform\Laravel › ApiPlatformController
+  DELETE          api/formations/{id}{_format?} ............................................. _api_/api/formations/{id}{._format}_delete › ApiPlatform\Laravel › ApiPlatformController
+  GET|HEAD        api/formations/{stagiaireId}/quizzes ....................................................................... Stagiaire\QuizStagiaireController@getQuizzesByStagiaire
+  GET|HEAD        api/formations{_format?} ............................................... _api_/api/formations{._format}_get_collection › ApiPlatform\Laravel › ApiPlatformController
+  POST            api/formations{_format?} ......................................................... _api_/api/formations{._format}_post › ApiPlatform\Laravel › ApiPlatformController
+  POST            api/login .................................................................................................................................. JWTAuthController@login
+  POST            api/logout ................................................................................................................................ JWTAuthController@logout
+  GET|HEAD        api/me ..................................................................................................................................... JWTAuthController@getMe
+  GET|HEAD        api/media/stream/{path} ........................................................................................................... Stagiaire\MediaController@stream
+  GET|HEAD        api/media/{id}{_format?} .......................................................... _api_/api/media/{id}{._format}_get › ApiPlatform\Laravel › ApiPlatformController
+  PATCH           api/media/{id}{_format?} ........................................................ _api_/api/media/{id}{._format}_patch › ApiPlatform\Laravel › ApiPlatformController
+  DELETE          api/media/{id}{_format?} ....................................................... _api_/api/media/{id}{._format}_delete › ApiPlatform\Laravel › ApiPlatformController
+  GET|HEAD        api/medias/astuces ............................................................................................................ Stagiaire\MediaController@getAstuces
+  GET|HEAD        api/medias/formations/interactives .............................................................................. Stagiaire\MediaController@getInteractiveFormations
+  GET|HEAD        api/medias/formations/{formationId}/astuces ........................................................................ Stagiaire\MediaController@getAstucesByFormation
+  GET|HEAD        api/medias/formations/{formationId}/tutoriels .................................................................... Stagiaire\MediaController@getTutorielsByFormation
+  GET|HEAD        api/medias/tutoriels ........................................................................................................ Stagiaire\MediaController@getTutoriels
+  GET|HEAD        api/media{_format?} ......................................................... _api_/api/media{._format}_get_collection › ApiPlatform\Laravel › ApiPlatformController
+  POST            api/media{_format?} ................................................................... _api_/api/media{._format}_post › ApiPlatform\Laravel › ApiPlatformController
+  GET|HEAD        api/notifications ................................................................................................................. Api\NotificationController@index
+  POST            api/notifications/mark-all-read ........................................................................................... Api\NotificationController@markAllAsRead
+  GET|HEAD        api/notifications/unread-count ........................................................................................... Api\NotificationController@getUnreadCount
+  DELETE          api/notifications/{id} ........................................................................................................... Api\NotificationController@delete
+  POST            api/notifications/{id}/read .................................................................................................. Api\NotificationController@markAsRead
+  POST            api/notify-daily-formation ......................................................................................... Api\DailyFormationNotificationController@notify
+  GET|HEAD        api/oauth2-callback ......................................................... l5-swagger.default.oauth2_callback › L5Swagger\Http › SwaggerController@oauth2Callback
+  POST            api/parrainage/generate-link ........................................................................................... Stagiaire\ParrainageController@generateLink
+  GET|HEAD        api/parrainage/get-data/{token} ...................................................................................... Stagiaire\ParrainageController@getParrainData
+  POST            api/parrainage/register-filleul ..................................................................................... Stagiaire\ParrainageController@registerFilleul
+  GET|HEAD        api/parrainage/stats/{parrain_id} ................................................................................... Stagiaire\ParrainageController@getStatsParrain
+  GET|HEAD        api/participations/{id}{_format?} ........................................ _api_/api/participations/{id}{._format}_get › ApiPlatform\Laravel › ApiPlatformController
+  PATCH           api/participations/{id}{_format?} ...................................... _api_/api/participations/{id}{._format}_patch › ApiPlatform\Laravel › ApiPlatformController
+  DELETE          api/participations/{id}{_format?} ..................................... _api_/api/participations/{id}{._format}_delete › ApiPlatform\Laravel › ApiPlatformController
+  GET|HEAD        api/participations{_format?} ....................................... _api_/api/participations{._format}_get_collection › ApiPlatform\Laravel › ApiPlatformController
+  POST            api/participations{_format?} ................................................. _api_/api/participations{._format}_post › ApiPlatform\Laravel › ApiPlatformController
+  GET|HEAD        api/pole_relation_clients/{id}{_format?} .......................... _api_/api/pole_relation_clients/{id}{._format}_get › ApiPlatform\Laravel › ApiPlatformController
+  PATCH           api/pole_relation_clients/{id}{_format?} ........................ _api_/api/pole_relation_clients/{id}{._format}_patch › ApiPlatform\Laravel › ApiPlatformController
+  DELETE          api/pole_relation_clients/{id}{_format?} ....................... _api_/api/pole_relation_clients/{id}{._format}_delete › ApiPlatform\Laravel › ApiPlatformController
+  GET|HEAD        api/pole_relation_clients{_format?} ......................... _api_/api/pole_relation_clients{._format}_get_collection › ApiPlatform\Laravel › ApiPlatformController
+  POST            api/pole_relation_clients{_format?} ................................... _api_/api/pole_relation_clients{._format}_post › ApiPlatform\Laravel › ApiPlatformController
+  GET|HEAD        api/progressions/{id}{_format?} ............................................ _api_/api/progressions/{id}{._format}_get › ApiPlatform\Laravel › ApiPlatformController
+  PATCH           api/progressions/{id}{_format?} .......................................... _api_/api/progressions/{id}{._format}_patch › ApiPlatform\Laravel › ApiPlatformController
+  DELETE          api/progressions/{id}{_format?} ......................................... _api_/api/progressions/{id}{._format}_delete › ApiPlatform\Laravel › ApiPlatformController
+  GET|HEAD        api/progressions{_format?} ........................................... _api_/api/progressions{._format}_get_collection › ApiPlatform\Laravel › ApiPlatformController
+  POST            api/progressions{_format?} ..................................................... _api_/api/progressions{._format}_post › ApiPlatform\Laravel › ApiPlatformController
+  POST            api/pusher/auth ....................................................................................................................................................
+  GET|HEAD        api/questions/questionById/{id} ............................................................................................ Admin\ReponseController@getQuestionById
+  GET|HEAD        api/questions/{id}{_format?} .................................................. _api_/api/questions/{id}{._format}_get › ApiPlatform\Laravel › ApiPlatformController
+  PATCH           api/questions/{id}{_format?} ................................................ _api_/api/questions/{id}{._format}_patch › ApiPlatform\Laravel › ApiPlatformController
+  DELETE          api/questions/{id}{_format?} ............................................... _api_/api/questions/{id}{._format}_delete › ApiPlatform\Laravel › ApiPlatformController
+  GET|HEAD        api/questions/{questionId}/reponses .................................................................................. Admin\ReponseController@getReponsesByQuestion
+  GET|HEAD        api/questions{_format?} ................................................. _api_/api/questions{._format}_get_collection › ApiPlatform\Laravel › ApiPlatformController
+  POST            api/questions{_format?} ........................................................... _api_/api/questions{._format}_post › ApiPlatform\Laravel › ApiPlatformController
+  GET|HEAD        api/quiz-participations/{participation}/resume ............................................................................... QuizController@getParticipationResume
+  GET|HEAD        api/quiz/categories ................................................................................................................... QuizController@getCategories
+  GET|HEAD        api/quiz/category/{categoryId} ................................................................................................. QuizController@getQuizzesByCategory
+  GET|HEAD        api/quiz/category/{category} ................................................................................................... QuizController@getQuizzesByCategory
+  GET|HEAD        api/quiz/classement/global ...................................................................................................... QuizController@getGlobalClassement
+  GET|HEAD        api/quiz/history ..................................................................................................................... QuizController@getQuizHistory
+  GET|HEAD        api/quiz/stats ......................................................................................................................... QuizController@getQuizStats
+  GET|HEAD        api/quiz/stats/categories .................................................................................................... QuizController@getGlobalCategoryStats
+  GET|HEAD        api/quiz/stats/performance ...................................................................................................... QuizController@getPerformanceStats
+  GET|HEAD        api/quiz/stats/progress ............................................................................................................ QuizController@getProgressStats
+  GET|HEAD        api/quiz/stats/trends ................................................................................................................. QuizController@getQuizTrends
+  GET|HEAD        api/quiz/{id} ........................................................................................................................... QuizController@getQuizById
+  POST            api/quiz/{id}/complete ........................................................................................................ QuizController@completeParticipation
+  GET|HEAD        api/quiz/{id}/participation ................................................................................................. QuizController@getCurrentParticipation
+  POST            api/quiz/{id}/result ............................................................................................................... QuizController@submitQuizResult
+  POST            api/quiz/{quizId}/complete .................................................................................................... QuizController@completeParticipation
+  GET|HEAD        api/quiz/{quizId}/participation ............................................................................................. QuizController@getCurrentParticipation
+  POST            api/quiz/{quizId}/participation .................................................................................................. QuizController@startParticipation
+  GET|HEAD        api/quiz/{quizId}/questions ................................................................................. Stagiaire\QuizStagiaireController@getQuestionsByQuizId
+  GET|HEAD        api/quiz/{quizId}/statistics ...................................................................................................... QuizController@getQuizStatistics
+  POST            api/quiz/{quizId}/submit .............................................................................................. Stagiaire\QuizStagiaireController@submitQuiz
+  GET|HEAD        api/quiz/{quizId}/user-participations ......................................................................................... QuizController@getUserParticipations
+  GET|HEAD        api/quizzes/{id}{_format?} ...................................................... _api_/api/quizzes/{id}{._format}_get › ApiPlatform\Laravel › ApiPlatformController
+  PATCH           api/quizzes/{id}{_format?} .................................................... _api_/api/quizzes/{id}{._format}_patch › ApiPlatform\Laravel › ApiPlatformController
+  DELETE          api/quizzes/{id}{_format?} ................................................... _api_/api/quizzes/{id}{._format}_delete › ApiPlatform\Laravel › ApiPlatformController
+  POST            api/quizzes/{quizId}/submit ........................................................................................... Stagiaire\QuizStagiaireController@submitQuiz
+  GET|HEAD        api/quizzes{_format?} ..................................................... _api_/api/quizzes{._format}_get_collection › ApiPlatform\Laravel › ApiPlatformController
+  POST            api/quizzes{_format?} ............................................................... _api_/api/quizzes{._format}_post › ApiPlatform\Laravel › ApiPlatformController
+  POST            api/refresh-token ...................................................................................................................... Auth\AuthController@refresh
+  GET|HEAD        api/reponses/{id}{_format?} .................................................... _api_/api/reponses/{id}{._format}_get › ApiPlatform\Laravel › ApiPlatformController
+  PATCH           api/reponses/{id}{_format?} .................................................. _api_/api/reponses/{id}{._format}_patch › ApiPlatform\Laravel › ApiPlatformController
+  DELETE          api/reponses/{id}{_format?} ................................................. _api_/api/reponses/{id}{._format}_delete › ApiPlatform\Laravel › ApiPlatformController
+  GET|HEAD        api/reponses{_format?} ................................................... _api_/api/reponses{._format}_get_collection › ApiPlatform\Laravel › ApiPlatformController
+  POST            api/reponses{_format?} ............................................................. _api_/api/reponses{._format}_post › ApiPlatform\Laravel › ApiPlatformController
+  POST            api/reset-password ................................................................................................................. JWTAuthController@resetPassword
+  GET|HEAD        api/send-daily-notification ....................................................................................................... DailyNotificationController@send
+  POST            api/send-notification ............................................................................................................... NotificationAPIController@send
+  GET|HEAD        api/stagiaire/contacts ..................................................................................................... Stagiaire\ContactController@getContacts
+  GET|HEAD        api/stagiaire/contacts/commerciaux ...................................................................................... Stagiaire\ContactController@getCommerciaux
+  GET|HEAD        api/stagiaire/contacts/formateurs ........................................................................................ Stagiaire\ContactController@getFormateurs
+  GET|HEAD        api/stagiaire/contacts/pole-relation ................................................................................... Stagiaire\ContactController@getPoleRelation
+  GET|HEAD        api/stagiaire/formations ...................................................................................... Stagiaire\FormationStagiaireController@getFormations
+  POST            api/stagiaire/inscription-catalogue-formation ........................................................... Stagiaire\InscriptionCatalogueFormationController@inscrire
+  POST            api/stagiaire/parrainage/accept .................................................................................... Stagiaire\ParrainageController@acceptParrainage
+  GET|HEAD        api/stagiaire/parrainage/filleuls ....................................................................................... Stagiaire\ParrainageController@getFilleuls
+  GET|HEAD        api/stagiaire/parrainage/history ............................................................................... Stagiaire\ParrainageController@getParrainageHistory
+  GET|HEAD        api/stagiaire/parrainage/rewards ............................................................................... Stagiaire\ParrainageController@getParrainageRewards
+  GET|HEAD        api/stagiaire/parrainage/stats ...................................................................................... Stagiaire\ParrainageController@getStatsParrain
+  POST            api/stagiaire/profile/photo ............................................................................................... Stagiaire\ProfileController@uploadAvatar
+  GET|HEAD        api/stagiaire/progress ................................................................................................... Stagiaire\RankingController@getMyProgress
+  GET|HEAD        api/stagiaire/quizzes ........................................................................................ Stagiaire\QuizStagiaireController@getStagiaireQuizzes
+  GET|HEAD        api/stagiaire/ranking/formation/{formationId} ...................................................................... Stagiaire\RankingController@getFormationRanking
+  GET|HEAD        api/stagiaire/ranking/global .......................................................................................... Stagiaire\RankingController@getGlobalRanking
+  GET|HEAD        api/stagiaire/rewards ..................................................................................................... Stagiaire\RankingController@getMyRewards
+  GET|HEAD        api/stagiaire/show ................................................................................................................ Stagiaire\ProfileController@show
+  GET|HEAD        api/stagiaire/{id}/catalogueFormations ...................................................................... Stagiaire\StagiaireController@getFormationsByStagiaire
+  GET|HEAD        api/stagiaire/{id}/formations ............................................................................... Stagiaire\FormationController@getFormationsByStagiaire
+  GET|HEAD        api/stagiaires/{id}{_format?} ................................................ _api_/api/stagiaires/{id}{._format}_get › ApiPlatform\Laravel › ApiPlatformController
+  PATCH           api/stagiaires/{id}{_format?} .............................................. _api_/api/stagiaires/{id}{._format}_patch › ApiPlatform\Laravel › ApiPlatformController
+  DELETE          api/stagiaires/{id}{_format?} ............................................. _api_/api/stagiaires/{id}{._format}_delete › ApiPlatform\Laravel › ApiPlatformController
+  GET|HEAD        api/stagiaires{_format?} ............................................... _api_/api/stagiaires{._format}_get_collection › ApiPlatform\Laravel › ApiPlatformController
+  POST            api/stagiaires{_format?} ......................................................... _api_/api/stagiaires{._format}_post › ApiPlatform\Laravel › ApiPlatformController
+  GET|HEAD        api/test-fcm .......................................................................................................................................................
+  GET|HEAD        api/test-notif .....................................................................................................................................................
+  GET|HEAD        api/user ................................................................................................................................. JWTAuthController@getUser
+  GET|HEAD        api/user-status ............................................................................................................ Stagiaire\ProfileController@onlineUsers
+  GET|HEAD        api/users/{id}{_format?} .......................................................... _api_/api/users/{id}{._format}_get › ApiPlatform\Laravel › ApiPlatformController
+  PATCH           api/users/{id}{_format?} ........................................................ _api_/api/users/{id}{._format}_patch › ApiPlatform\Laravel › ApiPlatformController
+  DELETE          api/users/{id}{_format?} ....................................................... _api_/api/users/{id}{._format}_delete › ApiPlatform\Laravel › ApiPlatformController
+  GET|HEAD        api/users{_format?} ......................................................... _api_/api/users{._format}_get_collection › ApiPlatform\Laravel › ApiPlatformController
+  POST            api/users{_format?} ................................................................... _api_/api/users{._format}_post › ApiPlatform\Laravel › ApiPlatformController
+  GET|HEAD        api/validation_errors/{id} ................................................................................................................... api_validation_errors
+  GET|HEAD        api/{index?}{_format?} ................................................................................. api_entrypoint › ApiPlatform\Laravel › EntrypointController
+  GET|POST|HEAD   broadcasting/auth ....................................................................................... Illuminate\Broadcasting › BroadcastController@authenticate
+  GET|HEAD        docs ............................................................................................. l5-swagger.default.docs › L5Swagger\Http › SwaggerController@docs
+  GET|HEAD        docs/asset/{asset} ........................................................................ l5-swagger.default.asset › L5Swagger\Http › SwaggerAssetController@index
+  GET|HEAD        forgot-password .................................................................................... password.request › Admin\AdminController@showForgotPasswordForm
+  POST            forgot-password ............................................................................................... password.email › Admin\AdminController@sendResetLink
+  POST            reset-password ............................................................................................... password.update › Admin\AdminController@resetPassword
+  GET|HEAD        reset-password/{token} ........................................................................................ password.reset › Admin\AdminController@showResetForm
+  GET|HEAD        storage/{path} ....................................................................................................................................... storage.local
+  GET|HEAD        up .................................................................................................................................................................
+  GET|HEAD        {any} ..............................................................................................................................................................
+  GET|HEAD        {fallbackPlaceholder} ..............................................................................................................................................
+
+                                                                                                                                                                  Showing [295] routes
+
