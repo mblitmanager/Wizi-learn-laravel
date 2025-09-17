@@ -45,6 +45,9 @@ Route::middleware(['auth:api'])->group(function () {
     Route::post('logout', [JWTAuthController::class, 'logout']);
     Route::get('user', [JWTAuthController::class, 'getUser']);
     Route::get('me', [JWTAuthController::class, 'getMe']);
+    // User settings endpoints
+    Route::get('/user/settings', [App\Http\Controllers\Api\UserSettingsController::class, 'show']);
+    Route::put('/user/settings', [App\Http\Controllers\Api\UserSettingsController::class, 'update']);
     Route::get('/formation/categories/', [FormationStagiaireController::class, 'getCategories']);
     Route::get('/formations/categories/{categoryId}', [FormationStagiaireController::class, 'getFormationsByCategory']);
     Route::get('/stagiaire/formations', [FormationStagiaireController::class, 'getFormations']);
