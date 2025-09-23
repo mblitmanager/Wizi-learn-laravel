@@ -1666,6 +1666,73 @@ class QuizController extends Controller
         }
     }
 
+    public function getQuizzesGroupedByFormation()
+    {
+        try {
+            $user = Auth::user();
+            $stagiaire = Stagiaire::where('user_id', $user->getKey())->first();
+
+            if (!$stagiaire) {
+                return response()->json(['error' => 'Aucun stagiaire associé à cet utilisateur'], 404);
+            }
+
+            $formations = Formation::whereHas('stagiaires', function ($query) use ($stagiaire) {
+                $query->where('stagiaires.id', $stagiaire->id);
+            })
+            ->with(['quizzes' => function ($query) {
+                $query->where('status', 'actif')->with(['questions.reponses', 'formation']);
+            }])
+            ->get();
+
+            $formattedFormations = $formations->map(function ($formation) {
+                return [
+                    'id' => (string) $formation->id,
+                    'titre' => $formation->titre,
+                    'description' => $formation->description,
+                    'categorie' => $formation->categorie,
+                    'quizzes' => $formation->quizzes->map(function ($quiz) {
+                        return [
+                            'id' => (string) $quiz->id,
+                            'titre' => $quiz->titre,
+                            'description' => $quiz->description,
+                            'categorie' => $quiz->formation->categorie ?? 'Non catégorisé',
+                            'categorieId' => $quiz->formation->categorie ?? 'non-categorise',
+                            'niveau' => $quiz->niveau ?? 'débutant',
+                            'questions' => $quiz->questions->map(function ($question) {
+                                return [
+                                    'id' => (string) $question->id,
+                                    'text' => $question->text,
+                                    'type' => $question->type ?? 'multiplechoice',
+                                    'answers' => $question->reponses->map(function ($reponse) {
+                                        return [
+                                            'id' => (string) $reponse->id,
+                                            'text' => $reponse->text,
+                                            'isCorrect' => (bool) $reponse->is_correct
+                                        ];
+                                    })->toArray()
+                                ];
+                            })->toArray(),
+                            'points' => (int) ($quiz->nb_points_total ?? 0)
+                        ];
+                    })
+                ];
+            });
+
+            return response()->json($formattedFormations);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur dans getQuizzesGroupedByFormation', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'error' => 'Une erreur est survenue lors de la récupération des quizzes par formation',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function getPerformanceStats()
     {
         try {

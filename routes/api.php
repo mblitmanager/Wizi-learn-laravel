@@ -133,6 +133,7 @@ Route::middleware(['auth:api'])->group(function () {
         Route::get('/stats/progress', [QuizController::class, 'getProgressStats']);
         Route::get('/stats/trends', [QuizController::class, 'getQuizTrends']);
         Route::get('/stats/performance', [QuizController::class, 'getPerformanceStats']);
+        Route::get('/by-formations', [QuizController::class, 'getQuizzesGroupedByFormation']);
     });
 
     // Achievements (admin list for mobile display)
