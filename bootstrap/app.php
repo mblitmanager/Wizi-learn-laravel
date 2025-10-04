@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'isAdmin' => \App\Http\Middleware\IsAdmin::class,
             'trackActivity' => TrackUserActivity::class,
+            'isFormateur' => \App\Http\Middleware\IsFormateur::class
         ]);
 
         // Ajoutez le middleware aux groupes web et api

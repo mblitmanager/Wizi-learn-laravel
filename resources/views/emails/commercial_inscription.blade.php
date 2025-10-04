@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Nouveau filleul inscrit</title>
+    <title>Nouvelle inscription - Filleul à contacter</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
@@ -163,45 +163,98 @@
             color: #666666;
             font-style: italic;
         }
+
+        .contact-info {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .contact-item {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .contact-item strong {
+            min-width: 120px;
+            color: #333;
+        }
+
+        .action-box {
+            background: #e8f4fd;
+            border: 1px solid #b6e0fe;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 25px 0;
+        }
+
+        .action-box h3 {
+            color: #1a68d1;
+            margin-top: 0;
+        }
     </style>
 </head>
 
 <body>
-    <div class="email-container">
-        <div class="header">
-            <img src="{{ $message->embed($logo) }}" alt="Logo" class="logo">
-            <h1>Nouveau filleul inscrit</h1>
-        </div>
-
-        <div class="content">
-            <p>Bonjour <strong>{{ $commercial->user->name }}</strong>,</p>
-            <p>Un nouveau filleul a été inscrit pour votre parrain <strong>{{ $parrain->name }}</strong>.</p>
-
-            <div class="highlight-box">
-                <h2>Détails du filleul</h2>
-                <ul>
-                    <li><strong>Nom :</strong> {{ $filleul->name }}</li>
-                    <li><strong>Email :</strong> {{ $filleul->email }}</li>
-                    <li><strong>Formation :</strong> {{ $formation->titre }}</li>
-                </ul>
-            </div>
-
-            <div class="text-center">
-                <a href="{{ url('/commercial/parrainage') }}" class="cta-button">Voir les détails</a>
-            </div>
-
-            <p class="signature">L'équipe {{ config('app.name') }}</p>
-        </div>
-
-        <div class="footer">
-            <p>© {{ date('Y') }} {{ config('app.name') }}. Tous droits réservés.</p>
-            <p>
-                <a href="#">Mentions légales</a>
-                <a href="#">Confidentialité</a>
-                <a href="#">Préférences</a>
-            </p>
-        </div>
+<div class="email-container">
+    <div class="header">
+        <img src="{{ $message->embed($logo) }}" alt="Logo" class="logo">
+        <h1>Nouvelle inscription - Filleul à contacter</h1>
     </div>
+
+    <div class="content">
+        <p>Bonjour <strong>{{ $commercial->user->name }}</strong>,</p>
+        <p>Une nouvelle personne souhaite s'inscrire via le parrainage de <strong>{{ $parrain->name }}</strong>.</p>
+
+        <div class="highlight-box">
+            <h2>Informations du prospect</h2>
+            <div class="contact-info">
+                <div class="contact-item">
+                    <strong>Nom :</strong> {{ $filleul->name }}
+                </div>
+                <div class="contact-item">
+                    <strong>Email :</strong> {{ $filleul->email }}
+                </div>
+                <div class="contact-item">
+                    <strong>Téléphone :</strong> {{ $formData['telephone'] ?? 'Non renseigné' }}
+                </div>
+                @if(isset($formData['ville']))
+                    <div class="contact-item">
+                        <strong>Ville :</strong> {{ $formData['ville'] }}
+                    </div>
+                @endif
+            </div>
+        </div>
+
+        <div class="action-box">
+            <h3>📞 Action recommandée</h3>
+            <p>Contactez rapidement cette personne pour :</p>
+            <ul>
+                <li>Présenter nos formations adaptées à son profil</li>
+                <li>L'accompagner dans son projet professionnel</li>
+                <li>Répondre à ses questions sur les parcours disponibles</li>
+            </ul>
+        </div>
+
+        <div class="text-center">
+            <a href="{{ url('/commercial/parrainage') }}" class="cta-button">Voir le dossier complet</a>
+        </div>
+
+        <p class="signature">L'équipe {{ config('app.name') }}</p>
+    </div>
+
+    <div class="footer">
+        <p>© {{ date('Y') }} {{ config('app.name') }}. Tous droits réservés.</p>
+        <p>
+            <a href="#">Mentions légales</a>
+            <a href="#">Confidentialité</a>
+            <a href="#">Préférences</a>
+        </p>
+    </div>
+</div>
 </body>
 
 </html>

@@ -38,6 +38,7 @@ class ContactController extends Controller
 
             // --- Construction manuelle des contacts pour le front ---
             $stagiaireId = $user->stagiaire->id;
+
             // Formateurs liés au stagiaire
             $formateurs = $user->stagiaire->formateurs()->with(['user', 'catalogue_formations' => function ($q) use ($stagiaireId) {
                 $q->whereHas('stagiaires', function ($q2) use ($stagiaireId) {
@@ -89,30 +90,48 @@ class ContactController extends Controller
                 ];
             });
 
-            // Pôle Relation Client liés au stagiaire
-            $poleRelation = $user->stagiaire->poleRelationClients()->with('user')->get()->map(function ($pole) {
-                return [
-                    'id' => $pole->id,
-                    // 'type' => 'Pôle Relation Client',
-                    'type' => $pole->role ?? ($pole->user->role ?? 'Pôle Relation Client'),
-                    'name' => $pole->user->name,
-                    'email' => $pole->user->email,
-                    'telephone' => $pole->telephone ?? '',
-                    'image' => $pole->user->image ?? '/images/default-avatar.png',
-                ];
-            });
+            // Pôle Relation Client - Filtrer par rôle
+            $poleRelation = $user->stagiaire->poleRelationClients()
+                ->with('user')
+                ->where('role', 'pole_relation_client')
+                ->get()
+                ->map(function ($pole) {
+                    return [
+                        'id' => $pole->id,
+                        'type' => 'pole_relation_client',
+                        'name' => $pole->user->name,
+                        'email' => $pole->user->email,
+                        'telephone' => $pole->telephone ?? '',
+                        'image' => $pole->user->image ?? '/images/default-avatar.png',
+                    ];
+                });
+
+            // Pôle SAV - Filtrer par rôle dans PoleRelationClient
+            $poleSav = $user->stagiaire->poleRelationClients()
+                ->with('user')
+                ->where('role', 'Pôle SAV')
+                ->get()
+                ->map(function ($sav) {
+                    return [
+                        'id' => $sav->id,
+                        'type' => 'pole_sav',
+                        'name' => $sav->user->name,
+                        'email' => $sav->user->email,
+                        'telephone' => $sav->telephone ?? '',
+                        'image' => $sav->user->image ?? '/images/default-avatar.png',
+                    ];
+                });
 
             return response()->json([
                 'formateurs' => $formateursArr,
                 'commerciaux' => $commerciaux,
                 'pole_relation' => $poleRelation,
+                'pole_sav' => $poleSav, // Pôle SAV filtré par rôle
             ]);
         } catch (JWTException $e) {
             return response()->json(['error' => 'non autorisé'], 401);
         }
-    }
-
-    public function getFormateurs()
+    }    public function getFormateurs()
     {
         try {
             // Si un stagiaire_id est passé en query, on filtre les formations pour ce stagiaire
@@ -238,8 +257,43 @@ class ContactController extends Controller
         }
     }
 
+    public function getPoleSav()
+    {
+        try {
+            $user = JWTAuth::parseToken()->authenticate();
+            if (!isset($user->relations['stagiaire'])) {
+                $user->load('stagiaire');
+            }
+            if ($user->role != 'formateur' && $user->role != 'admin') {
+                $userStagiaire = $user->stagiaire;
+                if (!$userStagiaire) {
+                    return response()->json(['error' => 'non autorisé'], 403);
+                }
+            }
 
+            // Pôle SAV - Filtrer par rôle dans PoleRelationClient
+            $poleSav = $user->stagiaire->poleRelationClients()
+                ->with('user')
+                ->where('role', 'Pôle SAV')
+                ->get()
+                ->map(function ($sav) {
+                    return [
+                        'id' => $sav->id,
+                        'name' => $sav->user->name,
+                        'email' => $sav->user->email,
+                        'phone' => $sav->telephone ?? '',
+                        'role' => 'Pôle SAV',
+                        'avatar' => $sav->user->image ?? '/images/default-avatar.png',
+                        'created_at' => $sav->created_at->format('d/m/Y')
+                    ];
+                });
 
+            $paginate = PaginationHelper::paginate($poleSav, 10);
+            return response()->json($paginate);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Erreur lors de la récupération du pôle SAV'], 500);
+        }
+    }
     public function addContact(Request $request)
     {
         try {

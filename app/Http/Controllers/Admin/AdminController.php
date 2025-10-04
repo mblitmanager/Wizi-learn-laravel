@@ -281,7 +281,7 @@ class AdminController extends Controller
         $ip = $request->header('X-Client-IP') ?? $request->ip();
 
         if (Auth::attempt($request->only('email', 'password'))) {
-            $user = auth()->user(); // Maintenant connecté
+            $user = Auth::user();
             $user->update([
                 'last_login_at' => now(),
                 'last_login_ip' => $ip,
@@ -289,15 +289,11 @@ class AdminController extends Controller
                 'last_activity_at' => now()
             ]);
 
-            if ($user->role === 'administrateur') {
-                return redirect()->route('dashboard');
-            } else {
-                Auth::logout(); // Déconnecter si ce n'est pas un admin
-                return redirect()->route('login')->with('error', 'Access denied.');
-            }
+            // Rediriger vers la route dashboard principale
+            return redirect()->route('dashboard');
         }
 
-        return back()->withErrors(['email' => 'Invalid credentials.']);
+        return back()->withErrors(['email' => 'Identifiants invalides.']);
     }
 
 
@@ -332,7 +328,7 @@ class AdminController extends Controller
             ['token' => Hash::make($token), 'created_at' => now()]
         );
 
-        $resetLink = url('/reset-password/'.$token.'?email='.urlencode($user->email));
+        $resetLink = url('/reset-password/' . $token . '?email=' . urlencode($user->email));
         Mail::to($user->email)->send(new PasswordResetMail($resetLink));
 
         return back()->with('status', 'Un lien de réinitialisation a été envoyé à votre adresse email');
