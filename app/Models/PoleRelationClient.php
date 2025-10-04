@@ -23,7 +23,6 @@ class PoleRelationClient extends Model
         'user_id',
         'prenom',
         'telephone',
-
     ];
 
     public function stagiaires()

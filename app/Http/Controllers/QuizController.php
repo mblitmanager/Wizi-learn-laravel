@@ -1095,23 +1095,34 @@ class QuizController extends Controller
     public function getGlobalClassement()
     {
         try {
-            // Récupérer tous les classements avec leurs relations
-            $classements = Classement::with(['stagiaire.user', 'quiz'])
+            // Charger les classements avec stagiaire + user + formateurs
+            $classements = Classement::with(['stagiaire.user', 'stagiaire.formateurs.user', 'quiz'])
                 ->get()
                 ->groupBy('stagiaire_id')
                 ->map(function ($group) {
                     $totalPoints = $group->sum('points');
                     $quizCount = $group->count();
                     $averageScore = $quizCount > 0 ? round($totalPoints / $quizCount, 2) : 0;
+
+                    $stagiaire = $group->first()->stagiaire;
+
                     return [
                         'stagiaire' => [
-                            'id' => (string) $group->first()->stagiaire->id,
-                            'prenom' => $group->first()->stagiaire->prenom,
-                            'image' => $group->first()->stagiaire->user->image ?? null
+                            'id' => (string) $stagiaire->id,
+                            'prenom' => $stagiaire->prenom,
+                            'image' => $stagiaire->user->image ?? null,
                         ],
+                        'formateurs' => $stagiaire->formateurs->map(function ($formateur) {
+                            return [
+                                'id' => $formateur->id,
+                                'prenom' => $formateur->prenom,
+                                'telephone' => $formateur->telephone,
+                                'image' => $formateur->user->image ?? null,
+                            ];
+                        }),
                         'totalPoints' => $totalPoints,
                         'quizCount' => $quizCount,
-                        'averageScore' => $averageScore
+                        'averageScore' => $averageScore,
                     ];
                 })
                 ->sortByDesc('totalPoints')
@@ -1119,7 +1130,7 @@ class QuizController extends Controller
                 ->map(function ($item, $index) {
                     return [
                         ...$item,
-                        'rang' => $index + 1
+                        'rang' => $index + 1,
                     ];
                 });
 
@@ -1136,6 +1147,7 @@ class QuizController extends Controller
             ], 500);
         }
     }
+
 
     public function startParticipation($quizId, Request $request = null)
     {

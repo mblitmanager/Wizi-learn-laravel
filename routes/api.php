@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Api\ParrainageEventApiController;
 use App\Http\Controllers\JWTAuthController;
 use App\Http\Middleware\JwtMiddleware;
 use Illuminate\Support\Facades\Route;
@@ -62,6 +63,7 @@ Route::middleware(['auth:api'])->group(function () {
     Route::get('/stagiaire/contacts/formateurs', [ContactController::class, 'getFormateurs']);
     Route::get('/stagiaire/contacts/commerciaux', [ContactController::class, 'getCommerciaux']);
     Route::get('/stagiaire/contacts/pole-relation', [ContactController::class, 'getPoleRelation']);
+    Route::get('/stagiaire/contacts/pole-save', [ContactController::class, 'getPoleSav']);
     Route::post('/user/photo', [\App\Http\Controllers\Stagiaire\StagiaireController::class, 'updateProfilePhoto']);
 
     // Ranking and rewards routes
@@ -180,6 +182,9 @@ Route::middleware(['auth:api'])->group(function () {
     Route::middleware('auth:api')->post('/notify-daily-formation', [DailyFormationNotificationController::class, 'notify']);
 
     Route::post('/contact', [\App\Http\Controllers\Api\ContactController::class, 'sendContactForm']);
+
+    Route::get('/parrainage-events', [ParrainageEventApiController::class, 'index']);
+
 });
 
 // // Admin Achievement Management

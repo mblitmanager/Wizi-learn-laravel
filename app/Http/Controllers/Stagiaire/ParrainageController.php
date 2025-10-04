@@ -73,7 +73,7 @@ class ParrainageController extends Controller
             'prenom' => 'nullable|string|max:255',
             'nom' => 'nullable|string|max:255',
             'email' => 'nullable|email|unique:users,email',
-            'telephone' => 'nullable|string|max:20',
+            'telephone' => 'required|string|max:20',
             'adresse' => 'nullable|string|max:255',
             'code_postal' => 'nullable|string|max:10',
             'ville' => 'nullable|string|max:255',
@@ -82,15 +82,14 @@ class ParrainageController extends Controller
             'date_inscription' => 'nullable|date',
             'statut' => 'nullable|string',
             'parrain_id' => 'required|exists:users,id',
-            'catalogue_formation_id' => 'required|exists:catalogue_formations,id',
+            'catalogue_formation_id' => 'nullable|exists:catalogue_formations,id', // Rendre nullable
             'lien_parrainage' => 'nullable|string',
             'motif' => 'required',
         ], [
             'parrain_id.required' => 'Le parrain est requis',
-            'catalogue_formation_id.required' => 'Le catalogue de formation est requis',
-            'email.unique' => 'Cette adresse e-mail est deja utilisée.',
+            'telephone.required' => 'Le numéro de téléphone est requis',
+            'email.unique' => 'Cette adresse e-mail est déjà utilisée.',
             'email.email' => 'Veuillez fournir une adresse e-mail valide.',
-            'email.required' => 'Veuillez fournir une adresse e-mail.',
             'motif.required' => 'Le motif est requis',
         ]);
 
@@ -104,10 +103,16 @@ class ParrainageController extends Controller
         DB::beginTransaction();
 
         try {
+            // Générer un email temporaire si non fourni
+            $email = $request->email;
+            if (empty($email)) {
+                $email = 'temp_' . Str::random(10) . '@parrainage.com';
+            }
+
             // Création du user
             $user = User::create([
-                'name' => $request->nom,
-                'email' => $request->email,
+                'name' => $request->nom ?? 'Filleul ' . Str::random(5),
+                'email' => $email,
                 'password' => bcrypt(Str::random(12)),
                 'role' => 'stagiaire'
             ]);
@@ -129,7 +134,7 @@ class ParrainageController extends Controller
             ]);
 
             // Enregistrement du parrainage
-            Parrainage::create([
+            $parrainage = Parrainage::create([
                 'parrain_id' => $request->parrain_id,
                 'filleul_id' => $user->id,
                 'date_parrainage' => now(),
@@ -137,13 +142,15 @@ class ParrainageController extends Controller
                 'gains' => 50.00
             ]);
 
-            // Association avec la formation
-            DB::table('stagiaire_catalogue_formations')->insert([
-                'stagiaire_id' => $stagiaire->id,
-                'catalogue_formation_id' => $request->catalogue_formation_id,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            // Association avec la formation seulement si fournie
+            if ($request->catalogue_formation_id) {
+                DB::table('stagiaire_catalogue_formations')->insert([
+                    'stagiaire_id' => $stagiaire->id,
+                    'catalogue_formation_id' => $request->catalogue_formation_id,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
 
             // Enregistrement de la demande de parrainage
             DemandeInscription::create([
@@ -159,12 +166,7 @@ class ParrainageController extends Controller
             ]);
 
             $parrain = User::with('stagiaire.commercial')->find($request->parrain_id);
-            $formation = CatalogueFormation::find($request->catalogue_formation_id);
-
-            // Envoyer l'email de confirmation
-            // if ($user->email) {
-            //     Mail::to($user->email)->send(new FilleulInscriptionConfirmation($user, $parrain, $formation));
-            // }
+            $formation = $request->catalogue_formation_id ? CatalogueFormation::find($request->catalogue_formation_id) : null;
 
             // Envoyer une notification au parrain
             if ($parrain) {
@@ -177,8 +179,8 @@ class ParrainageController extends Controller
 
                 // Récupérer le commercial associé au parrain
                 $commerciaux = $parrain->stagiaire->commercial()->with('user')->get();
-                // Si le parrain a un commercial associé et que le commercial a un email
-                // Dans la partie où vous envoyez l'email au commercial
+
+                // Envoyer l'email au commercial avec les informations du filleul
                 if ($commerciaux->isNotEmpty()) {
                     foreach ($commerciaux as $commercial) {
                         if ($commercial->user?->email) {
@@ -188,16 +190,16 @@ class ParrainageController extends Controller
                                         new CommercialFilleulInscriptionNotification(
                                             $user,
                                             $parrain,
-                                            $formation,
-                                            $commercial
+                                            $commercial,
+                                            $request->all() // Toutes les données du formulaire
                                         )
                                     );
                                 } else {
-                                    Log::error("Email template commercial_inscription not found");
+                                    Log::error('Email template commercial_inscription not found');
                                 }
                             } catch (\Exception $e) {
-                                Log::error("Failed to send email to commercial: " . $e->getMessage());
-                                continue; // Continue avec le prochain commercial
+                                Log::error('Failed to send email to commercial: ' . $e->getMessage());
+                                continue;
                             }
                         }
                     }
@@ -208,10 +210,11 @@ class ParrainageController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Inscription réussie! Un email de confirmation a été envoyé.',
+                'message' => 'Inscription réussie! Le commercial a été notifié.',
                 'data' => [
                     'user' => $user,
-                    'stagiaire' => $stagiaire
+                    'stagiaire' => $stagiaire,
+                    'parrainage' => $parrainage
                 ]
             ]);
         } catch (\Exception $e) {

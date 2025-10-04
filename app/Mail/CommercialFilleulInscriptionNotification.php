@@ -7,7 +7,6 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 use App\Models\User;
 use App\Models\Commercial;
-use App\Models\CatalogueFormation;
 
 class CommercialFilleulInscriptionNotification extends Mailable
 {
@@ -15,26 +14,26 @@ class CommercialFilleulInscriptionNotification extends Mailable
 
     public $filleul;
     public $parrain;
-    public $formation;
     public $commercial;
+    public $formData;
 
-    public function __construct(User $filleul, User $parrain, CatalogueFormation $formation, Commercial $commercial)
+    public function __construct(User $filleul, User $parrain, Commercial $commercial, array $formData = [])
     {
         $this->filleul = $filleul;
         $this->parrain = $parrain;
-        $this->formation = $formation;
         $this->commercial = $commercial;
+        $this->formData = $formData;
     }
 
     public function build()
     {
-        return $this->subject('Nouveau filleul inscrit pour votre parrain')
+        return $this->subject('Nouvelle inscription - Filleul à contacter')
             ->view('emails.commercial_inscription')
             ->with([
                 'filleul' => $this->filleul,
                 'parrain' => $this->parrain,
-                'formation' => $this->formation,
                 'commercial' => $this->commercial,
+                'formData' => $this->formData,
             ]);
     }
 }
