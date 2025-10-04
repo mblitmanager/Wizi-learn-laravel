@@ -57,7 +57,7 @@ Route::post('/reset-password', [AdminController::class, 'resetPassword'])->name(
 
 // Route dashboard principale qui redirige selon le rôle (PROTÉGÉE)
 Route::middleware(['auth'])->get('/dashboard', function () {
-    $user = Auth::user();
+    $user = auth()->user();
 
     if (!$user) {
         return redirect()->route('login');
@@ -65,7 +65,7 @@ Route::middleware(['auth'])->get('/dashboard', function () {
 
     if ($user->role === 'administrateur') {
         return app('App\Http\Controllers\Admin\AdminController')->index();
-    } elseif ($user->role === 'formateur') {
+    } elseif ($user->role === 'Formateur') {
         return redirect()->route('formateur.dashboard');
     } else {
         return redirect('/');
