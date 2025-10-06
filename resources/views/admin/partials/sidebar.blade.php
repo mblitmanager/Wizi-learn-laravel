@@ -33,7 +33,7 @@
         </li>
 
         {{-- Menu Stagiaires pour les formateurs --}}
-        @if(auth()->user()->role === 'Formateur')
+        @if(auth()->user()->role === 'formateur')
             <li>
                 <a href="javascript:;" class="has-arrow">
                     <div class="parent-icon"><i class='lni lni-users'></i>
@@ -106,16 +106,24 @@
             </li>
         @endif
 
-        {{-- Menu Formation - version formateur --}}
-        @if(auth()->user()->role === 'Formateur')
+        {{-- Menu Formation - version différente selon le rôle --}}
+        @if(auth()->user()->role === 'formateur')
+            {{-- Version Formateur --}}
             <li>
-                <a href="{{ route('formateur.formations.index') }}">
+                <a href="javascript:;" class="has-arrow">
                     <div class="parent-icon"><i class="lni lni-library"></i>
                     </div>
                     <div class="menu-title">Mes Formations</div>
                 </a>
+                <ul>
+                    <li> <a href="{{ route('formateur.formations.index') }}"><i class="bx bx-right-arrow-alt"></i>Mes formations</a>
+                    </li>
+                    <li> <a href="{{ route('formateur.catalogue.index') }}"><i class="bx bx-right-arrow-alt"></i>Catalogue formations</a>
+                    </li>
+                </ul>
             </li>
         @elseif(auth()->user()->role === 'administrateur')
+            {{-- Version Administrateur --}}
             <li>
                 <a href="javascript:;" class="has-arrow">
                     <div class="parent-icon"><i class="lni lni-library"></i>
@@ -130,6 +138,17 @@
                             formation</a>
                     </li>
                 </ul>
+            </li>
+        @endif
+
+        {{-- Menu Profil pour formateur --}}
+        @if(auth()->user()->role === 'formateur')
+            <li>
+                <a href="{{ route('formateur.profile') }}">
+                    <div class="parent-icon"><i class='bx bx-user'></i>
+                    </div>
+                    <div class="menu-title">Mon Profil</div>
+                </a>
             </li>
         @endif
 
@@ -190,19 +209,23 @@
                     <div class="menu-title">Historique des demandes</div>
                 </a>
             </li>
-
+            
             <li>
-                <a href="{{ route('parametre.index') }}">
+                <a href="javascript:;" class="has-arrow">
                     <div class="parent-icon"><i class='bx bx-cog bx-spin'></i>
                     </div>
                     <div class="menu-title">Paramètres</div>
                 </a>
+                <ul>
+                    <li> <a href="{{ route('parametre.index') }}"><i class="bx bx-right-arrow-alt"></i>Paramètres généraux</a>
+                    </li>
+                    <li> <a href="{{ route('roles.index') }}"><i class="bx bx-right-arrow-alt"></i>Rôles</a>
+                    </li>
+                    <li> <a href="{{ route('permissions.index') }}"><i class="bx bx-right-arrow-alt"></i>Permissions</a>
+                    </li>
+                </ul>
             </li>
         @endif
-
-        {{-- Menu Profil pour tous les utilisateurs --}}
-
-
     </ul>
     <!--end navigation-->
 </div>

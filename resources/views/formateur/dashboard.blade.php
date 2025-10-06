@@ -87,7 +87,6 @@
                                 <thead>
                                     <tr>
                                         <th>Nom</th>
-                                        <th>Formation</th>
                                         <th>Date début</th>
                                         <th>Statut</th>
                                         <th>Action</th>
@@ -98,16 +97,11 @@
                                         <tr>
                                             <td>{{ $stagiaire->prenom }}</td>
                                             <td>
-                                                @foreach($stagiaire->catalogue_formations as $formation)
-                                                    <span class="badge bg-primary">{{ $formation->titre }}</span>
-                                                @endforeach
-                                            </td>
-                                            <td>
                                                 {{ $stagiaire->date_debut_formation ? \Carbon\Carbon::parse($stagiaire->date_debut_formation)->format('d/m/Y H:i') : '' }}
                                             </td>
 
                                             <td>
-                                                @if($stagiaire->statut === 'actif')
+                                                @if($stagiaire->statut === 1)
                                                     <span class="badge bg-success">En cours</span>
                                                 @else
                                                     <span class="badge bg-info">Terminé</span>

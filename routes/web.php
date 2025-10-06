@@ -59,20 +59,28 @@ Route::middleware(['auth'])->get('/dashboard', function () {
 
     if ($user->role === 'administrateur') {
         return app('App\Http\Controllers\Admin\AdminController')->index();
-    } elseif ($user->role === 'Formateur') {
+    } elseif ($user->role === 'formateur') {
         return redirect()->route('formateur.dashboard');
     } else {
         return redirect('/');
     }
 })->name('dashboard');
 
+Route::middleware(['auth'])->get('/logout', [AdminController::class, 'logout'])->name('logout');
+
+
 // Routes pour les administrateurs
 Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
     Route::get('dashboard/activity-user', [AdminController::class, 'getUserActivity'])->name('dashboard.activity-user');
-    Route::get('/logout', [AdminController::class, 'logout'])->name('logout');
     Route::get('dashboard/activity', [AdminController::class, 'showLoginStats'])->name('dashboard.activity');
 
+    Route::resource('roles', \App\Http\Controllers\Admin\RoleController::class);
+    Route::post('roles/{role}/toggle-status', [\App\Http\Controllers\Admin\RoleController::class, 'toggleStatus'])->name('roles.toggle-status');
+    
+    // Permissions
+    Route::resource('permissions', \App\Http\Controllers\Admin\PermissionController::class);
+    Route::post('permissions/{permission}/toggle-status', [\App\Http\Controllers\Admin\PermissionController::class, 'toggleStatus'])->name('permissions.toggle-status');
     /**
      * Route Stagiaire
      */
@@ -155,16 +163,26 @@ Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function
 });
 
 // Routes pour les formateurs
+// Routes pour les formateurs
 Route::middleware(['auth'])->prefix('formateur')->name('formateur.')->group(function () {
     // Tableau de bord formateur
     Route::get('/dashboard', [FormateurDashboardController::class, 'index'])->name('dashboard');
 
-    // Routes stagiaires - Utiliser un contrôleur dédié pour les formateurs
+    // Routes stagiaires
     Route::get('/stagiaires', [FormateurStagiaireController::class, 'tousLesStagiaires'])->name('stagiaires.index');
     Route::get('/stagiaires/en-cours', [FormateurStagiaireController::class, 'stagiairesEnCours'])->name('stagiaires.en-cours');
     Route::get('/stagiaires/termines', [FormateurStagiaireController::class, 'stagiairesTerminesRecent'])->name('stagiaires.termines');
     Route::get('/stagiaires/{id}', [FormateurStagiaireController::class, 'show'])->name('stagiaires.show');
+
+    Route::get('/formations', [FormateurController::class, 'mesFormations'])->name('formations.index');
+    Route::get('/formations/{id}', [FormateurController::class, 'showFormation'])->name('formations.show');
+    Route::get('/catalogue', [FormateurController::class, 'mesFormations'])->name('catalogue.index'); 
+    // Route profil
+    Route::get('/profile', [FormateurController::class, 'profile'])->name('profile');
+    Route::post('/profile', [FormateurController::class, 'updateProfile'])->name('profile.update');
 });
+
+
 
 // Routes de fallback
 Route::fallback(function () {

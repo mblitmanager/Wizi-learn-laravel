@@ -29,6 +29,8 @@ class CatalogueFormation extends Model
         'cursus_pdf',
     ];
 
+    
+
     /**
      * Relation avec le modèle Formation (Many-to-One).
      */
