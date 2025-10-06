@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\HtmlString;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use Illuminate\Support\Facades\Auth;
 
 class FormateurController extends Controller
 {
@@ -32,6 +33,150 @@ class FormateurController extends Controller
         $formateurs = $this->formateurService->list();
         return view('admin.formateur.index', compact('formateurs'));
     }
+
+    /**
+     * Afficher le profil du formateur
+     */
+    public function profile()
+    {
+        $formateur = Auth::user()->formateur;
+        $user = $formateur->user;
+        return view('formateur.profile.show', compact('formateur', 'user'));
+    }
+
+/**
+     * Afficher les formations du formateur
+     */
+    public function mesFormations()
+    {
+        $formateur = Auth::user()->formateur;
+        
+        // Récupérer les formations assignées à ce formateur
+        $formations = $formateur->catalogue_formations()
+            ->withCount(['stagiaires' => function($query) use ($formateur) {
+                $query->whereHas('formateurs', function($q) use ($formateur) {
+                    $q->where('formateur_id', $formateur->id);
+                });
+            }])
+            ->orderBy('titre')
+            ->get();
+
+        return view('formateur.formations.index', compact('formations'));
+    }
+
+
+ /**
+ * Afficher les détails d'une formation spécifique
+ */
+public function showFormation($id)
+    {
+        $formateur = Auth::user()->formateur;
+        
+        $formation = $formateur->catalogue_formations()
+            ->with([
+                'stagiaires' => function($query) use ($formateur) {
+                    $query->whereHas('formateurs', function($q) use ($formateur) {
+                        $q->where('formateur_id', $formateur->id);
+                    })->with(['user']);
+                },
+                'formation' // Inclure la formation parente si elle existe
+            ])
+            ->findOrFail($id);
+
+        return view('formateur.formations.show', compact('formation'));
+    }
+
+/**
+ * Mettre à jour le profil du formateur
+ */
+public function updateProfile(Request $request)
+{
+    $user = Auth::user();
+    $formateur = $user->formateur;
+
+    // Validation des données
+    $request->validate([
+        'prenom' => 'required|string|max:255',
+        'nom' => 'required|string|max:255',
+        'telephone' => 'nullable|string|max:20|regex:/^[0-9\s\-\+\(\)\.]+$/',
+        'email' => 'required|email|unique:users,email,' . $user->id,
+        'adresse' => 'nullable|string|max:500',
+        'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        'current_password' => 'nullable|required_with:new_password',
+        'new_password' => 'nullable|min:8|confirmed|different:current_password',
+    ], [
+        'telephone.regex' => 'Le format du téléphone est invalide.',
+        'new_password.different' => 'Le nouveau mot de passe doit être différent de l\'actuel.',
+        'image.max' => 'L\'image ne doit pas dépasser 2MB.',
+        'image.mimes' => 'L\'image doit être au format jpeg, png, jpg ou gif.',
+    ]);
+    
+    try {
+        DB::beginTransaction();
+
+        // Préparation des données utilisateur
+        $userData = [
+            'name' => $request->prenom . ' ' . $request->nom,
+            'email' => $request->email,
+        ];
+
+        // Gestion de l'adresse
+        if ($request->has('adresse')) {
+            $userData['adresse'] = $request->adresse;
+        }
+
+        // Gestion du changement de mot de passe
+        if ($request->filled('current_password') && $request->filled('new_password')) {
+            if (!Hash::check($request->current_password, $user->password)) {
+                return back()->withErrors(['current_password' => 'Le mot de passe actuel est incorrect.'])->withInput();
+            }
+            $userData['password'] = Hash::make($request->new_password);
+        }
+         if ($request->hasFile('image')) {
+            $imageName = time() . '.' . $request->image->extension();
+            $request->image->move(public_path('uploads/users'), $imageName);
+            $userData['image'] = 'uploads/users/' . $imageName;
+        }
+
+        // Mettre à jour l'utilisateur
+        $user->update($userData);
+
+        // Préparation des données formateur
+        $formateurData = [
+            'prenom' => $request->prenom,
+            'nom' => $request->nom,
+            'telephone' => $request->telephone,
+        ];
+
+        // Mettre à jour le formateur
+        $formateur->update($formateurData);
+
+        DB::commit();
+
+        // Préparer le message de succès
+        $message = 'Profil mis à jour avec succès.';
+        if ($request->filled('new_password')) {
+            $message .= ' Votre mot de passe a été changé.';
+        }
+        if ($request->hasFile('image')) {
+            $message .= ' Votre photo de profil a été mise à jour.';
+        }
+
+        return redirect()->route('formateur.profile')
+                        ->with('success', $message);
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        
+        Log::error('Erreur lors de la mise à jour du profil formateur', [
+            'user_id' => $user->id,
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
+
+        return back()->with('error', 'Une erreur est survenue lors de la mise à jour du profil. Veuillez réessayer.')->withInput();
+    }
+}
 
     /**
      * Show the form for creating a new resource.
