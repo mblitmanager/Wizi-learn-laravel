@@ -64,6 +64,38 @@ class FormateurController extends Controller
         return view('formateur.formations.index', compact('formations'));
     }
 
+/**
+ * Afficher le catalogue complet des formations ASSIGNEES au formateur
+ */
+public function catalogueFormations()
+{
+    $formateur = Auth::user()->formateur;
+    
+    // Récupérer UNIQUEMENT les formations assignées à ce formateur
+    $formations = $formateur->catalogue_formations()
+        ->with([
+            'formateurs',
+            'stagiaires' => function($query) use ($formateur) {
+                $query->whereHas('formateurs', function($q) use ($formateur) {
+                    $q->where('formateur_id', $formateur->id);
+                });
+            },
+            'formation'
+        ])
+        ->withCount(['stagiaires'])
+        ->orderBy('titre')
+        ->get();
+
+    // Statistiques pour le formateur connecté
+    $mesFormationsCount = $formations->count();
+    $totalStagiairesMesFormations = $formateur->stagiaires()->count();
+
+    return view('formateur.catalogue.index', compact(
+        'formations', 
+        'mesFormationsCount',
+        'totalStagiairesMesFormations'
+    ));
+}
 
  /**
  * Afficher les détails d'une formation spécifique

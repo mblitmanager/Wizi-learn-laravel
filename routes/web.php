@@ -163,7 +163,6 @@ Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function
 });
 
 // Routes pour les formateurs
-// Routes pour les formateurs
 Route::middleware(['auth'])->prefix('formateur')->name('formateur.')->group(function () {
     // Tableau de bord formateur
     Route::get('/dashboard', [FormateurDashboardController::class, 'index'])->name('dashboard');
@@ -176,7 +175,7 @@ Route::middleware(['auth'])->prefix('formateur')->name('formateur.')->group(func
 
     Route::get('/formations', [FormateurController::class, 'mesFormations'])->name('formations.index');
     Route::get('/formations/{id}', [FormateurController::class, 'showFormation'])->name('formations.show');
-    Route::get('/catalogue', [FormateurController::class, 'mesFormations'])->name('catalogue.index'); 
+    Route::get('/catalogue', [FormateurController::class, 'catalogueFormations'])->name('catalogue.index'); 
     // Route profil
     Route::get('/profile', [FormateurController::class, 'profile'])->name('profile');
     Route::post('/profile', [FormateurController::class, 'updateProfile'])->name('profile.update');
