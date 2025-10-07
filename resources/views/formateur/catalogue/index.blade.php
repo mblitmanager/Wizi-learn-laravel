@@ -218,36 +218,6 @@
         </div>
     </div>
 </div>
-
-<!-- Modal pour demande d'assignation -->
-<div class="modal fade" id="requestAssignmentModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-info text-white">
-                <h5 class="modal-title">
-                    <i class="fas fa-hand-paper mr-2"></i>Demande d'Assignation
-                </h5>
-                <button type="button" class="close" data-dismiss="modal">
-                    <span class="text-white">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <p>Voulez-vous demander à être assigné à la formation :</p>
-                <p class="font-weight-bold" id="formationTitle"></p>
-                <p class="text-muted small">
-                    <i class="fas fa-info-circle mr-1"></i>
-                    Votre demande sera soumise à l'administrateur pour validation.
-                </p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                <button type="button" class="btn btn-info" id="confirmRequest">
-                    <i class="fas fa-paper-plane mr-1"></i> Envoyer la demande
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
 @endsection
 
 @push('styles')

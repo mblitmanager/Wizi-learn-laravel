@@ -54,7 +54,7 @@
                                         <i class="fas fa-user text-primary mr-1"></i>Nom *
                                     </label>
                                     <input type="text" class="form-control @error('nom') is-invalid @enderror" 
-                                           id="nom" name="nom" value="{{ old('nom', $formateur->nom) }}" 
+                                           id="nom" name="nom" value="{{ old('nom', $formateur->user->name) }}" 
                                            placeholder="Votre nom" required>
                                     @error('nom')
                                         <div class="invalid-feedback">{{ $message }}</div>
