@@ -20,6 +20,16 @@ class IsAdmin
             return $next($request);
         }
 
+        // Rediriger vers la page de connexion si non authentifié
+        if (!Auth::check()) {
+            return redirect()->route('login');
+        }
+
+        // Rediriger vers le dashboard formateur si c'est un formateur
+        if (Auth::user()->role === 'formateur') {
+            return redirect()->route('formateur.dashboard');
+        }
+
         return redirect()->route('dashboard')->with('error', 'Access denied.');
     }
 }
