@@ -132,14 +132,7 @@
                                                 <div class="stat-label text-muted">Formations actives</div>
                                             </div>
                                         </div>
-                                        <div class="col-md-3 mb-3">
-                                            <div class="stat-item">
-                                                <div class="stat-number text-info font-weight-bold h4">
-                                                    {{ $formations->sum('stagiaires_count') }}
-                                                </div>
-                                                <div class="stat-label text-muted">Stagiaires total</div>
-                                            </div>
-                                        </div>
+                                       
                                         <div class="col-md-3 mb-3">
                                             <div class="stat-item">
                                                 <div class="stat-number text-warning font-weight-bold h4">

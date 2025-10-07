@@ -6,9 +6,9 @@
         <div class="col-md-8">
             <div class="card card-primary card-outline">
                 <div class="card-header bg-gradient-primary text-white">
-                    <h3 class="card-title mb-0">
+                    <h5 class="card-title mb-0">
                         <i class="fas fa-user-edit mr-2"></i>Modifier mon profil
-                    </h3>
+                    </h5>
                 </div>
                 <form action="{{ route('formateur.profile.update') }}" method="POST" enctype="multipart/form-data">
                     @csrf
@@ -107,10 +107,10 @@
                         <!-- Section changement de mot de passe -->
                         <div class="card card-outline card-warning mt-4">
                             <div class="card-header">
-                                <h4 class="card-title mb-0">
+                                <h6 class="card-title mb-0">
                                     <i class="fas fa-lock mr-2"></i>Changer le mot de passe
                                     <small class="text-muted ml-2">(Optionnel)</small>
-                                </h4>
+                                </h6>
                             </div>
                             <div class="card-body">
                                 <div class="form-group">
@@ -170,7 +170,7 @@
             <!-- Carte profil -->
             <div class="card card-info">
                 <div class="card-header text-center">
-                    <h4 class="card-title mb-0">Mon Profil</h4>
+                    <h6 class="card-title mb-0">Mon Profil</h6>
                 </div>
                 <div class="card-body text-center">
                     <div class="profile-summary-avatar mb-3">
@@ -200,9 +200,9 @@
             <!-- Statistiques -->
             <div class="card card-success mt-4">
                 <div class="card-header">
-                    <h4 class="card-title mb-0">
+                    <h6 class="card-title mb-0">
                         <i class="fas fa-chart-bar mr-2"></i>Mes Statistiques
-                    </h4>
+                    </h6>
                 </div>
                 <div class="card-body">
                     <div class="stats-grid">
@@ -210,7 +210,7 @@
                             <div class="stat-icon text-primary mb-2">
                                 <i class="fas fa-graduation-cap fa-2x"></i>
                             </div>
-                            <div class="stat-number h4 font-weight-bold text-primary">
+                            <div class="stat-number h6 font-weight-bold text-primary">
                                 {{ $formateur->catalogue_formations->count() }}
                             </div>
                             <div class="stat-label text-muted">Formations</div>
@@ -220,7 +220,7 @@
                             <div class="stat-icon text-success mb-2">
                                 <i class="fas fa-users fa-2x"></i>
                             </div>
-                            <div class="stat-number h4 font-weight-bold text-success">
+                            <div class="stat-number h6 font-weight-bold text-success">
                                 {{ $formateur->stagiaires()->where('statut', 1)->count() }}
                             </div>
                             <div class="stat-label text-muted">Stagiaires actifs</div>
@@ -230,7 +230,7 @@
                             <div class="stat-icon text-info mb-2">
                                 <i class="fas fa-user-check fa-2x"></i>
                             </div>
-                            <div class="stat-number h4 font-weight-bold text-info">
+                            <div class="stat-number h6 font-weight-bold text-info">
                                 {{ $formateur->stagiaires()->where('statut', 0)->count() }}
                             </div>
                             <div class="stat-label text-muted">Formations terminées</div>
@@ -242,9 +242,9 @@
             <!-- Informations de compte -->
             <div class="card card-warning mt-4">
                 <div class="card-header">
-                    <h4 class="card-title mb-0">
+                    <h6 class="card-title mb-0">
                         <i class="fas fa-info-circle mr-2"></i>Informations du compte
-                    </h4>
+                    </h6>
                 </div>
                 <div class="card-body">
                     <div class="account-info">

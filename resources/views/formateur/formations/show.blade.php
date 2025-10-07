@@ -31,10 +31,10 @@
                         <!-- Informations principales -->
                         <div class="col-md-8">
                             <div class="card mb-4">
-                                <div class="card-header bg-primary text-white">
-                                    <h4 class="card-title mb-0">
+                                <div class="card-header text-white" style="background: #65baee;">
+                                    <h6 class="card-title mb-0 text-white">
                                         <i class="fas fa-info-circle"></i> Informations de la Formation
-                                    </h4>
+                                    </h6>
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
@@ -79,7 +79,7 @@
                                                 <strong><i class="fas fa-circle text-primary"></i> Statut :</strong>
                                                 <p class="mb-0">
                                                     <span class="badge bg-{{ $formation->statut ? 'success' : 'secondary' }}">
-                                                        {{ $formation->statut ? 'Active' : 'Inactive' }}
+                                                        {{ $formation->statut === 1 ? 'Active' : 'Inactive' }}
                                                     </span>
                                                 </p>
                                             </div>
@@ -118,16 +118,16 @@
                         <!-- Statistiques -->
                         <div class="col-md-4">
                             <div class="card mb-4">
-                                <div class="card-header bg-info text-white">
-                                    <h4 class="card-title mb-0">
+                                <div class="card-header text-white" style="background: #65baee;">
+                                    <h6 class="card-title mb-0 text-white">
                                         <i class="fas fa-chart-bar"></i> Statistiques
-                                    </h4>
+                                    </h6>
                                 </div>
                                 <div class="card-body">
                                     <div class="text-center mb-4">
-                                        <div class="stats-box bg-primary">
+                                        <div class="stats-box text-white px-2 py-2" style="background: #65baee;">
                                             <i class="fas fa-users fa-2x"></i>
-                                            <h3 class="mt-2">{{ $formation->stagiaires->count() }}</h3>
+                                            <h3 class="mt-2 text-white">{{ $formation->stagiaires->count() }}</h3>
                                             <p class="mb-0">Stagiaires assignés</p>
                                         </div>
                                     </div>
@@ -167,10 +167,10 @@
 
                             <!-- Actions rapides -->
                             <div class="card">
-                                <div class="card-header bg-success text-white">
-                                    <h4 class="card-title mb-0">
+                                <div class="card-header text-white" style="background: #75c988; color: white;">
+                                    <h6 class="card-title text-white mb-0">
                                         <i class="fas fa-bolt"></i> Actions rapides
-                                    </h4>
+                                    </h6>
                                 </div>
                                 <div class="card-body">
                                     <div class="d-grid gap-2">
@@ -196,10 +196,10 @@
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-header">
-                                    <h4 class="card-title">
+                                    <h6 class="card-title">
                                         <i class="fas fa-users"></i> Stagiaires de cette formation
                                         <span class="badge badge-primary ml-2">{{ $formation->stagiaires->count() }}</span>
-                                    </h4>
+                                    </h6>
                                 </div>
                                 <div class="card-body">
                                     @if($formation->stagiaires->count() > 0)
@@ -240,8 +240,8 @@
                                                         @endif
                                                     </td>
                                                     <td>
-                                                        <span class="badge badge-{{ $stagiaire->statut === 'actif' ? 'success' : 'secondary' }}">
-                                                            {{ $stagiaire->statut === 'actif' ? 'En cours' : 'Terminé' }}
+                                                        <span class="badge bg-{{ $stagiaire->statut === 1 ? 'success' : 'secondary' }}">
+                                                            {{ $stagiaire->statut === 1 ? 'En cours' : 'Terminé' }}
                                                         </span>
                                                     </td>
                                                     <td>
