@@ -70,9 +70,9 @@
 
                 <div class="card">
                     <div class="card-header bg-success text-white">
-                        <h5 class="card-title mb-0">
+                        <h3 class="card-title mb-0">
                             <i class="fas fa-mobile-alt"></i> Stagiaires Actifs sur l'Application
-                        </h5>
+                        </h3>
                     </div>
                     <div class="card-body">
                         @if ($stagiairesAvecApp->count() > 0)

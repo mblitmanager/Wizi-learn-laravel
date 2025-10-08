@@ -208,6 +208,8 @@ Route::middleware(['auth'])->prefix('formateur')->name('formateur.')->group(func
     Route::get('/formations', [FormateurController::class, 'mesFormations'])->name('formations.index');
     Route::get('/formations/{id}', [FormateurController::class, 'showFormation'])->name('formations.show');
     Route::get('/catalogue', [FormateurController::class, 'catalogueFormations'])->name('catalogue.index');
+    Route::get('/catalogue', [FormateurController::class, 'catalogueFormations'])->name('catalogue.index'); 
+    
     // Route profil
     Route::get('/profile', [FormateurController::class, 'profile'])->name('profile');
     Route::post('/profile', [FormateurController::class, 'updateProfile'])->name('profile.update');
