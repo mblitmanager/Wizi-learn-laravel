@@ -53,6 +53,12 @@
                                 <a href="{{ route('formateur.stagiaires.termines') }}" class="btn btn-outline-info">
                                     <i class="fas fa-graduation-cap"></i> Terminés récents
                                 </a>
+                                 <a href="{{ route('formateur.classement') }}" class="btn btn-outline-warning">
+                    <i class="fas fa-trophy"></i> Classement
+                    </a>
+                        <a href="{{ route('formateur.stagiaires.application') }}" class="btn btn-outline-success">
+    <i class="fas fa-mobile-alt"></i> Utilisateurs App
+</a>
                             </div>
                         </div>
                     </div>
