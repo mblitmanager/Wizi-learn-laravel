@@ -17,14 +17,14 @@ class FormateurDashboardController extends Controller
         $stats = [
             'total_stagiaires' => $formateur->stagiaires()->count(),
             'stagiaires_en_cours' => $formateur->stagiaires()
-                ->where('statut', 'actif')
+                ->where('statut', 1)
                 ->where(function ($query) {
                     $query->whereNull('date_fin_formation')
                         ->orWhere('date_fin_formation', '>', now());
                 })
                 ->count(),
             'stagiaires_termines' => $formateur->stagiaires()
-                ->where('statut', 'inactif')
+                ->where('statut', 0)
                 ->where('date_fin_formation', '>=', Carbon::now()->subYear())
                 ->count(),
             'formations_encadrees' => $formateur->catalogue_formations()->count()

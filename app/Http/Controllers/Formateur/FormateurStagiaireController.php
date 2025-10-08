@@ -1,6 +1,4 @@
 <?php
-// app/Http/Controllers/Formateur/FormateurStagiaireController.php
-
 namespace App\Http\Controllers\Formateur;
 
 use App\Http\Controllers\Controller;
@@ -12,9 +10,19 @@ use Illuminate\Support\Facades\Gate;
 
 class FormateurStagiaireController extends Controller
 {
-    public function __construct()
+    /**
+     * Vérifier que l'utilisateur est un formateur
+     */
+    private function checkFormateur()
     {
-        $this->middleware(['auth', 'role:Formateur']);
+        $user = Auth::user();
+        if ($user->role !== 'formateur') {
+            abort(403, 'Accès réservé aux formateurs.');
+        }
+
+        if (!$user->formateur) {
+            abort(404, 'Profil formateur non trouvé.');
+        }
     }
 
     /**
@@ -22,8 +30,10 @@ class FormateurStagiaireController extends Controller
      */
     public function tousLesStagiaires()
     {
+        $this->checkFormateur();
         $formateur = Auth::user()->formateur;
 
+        // Récupérer tous les stagiaires
         $tousStagiaires = Stagiaire::whereHas('formateurs', function ($query) use ($formateur) {
             $query->where('formateur_id', $formateur->id);
         })
@@ -31,58 +41,85 @@ class FormateurStagiaireController extends Controller
             ->orderBy('date_debut_formation', 'desc')
             ->paginate(20);
 
-        return view('formateur.stagiaires.index', compact('tousStagiaires'));
+        // Calculer les statistiques pour l'affichage
+        $stats = $this->getStats($formateur);
+
+        return view('formateur.stagiaires.index', compact('tousStagiaires', 'stats'));
     }
 
-    /**
-     * Liste des stagiaires en cours de formation
-     */
-    public function stagiairesEnCours()
-    {
-        $formateur = Auth::user()->formateur;
+/**
+ * Liste des stagiaires en cours de formation (ACTUELLEMENT)
+ */
+public function stagiairesEnCours()
+{
+    $this->checkFormateur();
+    $formateur = Auth::user()->formateur;
 
-        $stagiairesEnCours = Stagiaire::whereHas('formateurs', function ($query) use ($formateur) {
-            $query->where('formateur_id', $formateur->id);
-        })
-            ->where('statut', 'actif')
-            ->where(function ($query) {
-                $query->whereNull('date_fin_formation')
-                    ->orWhere('date_fin_formation', '>', now());
-            })
-            ->where('date_debut_formation', '<=', now())
-            ->with(['user', 'catalogue_formations'])
-            ->orderBy('date_debut_formation', 'desc')
-            ->paginate(15);
+    $stagiairesEnCours = Stagiaire::whereHas('formateurs', function ($query) use ($formateur) {
+        $query->where('formateur_id', $formateur->id);
+    })
+    ->where(function ($query) {
+        $query->where('statut', 1)
+              ->orWhereNull('statut');
+    })
+    // IMPORTANT : date début DANS LE PASSÉ et date fin DANS LE FUTUR
+    ->where('date_debut_formation', '<=', now())
+    ->where(function ($query) {
+        $query->where('date_fin_formation', '>', now())
+              ->orWhereNull('date_fin_formation');
+    })
+    ->with(['user', 'catalogue_formations'])
+    ->orderBy('date_debut_formation', 'desc')
+    ->paginate(15);
 
-        return view('formateur.stagiaires.en-cours', compact('stagiairesEnCours'));
-    }
+    return view('formateur.stagiaires.en-cours', compact('stagiairesEnCours'));
+}
 
-    /**
-     * Liste des stagiaires ayant terminé leur formation depuis moins d'un an
-     */
-    public function stagiairesTerminesRecent()
-    {
-        $formateur = Auth::user()->formateur;
-        $dateLimite = Carbon::now()->subYear();
+/**
+ * NOUVEAU : Stagiaires avec formation à venir
+ */
+public function stagiairesAVenir()
+{
+    $this->checkFormateur();
+    $formateur = Auth::user()->formateur;
 
-        $stagiairesTermines = Stagiaire::whereHas('formateurs', function ($query) use ($formateur) {
-            $query->where('formateur_id', $formateur->id);
-        })
-            ->where('statut', 'inactif')
-            ->where('date_fin_formation', '>=', $dateLimite)
-            ->where('date_fin_formation', '<=', now())
-            ->with(['user', 'catalogue_formations'])
-            ->orderBy('date_fin_formation', 'desc')
-            ->paginate(15);
+    $stagiairesAVenir = Stagiaire::whereHas('formateurs', function ($query) use ($formateur) {
+        $query->where('formateur_id', $formateur->id);
+    })
+    ->where('date_debut_formation', '>', now()) // Date début dans le FUTUR
+    ->with(['user', 'catalogue_formations'])
+    ->orderBy('date_debut_formation', 'asc')
+    ->paginate(15);
 
-        return view('formateur.stagiaires.termines', compact('stagiairesTermines'));
-    }
+    return view('formateur.stagiaires.a-venir', compact('stagiairesAVenir'));
+}
+
+
+/**
+ * Stagiaires ayant terminé leur formation
+ */
+public function stagiairesTerminesRecent()
+{
+    $this->checkFormateur();
+    $formateur = Auth::user()->formateur;
+
+    $stagiairesTermines = Stagiaire::whereHas('formateurs', function ($query) use ($formateur) {
+        $query->where('formateur_id', $formateur->id);
+    })
+    ->where('date_fin_formation', '<=', now())
+    ->with(['user', 'catalogue_formations'])
+    ->orderBy('date_fin_formation', 'desc')
+    ->paginate(15);
+
+    return view('formateur.stagiaires.termines', compact('stagiairesTermines'));
+}
 
     /**
      * Détails d'un stagiaire
      */
     public function show($id)
     {
+        $this->checkFormateur();
         $formateur = Auth::user()->formateur;
 
         $stagiaire = Stagiaire::whereHas('formateurs', function ($query) use ($formateur) {
@@ -91,11 +128,50 @@ class FormateurStagiaireController extends Controller
             ->with([
                 'user',
                 'catalogue_formations',
-                'formateurs',
+                'formateurs.user',
                 'progressions',
                 'watchedVideos'
             ])->findOrFail($id);
 
         return view('formateur.stagiaires.show', compact('stagiaire'));
+    }
+
+    /**
+     * Récupérer les statistiques des stagiaires
+     */
+    private function getStats($formateur)
+    {
+        $stagiairesEnCours = Stagiaire::whereHas('formateurs', function ($query) use ($formateur) {
+            $query->where('formateur_id', $formateur->id);
+        })
+            ->where(function ($query) {
+                $query->where('statut', 'actif')
+                      ->orWhereNull('statut');
+            })
+            ->where(function ($query) {
+                $query->where('date_debut_formation', '<=', now())
+                      ->where(function ($subQuery) {
+                          $subQuery->where('date_fin_formation', '>', now())
+                                   ->orWhereNull('date_fin_formation');
+                      });
+            })
+            ->count();
+
+        $dateLimite = Carbon::now()->subYear();
+        $stagiairesTermines = Stagiaire::whereHas('formateurs', function ($query) use ($formateur) {
+            $query->where('formateur_id', $formateur->id);
+        })
+            ->where(function ($query) {
+                $query->where('statut', 'inactif')
+                      ->orWhere('statut', 'terminé');
+            })
+            ->where('date_fin_formation', '<=', now())
+            ->where('date_fin_formation', '>=', $dateLimite)
+            ->count();
+
+        return [
+            'stagiairesEnCours' => $stagiairesEnCours,
+            'stagiairesTermines' => $stagiairesTermines
+        ];
     }
 }
