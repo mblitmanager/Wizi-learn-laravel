@@ -23,12 +23,13 @@ use App\Http\Controllers\FcmTokenController;
 use App\Http\Controllers\Formateur\FormateurDashboardController;
 use App\Http\Controllers\Formateur\FormateurStagiaireController;
 use App\Http\Controllers\Formateur\FormateurStagiaireStatsController;
+use App\Http\Controllers\Formateur\FormateurClassementController;
 use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 use PhpOffice\PhpSpreadsheet\Calculation\TextData\Format;
 
 Route::get('/', function () {
-    return view('stagiaire');
+    return redirect('/administrateur/login');
 });
 
 Route::get('/administrateur', function () {
@@ -194,19 +195,30 @@ Route::middleware(['auth'])->prefix('formateur')->name('formateur.')->group(func
     Route::get('/stagiaires/termines', [FormateurStagiaireController::class, 'stagiairesTerminesRecent'])->name('stagiaires.termines');
     Route::get('/stagiaires/{id}', [FormateurStagiaireController::class, 'show'])->name('stagiaires.show');
 
+    // Routes classement et application
+    Route::get('/classement', [FormateurClassementController::class, 'classementGeneral'])->name('classement');
+    
+    // CORRECTION : Route pour les utilisateurs de l'application
+    Route::get('/stagiaires-application', [FormateurClassementController::class, 'stagiairesAvecApplication'])->name('stagiaires.application');
+    
+    // CORRECTION : Une seule route pour les détails de classement
+    Route::get('/stagiaires/{id}/classement', [FormateurClassementController::class, 'detailsClassement'])->name('stagiaires.details-classement');
+
+    // Routes formations
     Route::get('/formations', [FormateurController::class, 'mesFormations'])->name('formations.index');
     Route::get('/formations/{id}', [FormateurController::class, 'showFormation'])->name('formations.show');
     Route::get('/catalogue', [FormateurController::class, 'catalogueFormations'])->name('catalogue.index');
+    Route::get('/catalogue', [FormateurController::class, 'catalogueFormations'])->name('catalogue.index'); 
+    
     // Route profil
     Route::get('/profile', [FormateurController::class, 'profile'])->name('profile');
     Route::post('/profile', [FormateurController::class, 'updateProfile'])->name('profile.update');
 });
 
 
-
 // Routes de fallback
 Route::fallback(function () {
-    return redirect('/');
+    return redirect('/login');
 });
 
 // Catch-all route for React Router (SPA) - DOIT ÊTRE LA DERNIÈRE
