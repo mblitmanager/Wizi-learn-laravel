@@ -31,9 +31,9 @@
 
             <div class="card">
                 <div class="card-header bg-primary text-white">
-                    <h3 class="card-title mb-0 text-white">
+                    <h5 class="card-title mb-0 text-white">
                         <i class="fas fa-trophy"></i> Classement Général
-                    </h3>
+                    </h5>
                 </div>
                 <div class="card-body">
                     @if(count($classementAvecRang) > 0)
