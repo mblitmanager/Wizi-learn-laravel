@@ -212,6 +212,48 @@ class AdminController extends Controller
     }
 
 
+    public function activityData()
+    {
+        // Statistiques par pays
+        $countriesData = LoginHistories::select([
+            'country',
+            DB::raw('count(*) as total'),
+            DB::raw('MAX(login_at) as last_activity')
+        ])
+            ->whereNotNull('country')
+            ->groupBy('country')
+            ->orderByDesc('total')
+            ->get();
+
+        $mapData = $countriesData->map(function ($item) {
+            return [
+                'country' => $item->country,
+                'value' => $item->total,
+                'last_activity' => $item->last_activity,
+                'code' => $this->getCountryCode($item->country)
+            ];
+        })->values();
+
+        $onlineUsers = User::where('is_online', true)
+            ->with(['stagiaire', 'commercial', 'formateur', 'poleRelationClient'])
+            ->orderBy('last_activity_at', 'desc')
+            ->get(['id', 'name', 'email', 'role', 'last_activity_at', 'is_online', 'last_login_at']);
+
+        $stats = [
+            'map_data' => $mapData,
+            'online_users' => User::where('is_online', true)->count(),
+            'total_logins' => LoginHistories::where('country', '!=', null)->count(),
+            'today_logins' => User::whereDate('last_login_at', today())->count(),
+            'week_logins' => User::whereBetween('last_login_at', [now()->startOfWeek(), now()->endOfWeek()])->count(),
+            'month_logins' => User::whereBetween('last_login_at', [now()->startOfMonth(), now()->endOfMonth()])->count(),
+        ];
+
+        return response()->json([
+            'stats' => $stats,
+            'onlineUsers' => $onlineUsers,
+        ]);
+    }
+
     // Helper pour obtenir les codes pays ISO
     private function getCountryCode($countryName)
     {
