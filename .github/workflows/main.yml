@@ -43,6 +43,7 @@ jobs:
           echo "✓ Code updated"
           curl -sS https://getcomposer.org/installer | php
           chmod +x composer.phar
+          php composer.phar update
           php composer.phar install
           
           echo "➤ Installing dependencies..."
