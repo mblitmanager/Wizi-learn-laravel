@@ -19,21 +19,34 @@
                 </li>
 
                 {{-- Cacher l'activité des utilisateurs pour les formateurs --}}
-                @if(auth()->user()->role === 'administrateur')
+                @if (auth()->user()->role === 'administrateur')
                     <li> <a href="{{ route('dashboard.activity') }}"><i class="bx bx-right-arrow-alt"></i>Activité des
                             utilisateurs</a>
+                    </li>
+                    <li> <a href="{{ route('admin.user_app_usages.index') }}"><i
+                                class="bx bx-right-arrow-alt"></i>Usages mobiles</a>
+                    </li>
+                    <li> <a href="{{ route('admin.stagiaires.stats') }}"><i class="bx bx-right-arrow-alt"></i>Stats
+                            stagiaires</a>
+                    </li>
+                    <li> <a href="{{ route('admin.inactivity.index') }}"><i
+                                class="bx bx-right-arrow-alt"></i>Inactivité</a>
                     </li>
                     <li class="nav-item">
                         <a href="{{ route('admin.achievements.index') }}">
                             <i class="fas fa-trophy me-2"></i> Gestion des Succès
                         </a>
                     </li>
+                @elseif(auth()->user()->role === 'formateur')
+                    <li> <a href="{{ route('formateur.stagiaires.stats') }}"><i class="bx bx-right-arrow-alt"></i>Stats
+                            de mes stagiaires</a>
+                    </li>
                 @endif
             </ul>
         </li>
 
         {{-- Menu Stagiaires pour les formateurs --}}
-        @if(auth()->user()->role === 'formateur')
+        @if (auth()->user()->role === 'formateur')
             <li>
                 <a href="javascript:;" class="has-arrow">
                     <div class="parent-icon"><i class='lni lni-users'></i>
@@ -41,7 +54,8 @@
                     <div class="menu-title">Mes Stagiaires</div>
                 </a>
                 <ul>
-                    <li> <a href="{{ route('formateur.stagiaires.index') }}"><i class="bx bx-right-arrow-alt"></i>Tous mes
+                    <li> <a href="{{ route('formateur.stagiaires.index') }}"><i class="bx bx-right-arrow-alt"></i>Tous
+                            mes
                             stagiaires</a>
                     </li>
                     <li> <a href="{{ route('formateur.stagiaires.en-cours') }}"><i class="bx bx-right-arrow-alt"></i>En
@@ -63,7 +77,7 @@
         @endif
 
         {{-- Menu Quiz --}}
-        @if(auth()->user()->role === 'administrateur')
+        @if (auth()->user()->role === 'administrateur')
             <li>
                 <a href="{{ route('quiz.index') }}">
                     <div class="parent-icon"><i class='fadeIn animated bx bx-brain'></i>
@@ -74,7 +88,7 @@
         @endif
 
         {{-- Menu Contact - seulement pour admin --}}
-        @if(auth()->user()->role === 'administrateur')
+        @if (auth()->user()->role === 'administrateur')
             <li>
                 <a href="javascript:;" class="has-arrow">
                     <div class="parent-icon"><i class='fadeIn animated bx bx-phone-outgoing'></i>
@@ -96,7 +110,7 @@
         @endif
 
         {{-- Menu Classement --}}
-        @if(auth()->user()->role === 'administrateur')
+        @if (auth()->user()->role === 'administrateur')
             <li>
                 <a href="{{ route('classement.index') }}">
                     <div class="parent-icon"><i class='fadeIn animated bx bx-list-ol'></i>
@@ -107,7 +121,7 @@
         @endif
 
         {{-- Menu Formation - version différente selon le rôle --}}
-        @if(auth()->user()->role === 'formateur')
+        @if (auth()->user()->role === 'formateur')
             {{-- Version Formateur --}}
             <li>
                 <a href="javascript:;" class="has-arrow">
@@ -116,9 +130,11 @@
                     <div class="menu-title">Mes Formations</div>
                 </a>
                 <ul>
-                    <li> <a href="{{ route('formateur.formations.index') }}"><i class="bx bx-right-arrow-alt"></i>Mes formations</a>
+                    <li> <a href="{{ route('formateur.formations.index') }}"><i class="bx bx-right-arrow-alt"></i>Mes
+                            formations</a>
                     </li>
-                    <li> <a href="{{ route('formateur.catalogue.index') }}"><i class="bx bx-right-arrow-alt"></i>Catalogue formations</a>
+                    <li> <a href="{{ route('formateur.catalogue.index') }}"><i
+                                class="bx bx-right-arrow-alt"></i>Catalogue formations</a>
                     </li>
                 </ul>
             </li>
@@ -131,7 +147,8 @@
                     <div class="menu-title">Formation</div>
                 </a>
                 <ul>
-                    <li> <a href="{{ route('catalogue_formation.index') }}"><i class="bx bx-right-arrow-alt"></i>Catalogue
+                    <li> <a href="{{ route('catalogue_formation.index') }}"><i
+                                class="bx bx-right-arrow-alt"></i>Catalogue
                             formation</a>
                     </li>
                     <li> <a href="{{ route('formations.index') }}"><i class="bx bx-right-arrow-alt"></i>Domaine
@@ -142,7 +159,7 @@
         @endif
 
         {{-- Menu Profil pour formateur --}}
-        @if(auth()->user()->role === 'formateur')
+        @if (auth()->user()->role === 'formateur')
             <li>
                 <a href="{{ route('formateur.profile') }}">
                     <div class="parent-icon"><i class='bx bx-user'></i>
@@ -153,7 +170,7 @@
         @endif
 
         {{-- Cacher les menus suivants pour les formateurs --}}
-        @if(auth()->user()->role === 'administrateur')
+        @if (auth()->user()->role === 'administrateur')
             <li>
                 <a href="javascript:;" class="has-arrow">
                     <div class="parent-icon"><i class='fadeIn animated bx bx-git-branch'></i>
@@ -209,7 +226,7 @@
                     <div class="menu-title">Historique des demandes</div>
                 </a>
             </li>
-            
+
             <li>
                 <a href="javascript:;" class="has-arrow">
                     <div class="parent-icon"><i class='bx bx-cog bx-spin'></i>
@@ -217,11 +234,13 @@
                     <div class="menu-title">Paramètres</div>
                 </a>
                 <ul>
-                    <li> <a href="{{ route('parametre.index') }}"><i class="bx bx-right-arrow-alt"></i>Paramètres généraux</a>
+                    <li> <a href="{{ route('parametre.index') }}"><i class="bx bx-right-arrow-alt"></i>Paramètres
+                            généraux</a>
                     </li>
                     <li> <a href="{{ route('roles.index') }}"><i class="bx bx-right-arrow-alt"></i>Rôles</a>
                     </li>
-                    <li> <a href="{{ route('permissions.index') }}"><i class="bx bx-right-arrow-alt"></i>Permissions</a>
+                    <li> <a href="{{ route('permissions.index') }}"><i
+                                class="bx bx-right-arrow-alt"></i>Permissions</a>
                     </li>
                 </ul>
             </li>

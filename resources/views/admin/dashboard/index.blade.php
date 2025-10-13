@@ -67,6 +67,41 @@
         </div>
     </div>
 
+    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-2 mt-3">
+        <div class="col">
+            <div class="card radius-10 border-start border-0 border-4 border-primary">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div>
+                            <p class="mb-0 text-secondary">Android - Utilisateurs suivis</p>
+                            <h4 class="my-1 text-primary">{{ $androidUsers ?? 0 }}</h4>
+                            <p class="mb-0 text-secondary small">Premières utilisations: {{ $androidFirstUses ?? 0 }}</p>
+                            <p class="mb-0 text-secondary small">Actifs 30j: {{ $androidActive30d ?? 0 }}</p>
+                        </div>
+                        <div class="widgets-icons-2 rounded-circle bg-gradient-orange text-white ms-auto"><i
+                                class="bx bxl-android"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card radius-10 border-start border-0 border-4 border-dark">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div>
+                            <p class="mb-0 text-secondary">iOS - Utilisateurs suivis</p>
+                            <h4 class="my-1 text-dark">{{ $iosUsers ?? 0 }}</h4>
+                            <p class="mb-0 text-secondary small">Premières utilisations: {{ $iosFirstUses ?? 0 }}</p>
+                            <p class="mb-0 text-secondary small">Actifs 30j: {{ $iosActive30d ?? 0 }}</p>
+                        </div>
+                        <div class="widgets-icons-2 rounded-circle bg-gradient-orange text-white ms-auto"><i
+                                class="bx bxl-apple"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
 
 

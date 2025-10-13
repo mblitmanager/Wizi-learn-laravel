@@ -14,10 +14,15 @@ use App\Http\Controllers\Admin\QuestionController;
 use App\Http\Controllers\Admin\PartenaireController;
 use App\Http\Controllers\Admin\QuizController;
 use App\Http\Controllers\Admin\StagiaireController;
+use App\Http\Controllers\Admin\UserAppUsageAdminController;
+use App\Http\Controllers\Admin\AdminStagiaireStatsController;
+use App\Http\Controllers\Admin\AdminInactivityController;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Stagiaire\DashboardController;
 use App\Http\Controllers\FcmTokenController;
 use App\Http\Controllers\Formateur\FormateurDashboardController;
 use App\Http\Controllers\Formateur\FormateurStagiaireController;
+use App\Http\Controllers\Formateur\FormateurStagiaireStatsController;
 use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 use PhpOffice\PhpSpreadsheet\Calculation\TextData\Format;
@@ -51,7 +56,7 @@ Route::post('/reset-password', [AdminController::class, 'resetPassword'])->name(
 
 // Route dashboard principale qui redirige selon le rôle (PROTÉGÉE)
 Route::middleware(['auth'])->get('/dashboard', function () {
-    $user = auth()->user();
+    $user = Auth::user();
 
     if (!$user) {
         return redirect()->route('login');
@@ -77,7 +82,7 @@ Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function
 
     Route::resource('roles', \App\Http\Controllers\Admin\RoleController::class);
     Route::post('roles/{role}/toggle-status', [\App\Http\Controllers\Admin\RoleController::class, 'toggleStatus'])->name('roles.toggle-status');
-    
+
     // Permissions
     Route::resource('permissions', \App\Http\Controllers\Admin\PermissionController::class);
     Route::post('permissions/{permission}/toggle-status', [\App\Http\Controllers\Admin\PermissionController::class, 'toggleStatus'])->name('permissions.toggle-status');
@@ -160,6 +165,19 @@ Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function
     Route::post('partenaires/import', [PartenaireController::class, 'import'])->name('partenaires.import');
 
     Route::resource('parrainage_events', \App\Http\Controllers\ParrainageEventController::class);
+
+    // Usages app mobiles
+    Route::get('/user-app-usages', [UserAppUsageAdminController::class, 'index'])->name('admin.user_app_usages.index');
+    Route::get('/user-app-usages/export', [UserAppUsageAdminController::class, 'export'])->name('admin.user_app_usages.export');
+
+    // Stats stagiaires (évite conflit avec resource('stagiaires'))
+    Route::get('/stats/stagiaires', [AdminStagiaireStatsController::class, 'index'])->name('admin.stagiaires.stats');
+    Route::get('/stats/stagiaires/export', [AdminStagiaireStatsController::class, 'export'])->name('admin.stagiaires.stats.export');
+    Route::get('/stats/stagiaires/export-xlsx', [AdminStagiaireStatsController::class, 'exportXlsx'])->name('admin.stagiaires.stats.export.xlsx');
+
+    // Inactivité
+    Route::get('/inactivity', [AdminInactivityController::class, 'index'])->name('admin.inactivity.index');
+    Route::post('/inactivity/notify', [AdminInactivityController::class, 'notify'])->name('admin.inactivity.notify');
 });
 
 // Routes pour les formateurs
@@ -169,13 +187,16 @@ Route::middleware(['auth'])->prefix('formateur')->name('formateur.')->group(func
 
     // Routes stagiaires
     Route::get('/stagiaires', [FormateurStagiaireController::class, 'tousLesStagiaires'])->name('stagiaires.index');
+    Route::get('/stagiaires/stats', [FormateurStagiaireStatsController::class, 'index'])->name('stagiaires.stats');
+    Route::get('/stagiaires/stats/export', [FormateurStagiaireStatsController::class, 'export'])->name('formateur.stagiaires.stats.export');
+    Route::get('/stagiaires/stats/export-xlsx', [FormateurStagiaireStatsController::class, 'exportXlsx'])->name('formateur.stagiaires.stats.export.xlsx');
     Route::get('/stagiaires/en-cours', [FormateurStagiaireController::class, 'stagiairesEnCours'])->name('stagiaires.en-cours');
     Route::get('/stagiaires/termines', [FormateurStagiaireController::class, 'stagiairesTerminesRecent'])->name('stagiaires.termines');
     Route::get('/stagiaires/{id}', [FormateurStagiaireController::class, 'show'])->name('stagiaires.show');
 
     Route::get('/formations', [FormateurController::class, 'mesFormations'])->name('formations.index');
     Route::get('/formations/{id}', [FormateurController::class, 'showFormation'])->name('formations.show');
-    Route::get('/catalogue', [FormateurController::class, 'catalogueFormations'])->name('catalogue.index'); 
+    Route::get('/catalogue', [FormateurController::class, 'catalogueFormations'])->name('catalogue.index');
     // Route profil
     Route::get('/profile', [FormateurController::class, 'profile'])->name('profile');
     Route::post('/profile', [FormateurController::class, 'updateProfile'])->name('profile.update');
