@@ -23,12 +23,13 @@ use App\Http\Controllers\FcmTokenController;
 use App\Http\Controllers\Formateur\FormateurDashboardController;
 use App\Http\Controllers\Formateur\FormateurStagiaireController;
 use App\Http\Controllers\Formateur\FormateurStagiaireStatsController;
+use App\Http\Controllers\Formateur\FormateurClassementController;
 use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 use PhpOffice\PhpSpreadsheet\Calculation\TextData\Format;
 
 Route::get('/', function () {
-    return view('stagiaire');
+    return redirect('/administrateur/login');
 });
 
 Route::get('/administrateur', function () {
@@ -56,7 +57,7 @@ Route::post('/reset-password', [AdminController::class, 'resetPassword'])->name(
 
 // Route dashboard principale qui redirige selon le rôle (PROTÉGÉE)
 Route::middleware(['auth'])->get('/dashboard', function () {
-    $user = Auth::user();
+    $user = auth()->user();
 
     if (!$user) {
         return redirect()->route('login');
@@ -64,7 +65,7 @@ Route::middleware(['auth'])->get('/dashboard', function () {
 
     if ($user->role === 'administrateur') {
         return app('App\Http\Controllers\Admin\AdminController')->index();
-    } elseif ($user->role === 'formateur') {
+    } elseif ($user->role === 'Formateur') {
         return redirect()->route('formateur.dashboard');
     } else {
         return redirect('/');
@@ -79,6 +80,7 @@ Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function
     Route::get('/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
     Route::get('dashboard/activity-user', [AdminController::class, 'getUserActivity'])->name('dashboard.activity-user');
     Route::get('dashboard/activity', [AdminController::class, 'showLoginStats'])->name('dashboard.activity');
+    Route::get('dashboard/activity/data', [AdminController::class, 'activityData'])->name('dashboard.activity.data');
 
     Route::resource('roles', \App\Http\Controllers\Admin\RoleController::class);
     Route::post('roles/{role}/toggle-status', [\App\Http\Controllers\Admin\RoleController::class, 'toggleStatus'])->name('roles.toggle-status');
@@ -194,19 +196,30 @@ Route::middleware(['auth'])->prefix('formateur')->name('formateur.')->group(func
     Route::get('/stagiaires/termines', [FormateurStagiaireController::class, 'stagiairesTerminesRecent'])->name('stagiaires.termines');
     Route::get('/stagiaires/{id}', [FormateurStagiaireController::class, 'show'])->name('stagiaires.show');
 
+    // Routes classement et application
+    Route::get('/classement', [FormateurClassementController::class, 'classementGeneral'])->name('classement');
+
+    // CORRECTION : Route pour les utilisateurs de l'application
+    Route::get('/stagiaires-application', [FormateurClassementController::class, 'stagiairesAvecApplication'])->name('stagiaires.application');
+
+    // CORRECTION : Une seule route pour les détails de classement
+    Route::get('/stagiaires/{id}/classement', [FormateurClassementController::class, 'detailsClassement'])->name('stagiaires.details-classement');
+
+    // Routes formations
     Route::get('/formations', [FormateurController::class, 'mesFormations'])->name('formations.index');
     Route::get('/formations/{id}', [FormateurController::class, 'showFormation'])->name('formations.show');
     Route::get('/catalogue', [FormateurController::class, 'catalogueFormations'])->name('catalogue.index');
+    Route::get('/catalogue', [FormateurController::class, 'catalogueFormations'])->name('catalogue.index');
+
     // Route profil
     Route::get('/profile', [FormateurController::class, 'profile'])->name('profile');
     Route::post('/profile', [FormateurController::class, 'updateProfile'])->name('profile.update');
 });
 
 
-
 // Routes de fallback
 Route::fallback(function () {
-    return redirect('/');
+    return redirect('/login');
 });
 
 // Catch-all route for React Router (SPA) - DOIT ÊTRE LA DERNIÈRE

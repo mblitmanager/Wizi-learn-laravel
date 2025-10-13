@@ -6,7 +6,7 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Mes Stagiaires</h3>
+                    <h5 class="card-title">Mes Stagiaires</h3>
                 </div>
                 <div class="card-body">
                     <!-- Statistiques -->
@@ -39,7 +39,6 @@
                             </div>
                         </div>
                     </div>
-
                     <!-- Filtres -->
                     <div class="row mb-3">
                         <div class="col-md-12">
@@ -53,6 +52,12 @@
                                 <a href="{{ route('formateur.stagiaires.termines') }}" class="btn btn-outline-info">
                                     <i class="fas fa-graduation-cap"></i> Terminés récents
                                 </a>
+                                 <a href="{{ route('formateur.classement') }}" class="btn btn-outline-warning">
+                    <i class="fas fa-trophy"></i> Classement
+                    </a>
+                        <a href="{{ route('formateur.stagiaires.application') }}" class="btn btn-outline-success">
+    <i class="fas fa-mobile-alt"></i> Utilisateurs App
+</a>
                             </div>
                         </div>
                     </div>

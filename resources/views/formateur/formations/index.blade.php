@@ -6,7 +6,7 @@
         <div class="col-12">
             <div class="card card-primary card-outline">
                 <div class="card-header bg-gradient-primary text-white">
-                    <h3 class="card-title mb-0">
+                    <h5 class="card-title mb-0">
                         <i class="fas fa-graduation-cap mr-2"></i>Mes Formations Assignées
                     </h3>
                     <div class="card-tools">

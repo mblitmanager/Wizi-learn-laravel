@@ -49,7 +49,7 @@ class Progression extends Model
      protected static function booted()
      {
          static::creating(function ($progression) {
-             $progression->score = $progression->correct_answers * 2; // 2 points par bonne réponse
+             $progression->score = $progression->correct_answers * 2; 
          });
      }
 }

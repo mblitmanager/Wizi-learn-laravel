@@ -37,7 +37,7 @@
                             <i class="fas fa-trophy me-2"></i> Gestion des Succès
                         </a>
                     </li>
-                @elseif(auth()->user()->role === 'formateur')
+                @elseif(auth()->user()->role === 'Formateur')
                     <li> <a href="{{ route('formateur.stagiaires.stats') }}"><i class="bx bx-right-arrow-alt"></i>Stats
                             de mes stagiaires</a>
                     </li>
@@ -46,7 +46,7 @@
         </li>
 
         {{-- Menu Stagiaires pour les formateurs --}}
-        @if (auth()->user()->role === 'formateur')
+        @if (auth()->user()->role === 'Formateur')
             <li>
                 <a href="javascript:;" class="has-arrow">
                     <div class="parent-icon"><i class='lni lni-users'></i>
@@ -197,14 +197,6 @@
 
             <li>
                 <a href="javascript:;">
-                    <div class="parent-icon"><i class='fadeIn animated bx bx-target-lock'></i>
-                    </div>
-                    <div class="menu-title">Défis</div>
-                </a>
-            </li>
-
-            <li>
-                <a href="javascript:;">
                     <div class="parent-icon"><i class='fadeIn animated bx bx-calendar'></i>
                     </div>
                     <div class="menu-title">Planning</div>
@@ -228,23 +220,57 @@
             </li>
 
             <li>
-                <a href="javascript:;" class="has-arrow">
+                <a href="{{ route('parametre.index') }}">
                     <div class="parent-icon"><i class='bx bx-cog bx-spin'></i>
                     </div>
                     <div class="menu-title">Paramètres</div>
                 </a>
-                <ul>
-                    <li> <a href="{{ route('parametre.index') }}"><i class="bx bx-right-arrow-alt"></i>Paramètres
-                            généraux</a>
-                    </li>
-                    <li> <a href="{{ route('roles.index') }}"><i class="bx bx-right-arrow-alt"></i>Rôles</a>
-                    </li>
-                    <li> <a href="{{ route('permissions.index') }}"><i
-                                class="bx bx-right-arrow-alt"></i>Permissions</a>
-                    </li>
-                </ul>
             </li>
         @endif
+
+        {{-- Menu Profil pour tous les utilisateurs --}}
+
+        <li>
+            <a href="javascript:;">
+                <div class="parent-icon"><i class='fadeIn animated bx bx-calendar'></i>
+                </div>
+                <div class="menu-title">Planning</div>
+            </a>
+        </li>
+
+        <li>
+            <a href="{{ route('admin.parametre.reset-data') }}">
+                <div class="parent-icon"><i class='fadeIn animated bx bx-line-chart'></i>
+                </div>
+                <div class="menu-title">Statistiques</div>
+            </a>
+        </li>
+
+        <li>
+            <a href="{{ route('demande.historique.index') }}">
+                <div class="parent-icon"><i class='bx  bx-folder'></i>
+                </div>
+                <div class="menu-title">Historique des demandes</div>
+            </a>
+        </li>
+
+        <li>
+            <a href="javascript:;" class="has-arrow">
+                <div class="parent-icon"><i class='bx bx-cog bx-spin'></i>
+                </div>
+                <div class="menu-title">Paramètres</div>
+            </a>
+            <ul>
+                <li> <a href="{{ route('parametre.index') }}"><i class="bx bx-right-arrow-alt"></i>Paramètres
+                        généraux</a>
+                </li>
+                <li> <a href="{{ route('roles.index') }}"><i class="bx bx-right-arrow-alt"></i>Rôles</a>
+                </li>
+                <li> <a href="{{ route('permissions.index') }}"><i class="bx bx-right-arrow-alt"></i>Permissions</a>
+                </li>
+            </ul>
+        </li>
+        {{-- @endif --}}
     </ul>
     <!--end navigation-->
 </div>
