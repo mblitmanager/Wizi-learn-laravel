@@ -29,7 +29,7 @@ use Illuminate\Support\Facades\Route;
 use PhpOffice\PhpSpreadsheet\Calculation\TextData\Format;
 
 Route::get('/', function () {
-    return redirect('/administrateur/login');
+    return view('stagiaire');
 });
 
 Route::get('/administrateur', function () {
