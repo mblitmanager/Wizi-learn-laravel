@@ -46,7 +46,7 @@
         </li>
 
         {{-- Menu Stagiaires pour les formateurs --}}
-        @if(auth()->user()->role === 'Formateur')
+        @if (auth()->user()->role === 'Formateur')
             <li>
                 <a href="javascript:;" class="has-arrow">
                     <div class="parent-icon"><i class='lni lni-users'></i>
@@ -54,7 +54,8 @@
                     <div class="menu-title">Mes Stagiaires</div>
                 </a>
                 <ul>
-                    <li> <a href="{{ route('formateur.stagiaires.index') }}"><i class="bx bx-right-arrow-alt"></i>Tous mes
+                    <li> <a href="{{ route('formateur.stagiaires.index') }}"><i class="bx bx-right-arrow-alt"></i>Tous
+                            mes
                             stagiaires</a>
                     </li>
                     <li> <a href="{{ route('formateur.stagiaires.en-cours') }}"><i class="bx bx-right-arrow-alt"></i>En
@@ -76,7 +77,7 @@
         @endif
 
         {{-- Menu Quiz --}}
-        @if(auth()->user()->role === 'administrateur')
+        @if (auth()->user()->role === 'administrateur')
             <li>
                 <a href="{{ route('quiz.index') }}">
                     <div class="parent-icon"><i class='fadeIn animated bx bx-brain'></i>
@@ -87,7 +88,7 @@
         @endif
 
         {{-- Menu Contact - seulement pour admin --}}
-        @if(auth()->user()->role === 'administrateur')
+        @if (auth()->user()->role === 'administrateur')
             <li>
                 <a href="javascript:;" class="has-arrow">
                     <div class="parent-icon"><i class='fadeIn animated bx bx-phone-outgoing'></i>
@@ -109,7 +110,7 @@
         @endif
 
         {{-- Menu Classement --}}
-        @if(auth()->user()->role === 'administrateur')
+        @if (auth()->user()->role === 'administrateur')
             <li>
                 <a href="{{ route('classement.index') }}">
                     <div class="parent-icon"><i class='fadeIn animated bx bx-list-ol'></i>
@@ -146,7 +147,8 @@
                     <div class="menu-title">Formation</div>
                 </a>
                 <ul>
-                    <li> <a href="{{ route('catalogue_formation.index') }}"><i class="bx bx-right-arrow-alt"></i>Catalogue
+                    <li> <a href="{{ route('catalogue_formation.index') }}"><i
+                                class="bx bx-right-arrow-alt"></i>Catalogue
                             formation</a>
                     </li>
                     <li> <a href="{{ route('formations.index') }}"><i class="bx bx-right-arrow-alt"></i>Domaine
@@ -228,48 +230,47 @@
 
         {{-- Menu Profil pour tous les utilisateurs --}}
 
-            <li>
-                <a href="javascript:;">
-                    <div class="parent-icon"><i class='fadeIn animated bx bx-calendar'></i>
-                    </div>
-                    <div class="menu-title">Planning</div>
-                </a>
-            </li>
+        <li>
+            <a href="javascript:;">
+                <div class="parent-icon"><i class='fadeIn animated bx bx-calendar'></i>
+                </div>
+                <div class="menu-title">Planning</div>
+            </a>
+        </li>
 
-            <li>
-                <a href="{{ route('admin.parametre.reset-data') }}">
-                    <div class="parent-icon"><i class='fadeIn animated bx bx-line-chart'></i>
-                    </div>
-                    <div class="menu-title">Statistiques</div>
-                </a>
-            </li>
+        <li>
+            <a href="{{ route('admin.parametre.reset-data') }}">
+                <div class="parent-icon"><i class='fadeIn animated bx bx-line-chart'></i>
+                </div>
+                <div class="menu-title">Statistiques</div>
+            </a>
+        </li>
 
-            <li>
-                <a href="{{ route('demande.historique.index') }}">
-                    <div class="parent-icon"><i class='bx  bx-folder'></i>
-                    </div>
-                    <div class="menu-title">Historique des demandes</div>
-                </a>
-            </li>
+        <li>
+            <a href="{{ route('demande.historique.index') }}">
+                <div class="parent-icon"><i class='bx  bx-folder'></i>
+                </div>
+                <div class="menu-title">Historique des demandes</div>
+            </a>
+        </li>
 
-            <li>
-                <a href="javascript:;" class="has-arrow">
-                    <div class="parent-icon"><i class='bx bx-cog bx-spin'></i>
-                    </div>
-                    <div class="menu-title">Paramètres</div>
-                </a>
-                <ul>
-                    <li> <a href="{{ route('parametre.index') }}"><i class="bx bx-right-arrow-alt"></i>Paramètres
-                            généraux</a>
-                    </li>
-                    <li> <a href="{{ route('roles.index') }}"><i class="bx bx-right-arrow-alt"></i>Rôles</a>
-                    </li>
-                    <li> <a href="{{ route('permissions.index') }}"><i
-                                class="bx bx-right-arrow-alt"></i>Permissions</a>
-                    </li>
-                </ul>
-            </li>
-        @endif
+        <li>
+            <a href="javascript:;" class="has-arrow">
+                <div class="parent-icon"><i class='bx bx-cog bx-spin'></i>
+                </div>
+                <div class="menu-title">Paramètres</div>
+            </a>
+            <ul>
+                <li> <a href="{{ route('parametre.index') }}"><i class="bx bx-right-arrow-alt"></i>Paramètres
+                        généraux</a>
+                </li>
+                <li> <a href="{{ route('roles.index') }}"><i class="bx bx-right-arrow-alt"></i>Rôles</a>
+                </li>
+                <li> <a href="{{ route('permissions.index') }}"><i class="bx bx-right-arrow-alt"></i>Permissions</a>
+                </li>
+            </ul>
+        </li>
+        {{-- @endif --}}
     </ul>
     <!--end navigation-->
 </div>

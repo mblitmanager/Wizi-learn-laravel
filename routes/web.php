@@ -80,6 +80,7 @@ Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function
     Route::get('/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
     Route::get('dashboard/activity-user', [AdminController::class, 'getUserActivity'])->name('dashboard.activity-user');
     Route::get('dashboard/activity', [AdminController::class, 'showLoginStats'])->name('dashboard.activity');
+    Route::get('dashboard/activity/data', [AdminController::class, 'activityData'])->name('dashboard.activity.data');
 
     Route::resource('roles', \App\Http\Controllers\Admin\RoleController::class);
     Route::post('roles/{role}/toggle-status', [\App\Http\Controllers\Admin\RoleController::class, 'toggleStatus'])->name('roles.toggle-status');
@@ -197,10 +198,10 @@ Route::middleware(['auth'])->prefix('formateur')->name('formateur.')->group(func
 
     // Routes classement et application
     Route::get('/classement', [FormateurClassementController::class, 'classementGeneral'])->name('classement');
-    
+
     // CORRECTION : Route pour les utilisateurs de l'application
     Route::get('/stagiaires-application', [FormateurClassementController::class, 'stagiairesAvecApplication'])->name('stagiaires.application');
-    
+
     // CORRECTION : Une seule route pour les détails de classement
     Route::get('/stagiaires/{id}/classement', [FormateurClassementController::class, 'detailsClassement'])->name('stagiaires.details-classement');
 
@@ -208,8 +209,8 @@ Route::middleware(['auth'])->prefix('formateur')->name('formateur.')->group(func
     Route::get('/formations', [FormateurController::class, 'mesFormations'])->name('formations.index');
     Route::get('/formations/{id}', [FormateurController::class, 'showFormation'])->name('formations.show');
     Route::get('/catalogue', [FormateurController::class, 'catalogueFormations'])->name('catalogue.index');
-    Route::get('/catalogue', [FormateurController::class, 'catalogueFormations'])->name('catalogue.index'); 
-    
+    Route::get('/catalogue', [FormateurController::class, 'catalogueFormations'])->name('catalogue.index');
+
     // Route profil
     Route::get('/profile', [FormateurController::class, 'profile'])->name('profile');
     Route::post('/profile', [FormateurController::class, 'updateProfile'])->name('profile.update');
