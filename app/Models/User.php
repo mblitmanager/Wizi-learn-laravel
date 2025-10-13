@@ -138,4 +138,19 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasOne(LoginHistories::class)->latestOfMany();
     }
+
+    public function appUsages()
+    {
+        return $this->hasMany(UserAppUsage::class);
+    }
+
+    public function androidUsage()
+    {
+        return $this->hasOne(UserAppUsage::class)->where('platform', 'android');
+    }
+
+    public function iosUsage()
+    {
+        return $this->hasOne(UserAppUsage::class)->where('platform', 'ios');
+    }
 }

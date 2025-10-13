@@ -13,6 +13,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Models\UserAppUsage;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
@@ -101,6 +102,24 @@ class AdminController extends Controller
             ->orderByDesc('quiz_participations.started_at')
             ->get();
 
+        // Récapitulatif usages Android/iOS
+        $usageSummary = UserAppUsage::select(
+            'platform',
+            DB::raw('COUNT(*) as users'),
+            DB::raw('SUM(CASE WHEN first_used_at IS NOT NULL THEN 1 ELSE 0 END) as first_uses'),
+            DB::raw('SUM(CASE WHEN last_used_at >= NOW() - INTERVAL 30 DAY THEN 1 ELSE 0 END) as active_30d')
+        )
+            ->groupBy('platform')
+            ->get()
+            ->keyBy('platform');
+
+        $androidUsers = (int) optional($usageSummary->get('android'))->users;
+        $androidFirstUses = (int) optional($usageSummary->get('android'))->first_uses;
+        $androidActive30d = (int) optional($usageSummary->get('android'))->active_30d;
+        $iosUsers = (int) optional($usageSummary->get('ios'))->users;
+        $iosFirstUses = (int) optional($usageSummary->get('ios'))->first_uses;
+        $iosActive30d = (int) optional($usageSummary->get('ios'))->active_30d;
+
 
         return view('admin.dashboard.index', compact(
             'totalStagiaires',
@@ -114,7 +133,13 @@ class AdminController extends Controller
             'poles',
             'connectedUsers',
             'recentQuizzes',
-            'activeQuizzes'
+            'activeQuizzes',
+            'androidUsers',
+            'androidFirstUses',
+            'androidActive30d',
+            'iosUsers',
+            'iosFirstUses',
+            'iosActive30d'
         ));
     }
 
@@ -295,12 +320,11 @@ class AdminController extends Controller
 
         if (Auth::attempt($request->only('email', 'password'))) {
             $user = Auth::user();
-            $user->update([
-                'last_login_at' => now(),
-                'last_login_ip' => $ip,
-                'is_online' => true,
-                'last_activity_at' => now()
-            ]);
+            $user->last_login_at = now();
+            $user->last_login_ip = $ip;
+            $user->is_online = true;
+            $user->last_activity_at = now();
+            $user->save();
 
             // Rediriger vers la route dashboard principale
             return redirect()->route('dashboard');
@@ -312,8 +336,12 @@ class AdminController extends Controller
 
     public function logout()
     {
-        if (auth()->check()) {
-            auth()->user()->update(['is_online' => false]);
+        if (Auth::check()) {
+            $user = Auth::user();
+            if ($user) {
+                $user->is_online = false;
+                $user->save();
+            }
             Auth::logout();
         }
         return redirect()->route('login')->with('success', 'Logged out successfully.');
