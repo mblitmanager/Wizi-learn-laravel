@@ -33,11 +33,11 @@ Route::get('/', function () {
 });
 
 Route::get('/administrateur', function () {
-    return redirect()->route('login');
+    return redirect()->route('dashboard');
 });
 
 Route::get('/admin', function () {
-    return redirect()->route('login');
+    return redirect()->route('dashboard');
 });
 
 // Routes d'authentification publiques
