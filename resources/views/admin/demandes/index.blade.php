@@ -51,67 +51,86 @@
                         </form>
                     </div>
                 </div>
+                <div class="card">
+                    <div class="table-responsive px-4 py-4">
+                        <div class="dataTables_wrapper dt-bootstrap5">
+                            <table id="stagiairesTable" class="table table-bordered table-striped table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Type</th>
+                                        <th>Formation</th>
+                                        <th>Parrain</th>
+                                        <th>Filleul</th>
+                                        <th>Date</th>
+                                        <th>Statut</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                    <tr>
+                                        <th><input type="text" placeholder="Filtrer"
+                                                class="form-control form-control-sm" />
+                                        </th>
+                                        <th><input type="text" placeholder="Filtrer"
+                                                class="form-control form-control-sm" />
+                                        </th>
+                                        <th><input type="text" placeholder="Filtrer"
+                                                class="form-control form-control-sm" />
+                                        </th>
+                                        <th><input type="text" placeholder="Filtrer"
+                                                class="form-control form-control-sm" />
+                                        </th>
+                                        <th><input type="text" placeholder="Filtrer"
+                                                class="form-control form-control-sm" />
+                                        </th>
+                                        <th><input type="text" placeholder="Filtrer"
+                                                class="form-control form-control-sm" />
+                                        </th>
 
-                <!-- Tableau des demandes -->
-                <div class="table-responsive">
-                    <table class="table table-bordered table-hover" width="100%" cellspacing="0">
-                        <thead class="thead-dark">
-                            <tr>
-                                <th>Type</th>
-                                <th>Formation</th>
-                                <th>Parrain</th>
-                                <th>Filleul</th>
-                                <th>Date</th>
-                                <th>Statut</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($demandes as $demande)
-                                <tr>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($demandes as $demande)
+                                        <tr>
 
-                                    <td>
-                                        <span
-                                            class="badge {{ $demande->motif === 'Soumission d\'une demande d\'inscription par parrainage' ? 'bg-success' : 'bg-secondary' }}">
-                                            {{ $demande->motif === 'Soumission d\'une demande d\'inscription par parrainage'
-                                                ? 'Soumission d\'une demande d\'inscription par parrainage'
-                                                : 'Demande d\'inscription à une formation' }}
-                                        </span>
-                                    </td>
-                                    <td>{{ $demande->formation->titre ?? 'N/A' }}</td>
-                                    <td>{{ $demande->parrain ? $demande->parrain->name : 'N/A' }}</td>
-                                    <td>{{ $demande->filleul->name ?? 'N/A' }}</td>
-                                    <td>{{ $demande->date_demande->format('d/m/Y H:i') }}</td>
-                                    <td>
-                                        <span
-                                            class="badge 
+                                            <td>
+                                                <span
+                                                    class="badge {{ $demande->motif === 'Soumission d\'une demande d\'inscription par parrainage' ? 'bg-success' : 'bg-secondary' }}">
+                                                    {{ $demande->motif === 'Soumission d\'une demande d\'inscription par parrainage'
+                                                        ? 'Soumission d\'une demande d\'inscription par parrainage'
+                                                        : 'Demande d\'inscription à une formation' }}
+                                                </span>
+                                            </td>
+                                            <td>{{ $demande->formation->titre ?? 'N/A' }}</td>
+                                            <td>{{ $demande->parrain ? $demande->parrain->name : 'N/A' }}</td>
+                                            <td>{{ $demande->filleul->name ?? 'N/A' }}</td>
+                                            <td>{{ $demande->date_demande->format('d/m/Y H:i') }}</td>
+                                            <td>
+                                                <span
+                                                    class="badge 
                                     {{ $demande->statut === 'complete'
-                                        ? 'badge-success'
+                                        ? 'bg-success'
                                         : ($demande->statut === 'en_attente'
                                             ? 'bg-danger'
                                             : 'bg-warning') }}">
-                                            {{ ucfirst($demande->statut) }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <a href="{{ route('demande.historique.show', $demande->id) }}"
-                                            class="btn btn-sm btn-info" title="Voir détails">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="8" class="text-center py-4">Aucune demande trouvée</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Pagination -->
-                <div class="d-flex justify-content-center mt-4">
-                    {{ $demandes->links() }}
+                                                    {{ ucfirst($demande->statut) }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <a href="{{ route('demande.historique.show', $demande->id) }}"
+                                                    class="btn btn-sm btn-info" title="Voir détails">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="8" class="text-center py-4">Aucune demande trouvée</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -124,4 +143,42 @@
             color: white;
         }
     </style>
+@endsection
+@section('scripts')
+    <script>
+        $(document).ready(function() {
+            var table = $('#stagiairesTable').DataTable({
+                language: {
+                    url: "https://cdn.datatables.net/plug-ins/1.13.5/i18n/fr-FR.json"
+                },
+                paging: true,
+                searching: true,
+                ordering: true,
+                lengthMenu: [5, 10, 25, 50],
+                pageLength: 10,
+                dom: 'Bfrtip',
+                buttons: ['copy'],
+                initComplete: function() {
+                    this.api().columns().every(function() {
+                        var that = this;
+                        $('input', this.header()).on('keyup change clear', function() {
+                            if (that.search() !== this.value) {
+                                that.search(this.value).draw();
+                            }
+                        });
+                    });
+                }
+            });
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('#importModal form');
+            const progressBarWrapper = document.getElementById('progressBarWrapper');
+
+            form.addEventListener('submit', function() {
+                progressBarWrapper.classList.remove('d-none');
+            });
+        });
+    </script>
 @endsection

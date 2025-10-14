@@ -67,6 +67,41 @@
         </div>
     </div>
 
+    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-2 mt-3">
+        <div class="col">
+            <div class="card radius-10 border-start border-0 border-4 border-primary">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div>
+                            <p class="mb-0 text-secondary">Android - Utilisateurs suivis</p>
+                            <h4 class="my-1 text-primary">{{ $androidUsers ?? 0 }}</h4>
+                            <p class="mb-0 text-secondary small">Premières utilisations: {{ $androidFirstUses ?? 0 }}</p>
+                            <p class="mb-0 text-secondary small">Actifs 30j: {{ $androidActive30d ?? 0 }}</p>
+                        </div>
+                        <div class="widgets-icons-2 rounded-circle bg-gradient-orange text-white ms-auto"><i
+                                class="bx bxl-android"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card radius-10 border-start border-0 border-4 border-dark">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div>
+                            <p class="mb-0 text-secondary">iOS - Utilisateurs suivis</p>
+                            <h4 class="my-1 text-dark">{{ $iosUsers ?? 0 }}</h4>
+                            <p class="mb-0 text-secondary small">Premières utilisations: {{ $iosFirstUses ?? 0 }}</p>
+                            <p class="mb-0 text-secondary small">Actifs 30j: {{ $iosActive30d ?? 0 }}</p>
+                        </div>
+                        <div class="widgets-icons-2 rounded-circle bg-gradient-orange text-white ms-auto"><i
+                                class="bx bxl-apple"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
 
 
@@ -239,12 +274,29 @@
                 <div class="card-body">
                     <h5 class="card-title">Utilisateurs connectés</h5>
                     <ul id="connectedUsersList" class="list-group">
-                        @foreach ($connectedUsers ?? [] as $user)
-                            <li class="list-group-item d-flex align-items-center">
-                                <span class="badge bg-success rounded-circle me-2" style="width:10px;height:10px;"></span>
-                                {{ $user->name }} <span class="text-muted ms-2">({{ $user->role }})</span>
+                        @forelse ($connectedUsers ?? [] as $user)
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="badge bg-success rounded-circle me-2" style="width:10px;height:10px;"></span>
+                                    {{ $user->name }} <span class="text-muted ms-2">({{ $user->role }})</span>
+                                </div>
+                                <div>
+                                    @php
+                                        $platform = $user->platform ?? 'web';
+                                        $icon = 'bx bx-globe'; // Default to web
+                                        if ($platform === 'android') {
+                                            $icon = 'bx bxl-android';
+                                        } elseif ($platform === 'ios') {
+                                            $icon = 'bx bxl-apple';
+                                        }
+                                    @endphp
+                                    <i class="{{ $icon }} me-2"></i>
+                                    <span class="text-capitalize">{{ $platform }}</span>
+                                </div>
                             </li>
-                        @endforeach
+                        @empty
+                            <li class="list-group-item">Aucun utilisateur connecté.</li>
+                        @endforelse
                     </ul>
                 </div>
             </div>

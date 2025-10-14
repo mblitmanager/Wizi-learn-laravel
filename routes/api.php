@@ -46,6 +46,9 @@ Route::middleware(['auth:api'])->group(function () {
     Route::post('logout', [JWTAuthController::class, 'logout']);
     Route::get('user', [JWTAuthController::class, 'getUser']);
     Route::get('me', [JWTAuthController::class, 'getMe']);
+    // User settings endpoints
+    Route::get('/user/settings', [App\Http\Controllers\Api\UserSettingsController::class, 'show']);
+    Route::put('/user/settings', [App\Http\Controllers\Api\UserSettingsController::class, 'update']);
     Route::get('/formation/categories/', [FormationStagiaireController::class, 'getCategories']);
     Route::get('/formations/categories/{categoryId}', [FormationStagiaireController::class, 'getFormationsByCategory']);
     Route::get('/stagiaire/formations', [FormationStagiaireController::class, 'getFormations']);
@@ -132,8 +135,7 @@ Route::middleware(['auth:api'])->group(function () {
         Route::get('/stats/progress', [QuizController::class, 'getProgressStats']);
         Route::get('/stats/trends', [QuizController::class, 'getQuizTrends']);
         Route::get('/stats/performance', [QuizController::class, 'getPerformanceStats']);
-
-
+        Route::get('/by-formations', [QuizController::class, 'getQuizzesGroupedByFormation']);
     });
 
     // Achievements (admin list for mobile display)
@@ -182,7 +184,6 @@ Route::middleware(['auth:api'])->group(function () {
     Route::post('/contact', [\App\Http\Controllers\Api\ContactController::class, 'sendContactForm']);
 
     Route::get('/parrainage-events', [ParrainageEventApiController::class, 'index']);
-
 });
 
 // // Admin Achievement Management
@@ -241,4 +242,11 @@ Route::get('/test-fcm', function () {
     ) ? 'OK' : 'Erreur';
 });
 
+// Quick test endpoint to send an arbitrary FCM payload. Provide either 'token' OR 'user_id'.
+// NOTE: This route is public for convenience — protect it or remove in production.
+Route::post('/test-fcm', [App\Http\Controllers\Api\TestFcmController::class, 'send']);
+
 Route::middleware('auth:api')->post('/stagiaire/onboarding-seen', [StagiaireController::class, 'setOnboardingSeen']);
+
+// Rapport d'usage des applications mobiles (Android/iOS)
+Route::middleware(['auth:api'])->post('/user-app-usage', [\App\Http\Controllers\Api\UserAppUsageController::class, 'report']);

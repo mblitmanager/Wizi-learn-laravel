@@ -67,10 +67,29 @@ class ContactController extends Controller
                         ];
                     }
                 }
+                // Prefer prenom on the relation model (Formateur) then fall back to user fields or split name
+                $user = $formateur->user;
+                $prenom = $formateur->prenom ?? $user->prenom ?? null;
+                $nom = $formateur->nom ?? $user->nom ?? null;
+                if (empty($prenom) && empty($nom) && !empty($user->name)) {
+                    $parts = preg_split('/\s+/', trim($user->name));
+                    if (count($parts) > 1) {
+                        // If the relation doesn't have prenom/nom, split the user's name
+                        $prenom = array_shift($parts);
+                        $nom = implode(' ', $parts);
+                    } else {
+                        // single word name -> treat as nom
+                        $nom = $user->name;
+                        $prenom = '';
+                    }
+                }
+
                 return [
                     'id' => $formateur->id,
                     'type' => 'Formateur',
                     'name' => $formateur->user->name,
+                    'prenom' => $prenom ?? '',
+                    'nom' => $nom ?? '',
                     'email' => $formateur->user->email,
                     'telephone' => $formateur->telephone ?? '',
                     'formations' => $formations,
@@ -80,10 +99,26 @@ class ContactController extends Controller
 
             // Commerciaux liés au stagiaire
             $commerciaux = $user->stagiaire->commercials()->with('user')->get()->map(function ($commercial) {
+                // Prefer prenom on Commercial model then user's fields
+                $user = $commercial->user;
+                $prenom = $commercial->prenom ?? $user->prenom ?? null;
+                $nom = $commercial->nom ?? $user->nom ?? null;
+                if (empty($prenom) && empty($nom) && !empty($user->name)) {
+                    $parts = preg_split('/\s+/', trim($user->name));
+                    if (count($parts) > 1) {
+                        $prenom = array_shift($parts);
+                        $nom = implode(' ', $parts);
+                    } else {
+                        $nom = $user->name;
+                        $prenom = '';
+                    }
+                }
                 return [
                     'id' => $commercial->id,
                     'type' => 'Commercial',
                     'name' => $commercial->user->name,
+                    'prenom' => $prenom ?? '',
+                    'nom' => $nom ?? '',
                     'email' => $commercial->user->email,
                     'telephone' => $commercial->telephone ?? '',
                     'image' => $commercial->user->image ?? '/images/default-avatar.png',
@@ -175,9 +210,24 @@ class ContactController extends Controller
                         ];
                     }
                 }
+                $user = $formateur->user;
+                $prenom = $user->prenom ?? null;
+                $nom = $user->nom ?? null;
+                if (empty($prenom) && empty($nom) && !empty($user->name)) {
+                    $parts = preg_split('/\s+/', trim($user->name));
+                    if (count($parts) > 1) {
+                        $prenom = array_shift($parts);
+                        $nom = implode(' ', $parts);
+                    } else {
+                        $nom = $user->name;
+                        $prenom = '';
+                    }
+                }
                 return [
                     'id' => $formateur->id,
                     'name' => $formateur->user->name,
+                    'prenom' => $prenom ?? '',
+                    'nom' => $nom ?? '',
                     'email' => $formateur->user->email,
                     'phone' => $formateur->telephone ?? '',
                     'role' => 'Formateur',
@@ -208,9 +258,24 @@ class ContactController extends Controller
             }
             // Commerciaux liés au stagiaire
             $commercials = $user->stagiaire->commercials()->with('user')->get()->map(function ($commercial) {
+                $user = $commercial->user;
+                $prenom = $user->prenom ?? null;
+                $nom = $user->nom ?? null;
+                if (empty($prenom) && empty($nom) && !empty($user->name)) {
+                    $parts = preg_split('/\s+/', trim($user->name));
+                    if (count($parts) > 1) {
+                        $prenom = array_shift($parts);
+                        $nom = implode(' ', $parts);
+                    } else {
+                        $nom = $user->name;
+                        $prenom = '';
+                    }
+                }
                 return [
                     'id' => $commercial->id,
                     'name' => $commercial->user->name,
+                    'prenom' => $prenom ?? '',
+                    'nom' => $nom ?? '',
                     'email' => $commercial->user->email,
                     'phone' => $commercial->telephone ?? '',
                     'role' => 'Commercial',
@@ -240,9 +305,24 @@ class ContactController extends Controller
             }
             // Pôle Relation Client liés au stagiaire
             $poles = $user->stagiaire->poleRelationClients()->with('user')->get()->map(function ($pole) {
+                $user = $pole->user;
+                $prenom = $user->prenom ?? null;
+                $nom = $user->nom ?? null;
+                if (empty($prenom) && empty($nom) && !empty($user->name)) {
+                    $parts = preg_split('/\s+/', trim($user->name));
+                    if (count($parts) > 1) {
+                        $prenom = array_shift($parts);
+                        $nom = implode(' ', $parts);
+                    } else {
+                        $nom = $user->name;
+                        $prenom = '';
+                    }
+                }
                 return [
                     'id' => $pole->id,
                     'name' => $pole->user->name,
+                    'prenom' => $prenom ?? '',
+                    'nom' => $nom ?? '',
                     'email' => $pole->user->email,
                     'phone' => $pole->telephone ?? '',
                     'role' => 'Pôle Relation',

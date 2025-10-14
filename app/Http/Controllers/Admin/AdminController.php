@@ -13,6 +13,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Models\UserAppUsage;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
@@ -67,12 +68,11 @@ class AdminController extends Controller
         $commerciaux = Commercial::with('user')->get();
         $poles = PoleRelationClient::with('user')->get();
 
-        // Utilisateurs connectés (sessions actives dans la dernière heure)
-        $connectedUsers = User::whereIn('id', function ($query) {
-            $query->select('user_id')
-                ->from('sessions')
-                ->where('last_activity', '>=', now()->subHour()->getTimestamp());
-        })->get();
+        // Utilisateurs connectés
+        $connectedUsers = User::where('is_online', true)
+            ->leftJoin('user_app_usages', 'users.id', '=', 'user_app_usages.user_id')
+            ->select('users.name', 'users.role', 'user_app_usages.platform')
+            ->get();
 
         // Quiz récemment joués (10 derniers terminés)
         $recentQuizzes = DB::table('quiz_participations')
@@ -101,6 +101,24 @@ class AdminController extends Controller
             ->orderByDesc('quiz_participations.started_at')
             ->get();
 
+        // Récapitulatif usages Android/iOS
+        $usageSummary = UserAppUsage::select(
+            'platform',
+            DB::raw('COUNT(*) as users'),
+            DB::raw('SUM(CASE WHEN first_used_at IS NOT NULL THEN 1 ELSE 0 END) as first_uses'),
+            DB::raw('SUM(CASE WHEN last_used_at >= NOW() - INTERVAL 30 DAY THEN 1 ELSE 0 END) as active_30d')
+        )
+            ->groupBy('platform')
+            ->get()
+            ->keyBy('platform');
+
+        $androidUsers = (int) optional($usageSummary->get('android'))->users;
+        $androidFirstUses = (int) optional($usageSummary->get('android'))->first_uses;
+        $androidActive30d = (int) optional($usageSummary->get('android'))->active_30d;
+        $iosUsers = (int) optional($usageSummary->get('ios'))->users;
+        $iosFirstUses = (int) optional($usageSummary->get('ios'))->first_uses;
+        $iosActive30d = (int) optional($usageSummary->get('ios'))->active_30d;
+
 
         return view('admin.dashboard.index', compact(
             'totalStagiaires',
@@ -114,7 +132,13 @@ class AdminController extends Controller
             'poles',
             'connectedUsers',
             'recentQuizzes',
-            'activeQuizzes'
+            'activeQuizzes',
+            'androidUsers',
+            'androidFirstUses',
+            'androidActive30d',
+            'iosUsers',
+            'iosFirstUses',
+            'iosActive30d'
         ));
     }
 
@@ -187,6 +211,49 @@ class AdminController extends Controller
     }
 
 
+    public function activityData()
+    {
+        // Statistiques par pays
+        $countriesData = LoginHistories::select([
+            'country',
+            DB::raw('count(*) as total'),
+            DB::raw('MAX(login_at) as last_activity')
+        ])
+            ->whereNotNull('country')
+            ->groupBy('country')
+            ->orderByDesc('total')
+            ->get();
+
+        $mapData = $countriesData->map(function ($item) {
+            return [
+                'country' => $item->country,
+                'value' => $item->total,
+                'last_activity' => $item->last_activity,
+                'code' => $this->getCountryCode($item->country)
+            ];
+        })->values();
+
+        $onlineUsers = User::where('is_online', true)
+            ->leftJoin('user_app_usages', 'users.id', '=', 'user_app_usages.user_id')
+            ->orderBy('users.last_activity_at', 'desc')
+            ->select('users.id', 'users.name', 'users.email', 'users.role', 'users.last_activity_at', 'users.is_online', 'users.last_login_at', 'user_app_usages.platform')
+            ->get();
+
+        $stats = [
+            'map_data' => $mapData,
+            'online_users' => User::where('is_online', true)->count(),
+            'total_logins' => LoginHistories::where('country', '!=', null)->count(),
+            'today_logins' => User::whereDate('last_login_at', today())->count(),
+            'week_logins' => User::whereBetween('last_login_at', [now()->startOfWeek(), now()->endOfWeek()])->count(),
+            'month_logins' => User::whereBetween('last_login_at', [now()->startOfMonth(), now()->endOfMonth()])->count(),
+        ];
+
+        return response()->json([
+            'stats' => $stats,
+            'onlineUsers' => $onlineUsers,
+        ]);
+    }
+
     // Helper pour obtenir les codes pays ISO
     private function getCountryCode($countryName)
     {
@@ -251,6 +318,16 @@ class AdminController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
+        ], [
+            'name.required' => 'Le nom est obligatoire.',
+            'name.max' => 'Le nom ne peut pas dépasser 255 caractères.',
+            'email.required' => 'L\'adresse email est obligatoire.',
+            'email.email' => 'Veuillez entrer une adresse email valide.',
+            'email.max' => 'L\'email ne peut pas dépasser 255 caractères.',
+            'email.unique' => 'Cette adresse email est déjà utilisée.',
+            'password.required' => 'Le mot de passe est obligatoire.',
+            'password.min' => 'Le mot de passe doit contenir au moins 8 caractères.',
+            'password.confirmed' => 'La confirmation du mot de passe ne correspond pas.',
         ]);
 
         User::create([
@@ -276,18 +353,29 @@ class AdminController extends Controller
         $request->validate([
             'email' => 'required|email',
             'password' => 'required',
+        ], [
+            'email' => 'L\'adresse email est obligatoire.',
+            'password' => 'Le mot de passe est obligatoire.',
         ]);
 
         $ip = $request->header('X-Client-IP') ?? $request->ip();
 
         if (Auth::attempt($request->only('email', 'password'))) {
             $user = Auth::user();
+<<<<<<< HEAD
             $user->update([
                 'last_login_at' => now(),
                 'last_login_ip' => $ip,
                 'is_online' => true,
                 'last_activity_at' => now()
             ]);
+=======
+            $user->last_login_at = now();
+            $user->last_login_ip = $ip;
+            $user->is_online = true;
+            $user->last_activity_at = now();
+            $user->save();
+>>>>>>> 49dfbef36702ffd227d9b37e340d48c3f3b9d837
 
             // Rediriger vers la route dashboard principale
             return redirect()->route('dashboard');
@@ -299,8 +387,12 @@ class AdminController extends Controller
 
     public function logout()
     {
-        if (auth()->check()) {
-            auth()->user()->update(['is_online' => false]);
+        if (Auth::check()) {
+            $user = Auth::user();
+            if ($user) {
+                $user->is_online = false;
+                $user->save();
+            }
             Auth::logout();
         }
         return redirect()->route('login')->with('success', 'Logged out successfully.');

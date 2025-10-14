@@ -17,7 +17,9 @@
     <!-- Bootstrap CSS -->
     <link href="{{ asset('assets/css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/css/bootstrap-extended.css') }}" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Sono:wght@200..800&display=swap"
+        rel="stylesheet">
     <link href="{{ asset('assets/css/app.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/css/icons.css') }}" rel="stylesheet">
     <title>Wizi Learn - Inscription Administration</title>
@@ -38,7 +40,8 @@
                                 <div class="border p-4 rounded">
                                     <div class="text-center">
                                         <h3 class="">Inscription</h3>
-                                        <p>Vous avez déjà un compte? <a href="{{ route('login') }}">Connectez-vous ici</a></p>
+                                        <p>Vous avez déjà un compte? <a href="{{ route('login') }}">Connectez-vous
+                                                ici</a></p>
                                     </div>
                                     <div class="login-separater text-center mb-4">
                                         <span>OU INSCRIVEZ-VOUS AVEC VOTRE COURRIEL</span>
@@ -49,14 +52,20 @@
                                             @csrf
                                             <div class="col-12">
                                                 <label for="inputName" class="form-label">Nom complet</label>
-                                                <input type="text" class="form-control @error('name') is-invalid @enderror" name="name" id="inputName" placeholder="Votre nom" value="{{ old('name') }}">
+                                                <input type="text"
+                                                    class="form-control @error('name') is-invalid @enderror"
+                                                    name="name" id="inputName" placeholder="Votre nom"
+                                                    value="{{ old('name') }}">
                                                 @error('name')
                                                     <div class="invalid-feedback">{{ $message }}</div>
                                                 @enderror
                                             </div>
                                             <div class="col-12">
                                                 <label for="inputEmailAddress" class="form-label">Adresse e-mail</label>
-                                                <input type="email" class="form-control @error('email') is-invalid @enderror" name="email" id="inputEmailAddress" placeholder="Email Address" value="{{ old('email') }}">
+                                                <input type="email"
+                                                    class="form-control @error('email') is-invalid @enderror"
+                                                    name="email" id="inputEmailAddress" placeholder="Email Address"
+                                                    value="{{ old('email') }}">
                                                 @error('email')
                                                     <div class="invalid-feedback">{{ $message }}</div>
                                                 @enderror
@@ -64,18 +73,27 @@
                                             <div class="col-12">
                                                 <label for="inputChoosePassword" class="form-label">Mot de passe</label>
                                                 <div class="input-group" id="show_hide_password">
-                                                    <input type="password" class="form-control border-end-0 @error('password') is-invalid @enderror" id="inputChoosePassword" name="password" placeholder="Entrez votre mot de passe">
-                                                    <a href="javascript:;" class="input-group-text bg-transparent"><i class='bx bx-hide'></i></a>
+                                                    <input type="password"
+                                                        class="form-control border-end-0 @error('password') is-invalid @enderror"
+                                                        id="inputChoosePassword" name="password"
+                                                        placeholder="Entrez votre mot de passe">
+                                                    <a href="javascript:;" class="input-group-text bg-transparent"><i
+                                                            class='bx bx-hide'></i></a>
                                                     @error('password')
                                                         <div class="invalid-feedback">{{ $message }}</div>
                                                     @enderror
                                                 </div>
                                             </div>
                                             <div class="col-12">
-                                                <label for="inputConfirmPassword" class="form-label">Confirmer le mot de passe</label>
+                                                <label for="inputConfirmPassword" class="form-label">Confirmer le mot de
+                                                    passe</label>
                                                 <div class="input-group" id="show_hide_password_confirm">
-                                                    <input type="password" class="form-control border-end-0 @error('password_confirmation') is-invalid @enderror" id="inputConfirmPassword" name="password_confirmation" placeholder="Confirmez votre mot de passe">
-                                                    <a href="javascript:;" class="input-group-text bg-transparent"><i class='bx bx-hide'></i></a>
+                                                    <input type="password"
+                                                        class="form-control border-end-0 @error('password_confirmation') is-invalid @enderror"
+                                                        id="inputConfirmPassword" name="password_confirmation"
+                                                        placeholder="Confirmez votre mot de passe">
+                                                    <a href="javascript:;" class="input-group-text bg-transparent"><i
+                                                            class='bx bx-hide'></i></a>
                                                     @error('password_confirmation')
                                                         <div class="invalid-feedback">{{ $message }}</div>
                                                     @enderror
@@ -83,7 +101,9 @@
                                             </div>
                                             <div class="col-12">
                                                 <div class="d-grid">
-                                                    <button type="submit" class="btn btn-primary"><i class="bx bxs-user-plus"></i>Inscription</button>
+                                                    <button type="submit" class="btn"
+                                                        style="background: #feb823!important ;color: #fff; border-color: #feb823"><i
+                                                            class="bx bxs-user-plus"></i>Inscription</button>
                                                 </div>
                                             </div>
                                         </form>
@@ -106,8 +126,8 @@
     <script src="{{ asset('assets/plugins/perfect-scrollbar/js/perfect-scrollbar.js') }}"></script>
     <!--Password show & hide js -->
     <script>
-        $(document).ready(function () {
-            $("#show_hide_password a, #show_hide_password_confirm a").on('click', function (event) {
+        $(document).ready(function() {
+            $("#show_hide_password a, #show_hide_password_confirm a").on('click', function(event) {
                 event.preventDefault();
                 var input = $(this).closest('.input-group').find('input');
                 if (input.attr("type") == "text") {

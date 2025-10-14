@@ -14,6 +14,10 @@ use App\Http\Controllers\Admin\QuestionController;
 use App\Http\Controllers\Admin\PartenaireController;
 use App\Http\Controllers\Admin\QuizController;
 use App\Http\Controllers\Admin\StagiaireController;
+use App\Http\Controllers\Admin\UserAppUsageAdminController;
+use App\Http\Controllers\Admin\AdminStagiaireStatsController;
+use App\Http\Controllers\Admin\AdminInactivityController;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Stagiaire\DashboardController;
 use App\Http\Controllers\FcmTokenController;
 use App\Http\Controllers\Formateur\FormateurDashboardController;
@@ -75,6 +79,7 @@ Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function
     Route::get('/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
     Route::get('dashboard/activity-user', [AdminController::class, 'getUserActivity'])->name('dashboard.activity-user');
     Route::get('dashboard/activity', [AdminController::class, 'showLoginStats'])->name('dashboard.activity');
+    Route::get('dashboard/activity/data', [AdminController::class, 'activityData'])->name('dashboard.activity.data');
 
     Route::resource('roles', \App\Http\Controllers\Admin\RoleController::class);
     Route::post('roles/{role}/toggle-status', [\App\Http\Controllers\Admin\RoleController::class, 'toggleStatus'])->name('roles.toggle-status');
