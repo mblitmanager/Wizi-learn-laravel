@@ -68,12 +68,11 @@ class AdminController extends Controller
         $commerciaux = Commercial::with('user')->get();
         $poles = PoleRelationClient::with('user')->get();
 
-        // Utilisateurs connectés (sessions actives dans la dernière heure)
-        $connectedUsers = User::whereIn('id', function ($query) {
-            $query->select('user_id')
-                ->from('sessions')
-                ->where('last_activity', '>=', now()->subHour()->getTimestamp());
-        })->get();
+        // Utilisateurs connectés
+        $connectedUsers = User::where('is_online', true)
+            ->leftJoin('user_app_usages', 'users.id', '=', 'user_app_usages.user_id')
+            ->select('users.name', 'users.role', 'user_app_usages.platform')
+            ->get();
 
         // Quiz récemment joués (10 derniers terminés)
         $recentQuizzes = DB::table('quiz_participations')
@@ -235,9 +234,10 @@ class AdminController extends Controller
         })->values();
 
         $onlineUsers = User::where('is_online', true)
-            ->with(['stagiaire', 'commercial', 'formateur', 'poleRelationClient'])
-            ->orderBy('last_activity_at', 'desc')
-            ->get(['id', 'name', 'email', 'role', 'last_activity_at', 'is_online', 'last_login_at']);
+            ->leftJoin('user_app_usages', 'users.id', '=', 'user_app_usages.user_id')
+            ->orderBy('users.last_activity_at', 'desc')
+            ->select('users.id', 'users.name', 'users.email', 'users.role', 'users.last_activity_at', 'users.is_online', 'users.last_login_at', 'user_app_usages.platform')
+            ->get();
 
         $stats = [
             'map_data' => $mapData,
