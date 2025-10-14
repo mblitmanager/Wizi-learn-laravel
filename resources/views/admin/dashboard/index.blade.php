@@ -274,12 +274,29 @@
                 <div class="card-body">
                     <h5 class="card-title">Utilisateurs connectés</h5>
                     <ul id="connectedUsersList" class="list-group">
-                        @foreach ($connectedUsers ?? [] as $user)
-                            <li class="list-group-item d-flex align-items-center">
-                                <span class="badge bg-success rounded-circle me-2" style="width:10px;height:10px;"></span>
-                                {{ $user->name }} <span class="text-muted ms-2">({{ $user->role }})</span>
+                        @forelse ($connectedUsers ?? [] as $user)
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="badge bg-success rounded-circle me-2" style="width:10px;height:10px;"></span>
+                                    {{ $user->name }} <span class="text-muted ms-2">({{ $user->role }})</span>
+                                </div>
+                                <div>
+                                    @php
+                                        $platform = $user->platform ?? 'web';
+                                        $icon = 'bx bx-globe'; // Default to web
+                                        if ($platform === 'android') {
+                                            $icon = 'bx bxl-android';
+                                        } elseif ($platform === 'ios') {
+                                            $icon = 'bx bxl-apple';
+                                        }
+                                    @endphp
+                                    <i class="{{ $icon }} me-2"></i>
+                                    <span class="text-capitalize">{{ $platform }}</span>
+                                </div>
                             </li>
-                        @endforeach
+                        @empty
+                            <li class="list-group-item">Aucun utilisateur connecté.</li>
+                        @endforelse
                     </ul>
                 </div>
             </div>
