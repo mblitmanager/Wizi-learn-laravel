@@ -367,7 +367,6 @@ class AdminController extends Controller
             $user->is_online = true;
             $user->last_activity_at = now();
             $user->save();
-
             // Rediriger vers la route dashboard principale
             return redirect()->route('dashboard');
         }
