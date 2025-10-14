@@ -166,6 +166,19 @@ Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function
     Route::post('partenaires/import', [PartenaireController::class, 'import'])->name('partenaires.import');
 
     Route::resource('parrainage_events', \App\Http\Controllers\ParrainageEventController::class);
+
+    // Usages app mobiles
+    Route::get('/user-app-usages', [UserAppUsageAdminController::class, 'index'])->name('admin.user_app_usages.index');
+    Route::get('/user-app-usages/export', [UserAppUsageAdminController::class, 'export'])->name('admin.user_app_usages.export');
+
+    // Stats stagiaires (évite conflit avec resource('stagiaires'))
+    Route::get('/stats/stagiaires', [AdminStagiaireStatsController::class, 'index'])->name('admin.stagiaires.stats');
+    Route::get('/stats/stagiaires/export', [AdminStagiaireStatsController::class, 'export'])->name('admin.stagiaires.stats.export');
+    Route::get('/stats/stagiaires/export-xlsx', [AdminStagiaireStatsController::class, 'exportXlsx'])->name('admin.stagiaires.stats.export.xlsx');
+
+    // Inactivité
+    Route::get('/inactivity', [AdminInactivityController::class, 'index'])->name('admin.inactivity.index');
+    Route::post('/inactivity/notify', [AdminInactivityController::class, 'notify'])->name('admin.inactivity.notify');
 });
 
 // Routes pour les formateurs

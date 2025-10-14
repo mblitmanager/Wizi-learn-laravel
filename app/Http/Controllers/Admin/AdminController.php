@@ -362,21 +362,11 @@ class AdminController extends Controller
 
         if (Auth::attempt($request->only('email', 'password'))) {
             $user = Auth::user();
-<<<<<<< HEAD
-            $user->update([
-                'last_login_at' => now(),
-                'last_login_ip' => $ip,
-                'is_online' => true,
-                'last_activity_at' => now()
-            ]);
-=======
             $user->last_login_at = now();
             $user->last_login_ip = $ip;
             $user->is_online = true;
             $user->last_activity_at = now();
             $user->save();
->>>>>>> 49dfbef36702ffd227d9b37e340d48c3f3b9d837
-
             // Rediriger vers la route dashboard principale
             return redirect()->route('dashboard');
         }
