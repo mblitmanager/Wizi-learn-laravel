@@ -63,9 +63,11 @@ Route::middleware(['auth'])->get('/dashboard', function () {
         return redirect()->route('login');
     }
 
-    if ($user->role === 'administrateur') {
-        return app('App\Http\Controllers\Admin\AdminController')->index();
-    } elseif ($user->role === 'Formateur') {
+    $role = strtolower($user->role);
+
+    if ($role === 'administrateur') {
+        return redirect()->route('admin.dashboard');
+    } elseif ($role === 'formateur') {
         return redirect()->route('formateur.dashboard');
     } else {
         return redirect('/');
@@ -183,7 +185,7 @@ Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function
 });
 
 // Routes pour les formateurs
-Route::middleware(['auth'])->prefix('formateur')->name('formateur.')->group(function () {
+Route::middleware(['auth', 'isFormateur'])->prefix('formateur')->name('formateur.')->group(function () {
     // Tableau de bord formateur
     Route::get('/dashboard', [FormateurDashboardController::class, 'index'])->name('dashboard');
 
