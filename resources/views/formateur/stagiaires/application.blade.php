@@ -149,7 +149,7 @@
                                                         <i class="fas fa-chart-bar"></i>
                                                     </a>
                                                     <a href="{{ route('formateur.stagiaires.show', $stagiaire->id) }}"
-                                                        class="btn btn-sm btn-info" title="Profil">
+                                                        class="btn btn-sm btn-primary" title="Profil">
                                                         <i class="fas fa-eye"></i>
                                                     </a>
                                                 </td>

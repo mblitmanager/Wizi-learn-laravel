@@ -234,4 +234,29 @@ class Stagiaire extends Model
 
         return false;
     }
+
+
+/**
+ * Total des points depuis les classements
+ */
+public function getTotalPointsClassementAttribute()
+{
+    return $this->classements->sum('points');
+}
+
+/**
+ * Nombre de quiz avec classement
+ */
+public function getNombreQuizAvecClassementAttribute()
+{
+    return $this->classements->count();
+}
+
+/**
+ * Meilleur rang dans les classements
+ */
+public function getMeilleurRangClassementAttribute()
+{
+    return $this->classements->min('rang');
+}
 }

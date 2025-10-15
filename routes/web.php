@@ -216,6 +216,8 @@ Route::middleware(['auth', 'isFormateur'])->prefix('formateur')->name('formateur
     // Route profil
     Route::get('/profile', [FormateurController::class, 'profile'])->name('profile');
     Route::post('/profile', [FormateurController::class, 'updateProfile'])->name('profile.update');
+
+    
 });
 
 

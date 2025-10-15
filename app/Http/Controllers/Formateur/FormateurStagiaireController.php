@@ -115,27 +115,79 @@ class FormateurStagiaireController extends Controller
         return view('formateur.stagiaires.termines', compact('stagiairesTermines'));
     }
 
-    /**
-     * Détails d'un stagiaire
-     */
-    public function show($id)
-    {
-        $this->checkFormateur();
-        $formateur = Auth::user()->formateur;
+    // Dans FormateurStagiaireController.php
 
-        $stagiaire = Stagiaire::whereHas('formateurs', function ($query) use ($formateur) {
-            $query->where('formateur_id', $formateur->id);
-        })
-            ->with([
-                'user',
-                'catalogue_formations',
-                'formateurs.user',
-                'progressions',
-                'watchedVideos'
-            ])->findOrFail($id);
+public function show($id)
+{
+    $this->checkFormateur();
+    $formateur = Auth::user()->formateur;
 
-        return view('formateur.stagiaires.show', compact('stagiaire'));
+    $stagiaire = Stagiaire::whereHas('formateurs', function ($query) use ($formateur) {
+        $query->where('formateur_id', $formateur->id);
+    })
+    ->with([
+        'user',
+        'catalogue_formations',
+        'formateurs.user',
+        'progressions',
+        'watchedVideos',
+        'classements.quiz', // AJOUTER cette ligne
+        'quizParticipations.quiz' // AJOUTER cette ligne
+    ])->findOrFail($id);
+
+    // AJOUTER le calcul des statistiques comme dans FormateurClassementController
+    $statistiques = $this->calculerStatistiquesStagiaire($stagiaire);
+
+    return view('formateur.stagiaires.show', compact('stagiaire', 'statistiques'));
+}
+
+/**
+ * Nouvelle méthode pour calculer les statistiques du stagiaire
+ */
+private function calculerStatistiquesStagiaire($stagiaire)
+{
+    // Calculer le total des points depuis les classements
+    $totalPoints = $stagiaire->classements->sum('points');
+
+    // Quiz complétés (avec status 'completed')
+    $quizCompletes = $stagiaire->quizParticipations->where('status', 'completed');
+    
+    // Calcul de la progression
+    $progressionMoyenne = 0;
+    if ($quizCompletes->isNotEmpty()) {
+        $totalScorePossible = $quizCompletes->sum(function ($participation) {
+            return $participation->quiz->nb_points_total ?? 100;
+        });
+        
+        $totalScoreObtenu = $quizCompletes->sum('score');
+        
+        if ($totalScorePossible > 0) {
+            $progressionMoyenne = min(100, ($totalScoreObtenu / $totalScorePossible) * 100);
+        }
     }
+
+    // Calcul du temps total passé
+    $tempsProgressions = $stagiaire->progressions->sum('time_spent') ?? 0;
+    $tempsQuiz = $stagiaire->quizParticipations->sum('time_spent') ?? 0;
+
+    return [
+        'total_points' => $totalPoints,
+        'quiz_completes' => $quizCompletes->count(),
+        'quiz_total_participations' => $stagiaire->quizParticipations->count(),
+        'meilleur_rang' => $stagiaire->classements->min('rang') ?? 'N/A',
+        'videos_regardees' => $stagiaire->watchedVideos->count(),
+        'progression_moyenne' => round($progressionMoyenne, 2),
+        'temps_total_passe' => $tempsProgressions + $tempsQuiz,
+        'participations_quiz' => $stagiaire->quizParticipations->count(),
+        'derniere_activite' => $stagiaire->derniere_activite,
+        'score_total' => $quizCompletes->sum('score'),
+        'score_max_possible' => $quizCompletes->sum(function ($participation) {
+            return $participation->quiz->nb_points_total ?? 100;
+        }),
+        'moyenne_score' => $quizCompletes->isNotEmpty() ? round($quizCompletes->avg('score'), 2) : 0,
+    ];
+}
+
 
     /**
      * Récupérer les statistiques des stagiaires
