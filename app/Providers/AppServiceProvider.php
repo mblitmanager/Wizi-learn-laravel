@@ -23,6 +23,8 @@ use App\Repositories\PoleRelationClientRepository;
 use App\Repositories\QuizeRepository;
 use App\Repositories\StagiaireRepository;
 use Illuminate\Support\ServiceProvider;
+    use Illuminate\Pagination\Paginator;
+
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -52,6 +54,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Paginator::useBootstrapFive();
     }
 }
