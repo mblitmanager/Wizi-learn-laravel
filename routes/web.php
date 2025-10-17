@@ -81,6 +81,7 @@ Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function
     Route::get('dashboard/activity-user', [AdminController::class, 'getUserActivity'])->name('dashboard.activity-user');
     Route::get('dashboard/activity', [AdminController::class, 'showLoginStats'])->name('dashboard.activity');
     Route::get('dashboard/activity/data', [AdminController::class, 'activityData'])->name('dashboard.activity.data');
+    Route::get('dashboard/activity/data', [AdminController::class, 'activityData'])->name('dashboard.activity.data');
 
     Route::resource('roles', \App\Http\Controllers\Admin\RoleController::class);
     Route::post('roles/{role}/toggle-status', [\App\Http\Controllers\Admin\RoleController::class, 'toggleStatus'])->name('roles.toggle-status');
@@ -181,6 +182,19 @@ Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function
     // Inactivité
     Route::get('/inactivity', [AdminInactivityController::class, 'index'])->name('admin.inactivity.index');
     Route::post('/inactivity/notify', [AdminInactivityController::class, 'notify'])->name('admin.inactivity.notify');
+
+    // Usages app mobiles
+    Route::get('/user-app-usages', [UserAppUsageAdminController::class, 'index'])->name('admin.user_app_usages.index');
+    Route::get('/user-app-usages/export', [UserAppUsageAdminController::class, 'export'])->name('admin.user_app_usages.export');
+
+    // Stats stagiaires (évite conflit avec resource('stagiaires'))
+    Route::get('/stats/stagiaires', [AdminStagiaireStatsController::class, 'index'])->name('admin.stagiaires.stats');
+    Route::get('/stats/stagiaires/export', [AdminStagiaireStatsController::class, 'export'])->name('admin.stagiaires.stats.export');
+    Route::get('/stats/stagiaires/export-xlsx', [AdminStagiaireStatsController::class, 'exportXlsx'])->name('admin.stagiaires.stats.export.xlsx');
+
+    // Inactivité
+    Route::get('/inactivity', [AdminInactivityController::class, 'index'])->name('admin.inactivity.index');
+    Route::post('/inactivity/notify', [AdminInactivityController::class, 'notify'])->name('admin.inactivity.notify');
 });
 
 //Routes pour les formateurs avec le middleware IsFormateur
@@ -211,13 +225,32 @@ Route::middleware(['auth', 'isFormateur'])->prefix('formateur')->name('formateur
     Route::get('/formations/{id}', [\App\Http\Controllers\Admin\FormateurController::class, 'showFormation'])->name('formations.show');
     Route::get('/catalogue', [\App\Http\Controllers\Admin\FormateurController::class, 'catalogueFormations'])->name('catalogue.index');
 
+    // Routes classement et application
+    Route::get('/classement', [FormateurClassementController::class, 'classementGeneral'])->name('classement');
+    
+    // CORRECTION : Route pour les utilisateurs de l'application
+    Route::get('/stagiaires-application', [FormateurClassementController::class, 'stagiairesAvecApplication'])->name('stagiaires.application');
+
+    // CORRECTION : Une seule route pour les détails de classement
+    Route::get('/stagiaires/{id}/classement', [FormateurClassementController::class, 'detailsClassement'])->name('stagiaires.details-classement');
+
+    // Routes formations
+    Route::get('/formations', [\App\Http\Controllers\Admin\FormateurController::class, 'mesFormations'])->name('formations.index');
+    Route::get('/formations/{id}', [\App\Http\Controllers\Admin\FormateurController::class, 'showFormation'])->name('formations.show');
+    Route::get('/catalogue', [\App\Http\Controllers\Admin\FormateurController::class, 'catalogueFormations'])->name('catalogue.index');
+
     // Route profil
     Route::get('/profile', [\App\Http\Controllers\Admin\FormateurController::class, 'profile'])->name('profile');
     Route::post('/profile', [\App\Http\Controllers\Admin\FormateurController::class, 'updateProfile'])->name('profile.update');
+    Route::get('/profile', [FormateurController::class, 'profile'])->name('profile');
+    Route::post('/profile', [FormateurController::class, 'updateProfile'])->name('profile.update');
+
+    
 });
 
 // Routes de fallback
 Route::fallback(function () {
+    return redirect('/login');
     return redirect('/login');
 });
 
