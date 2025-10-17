@@ -11,6 +11,7 @@ use App\Services\CommercialService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\HtmlString;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -39,7 +40,6 @@ class CommercialController extends Controller
     public function create()
     {
         $stagiaires = Stagiaire::all();
-
         return view('admin.commercial.create', compact('stagiaires'));
     }
 
@@ -49,7 +49,6 @@ class CommercialController extends Controller
     public function store(CommmercialStoreRequest $request)
     {
         try {
-
             // Récupère les données validées
             $validatedData = $request->validated();
             // Ajoute manuellement le fichier image s'il existe
@@ -91,6 +90,7 @@ class CommercialController extends Controller
      */
     public function update(CommmercialStoreRequest $request, string $id)
     {
+
         try {
             $this->commercialsService->update($id, $request->validated());
             return redirect()->route('commercials.index')
@@ -100,6 +100,7 @@ class CommercialController extends Controller
                 ->with('error', 'Erreur: ' . $e->getMessage());
         }
     }
+
     /**
      * Remove the specified resource from storage.
      */
@@ -114,41 +115,6 @@ class CommercialController extends Controller
         }
     }
 
-    private function splitConsultants($cellValue)
-    {
-        // Supprime les espaces en trop, puis découpe sur "et" ou ","
-        $cleaned = preg_replace('/\s+et\s+|\s*,\s*/', '|', $cellValue);
-        $parts = array_map('trim', explode('|', $cleaned));
-
-        return array_filter($parts); // filtre les vides
-    }
-
-    private function extraireNomPrenom($fullName)
-    {
-        $fullName = trim(preg_replace('/\s+/', ' ', $fullName)); // Normaliser les espaces
-
-        // Supprimer les numéros en début de ligne si existent
-        $fullName = preg_replace('/^\d+\s*/', '', $fullName);
-
-        $parts = explode(' ', $fullName);
-
-        // Cas simple: 2 parties = prénom + nom
-        if (count($parts) === 2) {
-            return [
-                'prenom' => ucfirst($parts[0]),
-                'nom' => ucfirst($parts[1])
-            ];
-        }
-
-        // Cas complexe: on prend le dernier mot comme nom, le reste comme prénom
-        $nom = array_pop($parts);
-        $prenom = implode(' ', $parts);
-
-        return [
-            'prenom' => ucfirst($prenom),
-            'nom' => ucfirst($nom)
-        ];
-    }
     public function import(Request $request)
     {
         set_time_limit(0);
@@ -169,13 +135,14 @@ class CommercialController extends Controller
                 'warnings' => []
             ];
 
-            // Vérification des en-têtes selon votre fichier Excel
+            // CORRECTION : Ajout de la colonne civilité
             $expectedHeaders = [
                 'A' => 'email',
                 'B' => 'nom',
                 'C' => 'prénom',
-                'D' => 'tel',
-                'E' => 'adresse'
+                'D' => 'civilite',
+                'E' => 'tel',
+                'F' => 'adresse'
             ];
 
             $headerErrors = [];
@@ -187,7 +154,7 @@ class CommercialController extends Controller
             }
 
             if (!empty($headerErrors)) {
-                return redirect()->route('formateur.index')
+                return redirect()->route('commercials.index')
                     ->with('error', new HtmlString(
                         'En-têtes incorrects:<br>' . implode('<br>', $headerErrors) .
                             '<br>Veuillez utiliser le modèle fourni.'
@@ -200,14 +167,16 @@ class CommercialController extends Controller
                 $email = trim($sheet->getCell('A' . $rowIndex)->getValue());
                 $nom = trim($sheet->getCell('B' . $rowIndex)->getValue());
                 $prenom = trim($sheet->getCell('C' . $rowIndex)->getValue());
-                $tel = trim($sheet->getCell('D' . $rowIndex)->getValue());
-                $adresse = trim($sheet->getCell('E' . $rowIndex)->getValue());
+                $civilite = trim($sheet->getCell('D' . $rowIndex)->getValue());
+                $tel = trim($sheet->getCell('E' . $rowIndex)->getValue());
+                $adresse = trim($sheet->getCell('F' . $rowIndex)->getValue());
 
                 // Vérification des champs obligatoires
                 $requiredFields = [
                     'email' => $email,
                     'nom' => $nom,
-                    'prenom' => $prenom
+                    'prenom' => $prenom,
+                    'civilite' => $civilite
                 ];
 
                 $missingFields = [];
@@ -228,10 +197,26 @@ class CommercialController extends Controller
                     continue;
                 }
 
+                // Validation de la civilité
+                $civilitesValides = ['M.', 'Mme.', 'Mlle.'];
+
+                if (!in_array($civilite, $civilitesValides)) {
+                    $results['errors'][] = "Ligne $rowIndex: Civilité invalide: '$civilite'. Valeurs acceptées: " . implode(', ', $civilitesValides);
+                    continue;
+                }
+
                 DB::beginTransaction();
                 try {
-                    // Vérification des doublons
-                    $existingUser = User::where('email', $email)->where('role', 'Formateur')->first();
+                    // CORRECTION : Déterminer le rôle en fonction de la civilité
+                    $role = 'commercial'; // Par défaut
+                    if ($civilite == 'Mme' || $civilite == 'Mlle') {
+                        $role = 'commerciale';
+                    } elseif ($civilite == 'M') {
+                        $role = 'commercial';
+                    }
+
+                    // CORRECTION : Vérification des doublons avec les deux rôles
+                    $existingUser = User::where('email', $email)->whereIn('role', ['commercial', 'commerciale'])->first();
                     if ($existingUser) {
                         $results['ignored'][] = "Ligne $rowIndex: L'utilisateur $email existe déjà";
                         DB::rollBack();
@@ -246,16 +231,17 @@ class CommercialController extends Controller
                         'name' => "$prenom $nom",
                         'email' => $email,
                         'password' => bcrypt('commercial@123'),
-                        'role' => 'Commercial',
+                        'role' => $role,
                         'adresse' => $adresse
                     ]);
 
                     // Création du commercial
                     Commercial::create([
                         'prenom' => $prenom,
+                        'civilite' => $civilite,
                         'telephone' => $tel,
                         'user_id' => $user->id,
-                        'role' => 'Commercial',
+                        'role' => $role,
                         'statut' => true,
                     ]);
 
@@ -264,7 +250,7 @@ class CommercialController extends Controller
                 } catch (\Exception $e) {
                     DB::rollBack();
                     $results['errors'][] = "Ligne $rowIndex: Erreur - " . $e->getMessage();
-                    \Log::error("Erreur import ligne $rowIndex", [
+                    Log::error("Erreur import ligne $rowIndex", [
                         'email' => $email,
                         'error' => $e->getMessage(),
                         'trace' => $e->getTraceAsString()
@@ -274,7 +260,7 @@ class CommercialController extends Controller
 
             // Construction du message de résultat
             $message = "<strong>Résultat de l'importation :</strong><br>";
-            $message .= "- Commercial importés : {$results['imported']}<br>";
+            $message .= "- Commerciaux importés : {$results['imported']}<br>";
 
             if (!empty($results['ignored'])) {
                 $message .= "- Doublons ignorés : " . count($results['ignored']) . "<br>";
@@ -298,7 +284,7 @@ class CommercialController extends Controller
 
             return $redirect;
         } catch (\Exception $e) {
-            \Log::error("Erreur globale d'import", [
+            Log::error("Erreur globale d'import", [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
@@ -317,7 +303,6 @@ class CommercialController extends Controller
 
         return $phone;
     }
-
 
     public function downloadCommercialModel()
     {

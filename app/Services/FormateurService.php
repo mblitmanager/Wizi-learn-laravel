@@ -46,9 +46,19 @@ class FormateurService
                     throw new \Exception("Le fichier image n'est pas valide");
                 }
 
-                $imageName = 'user_'.time().'_'.\Illuminate\Support\Str::random(8).'.'.$image->getClientOriginalExtension();
+                $imageName = 'user_' . time() . '_' . \Illuminate\Support\Str::random(8) . '.' . $image->getClientOriginalExtension();
                 $image->move(public_path('uploads/users'), $imageName);
-                $imagePath = 'uploads/users/'.$imageName;
+                $imagePath = 'uploads/users/' . $imageName;
+            }
+
+            // Déterminer le rôle en fonction de la civilité
+            $role = 'formateur'; // Par défaut
+            if (isset($data['civilite'])) {
+                if ($data['civilite'] == 'Mme' || $data['civilite'] == 'Mlle') {
+                    $role = 'formatrice';
+                } elseif ($data['civilite'] == 'M') {
+                    $role = 'formateur';
+                }
             }
 
             // Créer l'utilisateur
@@ -56,15 +66,17 @@ class FormateurService
                 'name' => $data['name'],
                 'email' => $data['email'],
                 'password' => Hash::make($data['password']),
-                'role' => 'formateur',
+                'role' => $role, // Utiliser le rôle déterminé
                 'image' => $imagePath,
             ]);
 
-            // Créer le formateur
+            // Créer le formateur/formatrice
             $formateurData = [
                 'user_id' => $user->id,
                 'prenom' => $data['prenom'],
                 'telephone' => $data['telephone'] ?? null,
+                'role' => $role,
+                'civilite' => $data['civilite'] ?? null, // Ajouter la civilité
             ];
 
             $formateur = $this->formateurInterface->create($formateurData);
@@ -74,7 +86,6 @@ class FormateurService
 
             DB::commit();
             return $formateur;
-
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -83,7 +94,7 @@ class FormateurService
                 unlink(public_path($imagePath));
             }
 
-            \Log::error('Erreur création formateur: '.$e->getMessage());
+            \Log::error('Erreur création formateur: ' . $e->getMessage());
             throw $e;
         }
     }
@@ -105,10 +116,20 @@ class FormateurService
                 'email' => $data['email'],
             ];
 
+            // Déterminer le rôle en fonction de la civilité (pour la mise à jour aussi)
+            if (isset($data['civilite'])) {
+                if ($data['civilite'] == 'Mme' || $data['civilite'] == 'Mlle') {
+                    $userData['role'] = 'formatrice';
+                } elseif ($data['civilite'] == 'M') {
+                    $userData['role'] = 'formateur';
+                }
+            }
+
             // Gérer le mot de passe
             if (!empty($data['password'])) {
                 $userData['password'] = Hash::make($data['password']);
             }
+
             // Gestion de l'image
             if (isset($data['image']) && $data['image'] instanceof \Illuminate\Http\UploadedFile) {
                 $image = $data['image'];
@@ -143,8 +164,14 @@ class FormateurService
             $this->syncRelations($formateur, $data);
 
             // Nettoyer les données avant mise à jour
-            unset($data['name'], $data['email'], $data['password'], $data['image'],
-                $data['stagiaire_id'], $data['catalogue_formation_id']);
+            unset(
+                $data['name'],
+                $data['email'],
+                $data['password'],
+                $data['image'],
+                $data['stagiaire_id'],
+                $data['catalogue_formation_id']
+            );
 
             // Mettre à jour le formateur
             $this->formateurInterface->update($id, $data);
@@ -152,15 +179,13 @@ class FormateurService
             DB::commit();
 
             return $formateur;
-
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::error('Erreur mise à jour formateur: ' . $e->getMessage());
             throw $e;
         }
     }
-
-// Méthodes helper
+    // Méthodes helper
     protected function shouldHandleImageUpdate(array $data, $formateur): bool
     {
         return isset($data['image']) && $data['image'] instanceof \Illuminate\Http\UploadedFile;

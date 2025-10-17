@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Repositories\Interfaces\CommercialInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class CommercialService
@@ -26,7 +27,6 @@ class CommercialService
     {
         return $this->commercialInterface->find($id);
     }
-
     public function create(array $data)
     {
         DB::beginTransaction();
@@ -46,22 +46,35 @@ class CommercialService
                 $imagePath = 'uploads/users/' . $imageName;
             }
 
+            // CORRECTION : Déterminer le rôle en fonction de la civilité
+            $role = 'commercial'; // Par défaut
+            if (isset($data['civilite'])) {
+                if ($data['civilite'] == 'Mme.' || $data['civilite'] == 'Mlle.') {
+                    $role = 'commerciale';
+                } elseif ($data['civilite'] == 'M.') {
+                    $role = 'commercial';
+                }
+            }
+
+            // CORRECTION : Gestion du mot de passe
+            $password = $data['password'] ?? 'commercial@123'; // Mot de passe par défaut si null
+
             // Création de l'utilisateur
             $user = User::create([
                 'name' => $data['name'],
                 'email' => $data['email'],
-                'password' => Hash::make($data['password']),
-                'role' => 'commercial',
+                'password' => Hash::make($password),
+                'role' => $role,
                 'image' => $imagePath,
             ]);
 
-
-            // Création du commercial avec prenom et telephone
+            // Création du commercial avec prenom, civilite et telephone
             $commercialData = [
                 'user_id' => $user->id,
                 'prenom' => $data['prenom'] ?? null,
+                'civilite' => $data['civilite'] ?? null,
                 'telephone' => $data['telephone'] ?? null,
-                'role' => 'commercial',
+                'role' => $role,
             ];
 
             $commercial = $this->commercialInterface->create($commercialData);
@@ -72,7 +85,6 @@ class CommercialService
 
             DB::commit();
             return $commercial;
-
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -81,11 +93,10 @@ class CommercialService
                 unlink(public_path($imagePath));
             }
 
-            \Log::error('Erreur création commercial: ' . $e->getMessage());
+            Log::error('Erreur création commercial: ' . $e->getMessage());
             throw $e;
         }
     }
-
     public function update(int $id, array $data)
     {
         DB::beginTransaction();
@@ -96,13 +107,29 @@ class CommercialService
                 throw new \Exception('Commercial non trouvé');
             }
 
+            // CORRECTION : Déterminer le rôle en fonction de la civilité
+            if (isset($data['civilite'])) {
+                $role = 'commercial'; // Par défaut
+                if ($data['civilite'] == 'Mme.' || $data['civilite'] == 'Mlle.') {
+                    $role = 'commerciale';
+                } elseif ($data['civilite'] == 'M.') {
+                    $role = 'commercial';
+                }
+                $data['role'] = $role;
+            }
+
             // Préparation des données utilisateur
             $userData = [
                 'name' => $data['name'],
                 'email' => $data['email'],
             ];
 
-            // Gestion du mot de passe
+            // Ajouter le rôle aux données utilisateur si défini
+            if (isset($data['role'])) {
+                $userData['role'] = $data['role'];
+            }
+
+            // CORRECTION : Gestion du mot de passe - seulement si fourni
             if (!empty($data['password'])) {
                 $userData['password'] = Hash::make($data['password']);
             }
@@ -140,14 +167,12 @@ class CommercialService
 
             DB::commit();
             return true;
-
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Erreur mise à jour commercial: ' . $e->getMessage());
+            Log::error('Erreur mise à jour commercial: ' . $e->getMessage());
             throw $e;
         }
     }
-
     public function delete($id)
     {
         return $this->commercialInterface->delete($id);

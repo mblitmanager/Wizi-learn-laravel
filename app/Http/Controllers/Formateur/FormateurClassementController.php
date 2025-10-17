@@ -18,7 +18,7 @@ class FormateurClassementController extends Controller
     private function checkFormateur()
     {
         $user = Auth::user();
-        if ($user->role !== 'formateur') {
+        if ($user->role !== 'formateur' && $user->role !== 'formatrice') {
             abort(403, 'Accès réservé aux formateurs.');
         }
 
@@ -27,144 +27,144 @@ class FormateurClassementController extends Controller
         }
     }
 
-        public function classementGeneral()
-{
-    $this->checkFormateur();
-    $formateur = Auth::user()->formateur;
+    public function classementGeneral()
+    {
+        $this->checkFormateur();
+        $formateur = Auth::user()->formateur;
 
-    // Récupérer les stagiaires avec leurs classements
-    $stagiairesAvecClassement = Stagiaire::whereHas('formateurs', function ($query) use ($formateur) {
-        $query->where('formateur_id', $formateur->id);
-    })
-        ->with(['user', 'classements.quiz'])
-        ->get()
-        ->map(function ($stagiaire) {
-            $totalPoints = $stagiaire->classements->sum('points');
-            $quizAvecClassement = $stagiaire->classements->count();
-            $meilleurRang = $stagiaire->classements->min('rang') ?? null;
-
-            return [
-                'stagiaire' => $stagiaire,
-                'total_points' => $totalPoints,
-                'meilleur_rang' => $meilleurRang,
-                'quiz_completes' => $quizAvecClassement,
-                'a_utilise_app' => $stagiaire->a_utilise_application
-            ];
+        // Récupérer les stagiaires avec leurs classements
+        $stagiairesAvecClassement = Stagiaire::whereHas('formateurs', function ($query) use ($formateur) {
+            $query->where('formateur_id', $formateur->id);
         })
-        ->filter(function ($item) {
-            return $item['quiz_completes'] > 0;
-        })
-        ->sortByDesc('total_points')
-        ->values();
+            ->with(['user', 'classements.quiz'])
+            ->get()
+            ->map(function ($stagiaire) {
+                $totalPoints = $stagiaire->classements->sum('points');
+                $quizAvecClassement = $stagiaire->classements->count();
+                $meilleurRang = $stagiaire->classements->min('rang') ?? null;
 
-    // CORRECTION : Calcul SIMPLE et CORRECT des rangs
-    $classementAvecRang = $this->calculerRangsDefinitif($stagiairesAvecClassement);
+                return [
+                    'stagiaire' => $stagiaire,
+                    'total_points' => $totalPoints,
+                    'meilleur_rang' => $meilleurRang,
+                    'quiz_completes' => $quizAvecClassement,
+                    'a_utilise_app' => $stagiaire->a_utilise_application
+                ];
+            })
+            ->filter(function ($item) {
+                return $item['quiz_completes'] > 0;
+            })
+            ->sortByDesc('total_points')
+            ->values();
 
-    return view('formateur.stagiaires.classement', compact('classementAvecRang'));
-}
+        // CORRECTION : Calcul SIMPLE et CORRECT des rangs
+        $classementAvecRang = $this->calculerRangsDefinitif($stagiairesAvecClassement);
 
-/**
- * MÉTHODE CORRIGÉE : Calcul des rangs avec ex-aequo
- */
-private function calculerRangsDefinitif($stagiaires)
-{
-    if ($stagiaires->isEmpty()) {
-        return collect();
+        return view('formateur.stagiaires.classement', compact('classementAvecRang'));
     }
 
-    $classement = collect();
-    $rang = 1;
-    $previousPoints = $stagiaires[0]['total_points'];
-
-    foreach ($stagiaires as $index => $item) {
-        // Si les points sont différents du précédent, le rang = position + 1
-        if ($index > 0 && $item['total_points'] != $previousPoints) {
-            $rang = $index + 1;
+    /**
+     * MÉTHODE CORRIGÉE : Calcul des rangs avec ex-aequo
+     */
+    private function calculerRangsDefinitif($stagiaires)
+    {
+        if ($stagiaires->isEmpty()) {
+            return collect();
         }
-        
-        $item['rang_global'] = $rang;
-        $classement->push($item);
-        
-        $previousPoints = $item['total_points'];
+
+        $classement = collect();
+        $rang = 1;
+        $previousPoints = $stagiaires[0]['total_points'];
+
+        foreach ($stagiaires as $index => $item) {
+            // Si les points sont différents du précédent, le rang = position + 1
+            if ($index > 0 && $item['total_points'] != $previousPoints) {
+                $rang = $index + 1;
+            }
+
+            $item['rang_global'] = $rang;
+            $classement->push($item);
+
+            $previousPoints = $item['total_points'];
+        }
+
+        return $classement;
     }
 
-    return $classement;
-}
-
-  /**
+    /**
      * Stagiaires ayant utilisé l'application
      */
     public function stagiairesAvecApplication()
-{
-    $this->checkFormateur();
-    $formateur = Auth::user()->formateur;
+    {
+        $this->checkFormateur();
+        $formateur = Auth::user()->formateur;
 
-    $stagiairesAvecApp = Stagiaire::whereHas('formateurs', function ($query) use ($formateur) {
-        $query->where('formateur_id', $formateur->id);
-    })
-    ->where(function ($query) {
-        $query->whereHas('quizParticipations')
-            ->orWhereHas('progressions')
-            ->orWhereHas('watchedVideos')
-            ->orWhereHas('classements');
-    })
-    ->with([
-        'user',
-        'classements.quiz',
-        'quizParticipations.quiz', // Important: charger le quiz pour avoir nb_points_total
-        'progressions',
-        'watchedVideos'
-    ])
-    ->orderBy('prenom')
-    ->paginate(20);
+        $stagiairesAvecApp = Stagiaire::whereHas('formateurs', function ($query) use ($formateur) {
+            $query->where('formateur_id', $formateur->id);
+        })
+            ->where(function ($query) {
+                $query->whereHas('quizParticipations')
+                    ->orWhereHas('progressions')
+                    ->orWhereHas('watchedVideos')
+                    ->orWhereHas('classements');
+            })
+            ->with([
+                'user',
+                'classements.quiz',
+                'quizParticipations.quiz', // Important: charger le quiz pour avoir nb_points_total
+                'progressions',
+                'watchedVideos'
+            ])
+            ->orderBy('prenom')
+            ->paginate(20);
 
-    // Statistiques d'utilisation
-    $stats = [
-        'total_avec_app' => $stagiairesAvecApp->total(),
-        'quiz_completes' => 0,
-        'videos_regardees' => 0,
-        'progression_moyenne' => 0,
-        'stagiaires_avec_progression' => 0
-    ];
+        // Statistiques d'utilisation
+        $stats = [
+            'total_avec_app' => $stagiairesAvecApp->total(),
+            'quiz_completes' => 0,
+            'videos_regardees' => 0,
+            'progression_moyenne' => 0,
+            'stagiaires_avec_progression' => 0
+        ];
 
-    $totalProgression = 0;
-    $stagiairesAvecProgression = 0;
+        $totalProgression = 0;
+        $stagiairesAvecProgression = 0;
 
-    foreach ($stagiairesAvecApp as $stagiaire) {
-        // Quiz complétés (avec status 'completed')
-        $quizCompletes = $stagiaire->quizParticipations->where('status', 'completed');
-        $stats['quiz_completes'] += $quizCompletes->count();
-        $stats['videos_regardees'] += $stagiaire->watchedVideos->count();
-        
-        // CALCUL DE LA PROGRESSION - Méthode recommandée
-        if ($quizCompletes->isNotEmpty()) {
-            $totalScorePossible = $quizCompletes->sum(function ($participation) {
-                return $participation->quiz->nb_points_total ?? 100;
-            });
-            
-            $totalScoreObtenu = $quizCompletes->sum('score');
-            
-            if ($totalScorePossible > 0) {
-                $progressionStagiaire = min(100, ($totalScoreObtenu / $totalScorePossible) * 100);
-                $totalProgression += $progressionStagiaire;
-                $stagiairesAvecProgression++;
-                
-                // Stocker la progression pour la vue
-                $stagiaire->progression_calculee = $progressionStagiaire;
+        foreach ($stagiairesAvecApp as $stagiaire) {
+            // Quiz complétés (avec status 'completed')
+            $quizCompletes = $stagiaire->quizParticipations->where('status', 'completed');
+            $stats['quiz_completes'] += $quizCompletes->count();
+            $stats['videos_regardees'] += $stagiaire->watchedVideos->count();
+
+            // CALCUL DE LA PROGRESSION - Méthode recommandée
+            if ($quizCompletes->isNotEmpty()) {
+                $totalScorePossible = $quizCompletes->sum(function ($participation) {
+                    return $participation->quiz->nb_points_total ?? 100;
+                });
+
+                $totalScoreObtenu = $quizCompletes->sum('score');
+
+                if ($totalScorePossible > 0) {
+                    $progressionStagiaire = min(100, ($totalScoreObtenu / $totalScorePossible) * 100);
+                    $totalProgression += $progressionStagiaire;
+                    $stagiairesAvecProgression++;
+
+                    // Stocker la progression pour la vue
+                    $stagiaire->progression_calculee = $progressionStagiaire;
+                }
+            } else {
+                $stagiaire->progression_calculee = 0;
             }
-        } else {
-            $stagiaire->progression_calculee = 0;
         }
-    }
 
-    // Calcul de la progression moyenne globale
-    if ($stagiairesAvecProgression > 0) {
-        $stats['progression_moyenne'] = round($totalProgression / $stagiairesAvecProgression, 2);
-        $stats['stagiaires_avec_progression'] = $stagiairesAvecProgression;
-    }
+        // Calcul de la progression moyenne globale
+        if ($stagiairesAvecProgression > 0) {
+            $stats['progression_moyenne'] = round($totalProgression / $stagiairesAvecProgression, 2);
+            $stats['stagiaires_avec_progression'] = $stagiairesAvecProgression;
+        }
 
-    return view('formateur.stagiaires.application', compact('stagiairesAvecApp', 'stats'));
-}
+        return view('formateur.stagiaires.application', compact('stagiairesAvecApp', 'stats'));
+    }
     /**
      * Détails du classement d'un stagiaire spécifique
      */
@@ -227,7 +227,4 @@ private function calculerRangsDefinitif($stagiaires)
 
         return view('formateur.stagiaires.details-classement', compact('stagiaire', 'statistiques'));
     }
-
-
-
 }

@@ -18,15 +18,11 @@ use App\Http\Controllers\Admin\UserAppUsageAdminController;
 use App\Http\Controllers\Admin\AdminStagiaireStatsController;
 use App\Http\Controllers\Admin\AdminInactivityController;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\Stagiaire\DashboardController;
-use App\Http\Controllers\FcmTokenController;
 use App\Http\Controllers\Formateur\FormateurDashboardController;
 use App\Http\Controllers\Formateur\FormateurStagiaireController;
 use App\Http\Controllers\Formateur\FormateurStagiaireStatsController;
 use App\Http\Controllers\Formateur\FormateurClassementController;
-use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
-use PhpOffice\PhpSpreadsheet\Calculation\TextData\Format;
 
 Route::get('/', function () {
     return view('stagiaire');
@@ -65,17 +61,19 @@ Route::middleware(['auth'])->get('/dashboard', function () {
 
     $role = strtolower($user->role);
 
+    // CORRECTION : Ajout du rôle "formatrice" et vérification plus robuste
     if ($role === 'administrateur') {
         return redirect()->route('admin.dashboard');
-    } elseif ($role === 'formateur') {
+    } elseif (in_array($role, ['formateur', 'formatrice'])) {
         return redirect()->route('formateur.dashboard');
     } else {
-        return redirect('/');
+        // Redirection par défaut ou vers une page d'erreur
+        Auth::logout();
+        return redirect()->route('login')->with('error', 'Rôle non reconnu.');
     }
 })->name('dashboard');
 
 Route::middleware(['auth'])->get('/logout', [AdminController::class, 'logout'])->name('logout');
-
 
 // Routes pour les administrateurs
 Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function () {
@@ -90,6 +88,7 @@ Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function
     // Permissions
     Route::resource('permissions', \App\Http\Controllers\Admin\PermissionController::class);
     Route::post('permissions/{permission}/toggle-status', [\App\Http\Controllers\Admin\PermissionController::class, 'toggleStatus'])->name('permissions.toggle-status');
+
     /**
      * Route Stagiaire
      */
@@ -184,7 +183,7 @@ Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function
     Route::post('/inactivity/notify', [AdminInactivityController::class, 'notify'])->name('admin.inactivity.notify');
 });
 
-// Routes pour les formateurs
+//Routes pour les formateurs avec le middleware IsFormateur
 Route::middleware(['auth', 'isFormateur'])->prefix('formateur')->name('formateur.')->group(function () {
     // Tableau de bord formateur
     Route::get('/dashboard', [FormateurDashboardController::class, 'index'])->name('dashboard');
@@ -208,18 +207,14 @@ Route::middleware(['auth', 'isFormateur'])->prefix('formateur')->name('formateur
     Route::get('/stagiaires/{id}/classement', [FormateurClassementController::class, 'detailsClassement'])->name('stagiaires.details-classement');
 
     // Routes formations
-    Route::get('/formations', [FormateurController::class, 'mesFormations'])->name('formations.index');
-    Route::get('/formations/{id}', [FormateurController::class, 'showFormation'])->name('formations.show');
-    Route::get('/catalogue', [FormateurController::class, 'catalogueFormations'])->name('catalogue.index');
-    Route::get('/catalogue', [FormateurController::class, 'catalogueFormations'])->name('catalogue.index');
+    Route::get('/formations', [\App\Http\Controllers\Admin\FormateurController::class, 'mesFormations'])->name('formations.index');
+    Route::get('/formations/{id}', [\App\Http\Controllers\Admin\FormateurController::class, 'showFormation'])->name('formations.show');
+    Route::get('/catalogue', [\App\Http\Controllers\Admin\FormateurController::class, 'catalogueFormations'])->name('catalogue.index');
 
     // Route profil
-    Route::get('/profile', [FormateurController::class, 'profile'])->name('profile');
-    Route::post('/profile', [FormateurController::class, 'updateProfile'])->name('profile.update');
-
-    
+    Route::get('/profile', [\App\Http\Controllers\Admin\FormateurController::class, 'profile'])->name('profile');
+    Route::post('/profile', [\App\Http\Controllers\Admin\FormateurController::class, 'updateProfile'])->name('profile.update');
 });
-
 
 // Routes de fallback
 Route::fallback(function () {

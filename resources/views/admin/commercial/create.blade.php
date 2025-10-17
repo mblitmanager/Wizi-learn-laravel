@@ -47,16 +47,40 @@
             <div class="card-body p-4 border rounded">
                 <div class="px-4 py-3"
                     style="box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;">
-                    <form class="row g-3" action="{{ route('commercials.store') }}" method="POST" enctype="multipart/form-data">
+                    <form class="row g-3" action="{{ route('commercials.store') }}" method="POST"
+                        enctype="multipart/form-data">
                         @csrf
-
                         <div class="col-md-4">
+                            {{-- civilite --}}
+                            <div class="mb-3">
+                                <label for="civilite">Civilité</label>
+                                <select name="civilite" id="civilite"
+                                    class="form-control @error('civilite') is-invalid @enderror">
+                                    <option value="">Sélectionner la civilité</option>
+                                    <option value="M."
+                                        {{ old('civilite', $commercial->civilite ?? '') == 'M.' ? 'selected' : '' }}>M.
+                                    </option>
+                                    <option value="Mme."
+                                        {{ old('civilite', $commercial->civilite ?? '') == 'Mme.' ? 'selected' : '' }}>Mme.
+                                    </option>
+
+                                    <option value="Mlle."
+                                        {{ old('civilite', $commercial->civilite ?? '') == 'Mlle.' ? 'selected' : '' }}>
+                                        Mlle.
+                                    </option>
+                                </select>
+                                @error('civilite')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+
                             <!-- Nom -->
                             <div class="mb-3">
                                 <label for="name">Nom</label>
                                 <input type="text" name="name" id="name"
-                                    class="form-control @error('name') is-invalid @enderror"
-                                    value="{{ old('name') }}">
+                                    class="form-control @error('name') is-invalid @enderror" value="{{ old('name') }}">
                                 @error('name')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -75,8 +99,7 @@
                             <div class="mb-3">
                                 <label for="name">Prénom</label>
                                 <input type="text" name="prenom" id="prenom"
-                                    class="form-control @error('prenom') is-invalid @enderror"
-                                    value="{{ old('prenom') }}">
+                                    class="form-control @error('prenom') is-invalid @enderror" value="{{ old('prenom') }}">
                                 @error('prenom')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -88,8 +111,7 @@
                             <div class="mb-3">
                                 <label for="email">Adresse e-mail</label>
                                 <input type="email" name="email" id="email"
-                                    class="form-control @error('email') is-invalid @enderror"
-                                    value="{{ old('email') }}">
+                                    class="form-control @error('email') is-invalid @enderror" value="{{ old('email') }}">
                                 @error('email')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror

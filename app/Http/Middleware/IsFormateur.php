@@ -12,7 +12,7 @@ class IsFormateur
 {
     public function handle(Request $request, Closure $next)
     {
-        if (Auth::check() && Auth::user()->role === 'formateur') {
+        if (Auth::check() && Auth::user()->role === 'formateur' || Auth::user()->role === 'formatrice') {
             return $next($request);
         }
 

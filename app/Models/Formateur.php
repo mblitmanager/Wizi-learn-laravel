@@ -23,6 +23,7 @@ class Formateur extends Model
         'role',
         'user_id',
         'prenom',
+        'civilite',
         'telephone',
     ];
 

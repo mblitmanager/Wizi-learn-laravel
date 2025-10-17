@@ -38,6 +38,23 @@
                             enctype="multipart/form-data">
                             @csrf
                             <div class="col-md-4">
+                                <!-- civilite -->
+                                <div class="mb-3">
+                                    <label for="civilite">Civilité</label>
+                                    <select name="civilite" id="civilite"
+                                        class="form-control @error('civilite') is-invalid @enderror">
+                                        <option value="">Sélectionner</option>
+                                        <option value="M." {{ old('civilite') == 'M.' ? 'selected' : '' }}>M.</option>
+                                        <option value="Mme" {{ old('civilite') == 'Mme' ? 'selected' : '' }}>Mme</option>
+                                        <option value="Mlle" {{ old('civilite') == 'Mlle' ? 'selected' : '' }}>Mlle
+                                        </option>
+                                    </select>
+                                    @error('name')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                            <div class="col-md-4">
                                 <!-- Nom -->
                                 <div class="mb-3">
                                     <label for="name">Nom</label>

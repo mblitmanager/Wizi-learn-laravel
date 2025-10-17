@@ -1,5 +1,5 @@
 @extends('admin.layout')
-@section('title', 'Ajouter un stagiaire')
+@section('title', 'Modifier un stagiaire')
 @section('content')
     <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
 
@@ -17,7 +17,9 @@
             <div class="btn-group">
                 <a href="{{ route('commercials.index') }}" type="button" class="btn btn-sm btn-primary"><i
                         class="fadeIn animated bx bx-chevron-left-circle"></i>Retour</a>
-                <form action="{{ route('commercials.destroy', $commercial->id) }}" method="POST" style="display:inline-block; margin-left:8px;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce commercial ?');">
+                <form action="{{ route('commercials.destroy', $commercial->id) }}" method="POST"
+                    style="display:inline-block; margin-left:8px;"
+                    onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce commercial ?');">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="btn btn-sm btn-danger"><i class="lni lni-trash"></i> Supprimer</button>
@@ -31,143 +33,165 @@
         @if ($errors->any())
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
                 <strong class="font-bold">Whoops!</strong>
-                    <div class="col-md-4">
-                        <!-- Photo de profil -->
-                        <div class="mb-3">
-                            <label for="photo" class="form-label">Photo de profil</label>
-                            <input type="file" class="form-control" id="photo" name="photo" accept="image/*">
-                            @if(isset($commercial->user->image) && $commercial->user->image)
-                                <div class="mt-2">
-                                    <img src="{{ asset($commercial->user->image) }}" alt="Photo actuelle" style="max-width: 120px; max-height: 120px; object-fit: cover;">
-                                </div>
-                            @endif
-                            @error('photo')
-                                <span class="text-danger">{{ $message }}</span>
-                            @enderror
+
+                <!-- Photo de profil -->
+                <div class="mb-3">
+                    <label for="photo" class="form-label">Photo de profil</label>
+                    <input type="file" class="form-control" id="photo" name="photo" accept="image/*">
+                    @if (isset($commercial->user->image) && $commercial->user->image)
+                        <div class="mt-2">
+                            <img src="{{ asset($commercial->user->image) }}" alt="Photo actuelle"
+                                style="max-width: 120px; max-height: 120px; object-fit: cover;">
                         </div>
-                    </div>
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
+                    @endif
+                    @error('photo')
+                        <span class="text-danger">{{ $message }}</span>
+                    @enderror
+                </div>
+            </div>
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+            </ul>
+    </div>
+    @endif
+    <div class="card">
+        @if (session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         @endif
-        <div class="card">
-            @if (session('success'))
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    {{ session('success') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <div class="card-body p-4 border rounded">
+            <form class="row g-3" action="{{ route('commercials.update', $commercial->id) }}" method="POST"
+                enctype="multipart/form-data">
+                @csrf
+                @method('PUT')
+                <div class="col-md-4">
+                    {{-- civilite --}}
+                    <div class="mb-3">
+                        <label for="civilite">Civilité</label>
+                        <select name="civilite" id="civilite" class="form-control @error('civilite') is-invalid @enderror">
+                            <option value="">Sélectionner la civilité</option>
+                            <option value="M."
+                                {{ old('civilite', $commercial->civilite ?? '') == 'M.' ? 'selected' : '' }}>M.</option>
+                            <option value="Mme."
+                                {{ old('civilite', $commercial->civilite ?? '') == 'Mme.' ? 'selected' : '' }}>Mme.</option>
+
+                            <option value="Mlle."
+                                {{ old('civilite', $commercial->civilite ?? '') == 'Mlle.' ? 'selected' : '' }}>Mlle.
+                            </option>
+                        </select>
+                        @error('civilite')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
                 </div>
-            @endif
-            <div class="card-body p-4 border rounded">
-                <form class="row g-3" action="{{ route('commercials.update', $commercial->id) }}" method="POST" enctype="multipart/form-data">
-                    @csrf
-                    @method('PUT')
+                <div class="col-md-4">
+                    <!-- Nom -->
+                    <div class="mb-3">
+                        <label for="name">Nom</label>
+                        <input type="text" name="name" id="name"
+                            class="form-control @error('name') is-invalid @enderror"
+                            value="{{ old('name', $commercial->user->name ?? '') }}">
+                        @error('name')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <!-- Nom -->
+                    <div class="mb-3">
+                        <label for="prenom">Prenom</label>
+                        <input type="text" name="prenom" id="prenom"
+                            class="form-control @error('prenom') is-invalid @enderror"
+                            value="{{ old('prenom', $commercial->prenom ?? '') }}">
+                        @error('prenom')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <!-- Email -->
+                    <div class="mb-3">
+                        <label for="email">Adresse e-mail</label>
+                        <input type="email" name="email" id="email"
+                            class="form-control @error('email') is-invalid @enderror"
+                            value="{{ old('email', $commercial->user->email ?? '') }}">
+                        @error('email')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
 
-                    <div class="col-md-4">
-                        <!-- Nom -->
-                        <div class="mb-3">
-                            <label for="name">Nom</label>
-                            <input type="text" name="name" id="name"
-                                class="form-control @error('name') is-invalid @enderror"
-                                value="{{ old('name', $commercial->user->name ?? '') }}">
-                            @error('name')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+                <div class="col-md-4">
+                    <!-- Mot de passe -->
+                    <div class="mb-3">
+                        <label for="telephone">Téléphone</label>
+                        <input type="text" name="telephone" id="telephone"
+                            class="form-control @error('telephone') is-invalid @enderror"
+                            value="{{ old('telephone', $commercial->telephone ?? '') }}">
+                        @error('telephone')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
-                    <div class="col-md-4">
-                        <!-- Nom -->
-                        <div class="mb-3">
-                            <label for="prenom">Prenom</label>
-                            <input type="text" name="prenom" id="prenom"
-                                class="form-control @error('prenom') is-invalid @enderror"
-                                value="{{ old('prenom', $commercial->prenom ?? '') }}">
-                            @error('prenom')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <!-- Email -->
-                        <div class="mb-3">
-                            <label for="email">Adresse e-mail</label>
-                            <input type="email" name="email" id="email"
-                                class="form-control @error('email') is-invalid @enderror"
-                                value="{{ old('email', $commercial->user->email ?? '') }}">
-                            @error('email')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
-
-                    <div class="col-md-4">
-                        <!-- Mot de passe -->
-                        <div class="mb-3">
-                            <label for="telephone">Téléphone</label>
-                            <input type="text" name="telephone" id="telephone"
-                                class="form-control @error('telephone') is-invalid @enderror"
-                                value="{{ old('telephone', $commercial->telephone ?? '') }}">
-                            @error('telephone')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
+                </div>
 
 
-                    <div class="col-md-4">
-                        <!-- Mot de passe -->
-                        <div class="mb-3">
-                            <label for="password">Mot de passe</label>
-                            <input type="password" name="password" id="password"
-                                class="form-control @error('password') is-invalid @enderror" value="">
-                            @error('password')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+                <div class="col-md-4">
+                    <!-- Mot de passe -->
+                    <div class="mb-3">
+                        <label for="password">Mot de passe</label>
+                        <input type="password" name="password" id="password"
+                            class="form-control @error('password') is-invalid @enderror" value="">
+                        @error('password')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
+                </div>
 
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            <label for="stagiaire_id">Stagiaire</label>
-                            <select name="stagiaire_id[]" id="stagiaire_id"
-                                class="form-select select2 @error('stagiaire_id') is-invalid @enderror" multiple>
-                                <option value="">Choisir un ou plusieurs stagiaires</option>
-                                @foreach ($stagiaires as $stagiaire)
-                                    <option value="{{ $stagiaire->id }}"
-                                        {{ in_array($stagiaire->id, old('stagiaire_id', $commercial->stagiaires->pluck('id')->toArray())) ? 'selected' : '' }}>
-                                        {{ $stagiaire->user->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('stagiaire_id')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="stagiaire_id">Stagiaire</label>
+                        <select name="stagiaire_id[]" id="stagiaire_id"
+                            class="form-select select2 @error('stagiaire_id') is-invalid @enderror" multiple>
+                            <option value="">Choisir un ou plusieurs stagiaires</option>
+                            @foreach ($stagiaires as $stagiaire)
+                                <option value="{{ $stagiaire->id }}"
+                                    {{ in_array($stagiaire->id, old('stagiaire_id', $commercial->stagiaires->pluck('id')->toArray())) ? 'selected' : '' }}>
+                                    {{ $stagiaire->user->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('stagiaire_id')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
-                     <div class="col-md-4">
-                        <!-- Photo de profil -->
-                        <div class="mb-3">
-                            <label for="photo" class="form-label">Photo de profil</label>
-                            <input type="file" class="form-control" id="photo" name="image" accept="image/*">
-                            @if(isset($commercial->user->image) && $commercial->user->image)
-                                <div class="mt-2">
-                                    <img src="{{ asset($commercial->user->image) }}" alt="Photo actuelle" style="max-width: 120px; max-height: 120px; object-fit: cover;">
-                                </div>
-                            @endif
-                            @error('image')
-                                <span class="text-danger">{{ $message }}</span>
-                            @enderror
-                        </div>
+                </div>
+                <div class="col-md-4">
+                    <!-- Photo de profil -->
+                    <div class="mb-3">
+                        <label for="photo" class="form-label">Photo de profil</label>
+                        <input type="file" class="form-control" id="photo" name="image" accept="image/*">
+                        @if (isset($commercial->user->image) && $commercial->user->image)
+                            <div class="mt-2">
+                                <img src="{{ asset($commercial->user->image) }}" alt="Photo actuelle"
+                                    style="max-width: 120px; max-height: 120px; object-fit: cover;">
+                            </div>
+                        @endif
+                        @error('image')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
                     </div>
-                    <hr>
-                    <div class="text-center">
-                        <button type="submit" class="btn btn-sm btn-primary px-4"><i class="lni lni-save"></i>Mettre à
-                            jour</button>
-                    </div>
-                </form>
-            </div>
+                </div>
+                <hr>
+                <div class="text-center">
+                    <button type="submit" class="btn btn-sm btn-primary px-4"><i class="lni lni-save"></i>Mettre à
+                        jour</button>
+                </div>
+            </form>
         </div>
+    </div>
     </div>
 @endsection
 @section('scripts')
