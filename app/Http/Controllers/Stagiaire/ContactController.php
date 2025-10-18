@@ -71,6 +71,8 @@ class ContactController extends Controller
                 $user = $formateur->user;
                 $prenom = $formateur->prenom ?? $user->prenom ?? null;
                 $nom = $formateur->nom ?? $user->nom ?? null;
+                $civilite = $formateur->civilite ?? $user->civilite ?? null;
+                
                 if (empty($prenom) && empty($nom) && !empty($user->name)) {
                     $parts = preg_split('/\s+/', trim($user->name));
                     if (count($parts) > 1) {
@@ -90,6 +92,8 @@ class ContactController extends Controller
                     'name' => $formateur->user->name,
                     'prenom' => $prenom ?? '',
                     'nom' => $nom ?? '',
+                    'civilite' => $civilite,
+                    'role'=> $formateur->role ?? 'Formateur',
                     'email' => $formateur->user->email,
                     'telephone' => $formateur->telephone ?? '',
                     'formations' => $formations,
@@ -103,6 +107,8 @@ class ContactController extends Controller
                 $user = $commercial->user;
                 $prenom = $commercial->prenom ?? $user->prenom ?? null;
                 $nom = $commercial->nom ?? $user->nom ?? null;
+                $civilite = $commercial->civilite ?? $user->civilite ?? null;
+                
                 if (empty($prenom) && empty($nom) && !empty($user->name)) {
                     $parts = preg_split('/\s+/', trim($user->name));
                     if (count($parts) > 1) {
@@ -119,7 +125,9 @@ class ContactController extends Controller
                     'name' => $commercial->user->name,
                     'prenom' => $prenom ?? '',
                     'nom' => $nom ?? '',
+                    'civilite' => $civilite,
                     'email' => $commercial->user->email,
+                    'role'=> $commercial->role ?? 'Commercial',
                     'telephone' => $commercial->telephone ?? '',
                     'image' => $commercial->user->image ?? '/images/default-avatar.png',
                 ];
@@ -131,11 +139,16 @@ class ContactController extends Controller
                 ->where('role', 'pole_relation_client')
                 ->get()
                 ->map(function ($pole) {
+                    $user = $pole->user;
+                    $civilite = $pole->civilite ?? $user->civilite ?? null;
+                    
                     return [
                         'id' => $pole->id,
                         'type' => 'pole_relation_client',
                         'name' => $pole->user->name,
+                        'civilite' => $civilite,
                         'email' => $pole->user->email,
+                        'role'=> $pole->role ?? 'Pôle Relation Client',
                         'telephone' => $pole->telephone ?? '',
                         'image' => $pole->user->image ?? '/images/default-avatar.png',
                     ];
@@ -147,12 +160,17 @@ class ContactController extends Controller
                 ->where('role', 'Pôle SAV')
                 ->get()
                 ->map(function ($sav) {
+                    $user = $sav->user;
+                    $civilite = $sav->civilite ?? $user->civilite ?? null;
+                    
                     return [
                         'id' => $sav->id,
                         'type' => 'pole_sav',
                         'name' => $sav->user->name,
+                        'civilite' => $civilite,
                         'email' => $sav->user->email,
                         'telephone' => $sav->telephone ?? '',
+                        'role'=> $sav->role ?? 'Pôle SAV',
                         'image' => $sav->user->image ?? '/images/default-avatar.png',
                     ];
                 });
@@ -161,15 +179,16 @@ class ContactController extends Controller
                 'formateurs' => $formateursArr,
                 'commerciaux' => $commerciaux,
                 'pole_relation' => $poleRelation,
-                'pole_sav' => $poleSav, // Pôle SAV filtré par rôle
+                'pole_sav' => $poleSav,
             ]);
         } catch (JWTException $e) {
             return response()->json(['error' => 'non autorisé'], 401);
         }
-    }    public function getFormateurs()
+    }
+
+    public function getFormateurs()
     {
         try {
-            // Si un stagiaire_id est passé en query, on filtre les formations pour ce stagiaire
             $user = JWTAuth::parseToken()->authenticate();
             if (!isset($user->relations['stagiaire'])) {
                 $user->load('stagiaire');
@@ -181,9 +200,7 @@ class ContactController extends Controller
                 }
             }
 
-            // --- Construction manuelle des contacts pour le front ---
             $stagiaireId = $user->stagiaire->id;
-            // Formateurs liés au stagiaire
             $formateurs = $user->stagiaire->formateurs()->with(['user', 'catalogue_formations' => function ($q) use ($stagiaireId) {
                 $q->whereHas('stagiaires', function ($q2) use ($stagiaireId) {
                     $q2->where('stagiaire_id', $stagiaireId);
@@ -192,13 +209,11 @@ class ContactController extends Controller
 
             $formateursArr = $formateurs->map(function ($formateur) use ($stagiaireId) {
                 $formations = [];
-                // Récupération directe des formations depuis la table pivot
                 $pivotFormations = DB::table('stagiaire_catalogue_formations')
                     ->where('formateur_id', $formateur->id)
                     ->where('stagiaire_id', $stagiaireId)
                     ->get();
                 foreach ($pivotFormations as $pivot) {
-                    // On récupère la formation associée à l'ID du pivot
                     $formation = DB::table('catalogue_formations')->where('id', $pivot->catalogue_formation_id)->first();
                     if ($formation) {
                         $formations[] = [
@@ -213,6 +228,8 @@ class ContactController extends Controller
                 $user = $formateur->user;
                 $prenom = $user->prenom ?? null;
                 $nom = $user->nom ?? null;
+                $civilite = $formateur->civilite ?? $user->civilite ?? null;
+                
                 if (empty($prenom) && empty($nom) && !empty($user->name)) {
                     $parts = preg_split('/\s+/', trim($user->name));
                     if (count($parts) > 1) {
@@ -228,9 +245,11 @@ class ContactController extends Controller
                     'name' => $formateur->user->name,
                     'prenom' => $prenom ?? '',
                     'nom' => $nom ?? '',
+                    'civilite' => $civilite,
                     'email' => $formateur->user->email,
                     'phone' => $formateur->telephone ?? '',
-                    'role' => 'Formateur',
+                    'role' => $formateur->role ?? 'Formateur',
+                    'type' => 'Formateur',
                     'formations' => $formations,
                     'avatar' => $formateur->user->image ?? '/images/default-avatar.png',
                     'created_at' => $formateur->created_at->format('d/m/Y')
@@ -256,11 +275,13 @@ class ContactController extends Controller
                     return response()->json(['error' => 'non autorisé'], 403);
                 }
             }
-            // Commerciaux liés au stagiaire
+            
             $commercials = $user->stagiaire->commercials()->with('user')->get()->map(function ($commercial) {
                 $user = $commercial->user;
                 $prenom = $user->prenom ?? null;
                 $nom = $user->nom ?? null;
+                $civilite = $commercial->civilite ?? $user->civilite ?? null;
+                
                 if (empty($prenom) && empty($nom) && !empty($user->name)) {
                     $parts = preg_split('/\s+/', trim($user->name));
                     if (count($parts) > 1) {
@@ -276,9 +297,11 @@ class ContactController extends Controller
                     'name' => $commercial->user->name,
                     'prenom' => $prenom ?? '',
                     'nom' => $nom ?? '',
+                    'civilite' => $civilite,
                     'email' => $commercial->user->email,
                     'phone' => $commercial->telephone ?? '',
-                    'role' => 'Commercial',
+                    'role' => $commercial->role ?? 'Commercial',
+                    'type' => 'Commercial',
                     'avatar' => $commercial->user->image ?? '/images/default-avatar.png',
                     'created_at' => $commercial->created_at->format('d/m/Y')
                 ];
@@ -303,11 +326,13 @@ class ContactController extends Controller
                     return response()->json(['error' => 'non autorisé'], 403);
                 }
             }
-            // Pôle Relation Client liés au stagiaire
+            
             $poles = $user->stagiaire->poleRelationClients()->with('user')->get()->map(function ($pole) {
                 $user = $pole->user;
                 $prenom = $user->prenom ?? null;
                 $nom = $user->nom ?? null;
+                $civilite = $pole->civilite ?? $user->civilite ?? null;
+                
                 if (empty($prenom) && empty($nom) && !empty($user->name)) {
                     $parts = preg_split('/\s+/', trim($user->name));
                     if (count($parts) > 1) {
@@ -323,9 +348,11 @@ class ContactController extends Controller
                     'name' => $pole->user->name,
                     'prenom' => $prenom ?? '',
                     'nom' => $nom ?? '',
+                    'civilite' => $civilite,
                     'email' => $pole->user->email,
                     'phone' => $pole->telephone ?? '',
-                    'role' => 'Pôle Relation',
+                    'role' => $pole->role ?? 'Pôle Relation Client',
+                    'type' => 'pole_relation_client',
                     'avatar' => $pole->user->image ?? '/images/default-avatar.png',
                     'created_at' => $pole->created_at->format('d/m/Y')
                 ];
@@ -351,18 +378,22 @@ class ContactController extends Controller
                 }
             }
 
-            // Pôle SAV - Filtrer par rôle dans PoleRelationClient
             $poleSav = $user->stagiaire->poleRelationClients()
                 ->with('user')
                 ->where('role', 'Pôle SAV')
                 ->get()
                 ->map(function ($sav) {
+                    $user = $sav->user;
+                    $civilite = $sav->civilite ?? $user->civilite ?? null;
+                    
                     return [
                         'id' => $sav->id,
                         'name' => $sav->user->name,
+                        'civilite' => $civilite,
                         'email' => $sav->user->email,
                         'phone' => $sav->telephone ?? '',
-                        'role' => 'Pôle SAV',
+                        'role' => $sav->role ?? 'Pôle SAV',
+                        'type' => 'pole_sav',
                         'avatar' => $sav->user->image ?? '/images/default-avatar.png',
                         'created_at' => $sav->created_at->format('d/m/Y')
                     ];
@@ -374,18 +405,16 @@ class ContactController extends Controller
             return response()->json(['error' => 'Erreur lors de la récupération du pôle SAV'], 500);
         }
     }
+
     public function addContact(Request $request)
     {
         try {
             $user = JWTAuth::parseToken()->authenticate();
-            // Charger la relation stagiaire si elle n'est pas déjà chargée
             if (!isset($user->relations['stagiaire'])) {
                 $user->load('stagiaire');
             }
 
-            // Vérifier si l'utilisateur est bien le stagiaire demandé ou a les droits d'accès
             if ($user->role != 'formateur' && $user->role != 'admin') {
-                // Vérifier si l'utilisateur est associé à ce stagiaire
                 $userStagiaire = $user->stagiaire;
                 if (!$userStagiaire) {
                     return response()->json(['error' => 'non autorisé'], 403);

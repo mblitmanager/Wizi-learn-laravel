@@ -54,9 +54,9 @@ class FormateurService
             // Déterminer le rôle en fonction de la civilité
             $role = 'formateur'; // Par défaut
             if (isset($data['civilite'])) {
-                if ($data['civilite'] == 'Mme' || $data['civilite'] == 'Mlle') {
+                if ($data['civilite'] == 'Mme.' || $data['civilite'] == 'Mlle.') {
                     $role = 'formatrice';
-                } elseif ($data['civilite'] == 'M') {
+                } elseif ($data['civilite'] == 'M.') {
                     $role = 'formateur';
                 }
             }
@@ -118,9 +118,9 @@ class FormateurService
 
             // Déterminer le rôle en fonction de la civilité (pour la mise à jour aussi)
             if (isset($data['civilite'])) {
-                if ($data['civilite'] == 'Mme' || $data['civilite'] == 'Mlle') {
+                if ($data['civilite'] == 'Mme.' || $data['civilite'] == 'Mlle.') {
                     $userData['role'] = 'formatrice';
-                } elseif ($data['civilite'] == 'M') {
+                } elseif ($data['civilite'] == 'M.') {
                     $userData['role'] = 'formateur';
                 }
             }

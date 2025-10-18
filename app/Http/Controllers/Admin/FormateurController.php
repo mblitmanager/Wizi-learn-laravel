@@ -150,9 +150,9 @@ class FormateurController extends Controller
 
             // Déterminer le rôle en fonction de la civilité
             $role = 'formateur'; // Par défaut
-            if ($request->civilite == 'Mme' || $request->civilite == 'Mlle') {
+            if ($request->civilite == 'Mme.' || $request->civilite == 'Mlle.') {
                 $role = 'formatrice';
-            } elseif ($request->civilite == 'M') {
+            } elseif ($request->civilite == 'M.') {
                 $role = 'formateur';
             }
 

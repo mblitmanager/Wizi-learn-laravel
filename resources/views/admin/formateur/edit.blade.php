@@ -2,36 +2,7 @@
 @section('title', 'Ajouter un Formateur')
 @section('content')
     <div class="container-fluid">
-        {{-- <div class="shadow-lg border-0 px-2 py-2 mb-3">
-            <div class="page-breadcrumb d-none d-sm-flex align-items-center">
-                <div class="ps-3">
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb mb-0 p-0">
-                            <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
-                            </li>
-                            <li class="breadcrumb-item active text-uppercase fw-bold" aria-current="page">Modification d'un
-                                formateur</li>
-                        </ol>
-                    </nav>
-                </div>
 
-                <div class="ms-auto">
-                    <div class="btn-group">
-                        <form action="{{ route('formateur.destroy', $formateur->id) }}" method="post">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-sm btn-danger"><i
-                                    class="fadeIn animated bx bx-trash"></i>Supprimé</button>
-                        </form>
-
-                    </div>
-                    <div class="btn-group">
-                        <a href="{{ route('formateur.index') }}" type="button" class="btn btn-sm btn-primary"><i
-                                class="fadeIn animated bx bx-chevron-left-circle"></i>Retour</a>
-                    </div>
-                </div>
-            </div>
-        </div> --}}
         <div class="shadow-lg border-0 px-2 py-2 mb-3">
             <div class="page-breadcrumb d-none d-sm-flex align-items-center">
                 <div class="ps-3">
@@ -64,9 +35,8 @@
         <div class="col-md-12">
 
             @if ($errors->any())
-                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                <div class="bg-danger border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
                     <strong class="font-bold">Whoops!</strong>
-                    <span class="block sm:inline">Erreur avec zone de saisie.</span>
                     <ul class="mt-2 list-disc list-inside">
                         @foreach ($errors->all() as $error)
                             <li>{{ $error }}</li>
@@ -87,18 +57,23 @@
                         @csrf
                         @method('PUT')
                         <div class="col-md-4">
-                            <!-- civilite -->
                             <div class="mb-3">
                                 <label for="civilite">Civilité</label>
                                 <select name="civilite" id="civilite"
                                     class="form-control @error('civilite') is-invalid @enderror">
-                                    <option value="">Sélectionner</option>
-                                    <option value="M." {{ old('civilite') == 'M.' ? 'selected' : '' }}>M.</option>
-                                    <option value="Mme" {{ old('civilite') == 'Mme' ? 'selected' : '' }}>Mme</option>
-                                    <option value="Mlle" {{ old('civilite') == 'Mlle' ? 'selected' : '' }}>Mlle
+                                    <option value="">Sélectionner la civilité</option>
+                                    <option value="M."
+                                        {{ old('civilite', $formateur->civilite ?? '') == 'M.' ? 'selected' : '' }}>M.
+                                    </option>
+                                    <option value="Mme."
+                                        {{ old('civilite', $formateur->civilite ?? '') == 'Mme.' ? 'selected' : '' }}>Mme.
+                                    </option>
+
+                                    <option value="Mlle."
+                                        {{ old('civilite', $formateur->civilite ?? '') == 'Mlle.' ? 'selected' : '' }}>Mlle.
                                     </option>
                                 </select>
-                                @error('name')
+                                @error('civilite')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
@@ -258,7 +233,6 @@
                         </div>
 
                     </form>
-
                 </div>
             </div>
         </div>

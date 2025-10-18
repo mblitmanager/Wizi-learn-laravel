@@ -28,7 +28,7 @@ class FormateurStoreRequest extends FormRequest
         return [
             'name' => 'required|string|max:255',
             'prenom' => 'required|string|max:255',
-            'civilite' => 'required|string|in:M,Mme,Mlle',
+            'civilite' => 'required|string|in:M.,Mme.,Mlle.',
             'email' => [
                 'required',
                 'email',
@@ -51,8 +51,7 @@ class FormateurStoreRequest extends FormRequest
             'name.required' => 'Le nom est obligatoire.',
             'prenom.required' => 'Le prénom est obligatoire.',
             'civilite.required' => 'La civilité est obligatoire.',
-            'civilite.in' => 'La civilité doit être M, Mme ou Mlle.',
-
+            'civilite.in' => 'La civilité doit être M., Mme. ou Mlle.',
             'name.string' => 'Le nom doit être une chaîne de caractères.',
             'prenom.string' => 'Le prénom doit être une chaîne de caractères.',
             'name.max' => 'Le nom ne doit pas dépasser 255 caractères.',

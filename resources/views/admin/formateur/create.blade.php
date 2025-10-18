@@ -45,8 +45,8 @@
                                         class="form-control @error('civilite') is-invalid @enderror">
                                         <option value="">Sélectionner</option>
                                         <option value="M." {{ old('civilite') == 'M.' ? 'selected' : '' }}>M.</option>
-                                        <option value="Mme" {{ old('civilite') == 'Mme' ? 'selected' : '' }}>Mme</option>
-                                        <option value="Mlle" {{ old('civilite') == 'Mlle' ? 'selected' : '' }}>Mlle
+                                        <option value="Mme." {{ old('civilite') == 'Mme.' ? 'selected' : '' }}>Mme.</option>
+                                        <option value="Mlle." {{ old('civilite') == 'Mlle.' ? 'selected' : '' }}>Mlle.
                                         </option>
                                     </select>
                                     @error('name')
