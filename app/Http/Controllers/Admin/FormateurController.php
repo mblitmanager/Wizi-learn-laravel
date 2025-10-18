@@ -400,7 +400,7 @@ class FormateurController extends Controller
                 }
 
                 // Validation de la civilité
-                $civilitesValides = ['M', 'Mme', 'Mlle'];
+                $civilitesValides = ['M.', 'Mme.', 'Mlle.'];
                 if (!in_array($civilite, $civilitesValides)) {
                     $results['errors'][] = "Ligne $rowIndex: Civilité invalide: '$civilite'. Valeurs acceptées: " . implode(', ', $civilitesValides);
                     continue;
@@ -410,9 +410,9 @@ class FormateurController extends Controller
                 try {
                     // Déterminer le rôle en fonction de la civilité
                     $role = 'formateur'; // Par défaut
-                    if ($civilite == 'Mme' || $civilite == 'Mlle') {
+                    if ($civilite == 'Mme.' || $civilite == 'Mlle.') {
                         $role = 'formatrice';
-                    } elseif ($civilite == 'M') {
+                    } elseif ($civilite == 'M.') {
                         $role = 'formateur';
                     }
 
@@ -491,6 +491,7 @@ class FormateurController extends Controller
             }
 
             // Construction du message de résultat
+            // ...
             $message = "<strong>Résultat de l'importation :</strong><br>";
             $message .= "- Formateurs importés : {$results['imported']}<br>";
 
@@ -506,9 +507,15 @@ class FormateurController extends Controller
                 $message .= "- Erreurs : " . count($results['errors']) . "<br>";
             }
 
-            // Préparation des données pour la vue
+            // ✅ Détermine si c’est une réussite totale ou partielle
             $redirect = redirect()->route('formateur.index')
                 ->with('import_results', new HtmlString($message));
+
+            if ($results['imported'] > 0 && empty($results['errors'])) {
+                $redirect->with('success', "Importation réussie ! {$results['imported']} formateurs importés avec succès.");
+            } elseif ($results['imported'] > 0 && !empty($results['errors'])) {
+                $redirect->with('success', "Import partiellement réussi : {$results['imported']} formateurs importés, mais certaines erreurs sont survenues.");
+            }
 
             if (!empty($results['errors'])) {
                 $redirect->with('import_errors', $results['errors']);
