@@ -135,7 +135,6 @@ class CommercialController extends Controller
                 'warnings' => []
             ];
 
-            // CORRECTION : Ajout de la colonne civilité
             $expectedHeaders = [
                 'A' => 'email',
                 'B' => 'nom',
@@ -209,9 +208,9 @@ class CommercialController extends Controller
                 try {
                     // CORRECTION : Déterminer le rôle en fonction de la civilité
                     $role = 'commercial'; // Par défaut
-                    if ($civilite == 'Mme' || $civilite == 'Mlle') {
+                    if ($civilite == 'Mme.' || $civilite == 'Mlle.') {
                         $role = 'commerciale';
-                    } elseif ($civilite == 'M') {
+                    } elseif ($civilite == 'M.') {
                         $role = 'commercial';
                     }
 
