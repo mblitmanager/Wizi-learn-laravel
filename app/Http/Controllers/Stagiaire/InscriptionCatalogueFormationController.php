@@ -74,7 +74,7 @@ class InscriptionCatalogueFormationController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Inscription réussie, mails et notification envoyés.'
+                'message' => 'Un mail de confirmation vous a été envoyé, votre conseiller va bientôt prendre contact avec vous.'
             ]);
         } catch (\Exception $e) {
             return response()->json([
