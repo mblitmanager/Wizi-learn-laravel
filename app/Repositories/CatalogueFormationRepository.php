@@ -18,7 +18,7 @@ class CatalogueFormationRepository implements CatalogueFormationInterface
      */
     public function all(): Collection
     {
-        return CatalogueFormation::with('formation')->get();
+        return CatalogueFormation::with('formation')->where('statut', 1)->get();
     }
     /**
      * Trouver une entrée par son ID.
