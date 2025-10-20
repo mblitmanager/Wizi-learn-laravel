@@ -1117,6 +1117,7 @@ class QuizController extends Controller
                             return [
                                 'id' => $formateur->id,
                                 'prenom' => $formateur->prenom,
+                                'nom' => $formateur->user->name,
                                 'telephone' => $formateur->telephone,
                                 'image' => $formateur->user->image ?? null,
                             ];
