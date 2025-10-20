@@ -1110,6 +1110,7 @@ class QuizController extends Controller
                         'stagiaire' => [
                             'id' => (string) $stagiaire->id,
                             'prenom' => $stagiaire->prenom,
+                            'nom' => $stagiaire->user->name ?? '',
                             'image' => $stagiaire->user->image ?? null,
                         ],
                         'formateurs' => $stagiaire->formateurs->map(function ($formateur) {
