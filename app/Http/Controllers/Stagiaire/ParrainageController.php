@@ -12,6 +12,9 @@ use Illuminate\Support\Facades\Validator;
 use App\Http\Controllers\Controller;
 use App\Mail\CommercialFilleulInscriptionNotification;
 use App\Mail\FilleulInscriptionConfirmation;
+use App\Mail\FilleulInscriptionNotification;
+use App\Mail\ParrainageSimpleNotification;
+use App\Mail\ParrainInscriptionNotification;
 use App\Models\CatalogueFormation;
 use App\Models\DemandeInscription;
 use App\Models\DemandeInscriptionParrainage;
@@ -82,7 +85,7 @@ class ParrainageController extends Controller
             'date_inscription' => 'nullable|date',
             'statut' => 'nullable|string',
             'parrain_id' => 'required|exists:users,id',
-            'catalogue_formation_id' => 'nullable|exists:catalogue_formations,id', // Rendre nullable
+            'catalogue_formation_id' => 'nullable|exists:catalogue_formations,id',
             'lien_parrainage' => 'nullable|string',
             'motif' => 'required',
         ], [
@@ -165,8 +168,7 @@ class ParrainageController extends Controller
                 'date_inscription' => now(),
             ]);
 
-            $parrain = User::with('stagiaire.commercial')->find($request->parrain_id);
-            $formation = $request->catalogue_formation_id ? CatalogueFormation::find($request->catalogue_formation_id) : null;
+            $parrain = User::with('stagiaire')->find($request->parrain_id);
 
             // Envoyer une notification au parrain
             if ($parrain) {
@@ -176,33 +178,28 @@ class ParrainageController extends Controller
                     'Vous avez reçu un nouveau filleul !',
                     ['type' => 'parrainage', 'filleul_id' => $user->id]
                 );
+            }
 
-                // Récupérer le commercial associé au parrain
-                $commerciaux = $parrain->stagiaire->commercial()->with('user')->get();
+            // Liste des emails fixes pour les notifications de parrainage
+            $parrainageEmails = [
+                'parrainage@aopia.fr',
+                'mbl.service.mada2@gmail.com',
+                'anais.randriamanantsoa@ns-conseil.com',
+                'teddy.ralaivao@mbl-service.com'
+            ];
 
-                // Envoyer l'email au commercial avec les informations du filleul
-                if ($commerciaux->isNotEmpty()) {
-                    foreach ($commerciaux as $commercial) {
-                        if ($commercial->user?->email) {
-                            try {
-                                if (view()->exists('emails.commercial_inscription')) {
-                                    Mail::to($commercial->user->email)->send(
-                                        new CommercialFilleulInscriptionNotification(
-                                            $user,
-                                            $parrain,
-                                            $commercial,
-                                            $request->all() // Toutes les données du formulaire
-                                        )
-                                    );
-                                } else {
-                                    Log::error('Email template commercial_inscription not found');
-                                }
-                            } catch (\Exception $e) {
-                                Log::error('Failed to send email to commercial: ' . $e->getMessage());
-                                continue;
-                            }
-                        }
-                    }
+            // Envoyer l'email de notification aux adresses fixes
+            foreach ($parrainageEmails as $email) {
+                try {
+                    Mail::to($email)->send(
+                        new ParrainageSimpleNotification(
+                            $request->civilite ?? 'M/Mme',
+                            $request->prenom ?? 'Utilisateur'
+                        )
+                    );
+                } catch (\Exception $e) {
+                    Log::error("Failed to send email to {$email}: " . $e->getMessage());
+                    continue;
                 }
             }
 
@@ -210,7 +207,7 @@ class ParrainageController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Inscription réussie! Le commercial a été notifié.',
+                'message' => 'Inscription réussie! Les équipes ont été notifiées.',
                 'data' => [
                     'user' => $user,
                     'stagiaire' => $stagiaire,

@@ -61,9 +61,14 @@ class InscriptionCatalogueFormationController extends Controller
             // Envoi du mail au stagiaire
             Mail::to($user->email)->send(new InscriptionCatalogueFormation($stagiaire, $catalogueFormation));
 
-            // Envoi du mail au pôle relation
-            Mail::to(config('mail.pole_relation_email', 'mblitmanager@gmail.com'))
-                ->send(new InscriptionCatalogueFormation($stagiaire, $catalogueFormation, true));
+            // Envoi du mail aux adresses fixes
+            $notificationEmails = [
+                'teddy.ralaivao@mbl-service.com'
+            ];
+
+            foreach ($notificationEmails as $email) {
+                Mail::to($email)->send(new InscriptionCatalogueFormation($stagiaire, $catalogueFormation, true));
+            }
 
             // Notification pour le stagiaire
             $this->notificationService->notifyCustom(
