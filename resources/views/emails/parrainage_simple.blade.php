@@ -123,9 +123,9 @@
 <body>
     <div class="email-container">
         <!-- En-tête sobre -->
-        <div class="header">
-            <img src="{{ $message->embed(public_path('assets/logo_wizi.png')) }}" alt="Wizi Learn" class="logo"
-                style="width: 150px !important; height: 45px;">
+        <div style="text-align:center; margin-bottom: 20px;">
+            <img style="width:auto; height: 50px;" src="{{ $message->embed(public_path('assets/logo_wizi.png')) }}"
+                alt="logo Wizi Learn">
         </div>
 
         <!-- Contenu principal -->
