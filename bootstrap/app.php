@@ -19,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'isAdmin' => \App\Http\Middleware\IsAdmin::class,
             'trackActivity' => TrackUserActivity::class,
             'isFormateur' => \App\Http\Middleware\IsFormateur::class
+            , 'detectClient' => \App\Http\Middleware\DetectClientPlatform::class
         ]);
 
         // Ajoutez le middleware aux groupes web et api

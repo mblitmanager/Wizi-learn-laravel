@@ -36,6 +36,7 @@ class User extends Authenticatable implements JWTSubject
         'last_login_ip',
         'is_online',
         'fcm_token',
+        'last_client',
         'adresse'
     ];
 
