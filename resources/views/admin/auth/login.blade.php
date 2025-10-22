@@ -35,6 +35,7 @@
                         <div class="mb-4 text-center">
                             <img src="{{ asset('assets/images/logowizi.png') }}" width="180" alt="" />
                         </div>
+
                         <div class="card">
                             <div class="card-body">
                                 <div class="border p-4 rounded">
