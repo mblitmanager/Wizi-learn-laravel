@@ -167,6 +167,12 @@ Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function
     Route::get('demande/historique', [DemandeHistoriqueController::class, 'index'])->name('demande.historique.index');
     Route::get('demande/historique/{id}', [DemandeHistoriqueController::class, 'show'])->name('demande.historique.show');
     Route::post('partenaires/import', [PartenaireController::class, 'import'])->name('partenaires.import');
+    // routes/web.php
+    Route::get('demandes/export/xlsx', [DemandeHistoriqueController::class, 'exportXLSX'])
+        ->name('demande.historique.export.xlsx');
+
+    Route::get('demandes/export/csv', [DemandeHistoriqueController::class, 'exportCSV'])
+        ->name('demande.historique.export.csv');
 
     Route::resource('parrainage_events', \App\Http\Controllers\ParrainageEventController::class);
 
@@ -227,7 +233,7 @@ Route::middleware(['auth', 'isFormateur'])->prefix('formateur')->name('formateur
 
     // Routes classement et application
     Route::get('/classement', [FormateurClassementController::class, 'classementGeneral'])->name('classement');
-    
+
     // CORRECTION : Route pour les utilisateurs de l'application
     Route::get('/stagiaires-application', [FormateurClassementController::class, 'stagiairesAvecApplication'])->name('stagiaires.application');
 
@@ -244,8 +250,6 @@ Route::middleware(['auth', 'isFormateur'])->prefix('formateur')->name('formateur
     Route::post('/profile', [\App\Http\Controllers\Admin\FormateurController::class, 'updateProfile'])->name('profile.update');
     Route::get('/profile', [FormateurController::class, 'profile'])->name('profile');
     Route::post('/profile', [FormateurController::class, 'updateProfile'])->name('profile.update');
-
-    
 });
 
 // Routes de fallback
