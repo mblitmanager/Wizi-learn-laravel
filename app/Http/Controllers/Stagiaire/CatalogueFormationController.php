@@ -29,19 +29,22 @@ class CatalogueFormationController extends Controller
 
     public function getCatalogueFormationById($id)
     {
-        $catalogueFormation = CatalogueFormation::with('formation')->find($id);
+        $catalogueFormation = $this->catalogueFormationService->show($id);
 
         if (!$catalogueFormation) {
             return response()->json(['error' => 'Catalogue de formation introuvable'], 404);
         }
 
-        // Récupérer l'ID de la formation associée
-        $formationId = $catalogueFormation->formation_id;
+        // Charger relations pour s'assurer que front a tout ce dont il a besoin
+        $catalogueFormation->loadMissing(['formation', 'formateurs', 'stagiaires']);
 
-        return response()->json([
+        $response = [
             'catalogueFormation' => $catalogueFormation,
-            'formationId' => $formationId,
-        ]);
+            'formationId' => $catalogueFormation->formation_id,
+            'cursusPdfUrl' => $catalogueFormation->cursus_pdf ? asset('storage/' . $catalogueFormation->cursus_pdf) : null,
+        ];
+
+        return response()->json($response);
     }
     public function getFormationsAndCatalogues()
     {
@@ -59,7 +62,7 @@ class CatalogueFormationController extends Controller
                     return response()->json(['error' => 'non autorisé'], 403);
                 }
             }
-            
+
         $stagiaire = $this->catalogueFormationService->getFormationsAndCatalogues($userStagiaire->id);
         return response()->json($stagiaire);
     }

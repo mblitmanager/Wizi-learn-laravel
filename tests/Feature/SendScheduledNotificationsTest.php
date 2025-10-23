@@ -25,10 +25,13 @@ class SendScheduledNotificationsTest extends TestCase
         ]);
 
         // Create a stagiaire linked to that user with a formation starting in 7 days
-        $stagiaire = Stagiaire::factory()->create([
+        $stagiaire = Stagiaire::create([
             'user_id' => $user->id,
             'date_debut_formation' => Carbon::now()->addDays(7)->toDateString(),
+            'prenom' => 'Test',
+            'telephone' => '000',
             'formation_id' => 1,
+            'date_inscription' => Carbon::now()->toDateString(),
         ]);
 
         // Ensure no notifications exist

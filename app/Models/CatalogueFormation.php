@@ -27,9 +27,21 @@ class CatalogueFormation extends Model
         'tarif',
         'formation_id',
         'cursus_pdf',
+        // Additional fields inspired by LikeFormation / AOPIA pages
+        'objectifs',
+        'programme',
+        'modalites',
+        'modalites_accompagnement',
+        'moyens_pedagogiques',
+        'modalites_suivi',
+        'evaluation',
+        'lieu',
+        'niveau',
+        'public_cible',
+        'nombre_participants',
     ];
 
-    
+
 
     /**
      * Relation avec le modèle Formation (Many-to-One).

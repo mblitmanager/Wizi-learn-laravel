@@ -18,7 +18,9 @@ class CatalogueFormationRepository implements CatalogueFormationInterface
      */
     public function all(): Collection
     {
-        return CatalogueFormation::with('formation')->where('statut', 1)->get();
+        return CatalogueFormation::with(['formation', 'formateurs', 'stagiaires'])
+            ->where('statut', 1)
+            ->get();
     }
     /**
      * Trouver une entrée par son ID.
@@ -28,7 +30,9 @@ class CatalogueFormationRepository implements CatalogueFormationInterface
      */
     public function find(int $id): ?CatalogueFormation
     {
-        return CatalogueFormation::with('formation')->where('id', $id)->first();
+        return CatalogueFormation::with(['formation', 'formateurs', 'stagiaires'])
+            ->where('id', $id)
+            ->first();
     }
 
     /**
