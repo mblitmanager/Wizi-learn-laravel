@@ -10,22 +10,19 @@ class ParrainageSimpleNotification extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $civilite;
-    public $prenom;
+    public $nomComplet;
 
-    public function __construct($civilite, $prenom)
+    public function __construct($nomComplet)
     {
-        $this->civilite = $civilite;
-        $this->prenom = $prenom;
+        $this->nomComplet = $nomComplet;
     }
 
     public function build()
     {
-        return $this->subject('Confirmation de votre demande de parrainage')
+        return $this->subject('Nouvelle inscription parrainage - ' . $this->nomComplet)
             ->view('emails.parrainage_simple')
             ->with([
-                'civilite' => $this->civilite,
-                'prenom' => $this->prenom,
+                'nomComplet' => $this->nomComplet,
             ]);
     }
 }

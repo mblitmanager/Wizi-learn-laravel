@@ -1,31 +1,49 @@
-<!DOCTYPE html>
-<html lang="fr">
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Confirmation de Parrainage - Wizi Learn</title>
-    <style>
+    <!--[if !mso]><!-->
+    <style type="text/css">
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
-        * {
+    </style>
+    <!--<![endif]-->
+    <style type="text/css">
+        /* Styles inline pour la compatibilité email */
+        body {
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
+            width: 100% !important;
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
             font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, 'Lucida Grande', sans-serif;
             background-color: #ffffff;
             color: #4a5568;
             line-height: 1.6;
-            padding: 20px;
         }
 
-        .email-container {
+        table {
+            border-collapse: collapse;
+            mso-table-lspace: 0pt;
+            mso-table-rspace: 0pt;
+        }
+
+        img {
+            border: 0;
+            height: auto;
+            line-height: 100%;
+            outline: none;
+            text-decoration: none;
+            -ms-interpolation-mode: bicubic;
+        }
+
+        .container {
             max-width: 600px;
+            width: 100%;
             margin: 0 auto;
-            background: #ffffff;
         }
 
         .header {
@@ -34,9 +52,17 @@
             border-bottom: 2px solid #feb823;
         }
 
+        .logo-container {
+            display: inline-block;
+            text-align: center;
+        }
+
         .logo {
-            height: 45px;
-            width: 100px;
+            height: 50px;
+            width: auto;
+            margin: 0 25px;
+            display: inline-block;
+            vertical-align: middle;
         }
 
         .content {
@@ -47,12 +73,14 @@
             font-size: 17px;
             color: #2d3748;
             margin-bottom: 20px;
+            font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, 'Lucida Grande', sans-serif;
         }
 
         .message {
             font-size: 15px;
             color: #4a5568;
             margin-bottom: 20px;
+            font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, 'Lucida Grande', sans-serif;
         }
 
         .highlight {
@@ -72,6 +100,7 @@
             font-weight: 600;
             color: #2d3748;
             margin-bottom: 8px;
+            font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, 'Lucida Grande', sans-serif;
         }
 
         .footer {
@@ -86,12 +115,14 @@
             font-weight: 500;
             color: #2d3748;
             margin-bottom: 12px;
+            font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, 'Lucida Grande', sans-serif;
         }
 
         .contact-info {
             font-size: 13px;
             color: #718096;
             line-height: 1.6;
+            font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, 'Lucida Grande', sans-serif;
         }
 
         .divider {
@@ -100,71 +131,191 @@
             margin: 20px 0;
         }
 
+        .footer-container {
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .footer-left,
+        .footer-right {
+            width: 50%;
+            vertical-align: top;
+        }
+
+        .footer-center {
+            width: 100%;
+            text-align: center;
+            padding-top: 15px;
+        }
+
         @media only screen and (max-width: 600px) {
+            .container {
+                width: 100% !important;
+            }
+
             .content {
-                padding: 25px 20px;
+                padding: 25px 20px !important;
             }
 
             .header {
-                padding: 25px 20px;
+                padding: 25px 20px !important;
             }
 
             .greeting {
-                font-size: 16px;
+                font-size: 16px !important;
             }
 
             .message {
-                font-size: 14px;
+                font-size: 14px !important;
+            }
+
+            .footer-left,
+            .footer-right {
+                width: 100% !important;
+                display: block !important;
+                text-align: center !important;
+                padding-bottom: 15px;
+            }
+
+            .logo {
+                margin: 10px 25px !important;
+                display: block !important;
             }
         }
     </style>
 </head>
 
-<body>
-    <div class="email-container">
-        <!-- En-tête sobre -->
-        <div style="text-align:center; margin-bottom: 20px;">
-            <img style="width:auto; height: 50px;" src="{{ $message->embed(public_path('assets/logo_wizi.png')) }}"
-                alt="logo Wizi Learn">
-        </div>
+<body style="margin: 0; padding: 0; background-color: #ffffff;">
+    <center>
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+            <tr>
+                <td align="center">
+                    <table class="container" border="0" cellpadding="0" cellspacing="0" width="600">
+                        <!-- Header avec deux logos -->
+                        <tr>
+                            <td class="header"
+                                style="padding: 30px 20px; text-align: center; border-bottom: 2px solid #feb823;">
+                                <div class="logo-container">
+                                    <!-- Logo Wizi Learn -->
+                                    <img src="{{ $message->embed(public_path('assets/aopia.png')) }}"
+                                        alt="Logo Wizi Learn" class="logo"
+                                        style="height: 50px; width: auto; margin: 0 15px; display: inline-block; vertical-align: middle;" />
 
-        <!-- Contenu principal -->
-        <div class="content">
-            <div class="greeting">
-                Bonjour <span class="highlight">{{ $civilite }} {{ $prenom }}</span>,
-            </div>
+                                    <!-- Logo NS Conseil -->
+                                    <img src="{{ $message->embed(public_path('assets/like.png')) }}"
+                                        alt="Logo NS Conseil" class="logo"
+                                        style="height: 50px; width: auto; margin: 0 15px; display: inline-block; vertical-align: middle;" />
+                                </div>
+                            </td>
+                        </tr>
 
-            <div class="message">
-                Nous vous confirmons que votre demande de parrainage a bien été prise en compte et nous vous en
-                remercions sincèrement.
-            </div>
+                        <!-- Content -->
+                        <tr>
+                            <td class="content" style="padding: 35px 25px;">
+                                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                    <tr>
+                                        <td class="greeting"
+                                            style="font-size: 17px; color: #2d3748; margin-bottom: 20px; font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, 'Lucida Grande', sans-serif;">
+                                            Bonjour <span class="highlight"
+                                                style="color: #2d3748; font-weight: 600;">{{ $nomComplet }}</span>,
+                                        </td>
+                                    </tr>
 
-            <div class="confirmation-box">
-                <div class="confirmation-title">Prochaines étapes</div>
-                Votre conseiller dédié recontactera votre filleul dans les plus brefs délais pour l'accompagner dans son
-                projet de formation.
-            </div>
+                                    <tr>
+                                        <td class="message"
+                                            style="font-size: 15px; color: #4a5568; margin-bottom: 20px; font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, 'Lucida Grande', sans-serif;">
+                                            Nous vous confirmons que votre demande de parrainage a bien été prise en
+                                            compte et nous vous en
+                                            remercions sincèrement.
+                                        </td>
+                                    </tr>
 
-            <div class="message">
-                Votre participation à notre programme de parrainage est précieuse et contribue à développer notre
-                communauté d'apprentissage.
-            </div>
-        </div>
+                                    <tr>
+                                        <td style="padding: 10px; !important;">
+                                            <table class="confirmation-box" border="0" cellpadding="0"
+                                                cellspacing="0" width="100%"
+                                                style="background: #f8f9fa; border-left: 3px solid #feb823; padding: 18px; margin: 20px 0;">
+                                                <tr>
+                                                    <td>
+                                                        <div class="confirmation-title"
+                                                            style="font-size: 15px; font-weight: 600; color: #2d3748; margin-bottom: 8px; font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, 'Lucida Grande', sans-serif;">
+                                                            Prochaines étapes
+                                                        </div>
+                                                        Votre conseiller dédié recontactera votre filleul dans les plus
+                                                        brefs délais pour l'accompagner dans son
+                                                        projet de formation.
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
 
-        <!-- Séparateur -->
-        <div class="divider"></div>
+                                    <tr>
+                                        <td class="message"
+                                            style="font-size: 15px; color: #4a5568; margin-bottom: 20px; font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, 'Lucida Grande', sans-serif;">
+                                            Votre participation à notre programme de parrainage est précieuse et
+                                            contribue à développer notre
+                                            communauté d'apprentissage.
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
 
-        <!-- Pied de page -->
-        <div class="footer">
-            <div class="signature">À très bientôt</div>
-            <div class="contact-info">
-                <strong>Wizi Learn</strong><br>
-                Tél. : 09 72 51 29 04<br>
-                Email : contact@wizi-learn.com<br>
-                Site : www.wizi-learn.com
-            </div>
-        </div>
-    </div>
+                        <!-- Divider -->
+                        <tr>
+                            <td>
+                                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                    <tr>
+                                        <td class="divider" style="height: 1px; background: #e2e8f0; margin: 20px 0;">
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+
+                        <!-- Footer -->
+                        <tr>
+                            <td class="footer"
+                                style="padding: 25px; text-align: center; border-top: 1px solid #e2e8f0; background: #f8f9fa;">
+                                <table class="footer-container" border="0" cellpadding="0" cellspacing="0"
+                                    width="100%">
+                                    <tr>
+                                        <td class="footer-left"
+                                            style="width: 50%; vertical-align: top; text-align: left;">
+                                            <div style="font-size: 13px; color: #718096; line-height: 1.6;">
+                                                <strong>Contact AOPIA</strong><br />
+                                                contact@aopia.fr<br />
+                                                Tél : 09 72 51 29 04
+                                            </div>
+                                        </td>
+                                        <td class="footer-right"
+                                            style="width: 50%; vertical-align: top; text-align: right;">
+                                            <div style="font-size: 13px; color: #718096; line-height: 1.6;">
+                                                <strong>Contact Like Formation</strong><br />
+                                                likeformation@ns-conseil.com<br />
+                                                Tél : 09 74 77 59 20
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="footer-center"
+                                            style="width: 100%; text-align: center; padding-top: 15px;" colspan="2">
+                                            <div style="font-size: 12px; color: #718096; line-height: 1.6;">
+                                                AOPIA et Like Formation sont des marques de NS-CONSEIL<br />
+                                                SIREN : 519 408 140 - Siège Social : 73 Av. du Château d'Eau 33700
+                                                MERIGNAC
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </center>
 </body>
 
 </html>

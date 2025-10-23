@@ -185,17 +185,16 @@ class ParrainageController extends Controller
                 'parrainage@aopia.fr',
                 'mbl.service.mada2@gmail.com',
                 'anais.randriamanantsoa@ns-conseil.com',
-                'teddy.ralaivao@mbl-service.com'
             ];
+
+            // Préparer le nom complet pour l'email
+            $nomComplet = trim(($request->prenom ?? '') . ' ' . ($request->nom ?? ''));
 
             // Envoyer l'email de notification aux adresses fixes
             foreach ($parrainageEmails as $email) {
                 try {
                     Mail::to($email)->send(
-                        new ParrainageSimpleNotification(
-                            $request->civilite ?? 'M/Mme',
-                            $request->prenom ?? 'Utilisateur'
-                        )
+                        new ParrainageSimpleNotification($nomComplet)
                     );
                 } catch (\Exception $e) {
                     Log::error("Failed to send email to {$email}: " . $e->getMessage());
