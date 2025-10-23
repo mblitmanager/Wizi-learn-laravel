@@ -63,7 +63,9 @@ class InscriptionCatalogueFormationController extends Controller
 
             // Envoi du mail aux adresses fixes
             $notificationEmails = [
-                'teddy.ralaivao@mbl-service.com'
+                'adv@aopia.fr',
+                'alexandre.florek@aopia.fr',
+                'mbl.service.mada2@gmail.com'
             ];
 
             foreach ($notificationEmails as $email) {
