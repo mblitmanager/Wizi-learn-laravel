@@ -34,3 +34,4 @@ routes.txt
 
 .env
 *.pdf
+storage/cert/isrgrootx1.pem
