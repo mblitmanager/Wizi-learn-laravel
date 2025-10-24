@@ -23,7 +23,9 @@ class CatalogueFormationController extends Controller
 
     public function getAllCatalogueFormations()
     {
-        $catalogueFormations = $this->catalogueFormationService->list();
+         $catalogueFormations = CatalogueFormation::whereIn('statut', [1,'active', 'actif'])
+            ->with(['formation', 'formateurs', 'stagiaires'])
+            ->get();
         return response()->json($catalogueFormations);
     }
 
