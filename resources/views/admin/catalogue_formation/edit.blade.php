@@ -229,11 +229,10 @@
                                         <option value="">Sélectionnez un statut</option>
                                         <option value="1"
                                             {{ old('statut', $catalogueFormation->statut) == '1' ? 'selected' : '' }}>
-                                            Publié
+                                            Actif
                                         </option>
                                         <option value="0"
-                                            {{ old('statut', $catalogueFormation->statut) == '0' ? 'selected' : '' }}>Non
-                                            publié
+                                            {{ old('statut', $catalogueFormation->statut) == '0' ? 'selected' : '' }}>Inactif
                                         </option>
                                     </select>
                                     @error('statut')

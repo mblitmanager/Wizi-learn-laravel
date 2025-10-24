@@ -16,9 +16,33 @@ class CatalogueFormationService
         $this->catalogueFormationRepositoryInterface = $catalogueFormationRepositoryInterface;
     }
 
-    public function list()
+    /**
+     * List catalogue formations, optionally filtered by formation_id
+     *
+     * @param int|null $formationId
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function list($formationId = null)
     {
-        return $this->catalogueFormationRepositoryInterface->all();
+        // Prefer repository if available
+        try {
+            if ($this->catalogueFormationRepositoryInterface) {
+                // If repository supports filters, we defer; otherwise fallback to model
+                if (method_exists($this->catalogueFormationRepositoryInterface, 'allWithFilters')) {
+                    return $this->catalogueFormationRepositoryInterface->allWithFilters(['formation_id' => $formationId]);
+                }
+            }
+        } catch (\Throwable $e) {
+            // ignore and fallback to model
+        }
+
+        // Fallback: use the Eloquent model directly
+        $query = \App\Models\CatalogueFormation::with('formation');
+        if ($formationId) {
+            $query->where('formation_id', $formationId);
+        }
+
+        return $query->get();
     }
 
     public function getCatalogueFormationById($id)

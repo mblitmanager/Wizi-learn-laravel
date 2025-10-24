@@ -59,12 +59,12 @@
                                 </p>
                                 <p class="list-group-item d-flex align-items-center">
                                     <i class="bx bx-check-circle me-2"></i>
-                                    <strong>Statut :</strong>
-                                    @if ($catalogueFormations->statut == '1')
-                                        <span class="badge bg-success">Publié</span>
-                                    @elseif ($catalogueFormations->statut == '0')
-                                        <span class="badge bg-secondary">Non publié</span>
-                                    @endif
+                                        <strong>Statut :</strong>
+                                        @if ($catalogueFormations->statut == '1')
+                                            <span class="badge bg-success">Actif</span>
+                                        @elseif ($catalogueFormations->statut == '0')
+                                            <span class="badge bg-secondary">Inactif</span>
+                                        @endif
                                 </p>
                                 <p class="list-group-item d-flex align-items-center">
                                     <i class="bx bx-layer me-2"></i>

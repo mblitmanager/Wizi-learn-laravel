@@ -158,9 +158,9 @@
                                 <select name="statut" id="statut"
                                     class="form-select mb-2 @error('statut') is-invalid @enderror">
                                     <option value="">Sélectionnez un statut</option>
-                                    <option value="1" {{ old('statut') == '1' ? 'selected' : '' }}>Publié
+                                    <option value="1" {{ old('statut') == '1' ? 'selected' : '' }}>Actif
                                     </option>
-                                    <option value="0" {{ old('statut') == '0' ? 'selected' : '' }}>Non publié
+                                    <option value="0" {{ old('statut') == '0' ? 'selected' : '' }}>Inactif
                                     </option>
                                 </select>
                                 @error('statut')

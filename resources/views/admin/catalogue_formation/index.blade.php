@@ -47,6 +47,7 @@
                                 <tr>
                                     <th>Titre</th>
                                     <th>Description</th>
+                                    <th>Formation</th>
                                     <th>Action</th>
                                 </tr>
                                 <tr>
@@ -56,6 +57,14 @@
                                     <th>
                                         <input type="text" placeholder="Filtrer" class="form-control form-control-sm" />
                                     </th>
+                                    <th>
+                                        <select id="formationFilter" class="form-select form-select-sm">
+                                            <option value="">Toutes les formations</option>
+                                            @foreach($formations as $f)
+                                                <option value="{{ $f->id }}" {{ (isset($selectedFormationId) && $selectedFormationId == $f->id) ? 'selected' : '' }}>{{ $f->titre }}</option>
+                                            @endforeach
+                                        </select>
+                                    </th>
                                     <th></th>
                                 </tr>
                                 </thead>
@@ -64,6 +73,7 @@
                                     <tr>
                                         <td class="text-break">{{ $row->titre }}</td>
                                         <td class="text-break">{!! $row->description !!}</td>
+                                        <td class="text-break">{{ optional($row->formation)->titre }}</td>
                                         <td class="text-center">
                                             <a href="{{ route('catalogue_formation.edit', $row->id) }}"
                                                class="btn btn-sm btn-success mb-1">Modifier</a>
@@ -108,13 +118,27 @@
                 dom: 'Bfrtip',
                 buttons: ['copy', 'csv', 'excel', 'pdf', 'print'],
                 initComplete: function() {
-                    this.api().columns().every(function() {
+                    var api = this.api();
+                    // text inputs on first two columns
+                    api.columns([0,1]).every(function(index) {
                         var that = this;
                         $('input', this.header()).on('keyup change clear', function() {
                             if (that.search() !== this.value) {
                                 that.search(this.value).draw();
                             }
                         });
+                    });
+
+                    // formation select filter: trigger server-side reload with formation_id query param
+                    $('#formationFilter').on('change', function() {
+                        var val = $(this).val();
+                        var url = new URL(window.location.href);
+                        if (val) {
+                            url.searchParams.set('formation_id', val);
+                        } else {
+                            url.searchParams.delete('formation_id');
+                        }
+                        window.location.href = url.toString();
                     });
                 }
             });
