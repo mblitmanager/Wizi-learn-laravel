@@ -23,9 +23,28 @@ class CatalogueFormationController extends Controller
 
     public function getAllCatalogueFormations()
     {
-         $catalogueFormations = CatalogueFormation::whereIn('statut', [1,'active', 'actif'])
-            ->with(['formation', 'formateurs', 'stagiaires'])
+        // Récupérer uniquement les catalogues dont le statut est actif
+        // et n'inclure que les formations actives dans la relation `formation`
+        $catalogueFormations = CatalogueFormation::where(function ($q) {
+                $q->where('statut', 1)
+                  ->orWhere('statut', '1')
+                  ->orWhere('statut', 'active')
+                  ->orWhere('statut', 'actif');
+            })
+            ->with([
+                'formation' => function ($q) {
+                    $q->where(function ($qq) {
+                        $qq->where('statut', 1)
+                           ->orWhere('statut', '1')
+                           ->orWhere('statut', 'active')
+                           ->orWhere('statut', 'actif');
+                    });
+                },
+                'formateurs',
+                'stagiaires'
+            ])
             ->get();
+
         return response()->json($catalogueFormations);
     }
 
