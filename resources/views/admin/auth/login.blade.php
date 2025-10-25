@@ -35,16 +35,17 @@
                         <div class="mb-4 text-center">
                             <img src="{{ asset('assets/images/logowizi.png') }}" width="180" alt="" />
                         </div>
+
                         <div class="card">
                             <div class="card-body">
                                 <div class="border p-4 rounded">
-                                    <div class="text-center">
+                                    {{-- <div class="text-center">
                                         <h3 class="">Connectez-vous</h3>
                                         <p>Vous n'avez pas encore de compte? <a
                                                 href="{{ route('register') }}">inscrivez-vous ici</a></p>
-                                    </div>
+                                    </div> --}}
                                     <div class="login-separater text-center mb-4">
-                                        <span>OU CONNECTEZ-VOUS AVEC VOTRE COURRIEL</span>
+                                        <span>CONNECTEZ-VOUS AVEC VOTRE COURRIEL</span>
                                         <hr />
                                     </div>
                                     <div class="form-body">

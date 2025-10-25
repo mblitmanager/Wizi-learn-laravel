@@ -39,7 +39,7 @@ Route::get('formationParrainage', [CatalogueFormationController::class, 'getAllC
 Route::post('/forgot-password', [JWTAuthController::class, 'sendResetLink']);
 Route::post('/reset-password', [JWTAuthController::class, 'resetPassword']);
 // Cette route est déjà en dehors du groupe Route::middleware(['auth:api']), donc elle est publique.
-Route::middleware(['auth:api'])->group(function () {
+Route::middleware(['auth:api', 'detectClient'])->group(function () {
     // Succès et récompenses stagiaire
     Route::get('/stagiaire/achievements', [App\Http\Controllers\Stagiaire\AchievementController::class, 'getAchievements']);
     Route::post('/stagiaire/achievements/check', [App\Http\Controllers\Stagiaire\AchievementController::class, 'checkAchievements']);
@@ -140,6 +140,9 @@ Route::middleware(['auth:api'])->group(function () {
 
     // Achievements (admin list for mobile display)
     Route::get('/admin/achievements', [AdminAchievementController::class, 'apiIndex']);
+    // Admin: user client stats (counts per platform)
+    Route::get('/admin/user-client-stats', [\App\Http\Controllers\Api\Admin\UserClientStatsController::class, 'index'])
+        ->middleware(['auth:api', 'is.admin']);
     // Routes pour les tutoriels et astuce
     Route::prefix('medias')->group(function () {
         Route::get('tutoriels', [MediaController::class, 'getTutoriels']);
@@ -167,7 +170,7 @@ Route::middleware(['auth:api'])->group(function () {
     Route::post('/avatar/{id}/update-profile', [FormationStagiaireController::class, 'updateImage']);
 
     Route::get('/parrainage/stats/{parrain_id}', [ParrainageController::class, 'getStatsParrain']);
-    Route::get('/user-status', [ProfileController::class, 'onlineUsers'])->middleware('auth:api');
+    Route::get('/user-status', [ProfileController::class, 'onlineUsers'])->middleware(['auth:api', 'detectClient']);
     Route::get('/test-notif', function () {
         $data = [
             'title' => 'Nouvelle notification',
@@ -179,7 +182,7 @@ Route::middleware(['auth:api'])->group(function () {
         return 'Notification envoyée !';
     });
     Route::get('/send-daily-notification', [DailyNotificationController::class, 'send']);
-    Route::middleware('auth:api')->post('/notify-daily-formation', [DailyFormationNotificationController::class, 'notify']);
+    Route::middleware(['auth:api', 'detectClient'])->post('/notify-daily-formation', [DailyFormationNotificationController::class, 'notify']);
 
     Route::post('/contact', [\App\Http\Controllers\Api\ContactController::class, 'sendContactForm']);
 
@@ -211,7 +214,7 @@ Route::post('/broadcasting/auth', [BroadcastingController::class, 'auth'])
 // Routes de parrainage sans connection
 
 // Routes pour les notifications
-Route::middleware(['auth:api'])->group(function () {
+Route::middleware(['auth:api', 'detectClient'])->group(function () {
     Route::get('/notifications', [App\Http\Controllers\Api\NotificationController::class, 'index']);
     Route::post('/notifications/{id}/read', [App\Http\Controllers\Api\NotificationController::class, 'markAsRead']);
     Route::post('/notifications/mark-all-read', [App\Http\Controllers\Api\NotificationController::class, 'markAllAsRead']);
@@ -221,10 +224,10 @@ Route::middleware(['auth:api'])->group(function () {
 
 
 // Route pour enregistrer le token FCM
-Route::middleware(['auth:api'])->post('/fcm-token', [App\Http\Controllers\FcmTokenController::class, 'store']);
+Route::middleware(['auth:api', 'detectClient'])->post('/fcm-token', [App\Http\Controllers\FcmTokenController::class, 'store']);
 
 // Route pour envoyer une notification (Pusher + FCM)
-Route::middleware(['auth:api'])->post('/send-notification', [App\Http\Controllers\NotificationAPIController::class, 'send']);
+Route::middleware(['auth:api', 'detectClient'])->post('/send-notification', [App\Http\Controllers\NotificationAPIController::class, 'send']);
 
 
 Route::post('/pusher/auth', function (Request $request) {
@@ -246,7 +249,7 @@ Route::get('/test-fcm', function () {
 // NOTE: This route is public for convenience — protect it or remove in production.
 Route::post('/test-fcm', [App\Http\Controllers\Api\TestFcmController::class, 'send']);
 
-Route::middleware('auth:api')->post('/stagiaire/onboarding-seen', [StagiaireController::class, 'setOnboardingSeen']);
+Route::middleware(['auth:api', 'detectClient'])->post('/stagiaire/onboarding-seen', [StagiaireController::class, 'setOnboardingSeen']);
 
 // Rapport d'usage des applications mobiles (Android/iOS)
-Route::middleware(['auth:api'])->post('/user-app-usage', [\App\Http\Controllers\Api\UserAppUsageController::class, 'report']);
+Route::middleware(['auth:api', 'detectClient'])->post('/user-app-usage', [\App\Http\Controllers\Api\UserAppUsageController::class, 'report']);

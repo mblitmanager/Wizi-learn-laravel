@@ -1110,6 +1110,7 @@ class QuizController extends Controller
                         'stagiaire' => [
                             'id' => (string) $stagiaire->id,
                             'prenom' => $stagiaire->prenom,
+                            'nom' => $stagiaire->user->name ?? '',
                             'image' => $stagiaire->user->image ?? null,
                         ],
                         'formateurs' => $stagiaire->formateurs->map(function ($formateur) {
@@ -1117,6 +1118,7 @@ class QuizController extends Controller
                                 'id' => $formateur->id,
                                 'civilite' => $formateur->civilite,
                                 'prenom' => $formateur->prenom,
+                                'nom' => $formateur->user->name,
                                 'telephone' => $formateur->telephone,
                                 'image' => $formateur->user->image ?? null,
                             ];
