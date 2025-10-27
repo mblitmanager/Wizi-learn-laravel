@@ -21,15 +21,16 @@ class ImportStagiairesJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    protected $filePath;
+    protected $storedPath;
     protected $importJobId;
 
     /**
      * Create a new job instance.
      */
-    public function __construct(string $filePath, ?int $importJobId = null)
+    public function __construct(string $storedPath, ?int $importJobId = null)
     {
-        $this->filePath = $filePath;
+        // $storedPath is the relative path returned by store/storeAs (eg: "imports/filename.xlsx")
+        $this->storedPath = $storedPath;
         $this->importJobId = $importJobId;
     }
 
@@ -50,7 +51,38 @@ class ImportStagiairesJob implements ShouldQueue
         event(new \App\Events\ImportStatusUpdated('running', null));
 
         try {
-            $spreadsheet = IOFactory::load($this->filePath);
+            // Resolve the storage path via the Storage facade (disk 'local') to be robust across workers
+            $fullPath = null;
+            try {
+                $fullPath = \Illuminate\Support\Facades\Storage::disk('local')->path($this->storedPath ?? '');
+            } catch (\Exception $ex) {
+                // fallback
+                $fullPath = storage_path('app/' . ($this->storedPath ?? ''));
+            }
+
+            if (!file_exists($fullPath)) {
+                // better debug info: list files in imports dir
+                $importsDir = storage_path('app/imports');
+                $listing = [];
+                try {
+                    if (is_dir($importsDir)) {
+                        $files = array_map('basename', array_values(array_filter(glob($importsDir . DIRECTORY_SEPARATOR . '*'))));
+                        $listing = $files;
+                    }
+                } catch (\Exception $_e) {
+                    // ignore
+                }
+
+                $msg = 'File "' . $fullPath . '" does not exist.' . (empty($listing) ? '' : ' Imports dir files: ' . implode(', ', $listing));
+                Log::error('Erreur ImportStagiairesJob: ' . $msg);
+                if ($importJob) {
+                    $importJob->update(['status' => 'failed', 'details' => $msg, 'finished_at' => now()]);
+                }
+                event(new \App\Events\ImportStatusUpdated('failed', null));
+                return;
+            }
+
+            $spreadsheet = IOFactory::load($fullPath);
             $sheet = $spreadsheet->getActiveSheet();
 
             $ignoredEmails = [];

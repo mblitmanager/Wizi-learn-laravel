@@ -50,16 +50,19 @@ class StagiaireController extends Controller
                 'finished_at' => null,
             ]);
 
+            // Pass the relative stored path to the job (safer when workers run on other processes)
+            $relativePath = $storedPath; // 'imports/filename.xlsx'
+
             if ($background) {
                 // Dispatch the job to run in background
-                ImportStagiairesJob::dispatch($fullPath, $importJob->id);
+                ImportStagiairesJob::dispatch($relativePath, $importJob->id);
 
                 return redirect()->route('stagiaires.index')
                     ->with('success', 'Importation lancée en tâche de fond. Le rapport sera généré dans storage/reports une fois terminée.');
             } else {
                 // Run synchronously (blocking) in this request by executing the job handler directly.
                 try {
-                    $job = new ImportStagiairesJob($fullPath, $importJob->id);
+                    $job = new ImportStagiairesJob($relativePath, $importJob->id);
                     // call handle() directly to execute import inline
                     $job->handle();
 
