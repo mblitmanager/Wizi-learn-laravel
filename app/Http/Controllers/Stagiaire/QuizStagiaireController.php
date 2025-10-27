@@ -67,77 +67,78 @@ class QuizStagiaireController extends Controller
             $user = JWTAuth::parseToken()->authenticate();
             $questions = $this->quizService->getQuestionsByQuizId($quizId);
 
-            // Tenter de récupérer la dernière participation de l'utilisateur pour ce quiz
-            // Priorité : Participation (avec stagiaire_id) — fallback vers QuizParticipation (user_id)
-            $participation = null;
-            try {
-                if (isset($user->stagiaire) && $user->stagiaire && isset($user->stagiaire->id)) {
-                    $stagiaireId = $user->stagiaire->id;
-                    $participation = \App\Models\Participation::where('stagiaire_id', $stagiaireId)
-                        ->where('quiz_id', $quizId)
-                        ->where('deja_jouer', true)
-                        ->latest()
-                        ->first();
-                }
-            } catch (\Throwable $e) {
-                // ignore and fallback
-            }
+            // // Tenter de récupérer la dernière participation de l'utilisateur pour ce quiz
+            // // Priorité : Participation (avec stagiaire_id) — fallback vers QuizParticipation (user_id)
+            // $participation = null;
+            // try {
+            //     if (isset($user->stagiaire) && $user->stagiaire && isset($user->stagiaire->id)) {
+            //         $stagiaireId = $user->stagiaire->id;
+            //         $participation = \App\Models\Participation::where('stagiaire_id', $stagiaireId)
+            //             ->where('quiz_id', $quizId)
+            //             ->where('deja_jouer', true)
+            //             ->latest()
+            //             ->first();
+            //     }
+            // } catch (\Throwable $e) {
+            //     // ignore and fallback
+            // }
 
-            if (!$participation) {
-                $participation = \App\Models\QuizParticipation::where('user_id', $user->id)
-                    ->where('quiz_id', $quizId)
-                    ->where('completed', true)
-                    ->latest()
-                    ->first();
-            }
+            // if (!$participation) {
+            //     $participation = \App\Models\QuizParticipation::where('user_id', $user->id)
+            //         ->where('quiz_id', $quizId)
+            //         ->where('completed', true)
+            //         ->latest()
+            //         ->first();
+            // }
 
-            $playedQuestions = [];
-            if ($participation) {
-                // Récupérer les réponses liées à la participation
-                // Try both QuizParticipationAnswer and QuizParticipationAnswer-like tables
-                $answers = \App\Models\QuizParticipationAnswer::where('participation_id', $participation->id)->get();
-                if ($answers->isEmpty()) {
-                    // Some schema stores answers as JSON on Participation model (submitted_answers)
-                    if (isset($participation->submitted_answers) && !empty($participation->submitted_answers)) {
-                        $decoded = json_decode($participation->submitted_answers, true);
-                        $answerMap = [];
-                        if (is_array($decoded)) {
-                            foreach ($decoded as $item) {
-                                if (isset($item['question_id'])) {
-                                    $answerMap[$item['question_id']] = $item['reponse_id'] ?? ($item['answer_ids'] ?? []);
-                                }
-                            }
-                        }
-                    } else {
-                        $answerMap = [];
-                    }
-                } else {
-                    $answerMap = [];
-                    foreach ($answers as $a) {
-                        $answerMap[$a->question_id] = $a->answer_ids ?? [];
-                    }
-                }
+            // $playedQuestions = [];
+            // if ($participation) {
+            //     // Récupérer les réponses liées à la participation
+            //     // Try both QuizParticipationAnswer and QuizParticipationAnswer-like tables
+            //     $answers = \App\Models\QuizParticipationAnswer::where('participation_id', $participation->id)->get();
+            //     if ($answers->isEmpty()) {
+            //         // Some schema stores answers as JSON on Participation model (submitted_answers)
+            //         if (isset($participation->submitted_answers) && !empty($participation->submitted_answers)) {
+            //             $decoded = json_decode($participation->submitted_answers, true);
+            //             $answerMap = [];
+            //             if (is_array($decoded)) {
+            //                 foreach ($decoded as $item) {
+            //                     if (isset($item['question_id'])) {
+            //                         $answerMap[$item['question_id']] = $item['reponse_id'] ?? ($item['answer_ids'] ?? []);
+            //                     }
+            //                 }
+            //             }
+            //         } else {
+            //             $answerMap = [];
+            //         }
+            //     } else {
+            //         $answerMap = [];
+            //         foreach ($answers as $a) {
+            //             $answerMap[$a->question_id] = $a->answer_ids ?? [];
+            //         }
+            //     }
 
-                // Parcourir les questions et ajouter l'objet question complet si présent
-                foreach ($questions as $q) {
-                    $qid = $q->id;
-                    if (isset($answerMap[$qid]) && !empty($answerMap[$qid])) {
-                        // Inclure l'objet question complet (id, texte, reponses)
-                        $playedQuestions[] = [
-                            'question' => [
-                                'id' => $q->id,
-                                'text' => $q->texte ?? ($q->text ?? ($q->question ?? '')),
-                                'reponses' => $q->reponses ?? []
-                            ],
-                            'selectedAnswers' => $answerMap[$qid]
-                        ];
-                    }
-                }
-            }
+            //     // Parcourir les questions et ajouter l'objet question complet si présent
+            //     foreach ($questions as $q) {
+            //         $qid = $q->id;
+            //         if (isset($answerMap[$qid]) && !empty($answerMap[$qid])) {
+            //             // Inclure l'objet question complet (id, texte, reponses)
+            //             $playedQuestions[] = [
+            //                 'question' => [
+            //                     'id' => $q->id,
+            //                     'text' => $q->texte ?? ($q->text ?? ($q->question ?? '')),
+            //                     'reponses' => $q->reponses ?? []
+            //                 ],
+            //                 'selectedAnswers' => $answerMap[$qid]
+            //             ];
+            //         }
+            //     }
+            // }
 
             return response()->json([
-                'data' => $questions,
-                'playedQuestions' => $playedQuestions,
+                'data' => $questions
+                // ,
+                // 'playedQuestions' => $playedQuestions,
             ]);
         } catch (JWTException $e) {
             return response()->json(['error' => 'non autorisé'], 401);
