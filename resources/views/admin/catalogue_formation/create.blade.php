@@ -49,194 +49,222 @@
                 <div class="card mb-4 px-4">
                     <div class="card-body">
 
-                        <div class="row">
-                            <div class="col-md-6">
-                                <label for="titre" class="form-label">Titre</label>
-                                <input type="text" name="titre" id="titre" placeholder="Titre"
-                                    class="form-control mb-2 @error('titre') is-invalid @enderror"
-                                    value="{{ old('titre') }}">
-                                @error('titre')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                        <div class="accordion" id="catalogueAccordion">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingGeneral">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseGeneral" aria-expanded="true" aria-controls="collapseGeneral">
+                                        Général
+                                    </button>
+                                </h2>
+                                <div id="collapseGeneral" class="accordion-collapse collapse show" aria-labelledby="headingGeneral" data-bs-parent="#catalogueAccordion">
+                                    <div class="accordion-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <label for="titre" class="form-label">Titre</label>
+                                                <input type="text" name="titre" id="titre" placeholder="Titre"
+                                                    class="form-control mb-2 @error('titre') is-invalid @enderror"
+                                                    value="{{ old('titre') }}">
+                                                @error('titre')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <label for="description" class="form-label">Description</label>
+                                                <textarea name="description" id="description" class="form-control mb-2 @error('description') is-invalid @enderror">{{ old('description') }}</textarea>
+                                                @error('description')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                        </div>
+
+                                        <div class="row mt-2">
+                                            <div class="col-md-6">
+                                                <label for="duree" class="form-label">Durée (en heures)</label>
+                                                <input type="number" name="duree" id="duree" placeholder="Durée"
+                                                    class="form-control mb-2 @error('duree') is-invalid @enderror"
+                                                    value="{{ old('duree') }}">
+                                                @error('duree')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <label for="formation_id" class="form-label">Formation</label>
+                                                <select name="formation_id" id="formation_id"
+                                                    class="form-select mb-2 @error('formation_id') is-invalid @enderror">
+                                                    <option value="">Sélectionnez une formation</option>
+                                                    @foreach ($formations as $formation)
+                                                    <option value="{{ $formation->id }}"
+                                                        {{ old('formation_id') == $formation->id ? 'selected' : '' }}>
+                                                        {{ $formation->titre }}
+                                                    </option>
+                                                    @endforeach
+                                                </select>
+                                                @error('formation_id')
+                                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                        </div>
+
+                                        <div class="row mt-2">
+                                            <div class="col-md-6">
+                                                <label for="certification" class="form-label">Certification</label>
+                                                <input type="text" name="certification" id="certification"
+                                                    placeholder="Certification"
+                                                    class="form-control mb-2 @error('certification') is-invalid @enderror"
+                                                    value="{{ old('certification') }}">
+                                                @error('certification')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <label for="prerequis" class="form-label">Prérequis</label>
+                                                <input type="text" name="prerequis" id="prerequis" placeholder="Prérequis"
+                                                    class="form-control mb-2 @error('prerequis') is-invalid @enderror"
+                                                    value="{{ old('prerequis') }}">
+                                                @error('prerequis')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                        </div>
+
+                                        <div class="row mt-3">
+                                            <div class="col-md-6">
+                                                <label for="image_url" class="form-label">Image</label>
+                                                <input type="file" name="image_url" id="image_url"
+                                                    class="form-control mb-2 @error('image_url') is-invalid @enderror">
+                                                @error('image_url')
+                                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <label for="cursus_pdf" class="form-label">Cursus PDF</label>
+                                                <input type="file" name="cursus_pdf" id="cursus_pdf" accept=".pdf"
+                                                    class="form-control mb-2 @error('cursus_pdf') is-invalid @enderror">
+                                                <p class="mt-1 text-sm text-gray-500">Format accepté : PDF</p>
+                                                @error('cursus_pdf')
+                                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                        </div>
+
+                                        <div class="row mt-2">
+                                            <div class="col-md-6">
+                                                <label for="tarif" class="form-label">Tarif</label>
+                                                <input type="number" name="tarif" id="tarif" placeholder="Tarif"
+                                                    class="form-control mb-2 @error('tarif') is-invalid @enderror"
+                                                    value="{{ old('tarif') }}" step="1">
+                                                @error('tarif')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <label for="statut" class="form-label">Statut</label>
+                                                <select name="statut" id="statut"
+                                                    class="form-select mb-2 @error('statut') is-invalid @enderror">
+                                                    <option value="">Sélectionnez un statut</option>
+                                                    <option value="1" {{ old('statut') == '1' ? 'selected' : '' }}>Actif
+                                                    </option>
+                                                    <option value="0" {{ old('statut') == '0' ? 'selected' : '' }}>Inactif
+                                                    </option>
+                                                </select>
+                                                @error('statut')
+                                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
-                            <div class="col-md-6">
-                                <label for="description" class="form-label">Description</label>
-                                <textarea name="description" id="description" class="form-control mb-2 @error('description') is-invalid @enderror">{{ old('description') }}</textarea>
-                                @error('description')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                <label for="duree" class="form-label">Durée (en heures)</label>
-                                <input type="number" name="duree" id="duree" placeholder="Durée"
-                                    class="form-control mb-2 @error('duree') is-invalid @enderror"
-                                    value="{{ old('duree') }}">
-                                @error('duree')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <div class="col-md-6">
-                                <label for="formation_id" class="form-label">Formation</label>
-                                <select name="formation_id" id="formation_id"
-                                    class="form-select mb-2 @error('formation_id') is-invalid @enderror">
-                                    <option value="">Sélectionnez une formation</option>
-                                    @foreach ($formations as $formation)
-                                    <option value="{{ $formation->id }}"
-                                        {{ old('formation_id') == $formation->id ? 'selected' : '' }}>
-                                        {{ $formation->titre }}
-                                    </option>
-                                    @endforeach
-                                </select>
-                                @error('formation_id')
-                                <div class="invalid-feedback d-block">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                <label for="certification" class="form-label">Certification</label>
-                                <input type="text" name="certification" id="certification"
-                                    placeholder="Certification"
-                                    class="form-control mb-2 @error('certification') is-invalid @enderror"
-                                    value="{{ old('certification') }}">
-                                @error('certification')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingProgramme">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseProgramme" aria-expanded="false" aria-controls="collapseProgramme">
+                                        Objectifs & Programme
+                                    </button>
+                                </h2>
+                                <div id="collapseProgramme" class="accordion-collapse collapse" aria-labelledby="headingProgramme" data-bs-parent="#catalogueAccordion">
+                                    <div class="accordion-body">
+                                        <div class="row mt-1">
+                                            <div class="col-md-12">
+                                                <label for="objectifs" class="form-label">Objectifs</label>
+                                                <textarea name="objectifs" id="objectifs" class="form-control mb-2">{{ old('objectifs') }}</textarea>
+                                            </div>
+                                        </div>
+                                        <div class="row mt-2">
+                                            <div class="col-md-12">
+                                                <label for="programme" class="form-label">Programme</label>
+                                                <textarea name="programme" id="programme" class="form-control mb-2">{{ old('programme') }}</textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
-                            <div class="col-md-6">
-                                <label for="prerequis" class="form-label">Prérequis</label>
-                                <input type="text" name="prerequis" id="prerequis" placeholder="Prérequis"
-                                    class="form-control mb-2 @error('prerequis') is-invalid @enderror"
-                                    value="{{ old('prerequis') }}">
-                                @error('prerequis')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="row mt-3">
-                            <div class="col-md-12">
-                                <label for="objectifs" class="form-label">Objectifs</label>
-                                <textarea name="objectifs" id="objectifs" class="form-control mb-2">{{ old('objectifs') }}</textarea>
-                            </div>
-                        </div>
-
-                        <div class="row mt-3">
-                            <div class="col-md-12">
-                                <label for="programme" class="form-label">Programme</label>
-                                <textarea name="programme" id="programme" class="form-control mb-2">{{ old('programme') }}</textarea>
-                            </div>
-                        </div>
-
-                        <div class="row mt-3">
-                            <div class="col-md-6">
-                                <label for="lieu" class="form-label">Lieu</label>
-                                <input type="text" name="lieu" id="lieu" class="form-control mb-2" value="{{ old('lieu') }}">
-                            </div>
-                            <div class="col-md-6">
-                                <label for="niveau" class="form-label">Niveau</label>
-                                <input type="text" name="niveau" id="niveau" class="form-control mb-2" value="{{ old('niveau') }}">
-                            </div>
-                        </div>
-
-                        <div class="row mt-3">
-                            <div class="col-md-6">
-                                <label for="public_cible" class="form-label">Public cible</label>
-                                <input type="text" name="public_cible" id="public_cible" class="form-control mb-2" value="{{ old('public_cible') }}">
-                            </div>
-                            <div class="col-md-6">
-                                <label for="nombre_participants" class="form-label">Nombre de participants</label>
-                                <input type="number" name="nombre_participants" id="nombre_participants" class="form-control mb-2" value="{{ old('nombre_participants') }}">
-                            </div>
-                        </div>
-
-                        <div class="row mt-3">
-                            <div class="col-md-12">
-                                <label for="modalites" class="form-label">Modalités</label>
-                                <textarea name="modalites" id="modalites" class="form-control mb-2">{{ old('modalites') }}</textarea>
-                            </div>
-                        </div>
-
-                        <div class="row mt-3">
-                            <div class="col-md-12">
-                                <label for="modalites_accompagnement" class="form-label">Modalités d'accompagnement</label>
-                                <textarea name="modalites_accompagnement" id="modalites_accompagnement" class="form-control mb-2">{{ old('modalites_accompagnement') }}</textarea>
-                            </div>
-                        </div>
-
-                        <div class="row mt-3">
-                            <div class="col-md-12">
-                                <label for="moyens_pedagogiques" class="form-label">Moyens pédagogiques</label>
-                                <textarea name="moyens_pedagogiques" id="moyens_pedagogiques" class="form-control mb-2">{{ old('moyens_pedagogiques') }}</textarea>
-                            </div>
-                        </div>
-
-                        <div class="row mt-3">
-                            <div class="col-md-12">
-                                <label for="modalites_suivi" class="form-label">Modalités de suivi</label>
-                                <textarea name="modalites_suivi" id="modalites_suivi" class="form-control mb-2">{{ old('modalites_suivi') }}</textarea>
-                            </div>
-                        </div>
-
-                        <div class="row mt-3">
-                            <div class="col-md-12">
-                                <label for="evaluation" class="form-label">Evaluation</label>
-                                <textarea name="evaluation" id="evaluation" class="form-control mb-2">{{ old('evaluation') }}</textarea>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                <label for="image_url" class="form-label">Image</label>
-                                <input type="file" name="image_url" id="image_url"
-                                    class="form-control mb-2 @error('image_url') is-invalid @enderror">
-                                @error('image_url')
-                                <div class="invalid-feedback d-block">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <div class="col-md-6">
-                                <label for="cursus_pdf" class="form-label">Cursus PDF</label>
-                                <input type="file" name="cursus_pdf" id="cursus_pdf" accept=".pdf"
-                                    class="form-control mb-2 @error('cursus_pdf') is-invalid @enderror">
-                                <p class="mt-1 text-sm text-gray-500">Format accepté : PDF</p>
-                                @error('cursus_pdf')
-                                <div class="invalid-feedback d-block">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                <label for="tarif" class="form-label">Tarif</label>
-                                <input type="number" name="tarif" id="tarif" placeholder="Tarif"
-                                    class="form-control mb-2 @error('tarif') is-invalid @enderror"
-                                    value="{{ old('tarif') }}" step="1">
-                                @error('tarif')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <div class="col-md-6">
-                                <label for="statut" class="form-label">Statut</label>
-                                <select name="statut" id="statut"
-                                    class="form-select mb-2 @error('statut') is-invalid @enderror">
-                                    <option value="">Sélectionnez un statut</option>
-                                    <option value="1" {{ old('statut') == '1' ? 'selected' : '' }}>Actif
-                                    </option>
-                                    <option value="0" {{ old('statut') == '0' ? 'selected' : '' }}>Inactif
-                                    </option>
-                                </select>
-                                @error('statut')
-                                <div class="invalid-feedback d-block">{{ $message }}</div>
-                                @enderror
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingModalites">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseModalites" aria-expanded="false" aria-controls="collapseModalites">
+                                        Modalités & Logistique
+                                    </button>
+                                </h2>
+                                <div id="collapseModalites" class="accordion-collapse collapse" aria-labelledby="headingModalites" data-bs-parent="#catalogueAccordion">
+                                    <div class="accordion-body">
+                                        <div class="row mt-2">
+                                            <div class="col-md-12">
+                                                <label for="modalites" class="form-label">Modalités</label>
+                                                <textarea name="modalites" id="modalites" class="form-control mb-2">{{ old('modalites') }}</textarea>
+                                            </div>
+                                        </div>
+                                        <div class="row mt-2">
+                                            <div class="col-md-12">
+                                                <label for="modalites_accompagnement" class="form-label">Modalités d'accompagnement</label>
+                                                <textarea name="modalites_accompagnement" id="modalites_accompagnement" class="form-control mb-2">{{ old('modalites_accompagnement') }}</textarea>
+                                            </div>
+                                        </div>
+                                        <div class="row mt-2">
+                                            <div class="col-md-12">
+                                                <label for="moyens_pedagogiques" class="form-label">Moyens pédagogiques</label>
+                                                <textarea name="moyens_pedagogiques" id="moyens_pedagogiques" class="form-control mb-2">{{ old('moyens_pedagogiques') }}</textarea>
+                                            </div>
+                                        </div>
+                                        <div class="row mt-2">
+                                            <div class="col-md-12">
+                                                <label for="modalites_suivi" class="form-label">Modalités de suivi</label>
+                                                <textarea name="modalites_suivi" id="modalites_suivi" class="form-control mb-2">{{ old('modalites_suivi') }}</textarea>
+                                            </div>
+                                        </div>
+                                        <div class="row mt-2">
+                                            <div class="col-md-12">
+                                                <label for="evaluation" class="form-label">Evaluation</label>
+                                                <textarea name="evaluation" id="evaluation" class="form-control mb-2">{{ old('evaluation') }}</textarea>
+                                            </div>
+                                        </div>
+                                        <div class="row mt-2">
+                                            <div class="col-md-6">
+                                                <label for="lieu" class="form-label">Lieu</label>
+                                                <input type="text" name="lieu" id="lieu" class="form-control mb-2" value="{{ old('lieu') }}">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="niveau" class="form-label">Niveau</label>
+                                                <input type="text" name="niveau" id="niveau" class="form-control mb-2" value="{{ old('niveau') }}">
+                                            </div>
+                                        </div>
+                                        <div class="row mt-2">
+                                            <div class="col-md-6">
+                                                <label for="public_cible" class="form-label">Public cible</label>
+                                                <input type="text" name="public_cible" id="public_cible" class="form-control mb-2" value="{{ old('public_cible') }}">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="nombre_participants" class="form-label">Nombre de participants</label>
+                                                <input type="number" name="nombre_participants" id="nombre_participants" class="form-control mb-2" value="{{ old('nombre_participants') }}">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 

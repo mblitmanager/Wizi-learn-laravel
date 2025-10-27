@@ -287,7 +287,7 @@
                                     @foreach ($formateurs as $formateur)
                                         <option value="{{ $formateur->id }}"
                                             {{ old('formateur_id', $stagiaire->formateur_id ?? '') == $formateur->id ? 'selected' : '' }}>
-                                            {{ strtoupper($formateur->user->formatted_name) }}</option>
+                                            {{ strtoupper($formateur->user->name) }} {{ $formateur->prenom }}</option>
                                     @endforeach
                                 </select>
                                 @error('formateur_id')
@@ -301,7 +301,7 @@
                                     @foreach ($commercials as $commercial)
                                         <option value="{{ $commercial->id }}"
                                             {{ old('commercial_id', $stagiaire->commercial_id ?? '') == $commercial->id ? 'selected' : '' }}>
-                                            {{ strtoupper($commercial->user->formatted_name) }}</option>
+                                            {{ strtoupper($commercial->user->name) }} {{ $commercial->prenom }}</option>
                                     @endforeach
                                 </select>
                                 @error('commercial_id')
@@ -315,7 +315,7 @@
                                     @foreach ($poleRelations as $poleRelation)
                                         <option value="{{ $poleRelation->id }}"
                                             {{ in_array($poleRelation->id, old('pole_relation_client_id', [])) ? 'selected' : '' }}>
-                                            {{ strtoupper($poleRelation->user->formatted_name) }}</option>
+                                            {{ strtoupper($poleRelation->user->name) }} {{ $poleRelation->prenom }}</option>
                                     @endforeach
                                 </select>
                                 @error('pole_relation_client_id')
