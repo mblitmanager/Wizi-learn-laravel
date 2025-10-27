@@ -1,3 +1,32 @@
+{{-- @extends('admin.layout')
+@section('title', 'Détails stagiaire')
+@section('content')
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-header">
+                <h3>Détails du stagiaire</h3>
+            </div>
+            <div class="card-body">
+                <p><strong>Nom :</strong> {{ strtoupper($stagiaire->user->name ?? '') }}</p>
+                <p><strong>Prénom :</strong> {{ $stagiaire->prenom }}</p>
+                <p><strong>Email :</strong> {{ $stagiaire->user->email ?? '' }}</p>
+                <p><strong>Téléphone :</strong> {{ $stagiaire->telephone }}</p>
+                <p><strong>Ville :</strong> {{ $stagiaire->ville }}</p>
+                <p><strong>Code postal :</strong> {{ $stagiaire->code_postal }}</p>
+                <p><strong>Adresse :</strong> {{ $stagiaire->adresse }}</p>
+
+                <h5 class="mt-4">Formations associées</h5>
+                <ul>
+                    @foreach($stagiaire->catalogue_formations as $cf)
+                        <li>{{ $cf->titre }}</li>
+                    @endforeach
+                </ul>
+
+                <a href="{{ route('stagiaires.index') }}" class="btn btn-sm btn-secondary">Retour</a>
+            </div>
+        </div>
+    </div>
+@endsection --}}
 @extends('admin.layout')
 @section('title', 'Ajouter un stagiaire')
 @section('content')
@@ -370,7 +399,7 @@
                                                             </div>
                                                         @endforeach
                                                     </div>
-                                                </div>
+                                               </div>
                                             </div>
                                         @else
                                             <div class="alert alert-warning mt-4">
@@ -442,8 +471,7 @@
                                         @unless ($stagiaire->poleRelationClient->isEmpty())
                                             <div class="card mb-4 shadow-sm">
                                                 <div class="card-header text-dark">
-                                                    <h5 class="mb-0"><i class="bx bx-user-voice me-2"></i> Pôles Relation
-                                                        Client Associés</h5>
+                                                    <h5 class="mb-0"><i class="bx bx-user-voice me-2"></i> Contacts Associés</h5>
                                                 </div>
                                                 <div class="card-body"
                                                     style="box-shadow: rgba(17, 12, 46, 0.15) 0px 48px 100px 0px;">
@@ -475,6 +503,8 @@
                                                                                 {{ $pole->user->name }}</li>
                                                                             <li class="list-group-item"><strong>Prénom
                                                                                     :</strong> {{ $pole->prenom }}</li>
+                                                                            <li class="list-group-item"><strong>Rôle
+                                                                                    :</strong> {{ $pole->role }}</li>
                                                                             <li class="list-group-item"><strong>Email
                                                                                     :</strong> <a
                                                                                     href="mailto:{{ $pole->user->email }}">{{ $pole->user->email }}</a>
@@ -505,6 +535,7 @@
             </div>
         </div>
     </div>
+
 
 @endsection
 @section('scripts')

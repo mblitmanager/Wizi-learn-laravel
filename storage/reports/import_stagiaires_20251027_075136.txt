@@ -1,0 +1,43 @@
+Rapport d'import des stagiaires - 2025-10-27 07:51
+
+Importés : 1467
+Mises à jour (formations ajoutées) : 28
+
+Détails des mises à jour:
+Ligne 3 : formation 'Les essentiels de la bureautique Word' ajoutée à stagiaire existant (email: isa.micka61@hotmail.fr)
+Ligne 56 : formation 'Bureautique Excel (Pack Office)' ajoutée à stagiaire existant (email: leroux.bruno@sfr.fr)
+Ligne 57 : formation 'Anglais (certification TOEIC)' ajoutée à stagiaire existant (email: flo.dumur@wanadoo.fr)
+Ligne 156 : formation 'WordPress : Création de site internet + initiation WooCommerce' ajoutée à stagiaire existant (email: alain.muller77@orange.fr)
+Ligne 247 : formation 'Les essentiels de la bureautique Word' ajoutée à stagiaire existant (email: delepinealain@yahoo.com)
+Ligne 297 : formation 'Bureautique Excel (Pack Office)' ajoutée à stagiaire existant (email: nanamite@hotmail.com)
+Ligne 413 : formation 'Aménagement d'intérieur avec SKETCHUP' ajoutée à stagiaire existant (email: douval57@gmail.com)
+Ligne 443 : formation 'Photoshop : Traitement de l'image (certification TOSA)' ajoutée à stagiaire existant (email: lurin.tine@yahoo.fr)
+Ligne 478 : formation 'Bureautique Excel (Pack Office)' ajoutée à stagiaire existant (email: eddy-gardez@hotmail.fr)
+Ligne 860 : formation 'Les essentiels de la bureautique Word' ajoutée à stagiaire existant (email: ginus65@gmail.com)
+Ligne 867 : formation 'Anglais (certification TOEIC)' ajoutée à stagiaire existant (email: g.jp.flechais@orange.fr)
+Ligne 935 : formation 'Bureautique Excel (Pack Office)' ajoutée à stagiaire existant (email: christinebesson53@outlook.fr)
+Ligne 939 : formation 'Bureautique Excel (Pack Office)' ajoutée à stagiaire existant (email: lynda.savigny@gmail.com)
+Ligne 954 : formation 'Photoshop : Traitement de l'image (certification TOSA)' ajoutée à stagiaire existant (email: patrick.gautreau27@gmail.com)
+Ligne 960 : formation 'Bureautique Word (Pack Office)' ajoutée à stagiaire existant (email: 3TB@laposte.net)
+Ligne 1124 : formation 'WordPress : Création de site internet + initiation réseaux sociaux' ajoutée à stagiaire existant (email: jycoup@gmail.com)
+Ligne 1173 : formation 'WordPress : Création de site internet + initiation WooCommerce' ajoutée à stagiaire existant (email: jmt54@hotmail.fr)
+Ligne 1186 : formation 'Bureautique Word (Pack Office)' ajoutée à stagiaire existant (email: tedlemiere@gmail.com)
+Ligne 1203 : formation 'Photoshop : Traitement de l'image (certification TOSA)' ajoutée à stagiaire existant (email: duchatellenoel86@gmail.com)
+Ligne 1217 : formation 'Anglais (certification TOEIC)' ajoutée à stagiaire existant (email: jc.brasquies@gmail.com)
+Ligne 1255 : formation 'Les essentiels de la bureautique Word' ajoutée à stagiaire existant (email: christine.godbout13@gmail.com)
+Ligne 1271 : formation 'Anglais (certification TOEIC)' ajoutée à stagiaire existant (email: guigonvallade@orange.fr)
+Ligne 1328 : formation 'Photoshop : Traitement de l'image (certification TOSA)' ajoutée à stagiaire existant (email: bouchetblandine@wanadoo.fr)
+Ligne 1332 : formation 'Les essentiels de la bureautique Excel' ajoutée à stagiaire existant (email: yoyoosmo@orange.fr)
+Ligne 1358 : formation 'Bureautique Word (Pack Office)' ajoutée à stagiaire existant (email: annemariemoisson@orange.fr)
+Ligne 1381 : formation 'Anglais (certification TOEIC)' ajoutée à stagiaire existant (email: nellybureau42@gmail.com)
+Ligne 1481 : formation 'Bureautique Excel (Pack Office)' ajoutée à stagiaire existant (email: kapicool@hotmail.fr)
+Ligne 1498 : formation 'Aménagement d'extérieur avec SKETCHUP' ajoutée à stagiaire existant (email: lelievresylvain@sfr.fr)
+
+Erreurs détectées :
+Ligne 8 : Format du nom/prénom invalide
+Ligne 245 : Format du nom/prénom invalide
+Ligne 293 : Champs obligatoires manquants (tiers ou email)
+Ligne 615 : Format du nom/prénom invalide
+Ligne 631 : Champs obligatoires manquants (tiers ou email)
+Ligne 885 : Champs obligatoires manquants (tiers ou email)
+Ligne 1082 : Champs obligatoires manquants (tiers ou email)

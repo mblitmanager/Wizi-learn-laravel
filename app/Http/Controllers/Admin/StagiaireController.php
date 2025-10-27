@@ -104,6 +104,53 @@ class StagiaireController extends Controller
     }
 
     /**
+     * Affiche les détails d'un stagiaire
+     */
+    public function show($id)
+    {
+        // Load related data useful for admin view and stats
+        $stagiaire = Stagiaire::with([
+            'user',
+            'catalogue_formations',
+            'formateurs.user',
+            'classements',
+            'quizParticipations.quiz',
+            'progressions',
+            'watchedVideos'
+        ])->findOrFail($id);
+
+        // Calculate simple statistics
+        $totalPoints = $stagiaire->classements->sum('points');
+
+        $quizParticipations = $stagiaire->quizParticipations;
+        $quizCompleted = $quizParticipations->where('status', 'completed');
+
+        $totalScorePossible = $quizCompleted->sum(function ($p) {
+            return $p->quiz->nb_points_total ?? 100;
+        });
+        $totalScoreObtained = $quizCompleted->sum('score');
+
+        $progressionMoyenne = 0;
+        if ($totalScorePossible > 0) {
+            $progressionMoyenne = min(100, ($totalScoreObtained / $totalScorePossible) * 100);
+        }
+
+        $tempsProgressions = $stagiaire->progressions->sum('time_spent') ?? 0;
+        $tempsQuiz = $quizParticipations->sum('time_spent') ?? 0;
+
+        $statistiques = [
+            'total_points' => $totalPoints,
+            'quiz_completes' => $quizCompleted->count(),
+            'quiz_total_participations' => $quizParticipations->count(),
+            'progression_moyenne' => round($progressionMoyenne, 2),
+            'temps_total_passe' => $tempsProgressions + $tempsQuiz,
+            'derniere_activite' => $stagiaire->derniere_activite ?? null,
+        ];
+
+        return view('admin.stagiaires.show', compact('stagiaire', 'statistiques'));
+    }
+
+    /**
      * Désactiver un stagiaire
      */
     public function desactive($id)
