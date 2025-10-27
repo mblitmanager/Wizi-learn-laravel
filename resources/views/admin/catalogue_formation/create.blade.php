@@ -121,6 +121,77 @@
                             </div>
                         </div>
 
+                        <div class="row mt-3">
+                            <div class="col-md-12">
+                                <label for="objectifs" class="form-label">Objectifs</label>
+                                <textarea name="objectifs" id="objectifs" class="form-control mb-2">{{ old('objectifs') }}</textarea>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-12">
+                                <label for="programme" class="form-label">Programme</label>
+                                <textarea name="programme" id="programme" class="form-control mb-2">{{ old('programme') }}</textarea>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <label for="lieu" class="form-label">Lieu</label>
+                                <input type="text" name="lieu" id="lieu" class="form-control mb-2" value="{{ old('lieu') }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="niveau" class="form-label">Niveau</label>
+                                <input type="text" name="niveau" id="niveau" class="form-control mb-2" value="{{ old('niveau') }}">
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <label for="public_cible" class="form-label">Public cible</label>
+                                <input type="text" name="public_cible" id="public_cible" class="form-control mb-2" value="{{ old('public_cible') }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="nombre_participants" class="form-label">Nombre de participants</label>
+                                <input type="number" name="nombre_participants" id="nombre_participants" class="form-control mb-2" value="{{ old('nombre_participants') }}">
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-12">
+                                <label for="modalites" class="form-label">Modalités</label>
+                                <textarea name="modalites" id="modalites" class="form-control mb-2">{{ old('modalites') }}</textarea>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-12">
+                                <label for="modalites_accompagnement" class="form-label">Modalités d'accompagnement</label>
+                                <textarea name="modalites_accompagnement" id="modalites_accompagnement" class="form-control mb-2">{{ old('modalites_accompagnement') }}</textarea>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-12">
+                                <label for="moyens_pedagogiques" class="form-label">Moyens pédagogiques</label>
+                                <textarea name="moyens_pedagogiques" id="moyens_pedagogiques" class="form-control mb-2">{{ old('moyens_pedagogiques') }}</textarea>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-12">
+                                <label for="modalites_suivi" class="form-label">Modalités de suivi</label>
+                                <textarea name="modalites_suivi" id="modalites_suivi" class="form-control mb-2">{{ old('modalites_suivi') }}</textarea>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-12">
+                                <label for="evaluation" class="form-label">Evaluation</label>
+                                <textarea name="evaluation" id="evaluation" class="form-control mb-2">{{ old('evaluation') }}</textarea>
+                            </div>
+                        </div>
+
                         <div class="row">
                             <div class="col-md-6">
                                 <label for="image_url" class="form-label">Image</label>

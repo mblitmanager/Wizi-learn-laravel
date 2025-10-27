@@ -53,9 +53,39 @@
                                     {{ $catalogueFormations->prerequis ?? 'Aucun' }}
                                 </p>
                                 <p class="list-group-item d-flex align-items-center">
+                                    <i class="bx bx-target-lock me-2"></i>
+                                    <strong>Objectifs :</strong>
+                                    {{ $catalogueFormations->objectifs ?? 'Non renseigné' }}
+                                </p>
+                                <p class="list-group-item d-flex align-items-center">
+                                    <i class="bx bx-book-open me-2"></i>
+                                    <strong>Programme :</strong>
+                                    {{ $catalogueFormations->programme ?? 'Non renseigné' }}
+                                </p>
+                                <p class="list-group-item d-flex align-items-center">
                                     <i class="bx bx-money me-2"></i>
                                     <strong>Tarif :</strong>
                                     {{ number_format($catalogueFormations->tarif, 2) }} €
+                                </p>
+                                <p class="list-group-item d-flex align-items-center">
+                                    <i class="bx bx-map me-2"></i>
+                                    <strong>Lieu :</strong>
+                                    {{ $catalogueFormations->lieu ?? 'Non renseigné' }}
+                                </p>
+                                <p class="list-group-item d-flex align-items-center">
+                                    <i class="bx bx-layer me-2"></i>
+                                    <strong>Niveau :</strong>
+                                    {{ $catalogueFormations->niveau ?? 'Non renseigné' }}
+                                </p>
+                                <p class="list-group-item d-flex align-items-center">
+                                    <i class="bx bx-group me-2"></i>
+                                    <strong>Public cible :</strong>
+                                    {{ $catalogueFormations->public_cible ?? 'Non renseigné' }}
+                                </p>
+                                <p class="list-group-item d-flex align-items-center">
+                                    <i class="bx bx-user-plus me-2"></i>
+                                    <strong>Participants max :</strong>
+                                    {{ $catalogueFormations->nombre_participants ?? '-' }}
                                 </p>
                                 <p class="list-group-item d-flex align-items-center">
                                     <i class="bx bx-check-circle me-2"></i>

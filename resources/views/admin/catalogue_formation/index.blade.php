@@ -46,11 +46,35 @@
                                 <thead>
                                 <tr>
                                     <th>Titre</th>
-                                    <th>Description</th>
+                                    <th>Durée</th>
+                                    <th>Tarif</th>
+                                    <th>Statut</th>
+                                    <th>Lieu</th>
+                                    <th>Niveau</th>
+                                    <th>Public cible</th>
                                     <th>Formation</th>
                                     <th>Action</th>
                                 </tr>
                                 <tr>
+                                    <th>
+                                        <input type="text" placeholder="Filtrer" class="form-control form-control-sm" />
+                                    </th>
+                                    <th>
+                                        <input type="text" placeholder="Filtrer" class="form-control form-control-sm" />
+                                    </th>
+                                    <th>
+                                        <input type="text" placeholder="Filtrer" class="form-control form-control-sm" />
+                                    </th>
+                                    <th>
+                                        <select class="form-select form-select-sm">
+                                            <option value="">Tous</option>
+                                            <option value="1">Actif</option>
+                                            <option value="0">Inactif</option>
+                                        </select>
+                                    </th>
+                                    <th>
+                                        <input type="text" placeholder="Filtrer" class="form-control form-control-sm" />
+                                    </th>
                                     <th>
                                         <input type="text" placeholder="Filtrer" class="form-control form-control-sm" />
                                     </th>
@@ -72,7 +96,18 @@
                                 @foreach ($catalogueFormations as $row)
                                     <tr>
                                         <td class="text-break">{{ $row->titre }}</td>
-                                        <td class="text-break">{!! $row->description !!}</td>
+                                        <td class="text-break">{{ $row->duree }} h</td>
+                                        <td class="text-break">{{ number_format($row->tarif ?? 0, 2) }} €</td>
+                                        <td class="text-break text-center">
+                                            @if ($row->statut == '1')
+                                                <span class="badge bg-success">Actif</span>
+                                            @elseif ($row->statut == '0')
+                                                <span class="badge bg-secondary">Inactif</span>
+                                            @endif
+                                        </td>
+                                        <td class="text-break">{{ $row->lieu ?? '-' }}</td>
+                                        <td class="text-break">{{ $row->niveau ?? '-' }}</td>
+                                        <td class="text-break">{{ $row->public_cible ?? '-' }}</td>
                                         <td class="text-break">{{ optional($row->formation)->titre }}</td>
                                         <td class="text-center">
                                             <a href="{{ route('catalogue_formation.edit', $row->id) }}"
