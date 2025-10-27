@@ -24,11 +24,14 @@ class CatalogueFormationController extends Controller
      */
     public function index()
     {
-        $formationId = request()->query('formation_id');
-        $catalogueFormations = $this->catalogueFormationService->list($formationId);
+        // Collect filters from query string
+        $filters = request()->only(['formation_id', 'titre', 'lieu', 'niveau', 'statut', 'public_cible']);
+
+        $catalogueFormations = $this->catalogueFormationService->list($filters);
         $formations = Formation::all();
         return view('admin.catalogue_formation.index', compact('catalogueFormations', 'formations'))
-            ->with('selectedFormationId', $formationId);
+            ->with('selectedFormationId', $filters['formation_id'] ?? null)
+            ->with('filters', $filters);
     }
 
     /**

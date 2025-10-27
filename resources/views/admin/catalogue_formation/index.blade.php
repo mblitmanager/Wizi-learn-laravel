@@ -57,39 +57,46 @@
                                 </tr>
                                 <tr>
                                     <th>
-                                        <input type="text" placeholder="Filtrer" class="form-control form-control-sm" />
+                                        <form id="catalogueFilters" method="GET" action="{{ route('catalogue_formation.index') }}">
+                                            <input type="text" name="titre" placeholder="Filtrer titre" value="{{ $filters['titre'] ?? '' }}" class="form-control form-control-sm filter-input" />
+                                        </form>
                                     </th>
                                     <th>
-                                        <input type="text" placeholder="Filtrer" class="form-control form-control-sm" />
+                                        <input form="catalogueFilters" type="text" name="duree" placeholder="Filtrer" class="form-control form-control-sm" disabled />
                                     </th>
                                     <th>
-                                        <input type="text" placeholder="Filtrer" class="form-control form-control-sm" />
+                                        <input form="catalogueFilters" type="text" name="tarif" placeholder="Filtrer" class="form-control form-control-sm" disabled />
                                     </th>
                                     <th>
-                                        <select class="form-select form-select-sm">
+                                        <select form="catalogueFilters" name="statut" class="form-select form-select-sm filter-input">
                                             <option value="">Tous</option>
-                                            <option value="1">Actif</option>
-                                            <option value="0">Inactif</option>
+                                            <option value="1" {{ (isset($filters['statut']) && $filters['statut'] === '1') ? 'selected' : '' }}>Actif</option>
+                                            <option value="0" {{ (isset($filters['statut']) && $filters['statut'] === '0') ? 'selected' : '' }}>Inactif</option>
                                         </select>
                                     </th>
                                     <th>
-                                        <input type="text" placeholder="Filtrer" class="form-control form-control-sm" />
+                                        <input form="catalogueFilters" type="text" name="lieu" placeholder="Filtrer lieu" value="{{ $filters['lieu'] ?? '' }}" class="form-control form-control-sm filter-input" />
                                     </th>
                                     <th>
-                                        <input type="text" placeholder="Filtrer" class="form-control form-control-sm" />
+                                        <input form="catalogueFilters" type="text" name="niveau" placeholder="Filtrer niveau" value="{{ $filters['niveau'] ?? '' }}" class="form-control form-control-sm filter-input" />
                                     </th>
                                     <th>
-                                        <input type="text" placeholder="Filtrer" class="form-control form-control-sm" />
+                                        <input form="catalogueFilters" type="text" name="public_cible" placeholder="Filtrer public" value="{{ $filters['public_cible'] ?? '' }}" class="form-control form-control-sm filter-input" />
                                     </th>
                                     <th>
-                                        <select id="formationFilter" class="form-select form-select-sm">
+                                        <select form="catalogueFilters" id="formationFilter" name="formation_id" class="form-select form-select-sm filter-input">
                                             <option value="">Toutes les formations</option>
                                             @foreach($formations as $f)
                                                 <option value="{{ $f->id }}" {{ (isset($selectedFormationId) && $selectedFormationId == $f->id) ? 'selected' : '' }}>{{ $f->titre }}</option>
                                             @endforeach
                                         </select>
                                     </th>
-                                    <th></th>
+                                    <th>
+                                        <div class="d-flex gap-1 justify-content-center">
+                                            <button form="catalogueFilters" type="submit" class="btn btn-sm btn-primary">Filtrer</button>
+                                            <a href="{{ route('catalogue_formation.index') }}" class="btn btn-sm btn-outline-secondary">Réinitialiser</a>
+                                        </div>
+                                    </th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -154,26 +161,13 @@
                 buttons: ['copy', 'csv', 'excel', 'pdf', 'print'],
                 initComplete: function() {
                     var api = this.api();
-                    // text inputs on first two columns
-                    api.columns([0,1]).every(function(index) {
-                        var that = this;
-                        $('input', this.header()).on('keyup change clear', function() {
-                            if (that.search() !== this.value) {
-                                that.search(this.value).draw();
-                            }
-                        });
-                    });
-
-                    // formation select filter: trigger server-side reload with formation_id query param
-                    $('#formationFilter').on('change', function() {
-                        var val = $(this).val();
-                        var url = new URL(window.location.href);
-                        if (val) {
-                            url.searchParams.set('formation_id', val);
-                        } else {
-                            url.searchParams.delete('formation_id');
-                        }
-                        window.location.href = url.toString();
+                    // keep DataTables client search but also wire our filter inputs to submit the GET form
+                    $('.filter-input').on('change keyup', function(e) {
+                        // small debounce
+                        clearTimeout(window._filterTimeout);
+                        window._filterTimeout = setTimeout(function() {
+                            $('#catalogueFilters').submit();
+                        }, 400);
                     });
                 }
             });

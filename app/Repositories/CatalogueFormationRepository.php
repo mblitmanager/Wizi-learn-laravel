@@ -22,6 +22,39 @@ class CatalogueFormationRepository implements CatalogueFormationInterface
             ->where('statut', 1)
             ->get();
     }
+
+    /**
+     * Return catalogue formations applying the provided filters.
+     * Supported filters: formation_id, titre, lieu, niveau, statut, public_cible
+     *
+     * @param array $filters
+     * @return Collection
+     */
+    public function allWithFilters(array $filters = []): Collection
+    {
+        $query = CatalogueFormation::with(['formation', 'formateurs', 'stagiaires']);
+
+        if (!empty($filters['formation_id'])) {
+            $query->where('formation_id', $filters['formation_id']);
+        }
+        if (!empty($filters['titre'])) {
+            $query->where('titre', 'LIKE', '%' . $filters['titre'] . '%');
+        }
+        if (!empty($filters['lieu'])) {
+            $query->where('lieu', 'LIKE', '%' . $filters['lieu'] . '%');
+        }
+        if (!empty($filters['niveau'])) {
+            $query->where('niveau', 'LIKE', '%' . $filters['niveau'] . '%');
+        }
+        if (isset($filters['statut']) && $filters['statut'] !== '') {
+            $query->where('statut', $filters['statut']);
+        }
+        if (!empty($filters['public_cible'])) {
+            $query->where('public_cible', 'LIKE', '%' . $filters['public_cible'] . '%');
+        }
+
+        return $query->orderBy('titre')->get();
+    }
     /**
      * Trouver une entrée par son ID.
      *

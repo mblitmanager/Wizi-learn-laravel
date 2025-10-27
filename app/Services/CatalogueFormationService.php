@@ -22,15 +22,19 @@ class CatalogueFormationService
      * @param int|null $formationId
      * @return \Illuminate\Database\Eloquent\Collection
      */
-    public function list($formationId = null)
+    /**
+     * List catalogue formations with optional filters.
+     * Expected $filters keys: formation_id, titre, lieu, niveau, statut, public_cible
+     *
+     * @param array $filters
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function list(array $filters = [])
     {
-        // Prefer repository if available
+        // Prefer repository if available and supports filters
         try {
-            if ($this->catalogueFormationRepositoryInterface) {
-                // If repository supports filters, we defer; otherwise fallback to model
-                if (method_exists($this->catalogueFormationRepositoryInterface, 'allWithFilters')) {
-                    return $this->catalogueFormationRepositoryInterface->allWithFilters(['formation_id' => $formationId]);
-                }
+            if ($this->catalogueFormationRepositoryInterface && method_exists($this->catalogueFormationRepositoryInterface, 'allWithFilters')) {
+                return $this->catalogueFormationRepositoryInterface->allWithFilters($filters);
             }
         } catch (\Throwable $e) {
             // ignore and fallback to model
@@ -38,11 +42,27 @@ class CatalogueFormationService
 
         // Fallback: use the Eloquent model directly
         $query = \App\Models\CatalogueFormation::with('formation');
-        if ($formationId) {
-            $query->where('formation_id', $formationId);
+
+        if (!empty($filters['formation_id'])) {
+            $query->where('formation_id', $filters['formation_id']);
+        }
+        if (!empty($filters['titre'])) {
+            $query->where('titre', 'LIKE', '%' . $filters['titre'] . '%');
+        }
+        if (!empty($filters['lieu'])) {
+            $query->where('lieu', 'LIKE', '%' . $filters['lieu'] . '%');
+        }
+        if (!empty($filters['niveau'])) {
+            $query->where('niveau', 'LIKE', '%' . $filters['niveau'] . '%');
+        }
+        if (isset($filters['statut']) && $filters['statut'] !== '') {
+            $query->where('statut', $filters['statut']);
+        }
+        if (!empty($filters['public_cible'])) {
+            $query->where('public_cible', 'LIKE', '%' . $filters['public_cible'] . '%');
         }
 
-        return $query->get();
+        return $query->orderBy('titre')->get();
     }
 
     public function getCatalogueFormationById($id)
