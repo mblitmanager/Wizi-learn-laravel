@@ -72,7 +72,7 @@ class ContactController extends Controller
                 $prenom = $formateur->prenom ?? $user->prenom ?? null;
                 $nom = $formateur->nom ?? $user->nom ?? null;
                 $civilite = $formateur->civilite ?? $user->civilite ?? null;
-                
+
                 if (empty($prenom) && empty($nom) && !empty($user->name)) {
                     $parts = preg_split('/\s+/', trim($user->name));
                     if (count($parts) > 1) {
@@ -93,7 +93,7 @@ class ContactController extends Controller
                     'prenom' => $prenom ?? '',
                     'nom' => $nom ?? '',
                     'civilite' => $civilite,
-                    'role'=> $formateur->role ?? 'Formateur',
+                    'role' => $formateur->role ?? 'Formateur',
                     'email' => $formateur->user->email,
                     'telephone' => $formateur->telephone ?? '',
                     'formations' => $formations,
@@ -108,7 +108,7 @@ class ContactController extends Controller
                 $prenom = $commercial->prenom ?? $user->prenom ?? null;
                 $nom = $commercial->nom ?? $user->nom ?? null;
                 $civilite = $commercial->civilite ?? $user->civilite ?? null;
-                
+
                 if (empty($prenom) && empty($nom) && !empty($user->name)) {
                     $parts = preg_split('/\s+/', trim($user->name));
                     if (count($parts) > 1) {
@@ -127,7 +127,7 @@ class ContactController extends Controller
                     'nom' => $nom ?? '',
                     'civilite' => $civilite,
                     'email' => $commercial->user->email,
-                    'role'=> $commercial->role ?? 'Commercial',
+                    'role' => $commercial->role ?? 'Commercial',
                     'telephone' => $commercial->telephone ?? '',
                     'image' => $commercial->user->image ?? '/images/default-avatar.png',
                 ];
@@ -136,19 +136,23 @@ class ContactController extends Controller
             // Pôle Relation Client - Filtrer par rôle
             $poleRelation = $user->stagiaire->poleRelationClients()
                 ->with('user')
-                ->where('role', 'pole_relation_client')
+                ->whereNotIn('role', [
+                    'Pôle SAV',
+                    'Chargée Administration des Ventes',
+                    'Responsable suivi formation & SAV & Parrainage'
+                ])
                 ->get()
                 ->map(function ($pole) {
                     $user = $pole->user;
                     $civilite = $pole->civilite ?? $user->civilite ?? null;
-                    
+
                     return [
                         'id' => $pole->id,
-                        'type' => 'pole_relation_client',
+                        'type' => $pole->role ?? 'pole_relation_client',
                         'name' => $pole->user->name,
                         'civilite' => $civilite,
                         'email' => $pole->user->email,
-                        'role'=> $pole->role ?? 'Pôle Relation Client',
+                        'role' => $pole->role ?? 'Pôle Relation Client',
                         'telephone' => $pole->telephone ?? '',
                         'image' => $pole->user->image ?? '/images/default-avatar.png',
                     ];
@@ -157,12 +161,16 @@ class ContactController extends Controller
             // Pôle SAV - Filtrer par rôle dans PoleRelationClient
             $poleSav = $user->stagiaire->poleRelationClients()
                 ->with('user')
-                ->where('role', 'Pôle SAV')
+                ->whereIn('role', [
+                    'Pôle SAV',
+                    'Chargée Administration des Ventes',
+                    'Responsable suivi formation & SAV & Parrainage'
+                ])
                 ->get()
                 ->map(function ($sav) {
                     $user = $sav->user;
                     $civilite = $sav->civilite ?? $user->civilite ?? null;
-                    
+
                     return [
                         'id' => $sav->id,
                         'type' => 'pole_sav',
@@ -170,7 +178,7 @@ class ContactController extends Controller
                         'civilite' => $civilite,
                         'email' => $sav->user->email,
                         'telephone' => $sav->telephone ?? '',
-                        'role'=> $sav->role ?? 'Pôle SAV',
+                        'role' => $sav->role ?? 'Pôle SAV',
                         'image' => $sav->user->image ?? '/images/default-avatar.png',
                     ];
                 });
@@ -229,7 +237,7 @@ class ContactController extends Controller
                 $prenom = $user->prenom ?? null;
                 $nom = $user->nom ?? null;
                 $civilite = $formateur->civilite ?? $user->civilite ?? null;
-                
+
                 if (empty($prenom) && empty($nom) && !empty($user->name)) {
                     $parts = preg_split('/\s+/', trim($user->name));
                     if (count($parts) > 1) {
@@ -275,13 +283,13 @@ class ContactController extends Controller
                     return response()->json(['error' => 'non autorisé'], 403);
                 }
             }
-            
+
             $commercials = $user->stagiaire->commercials()->with('user')->get()->map(function ($commercial) {
                 $user = $commercial->user;
                 $prenom = $user->prenom ?? null;
                 $nom = $user->nom ?? null;
                 $civilite = $commercial->civilite ?? $user->civilite ?? null;
-                
+
                 if (empty($prenom) && empty($nom) && !empty($user->name)) {
                     $parts = preg_split('/\s+/', trim($user->name));
                     if (count($parts) > 1) {
@@ -326,13 +334,13 @@ class ContactController extends Controller
                     return response()->json(['error' => 'non autorisé'], 403);
                 }
             }
-            
+
             $poles = $user->stagiaire->poleRelationClients()->with('user')->get()->map(function ($pole) {
                 $user = $pole->user;
                 $prenom = $user->prenom ?? null;
                 $nom = $user->nom ?? null;
                 $civilite = $pole->civilite ?? $user->civilite ?? null;
-                
+
                 if (empty($prenom) && empty($nom) && !empty($user->name)) {
                     $parts = preg_split('/\s+/', trim($user->name));
                     if (count($parts) > 1) {
@@ -380,12 +388,16 @@ class ContactController extends Controller
 
             $poleSav = $user->stagiaire->poleRelationClients()
                 ->with('user')
-                ->where('role', 'Pôle SAV')
+                ->whereIn('role', [
+                    'Pôle SAV',
+                    'Chargée Administration des Ventes',
+                    'Responsable suivi formation & SAV & Parrainage'
+                ])
                 ->get()
                 ->map(function ($sav) {
                     $user = $sav->user;
                     $civilite = $sav->civilite ?? $user->civilite ?? null;
-                    
+
                     return [
                         'id' => $sav->id,
                         'name' => $sav->user->name,
