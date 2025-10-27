@@ -3,7 +3,7 @@
 @section('content')
     <div class="container-fluid">
         <div class="shadow-lg border-0 px-2 py-2 mb-3">
-            <div class="page-breadcrumb d-none d-sm-flex align-items-center">
+            <div class="page-breadcrumb d-flex flex-column flex-sm-row align-items-start align-items-sm-center">
                 <div class="breadcrumb-title pe-3"></div>
                 <div class="ps-3">
                     <nav aria-label="breadcrumb">
@@ -16,18 +16,18 @@
                         </ol>
                     </nav>
                 </div>
-                <div class="ms-auto">
-                    <div class="btn-group">
-                        <a href="{{ route('download.stagiaire.model') }}" class="btn btn-sm btn-success mx-2">
+                <div class="ms-sm-auto mt-2 mt-sm-0 w-100">
+                    <div class="d-flex flex-wrap justify-content-start justify-content-sm-end">
+                        <a href="{{ route('download.stagiaire.model') }}" class="btn btn-sm btn-success mx-2 mb-2">
                             Télécharger le modèle Stagiaire
                         </a>
 
-                        <a href="{{ route('stagiaires.import.reports') }}" class="btn btn-sm btn-secondary mx-2">
+                        <a href="{{ route('stagiaires.import.reports') }}" class="btn btn-sm btn-secondary mx-2 mb-2">
                             Rapports d'import
                         </a>
 
                         {{-- Job indicator container (updated by polling JS) --}}
-                        <span id="importStatusContainer" class="align-self-center mx-2">
+                        <span id="importStatusContainer" class="align-self-center mx-2 mb-2">
                             @if(!empty($jobRunning) && $jobRunning)
                                 <span class="badge bg-warning text-dark" title="Un import est en cours">
                                     <i class="bx bx-loader-alt bx-spin"></i> Import en cours...
@@ -39,9 +39,9 @@
                             @endif
                         </span>
 
-                        <button class="btn btn-sm text-white btn-info mx-2" data-bs-toggle="modal"
+                        <button class="btn btn-sm text-white btn-info mx-2 mb-2" data-bs-toggle="modal"
                             data-bs-target="#importModal"><i class="lni lni-cloud-download"></i>importer stagiaires</button>
-                        <a href="{{ route('stagiaires.create') }}" type="button" class="btn btn-sm btn-primary mx-2"> <i
+                        <a href="{{ route('stagiaires.create') }}" type="button" class="btn btn-sm btn-primary mx-2 mb-2"> <i
                                 class="fadeIn animated bx bx-plus"></i> Nouveau stagiaire</a>
                     </div>
                 </div>
