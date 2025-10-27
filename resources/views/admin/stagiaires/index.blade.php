@@ -22,6 +22,23 @@
                             Télécharger le modèle Stagiaire
                         </a>
 
+                        <a href="{{ route('stagiaires.import.reports') }}" class="btn btn-sm btn-secondary mx-2">
+                            Rapports d'import
+                        </a>
+
+                        {{-- Job indicator container (updated by polling JS) --}}
+                        <span id="importStatusContainer" class="align-self-center mx-2">
+                            @if(!empty($jobRunning) && $jobRunning)
+                                <span class="badge bg-warning text-dark" title="Un import est en cours">
+                                    <i class="bx bx-loader-alt bx-spin"></i> Import en cours...
+                                </span>
+                            @elseif(!empty($lastReport))
+                                <a href="{{ route('stagiaires.import.report', $lastReport) }}" id="lastReportLink" class="btn btn-sm btn-outline-primary">
+                                    Dernier rapport
+                                </a>
+                            @endif
+                        </span>
+
                         <button class="btn btn-sm text-white btn-info mx-2" data-bs-toggle="modal"
                             data-bs-target="#importModal"><i class="lni lni-cloud-download"></i>importer stagiaires</button>
                         <a href="{{ route('stagiaires.create') }}" type="button" class="btn btn-sm btn-primary mx-2"> <i
@@ -211,5 +228,34 @@
                 progressBarWrapper.classList.remove('d-none');
             });
         });
+    </script>
+    <script>
+        // Poll the server for job status and update the UI
+        (function() {
+            var statusUrl = '{{ route('stagiaires.import.status') }}';
+            var reportBase = '{{ url('/administrateur/import/report') }}';
+
+            function updateStatus() {
+                $.getJSON(statusUrl, function(data) {
+                    var container = $('#importStatusContainer');
+                    if (!container.length) return;
+
+                    if (data.running) {
+                        container.html('<span class="badge bg-warning text-dark" title="Un import est en cours"> <i class="bx bx-loader-alt bx-spin"></i> Import en cours...</span>');
+                    } else if (data.lastReport) {
+                        var url = reportBase + '/' + encodeURIComponent(data.lastReport);
+                        container.html('<a href="' + url + '" id="lastReportLink" class="btn btn-sm btn-outline-primary">Dernier rapport</a>');
+                    } else {
+                        container.html('');
+                    }
+                }).fail(function() {
+                    // silent fail
+                });
+            }
+
+            // Start polling every 5 seconds
+            updateStatus();
+            setInterval(updateStatus, 5000);
+        })();
     </script>
 @endsection

@@ -14,6 +14,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class ImportStagiairesJob implements ShouldQueue
@@ -21,13 +22,15 @@ class ImportStagiairesJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected $filePath;
+    protected $importJobId;
 
     /**
      * Create a new job instance.
      */
-    public function __construct(string $filePath)
+    public function __construct(string $filePath, ?int $importJobId = null)
     {
         $this->filePath = $filePath;
+        $this->importJobId = $importJobId;
     }
 
     /**
@@ -35,6 +38,17 @@ class ImportStagiairesJob implements ShouldQueue
      */
     public function handle(): void
     {
+        // mark job as running in DB (if provided) and broadcast
+        $importJob = null;
+        if ($this->importJobId) {
+            $importJob = \App\Models\ImportJob::find($this->importJobId);
+            if ($importJob) {
+                $importJob->update(['status' => 'running', 'started_at' => now()]);
+            }
+        }
+
+        event(new \App\Events\ImportStatusUpdated('running', null));
+
         try {
             $spreadsheet = IOFactory::load($this->filePath);
             $sheet = $spreadsheet->getActiveSheet();
@@ -289,10 +303,30 @@ class ImportStagiairesJob implements ShouldQueue
             $reportFilename = 'import_stagiaires_' . now()->format('Ymd_His') . '.txt';
             $reportPath = $reportsDir . DIRECTORY_SEPARATOR . $reportFilename;
             File::put($reportPath, implode(PHP_EOL, $reportLines));
-
+            // update DB job and broadcast completion
+            if ($importJob) {
+                $importJob->update([
+                    'status' => 'completed',
+                    'report_filename' => $reportFilename,
+                    'finished_at' => now(),
+                ]);
+            }
+            // broadcast
+            event(new \App\Events\ImportStatusUpdated('completed', $reportFilename));
             Log::info('Import stagiaires terminé. Rapport: ' . $reportFilename);
         } catch (\Exception $e) {
+            if ($importJob) {
+                $importJob->update(['status' => 'failed', 'details' => $e->getMessage(), 'finished_at' => now()]);
+            }
+            event(new \App\Events\ImportStatusUpdated('failed', null));
             Log::error('Erreur ImportStagiairesJob: ' . $e->getMessage());
+        } finally {
+            // final cleanup broadcast if still running
+            try {
+                event(new \App\Events\ImportStatusUpdated('idle', null));
+            } catch (\Exception $e) {
+                Log::warning('Erreur broadcast final import status: ' . $e->getMessage());
+            }
         }
     }
 
