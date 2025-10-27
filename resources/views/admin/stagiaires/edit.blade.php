@@ -280,7 +280,7 @@
                                 <label for="formateur_id">Formateur (optionnel)</label>
                                 <select name="formateur_id[]" id="formateur_id" multiple class="form-control select2 @error('formateur_id') is-invalid @enderror">
                                     @foreach ($formateurs as $formateur)
-                                        <option value="{{ $formateur->id }}" {{ in_array($formateur->id, old('formateur_id', $stagiaire->formateurs->pluck('id')->toArray())) ? 'selected' : '' }}>{{ strtoupper($formateur->user->formatted_name) }}</option>
+                                        <option value="{{ $formateur->id }}" {{ in_array($formateur->id, old('formateur_id', $stagiaire->formateurs->pluck('id')->toArray())) ? 'selected' : '' }}>{{ strtoupper($formateur->user->formatted_name) }} {{ $formateur->prenom }}</option>
                                     @endforeach
                                 </select>
                                 @error('formateur_id')
@@ -294,7 +294,7 @@
                                     @foreach ($commercials as $commercial)
                                         <option value="{{ $commercial->id }}"
                                             {{ in_array($commercial->id, old('commercial_id', $stagiaire->commercials->pluck('id')->toArray())) ? 'selected' : '' }}>
-                                            {{ strtoupper($commercial->user->formatted_name) }}</option>
+                                            {{ strtoupper($commercial->user->name) }} {{$commercial->prenom }}</option>
                                     @endforeach
                                 </select>
                                 @error('commercial_id')
@@ -308,7 +308,7 @@
                                     @foreach ($poleRelations as $poleRelation)
                                         <option value="{{ $poleRelation->id }}"
                                             {{ in_array($poleRelation->id, old('pole_relation_client_id', $stagiaire->poleRelationClient ? $stagiaire->poleRelationClient->pluck('id')->toArray() : [])) ? 'selected' : '' }}>
-                                            {{ strtoupper($poleRelation->user->formatted_name) }}</option>
+                                            {{ strtoupper($poleRelation->user->name) }} {{$poleRelation->prenom}}</option>
                                     @endforeach
                                 </select>
                                 @error('pole_relation_client_id')
