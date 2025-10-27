@@ -51,6 +51,41 @@ class StagiaireController extends Controller
     }
 
     /**
+     * Affiche la liste des stagiaires (page d'administration)
+     */
+    public function index(Request $request)
+    {
+        // Charger les stagiaires avec leur user lié
+        $stagiaires = Stagiaire::with('user')->orderBy('id', 'desc')->get();
+
+        return view('admin.stagiaires.index', compact('stagiaires'));
+    }
+
+    /**
+     * Désactiver un stagiaire
+     */
+    public function desactive($id)
+    {
+        $stagiaire = Stagiaire::findOrFail($id);
+        $stagiaire->statut = 0;
+        $stagiaire->save();
+
+        return redirect()->route('stagiaires.index')->with('success', 'Stagiaire désactivé.');
+    }
+
+    /**
+     * Activer un stagiaire
+     */
+    public function active($id)
+    {
+        $stagiaire = Stagiaire::findOrFail($id);
+        $stagiaire->statut = 1;
+        $stagiaire->save();
+
+        return redirect()->route('stagiaires.index')->with('success', 'Stagiaire activé.');
+    }
+
+    /**
      * Télécharger un rapport d'import généré en arrière-plan
      * @param string $filename
      */
