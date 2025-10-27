@@ -97,6 +97,7 @@ Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function
     Route::patch('/stagiaires/{id}/desactive', [StagiaireController::class, 'desactive'])->name('stagiaires.desactive');
     Route::patch('/stagiaires/{id}/active', [StagiaireController::class, 'active'])->name('stagiaires.active');
     Route::post('/import/stagiaires', [StagiaireController::class, 'import'])->name('stagiaires.import');
+    Route::get('/import/report/{filename}', [StagiaireController::class, 'downloadImportReport'])->name('stagiaires.import.report');
     Route::get('/telecharger-modele-stagiaire', [StagiaireController::class, 'downloadStagiaireModel'])->name('download.stagiaire.model');
 
     Route::resource('quiz', QuizController::class);
