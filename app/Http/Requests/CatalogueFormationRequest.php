@@ -32,6 +32,18 @@ class CatalogueFormationRequest extends FormRequest
             'cursus_pdf' => 'nullable|file|mimes:pdf|max:10240',
             'tarif' => 'required|numeric|min:0',
             'statut' => 'required|in:1,0',
+            // Additional catalogue fields
+            'objectifs' => 'nullable|string|max:4000',
+            'programme' => 'nullable|string|max:4000',
+            'modalites' => 'nullable|string|max:2000',
+            'modalites_accompagnement' => 'nullable|string|max:2000',
+            'moyens_pedagogiques' => 'nullable|string|max:2000',
+            'modalites_suivi' => 'nullable|string|max:2000',
+            'evaluation' => 'nullable|string|max:2000',
+            'lieu' => 'nullable|string|max:255',
+            'niveau' => 'nullable|string|max:255',
+            'public_cible' => 'nullable|string|max:255',
+            'nombre_participants' => 'nullable|integer|min:1',
         ];
     }
 
@@ -68,6 +80,19 @@ class CatalogueFormationRequest extends FormRequest
 
             'statut.required' => 'Le statut est obligatoire.',
             'statut.in' => 'Le statut doit être 1 (actif) ou 0 (inactif).',
+            // Messages for new fields
+            'objectifs.max' => 'Les objectifs sont trop longs.',
+            'programme.max' => 'Le programme est trop long.',
+            'modalites.max' => 'Les modalités sont trop longues.',
+            'modalites_accompagnement.max' => 'Les modalités d\'accompagnement sont trop longues.',
+            'moyens_pedagogiques.max' => 'Les moyens pédagogiques sont trop longs.',
+            'modalites_suivi.max' => 'Les modalités de suivi sont trop longues.',
+            'evaluation.max' => 'Le champ évaluation est trop long.',
+            'lieu.max' => 'Le lieu est trop long.',
+            'niveau.max' => 'Le niveau est trop long.',
+            'public_cible.max' => 'Le public cible est trop long.',
+            'nombre_participants.integer' => 'Le nombre de participants doit être un nombre entier.',
+            'nombre_participants.min' => 'Le nombre de participants doit être au moins 1.',
         ];
     }
 }
