@@ -325,6 +325,104 @@ class StagiaireController extends Controller
     }
 
     /**
+     * Show form to create a new stagiaire
+     */
+    public function create()
+    {
+        $stagiaire = new Stagiaire();
+        $formations = CatalogueFormation::with('formation')->orderBy('titre')->get();
+        $formateurs = Formateur::with('user')->orderBy('id')->get();
+        $commercials = Commercial::with('user')->orderBy('id')->get();
+        $poleRelations = PoleRelationClient::with('user')->orderBy('id')->get();
+        $partenaires = Partenaire::orderBy('identifiant')->get();
+
+        return view('admin.stagiaires.create', compact('stagiaire', 'formations', 'formateurs', 'commercials', 'poleRelations', 'partenaires'));
+    }
+
+    /**
+     * Store a newly created stagiaire and user
+     */
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'prenom' => 'nullable|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:6',
+            'telephone' => 'nullable|string|max:50',
+            'adresse' => 'nullable|string|max:255',
+            'ville' => 'nullable|string|max:255',
+            'code_postal' => 'nullable|string|max:20',
+            'civilite' => 'nullable|string|max:20',
+            'date_naissance' => 'nullable|date',
+            'date_debut_formation' => 'nullable|date',
+            'date_inscription' => 'nullable|date',
+            'partenaire_id' => 'nullable|exists:partenaires,id',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $user = User::create([
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'password' => Hash::make($data['password']),
+                'role' => 'stagiaire',
+            ]);
+
+            $stagiaire = Stagiaire::create([
+                'user_id' => $user->id,
+                'civilite' => $data['civilite'] ?? null,
+                'prenom' => $data['prenom'] ?? null,
+                'telephone' => $data['telephone'] ?? null,
+                'adresse' => $data['adresse'] ?? null,
+                'ville' => $data['ville'] ?? null,
+                'code_postal' => $data['code_postal'] ?? null,
+                'date_naissance' => $data['date_naissance'] ?? null,
+                'date_debut_formation' => $data['date_debut_formation'] ?? null,
+                'date_inscription' => $data['date_inscription'] ?? null,
+                'partenaire_id' => $data['partenaire_id'] ?? null,
+                'statut' => 1,
+            ]);
+
+            // formations
+            $formationsInput = $request->input('formations', []);
+            if (!empty($formationsInput) && is_array($formationsInput)) {
+                $sync = [];
+                foreach ($formationsInput as $fid => $vals) {
+                    if (isset($vals['selected']) && $vals['selected']) {
+                        $sync[$fid] = [
+                            'date_debut' => $vals['date_debut'] ?? null,
+                            'date_inscription' => $vals['date_inscription'] ?? null,
+                            'date_fin' => $vals['date_fin'] ?? null,
+                            'formateur_id' => $vals['formateur_id'] ?? null,
+                        ];
+                    }
+                }
+                $stagiaire->catalogue_formations()->sync($sync);
+            }
+
+            // commercials
+            if ($request->has('commercial_id')) {
+                $commercialIds = array_filter((array)$request->input('commercial_id', []));
+                $stagiaire->commercials()->sync($commercialIds);
+            }
+
+            if ($request->has('pole_relation_client_id')) {
+                $poleIds = array_filter((array)$request->input('pole_relation_client_id', []));
+                $stagiaire->poleRelationClient()->sync($poleIds);
+            }
+
+            DB::commit();
+
+            return redirect()->route('stagiaires.show', $stagiaire->id)->with('success', 'Stagiaire créé.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Erreur création stagiaire: ' . $e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'Erreur lors de la création: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Update the specified stagiaire in storage.
      */
     public function update(Request $request, $id)

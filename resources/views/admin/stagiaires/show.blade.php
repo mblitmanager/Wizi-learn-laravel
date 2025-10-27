@@ -165,7 +165,7 @@
                                         <div class="row mb-3">
                                             <label class="col-sm-4 ">Date de naissance :</label>
                                             <div class="col-sm-8">
-                                                {{ $stagiaire->created_at->format('d/m/Y') }}
+                                                {{ $stagiaire->date_naissance ? \Carbon\Carbon::parse($stagiaire->date_naissance)->format('d/m/Y') : 'Non renseignée' }}
                                             </div>
                                         </div>
 
@@ -335,7 +335,7 @@
                                                                         <div class="d-flex align-items-center">
                                                                             <i class="bx bx-user-circle me-3"
                                                                                 style="font-size: 1.5rem;"></i>
-                                                                            <div class=""> {{ $formateur->user->name }}
+                                                                            <div class="">{{ $formateur->prenom }} {{ $formateur->user->name }}
                                                                             </div>
                                                                         </div>
                                                                     </button>
@@ -431,7 +431,7 @@
                                                                         <div class="d-flex align-items-center">
                                                                             <i class="bx bx-user-circle me-3"
                                                                                 style="font-size: 1.5rem;"></i>
-                                                                            <div class=""> {{ $cormecial->user->name }}
+                                                                            <div class="">{{ $cormecial->prenom }}  {{ $cormecial->user->name }}
                                                                             </div>
                                                                         </div>
                                                                     </button>
@@ -489,7 +489,7 @@
                                                                         <div class="d-flex align-items-center">
                                                                             <i class="bx bx-user-voice me-3"
                                                                                 style="font-size: 1.5rem;"></i>
-                                                                            <div class=""> {{ $pole->user->name }}</div>
+                                                                            <div class=""> {{ $pole->prenom }} {{ $pole->user->name }} </div>
                                                                         </div>
                                                                     </button>
                                                                 </h2>

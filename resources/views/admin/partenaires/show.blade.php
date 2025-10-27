@@ -144,7 +144,12 @@
                                                     <div class="col-md-4 mb-3">
                                                         <div class="border rounded p-3 h-100">
                                                             <div class="fw-bold">
-                                                                {{ trim(($c['prenom'] ?? '') . ' ' . ($c['nom'] ?? '')) }}
+                                                                @if(!empty($c['nom']))
+                                                                    <div><strong>Nom :</strong> {{ $c['nom'] }}</div>
+                                                                @endif
+                                                                @if(!empty($c['prenom']))
+                                                                    <div><strong>Prénom :</strong> {{ $c['prenom'] }}</div>
+                                                                @endif
                                                             </div>
 
                                                             @if (!empty($c['fonction']))
