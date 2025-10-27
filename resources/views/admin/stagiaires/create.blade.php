@@ -246,7 +246,8 @@
                                                                         @foreach ($formateurs as $formateur)
                                                                             <option value="{{ $formateur->id }}"
                                                                                 {{ old("formations.{$formation->id}.formateur_id") == $formateur->id ? 'selected' : '' }}>
-                                                                                {{ $formateur->user->name }}
+                                                                                {{ $formateur->user->name }} {{ $formateur->prenom }}
+                                                                              
                                                                             </option>
                                                                         @endforeach
                                                                     </select>

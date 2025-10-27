@@ -291,7 +291,7 @@
                                                                             </li>
                                                                             <li class="list-group-item"><strong>Formateur
                                                                                     :</strong>
-                                                                                {{ $formateur ? $formateur->user->name : 'Non renseigné' }}
+                                                                                {{ $formateur ? $formateur->user->name : '' }} {{ $formateur ? $formateur->prenom : '' }}
                                                                             </li>
                                                                             <li class="list-group-item"><strong>Date de
                                                                                     création :</strong>

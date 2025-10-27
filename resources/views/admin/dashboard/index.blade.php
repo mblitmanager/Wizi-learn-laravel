@@ -216,7 +216,7 @@
                             <select id="formateurFilterMonthly" class="form-select">
                                 <option value="">Tous</option>
                                 @foreach ($formateurs ?? [] as $formateur)
-                                    <option value="{{ $formateur->id }}">{{ $formateur->user->name }}</option>
+                                    <option value="{{ $formateur->id }}">{{ $formateur->user->name }} {{ $formateur->prenom }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -225,7 +225,7 @@
                             <select id="commercialFilterMonthly" class="form-select">
                                 <option value="">Tous</option>
                                 @foreach ($commerciaux ?? [] as $commercial)
-                                    <option value="{{ $commercial->id }}">{{ $commercial->user->name }}</option>
+                                    <option value="{{ $commercial->id }}">{{ $commercial->user->name }} {{ $commercial->prenom }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -234,7 +234,7 @@
                             <select id="poleFilterMonthly" class="form-select">
                                 <option value="">Tous</option>
                                 @foreach ($poles ?? [] as $pole)
-                                    <option value="{{ $pole->id }}">{{ $pole->user->name }}</option>
+                                    <option value="{{ $pole->id }}">{{ $pole->user->name }} {{ $pole->prenom }}</option>
                                 @endforeach
                             </select>
                         </div>
