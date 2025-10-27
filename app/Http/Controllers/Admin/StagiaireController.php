@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Facades\Response;
 use App\Models\ImportJob;
+use Illuminate\Support\Facades\Hash;
 
 class StagiaireController extends Controller
 {
@@ -338,24 +339,72 @@ class StagiaireController extends Controller
             'adresse' => 'nullable|string|max:255',
             'ville' => 'nullable|string|max:255',
             'code_postal' => 'nullable|string|max:20',
+            'password' => 'nullable|string|min:6',
+            'civilite' => 'nullable|string|max:20',
+            'date_naissance' => 'nullable|date',
+            'partenaire_id' => 'nullable|exists:partenaires,id',
         ]);
 
-        // Update user
-        $user = $stagiaire->user;
-        if ($user) {
-            $user->name = $data['name'];
-            $user->email = $data['email'];
-            $user->save();
+        DB::beginTransaction();
+        try {
+            // Update user
+            $user = $stagiaire->user;
+            if ($user) {
+                $user->name = $data['name'];
+                $user->email = $data['email'];
+                if (!empty($data['password'])) {
+                    $user->password = Hash::make($data['password']);
+                }
+                $user->save();
+            }
+
+            // Update stagiaire fields
+            $stagiaire->civilite = $data['civilite'] ?? $stagiaire->civilite;
+            $stagiaire->prenom = $data['prenom'] ?? $stagiaire->prenom;
+            $stagiaire->telephone = $data['telephone'] ?? $stagiaire->telephone;
+            $stagiaire->adresse = $data['adresse'] ?? $stagiaire->adresse;
+            $stagiaire->ville = $data['ville'] ?? $stagiaire->ville;
+            $stagiaire->code_postal = $data['code_postal'] ?? $stagiaire->code_postal;
+            $stagiaire->date_naissance = $data['date_naissance'] ?? $stagiaire->date_naissance;
+            $stagiaire->partenaire_id = $data['partenaire_id'] ?? $stagiaire->partenaire_id;
+            $stagiaire->save();
+
+            // Sync formations (pivot) with pivot data if provided
+            $formationsInput = $request->input('formations', []);
+            if (!empty($formationsInput) && is_array($formationsInput)) {
+                $sync = [];
+                foreach ($formationsInput as $fid => $vals) {
+                    if (isset($vals['selected']) && $vals['selected']) {
+                        $sync[$fid] = [
+                            'date_debut' => $vals['date_debut'] ?? null,
+                            'date_inscription' => $vals['date_inscription'] ?? null,
+                            'date_fin' => $vals['date_fin'] ?? null,
+                            'formateur_id' => $vals['formateur_id'] ?? null,
+                        ];
+                    }
+                }
+                // sync will replace existing relations; if empty, detach all
+                $stagiaire->catalogue_formations()->sync($sync);
+            }
+
+            // Sync commercials and pole relation clients if present
+            if ($request->has('commercial_id')) {
+                $commercialIds = array_filter((array)$request->input('commercial_id', []));
+                $stagiaire->commercials()->sync($commercialIds);
+            }
+
+            if ($request->has('pole_relation_client_id')) {
+                $poleIds = array_filter((array)$request->input('pole_relation_client_id', []));
+                $stagiaire->poleRelationClient()->sync($poleIds);
+            }
+
+            DB::commit();
+
+            return redirect()->route('stagiaires.show', $stagiaire->id)->with('success', 'Stagiaire mis à jour.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Erreur mise à jour stagiaire: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Erreur lors de la mise à jour: ' . $e->getMessage());
         }
-
-        // Update stagiaire fields
-        $stagiaire->prenom = $data['prenom'] ?? $stagiaire->prenom;
-        $stagiaire->telephone = $data['telephone'] ?? $stagiaire->telephone;
-        $stagiaire->adresse = $data['adresse'] ?? $stagiaire->adresse;
-        $stagiaire->ville = $data['ville'] ?? $stagiaire->ville;
-        $stagiaire->code_postal = $data['code_postal'] ?? $stagiaire->code_postal;
-        $stagiaire->save();
-
-        return redirect()->route('stagiaires.show', $stagiaire->id)->with('success', 'Stagiaire mis à jour.');
     }
 }
