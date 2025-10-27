@@ -8,6 +8,10 @@ use App\Models\CatalogueFormation;
 use App\Models\Formation;
 use App\Models\Stagiaire;
 use App\Models\User;
+use App\Models\Formateur;
+use App\Models\Commercial;
+use App\Models\PoleRelationClient;
+use App\Models\Partenaire;
 use App\Jobs\ImportStagiairesJob;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
@@ -300,5 +304,58 @@ class StagiaireController extends Controller
         $fileName = 'modele_import_stagiaire.xlsx';
 
         return Response::download($filePath, $fileName);
+    }
+
+    /**
+     * Show the form for editing the specified stagiaire.
+     */
+    public function edit($id)
+    {
+        $stagiaire = Stagiaire::with(['user', 'catalogue_formations', 'commercials', 'poleRelationClient'])->findOrFail($id);
+
+        // Collections used by the edit form
+        $formations = CatalogueFormation::with('formation')->orderBy('titre')->get();
+        $formateurs = Formateur::with('user')->orderBy('id')->get();
+        $commercials = Commercial::with('user')->orderBy('id')->get();
+        $poleRelations = PoleRelationClient::with('user')->orderBy('id')->get();
+        $partenaires = Partenaire::orderBy('identifiant')->get();
+
+        return view('admin.stagiaires.edit', compact('stagiaire', 'formations', 'formateurs', 'commercials', 'poleRelations', 'partenaires'));
+    }
+
+    /**
+     * Update the specified stagiaire in storage.
+     */
+    public function update(Request $request, $id)
+    {
+        $stagiaire = Stagiaire::with('user')->findOrFail($id);
+
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'prenom' => 'nullable|string|max:255',
+            'email' => 'required|email|max:255',
+            'telephone' => 'nullable|string|max:50',
+            'adresse' => 'nullable|string|max:255',
+            'ville' => 'nullable|string|max:255',
+            'code_postal' => 'nullable|string|max:20',
+        ]);
+
+        // Update user
+        $user = $stagiaire->user;
+        if ($user) {
+            $user->name = $data['name'];
+            $user->email = $data['email'];
+            $user->save();
+        }
+
+        // Update stagiaire fields
+        $stagiaire->prenom = $data['prenom'] ?? $stagiaire->prenom;
+        $stagiaire->telephone = $data['telephone'] ?? $stagiaire->telephone;
+        $stagiaire->adresse = $data['adresse'] ?? $stagiaire->adresse;
+        $stagiaire->ville = $data['ville'] ?? $stagiaire->ville;
+        $stagiaire->code_postal = $data['code_postal'] ?? $stagiaire->code_postal;
+        $stagiaire->save();
+
+        return redirect()->route('stagiaires.show', $stagiaire->id)->with('success', 'Stagiaire mis à jour.');
     }
 }
