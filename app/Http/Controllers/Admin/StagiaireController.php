@@ -28,6 +28,9 @@ class StagiaireController extends Controller
             'file' => 'required|file|mimes:xlsx,xls'
         ]);
 
+        // allow optional background flag (checkbox). If not present, default to true.
+        $background = $request->boolean('background', true);
+
         try {
             $file = $request->file('file');
 
@@ -47,11 +50,34 @@ class StagiaireController extends Controller
                 'finished_at' => null,
             ]);
 
-            // Dispatcher le job pour exécuter l'import en background en lui passant l'id
-            ImportStagiairesJob::dispatch($fullPath, $importJob->id);
+            if ($background) {
+                // Dispatch the job to run in background
+                ImportStagiairesJob::dispatch($fullPath, $importJob->id);
 
-            return redirect()->route('stagiaires.index')
-                ->with('success', 'Importation lancée en tâche de fond. Le rapport sera généré dans storage/reports une fois terminée.');
+                return redirect()->route('stagiaires.index')
+                    ->with('success', 'Importation lancée en tâche de fond. Le rapport sera généré dans storage/reports une fois terminée.');
+            } else {
+                // Run synchronously (blocking) in this request by executing the job handler directly.
+                try {
+                    $job = new ImportStagiairesJob($fullPath, $importJob->id);
+                    // call handle() directly to execute import inline
+                    $job->handle();
+
+                    // reload importJob to get updated report filename/status
+                    $importJob->refresh();
+                    $msg = 'Importation terminée.';
+                    if (!empty($importJob->report_filename)) {
+                        $msg .= ' Rapport: ' . $importJob->report_filename;
+                    }
+
+                    return redirect()->route('stagiaires.index')
+                        ->with('success', $msg);
+                } catch (\Exception $e) {
+                    Log::error('Erreur import synchrone : ' . $e->getMessage());
+                    return redirect()->route('stagiaires.index')
+                        ->with('error', 'Erreur lors de l\'import synchrone: ' . $e->getMessage());
+                }
+            }
         } catch (\Exception $e) {
             Log::error('Erreur import : ' . $e->getMessage());
             return redirect()->route('stagiaires.index')

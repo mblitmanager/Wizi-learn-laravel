@@ -66,6 +66,14 @@
                                         accept=".xlsx,.xls">
                                 </div>
 
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" value="1" id="background"
+                                        name="background" checked>
+                                    <label class="form-check-label" for="background">
+                                        Exécuter en tâche de fond (recommandé)
+                                    </label>
+                                </div>
+
                                 <div class="progress mb-3 d-none" id="progressBarWrapper">
                                     <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
                                         style="width: 100%;" id="progressBar">
@@ -234,6 +242,7 @@
         (function() {
             var statusUrl = '{{ route('stagiaires.import.status') }}';
             var reportBase = '{{ url('/administrateur/import/report') }}';
+            var pollInterval = {{ config('imports.poll_interval', 5) }} * 1000;
 
             function updateStatus() {
                 $.getJSON(statusUrl, function(data) {
@@ -253,9 +262,34 @@
                 });
             }
 
-            // Start polling every 5 seconds
-            updateStatus();
-            setInterval(updateStatus, 5000);
+            // Try listening via Laravel Echo if available (WebSockets/broadcast), fallback to polling
+            if (window.Echo && typeof window.Echo.channel === 'function') {
+                try {
+                    window.Echo.channel('import-status')
+                        .listen('ImportStatusUpdated', function(e) {
+                            var container = $('#importStatusContainer');
+                            if (!container.length) return;
+                            if (e.status === 'running' || e.status === 'queued') {
+                                container.html('<span class="badge bg-warning text-dark" title="Un import est en cours"> <i class="bx bx-loader-alt bx-spin"></i> Import en cours...</span>');
+                            } else if (e.status === 'completed' && e.report) {
+                                var url = reportBase + '/' + encodeURIComponent(e.report);
+                                container.html('<a href="' + url + '" id="lastReportLink" class="btn btn-sm btn-outline-primary">Dernier rapport</a>');
+                            } else if (e.status === 'failed') {
+                                container.html('<span class="badge bg-danger">Import échoué</span>');
+                            } else {
+                                container.html('');
+                            }
+                        });
+                } catch (err) {
+                    // fallback to polling if Echo isn't configured correctly
+                    updateStatus();
+                    setInterval(updateStatus, pollInterval);
+                }
+            } else {
+                // Start polling
+                updateStatus();
+                setInterval(updateStatus, pollInterval);
+            }
         })();
     </script>
 @endsection
