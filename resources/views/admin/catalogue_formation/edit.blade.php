@@ -76,239 +76,267 @@
                         <div class="card-body">
                             <h5 class="text-wizi">Modifier le catalogue formation</h5>
 
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <label for="titre" class="form-label">Titre</label>
-                                    <input type="text" name="titre" id="titre"
-                                        class="form-control mb-2 @error('titre') is-invalid @enderror"
-                                        value="{{ old('titre', $catalogueFormation->titre) }}" required>
-                                    @error('titre')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
+                            <div class="accordion" id="catalogueAccordionEdit">
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="headingGeneralEdit">
+                                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseGeneralEdit" aria-expanded="true" aria-controls="collapseGeneralEdit">
+                                            Général
+                                        </button>
+                                    </h2>
+                                    <div id="collapseGeneralEdit" class="accordion-collapse collapse show" aria-labelledby="headingGeneralEdit" data-bs-parent="#catalogueAccordionEdit">
+                                        <div class="accordion-body">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <label for="titre" class="form-label">Titre</label>
+                                                    <input type="text" name="titre" id="titre"
+                                                        class="form-control mb-2 @error('titre') is-invalid @enderror"
+                                                        value="{{ old('titre', $catalogueFormation->titre) }}" required>
+                                                    @error('titre')
+                                                        <div class="invalid-feedback">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
 
-                                <div class="col-md-6">
-                                    <label for="description" class="form-label">Description</label>
-                                    <textarea name="description" id="description" class="form-control mb-2 @error('description') is-invalid @enderror">{{ old('description', $catalogueFormation->description) }}</textarea>
-                                    @error('description')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
+                                                <div class="col-md-6">
+                                                    <label for="description" class="form-label">Description</label>
+                                                    <textarea name="description" id="description" class="form-control mb-2 @error('description') is-invalid @enderror">{{ old('description', $catalogueFormation->description) }}</textarea>
+                                                    @error('description')
+                                                        <div class="invalid-feedback">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+                                            </div>
 
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <label for="duree" class="form-label">Durée (en heures)</label>
-                                    <input type="number" name="duree" id="duree"
-                                        class="form-control mb-2 @error('duree') is-invalid @enderror"
-                                        value="{{ old('duree', $catalogueFormation->duree) }}" required>
-                                    @error('duree')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
+                                            <div class="row mt-2">
+                                                <div class="col-md-6">
+                                                    <label for="duree" class="form-label">Durée (en heures)</label>
+                                                    <input type="number" name="duree" id="duree"
+                                                        class="form-control mb-2 @error('duree') is-invalid @enderror"
+                                                        value="{{ old('duree', $catalogueFormation->duree) }}" required>
+                                                    @error('duree')
+                                                        <div class="invalid-feedback">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
 
-                                <div class="col-md-6">
-                                    <label for="formation_id" class="form-label">Formation</label>
-                                    <select name="formation_id" id="formation_id"
-                                        class="form-select mb-2 @error('formation_id') is-invalid @enderror" required>
-                                        <option value="">Sélectionnez une formation</option>
-                                        @foreach ($formations as $f)
-                                            <option value="{{ $f->id }}"
-                                                {{ old('formation_id', $catalogueFormation->formation_id) == $f->id ? 'selected' : '' }}>
-                                                {{ $f->titre }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    @error('formation_id')
-                                        <div class="invalid-feedback d-block">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
+                                                <div class="col-md-6">
+                                                    <label for="formation_id" class="form-label">Formation</label>
+                                                    <select name="formation_id" id="formation_id"
+                                                        class="form-select mb-2 @error('formation_id') is-invalid @enderror" required>
+                                                        <option value="">Sélectionnez une formation</option>
+                                                        @foreach ($formations as $f)
+                                                            <option value="{{ $f->id }}"
+                                                                {{ old('formation_id', $catalogueFormation->formation_id) == $f->id ? 'selected' : '' }}>
+                                                                {{ $f->titre }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                    @error('formation_id')
+                                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+                                            </div>
 
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <label for="certification" class="form-label">Certification</label>
-                                    <input type="text" name="certification" id="certification"
-                                        class="form-control mb-2 @error('certification') is-invalid @enderror"
-                                        value="{{ old('certification', $catalogueFormation->certification) }}">
-                                    @error('certification')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
+                                            <div class="row mt-2">
+                                                <div class="col-md-6">
+                                                    <label for="certification" class="form-label">Certification</label>
+                                                    <input type="text" name="certification" id="certification"
+                                                        class="form-control mb-2 @error('certification') is-invalid @enderror"
+                                                        value="{{ old('certification', $catalogueFormation->certification) }}">
+                                                    @error('certification')
+                                                        <div class="invalid-feedback">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
 
-                                <div class="col-md-6">
-                                    <label for="prerequis" class="form-label">Prérequis</label>
-                                    <input type="text" name="prerequis" id="prerequis"
-                                        class="form-control mb-2 @error('prerequis') is-invalid @enderror"
-                                        value="{{ old('prerequis', $catalogueFormation->prerequis) }}">
-                                    @error('prerequis')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
+                                                <div class="col-md-6">
+                                                    <label for="prerequis" class="form-label">Prérequis</label>
+                                                    <input type="text" name="prerequis" id="prerequis"
+                                                        class="form-control mb-2 @error('prerequis') is-invalid @enderror"
+                                                        value="{{ old('prerequis', $catalogueFormation->prerequis) }}">
+                                                    @error('prerequis')
+                                                        <div class="invalid-feedback">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+                                            </div>
 
-                            <div class="row mt-3">
-                                <div class="col-md-12">
-                                    <label for="objectifs" class="form-label">Objectifs</label>
-                                    <textarea name="objectifs" id="objectifs" class="form-control mb-2">{{ old('objectifs', $catalogueFormation->objectifs) }}</textarea>
-                                </div>
-                            </div>
+                                            <div class="row mt-3">
+                                                <div class="col-md-6">
+                                                    <label for="image_url" class="form-label">Image</label>
+                                                    <input type="file" name="image_url" id="image_url"
+                                                        class="form-control mb-2 @error('image_url') is-invalid @enderror">
+                                                    @error('image_url')
+                                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                    @enderror
 
-                            <div class="row mt-3">
-                                <div class="col-md-12">
-                                    <label for="programme" class="form-label">Programme</label>
-                                    <textarea name="programme" id="programme" class="form-control mb-2">{{ old('programme', $catalogueFormation->programme) }}</textarea>
-                                </div>
-                            </div>
+                                                    @if ($catalogueFormation->image_url)
+                                                        @php
+                                                            $extension = strtolower(
+                                                                pathinfo($catalogueFormation->image_url, PATHINFO_EXTENSION),
+                                                            );
+                                                        @endphp
 
-                            <div class="row mt-3">
-                                <div class="col-md-6">
-                                    <label for="lieu" class="form-label">Lieu</label>
-                                    <input type="text" name="lieu" id="lieu" class="form-control mb-2" value="{{ old('lieu', $catalogueFormation->lieu) }}">
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="niveau" class="form-label">Niveau</label>
-                                    <input type="text" name="niveau" id="niveau" class="form-control mb-2" value="{{ old('niveau', $catalogueFormation->niveau) }}">
-                                </div>
-                            </div>
+                                                        <div class="mt-2 text-center">
+                                                            @if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp']))
+                                                                <img src="{{ asset($catalogueFormation->image_url) }}"
+                                                                    alt="Image actuelle" class="img-fluid rounded shadow"
+                                                                    style="max-width: 250px;">
+                                                            @elseif (in_array($extension, ['mp4', 'webm', 'ogg']))
+                                                                <video controls class="rounded shadow"
+                                                                    style="max-width: 100%; height: auto;">
+                                                                    <source src="{{ asset('storage/' . $catalogueFormation->image_url) }}"
+                                                                        type="video/{{ $extension }}">
+                                                                    Votre navigateur ne supporte pas la lecture de vidéos.
+                                                                </video>
+                                                            @elseif (in_array($extension, ['mp3', 'wav', 'ogg']))
+                                                                <audio controls class="rounded shadow mt-2" style="width: 100%;">
+                                                                    <source src="{{ asset($catalogueFormation->image_url) }}"
+                                                                        type="audio/{{ $extension }}">
+                                                                    Votre navigateur ne supporte pas la lecture d'audio.
+                                                                </audio>
+                                                            @else
+                                                                <a href="{{ asset($catalogueFormation->image_url) }}" target="_blank"
+                                                                    class="btn btn-outline-primary">
+                                                                    Télécharger le fichier
+                                                                </a>
+                                                            @endif
+                                                        </div>
+                                                    @endif
 
-                            <div class="row mt-3">
-                                <div class="col-md-6">
-                                    <label for="public_cible" class="form-label">Public cible</label>
-                                    <input type="text" name="public_cible" id="public_cible" class="form-control mb-2" value="{{ old('public_cible', $catalogueFormation->public_cible) }}">
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="nombre_participants" class="form-label">Nombre de participants</label>
-                                    <input type="number" name="nombre_participants" id="nombre_participants" class="form-control mb-2" value="{{ old('nombre_participants', $catalogueFormation->nombre_participants) }}">
-                                </div>
-                            </div>
+                                                </div>
 
-                            <div class="row mt-3">
-                                <div class="col-md-12">
-                                    <label for="modalites" class="form-label">Modalités</label>
-                                    <textarea name="modalites" id="modalites" class="form-control mb-2">{{ old('modalites', $catalogueFormation->modalites) }}</textarea>
-                                </div>
-                            </div>
+                                                <div class="col-md-6">
+                                                    <label for="cursus_pdf" class="form-label">Cursus PDF</label>
+                                                    <input type="file" name="cursus_pdf" id="cursus_pdf" accept=".pdf"
+                                                        class="form-control mb-2 @error('cursus_pdf') is-invalid @enderror">
+                                                    @error('cursus_pdf')
+                                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                    @enderror
 
-                            <div class="row mt-3">
-                                <div class="col-md-12">
-                                    <label for="modalites_accompagnement" class="form-label">Modalités d'accompagnement</label>
-                                    <textarea name="modalites_accompagnement" id="modalites_accompagnement" class="form-control mb-2">{{ old('modalites_accompagnement', $catalogueFormation->modalites_accompagnement) }}</textarea>
-                                </div>
-                            </div>
+                                                    @if ($catalogueFormation->cursus_pdf)
+                                                        <div class="mt-2">
+                                                            <a href="{{ route('catalogue_formation.download-pdf', $catalogueFormation->id) }}"
+                                                                class="text-blue-600 hover:text-blue-800">
+                                                                Voir le PDF actuel
+                                                            </a>
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            </div>
 
-                            <div class="row mt-3">
-                                <div class="col-md-12">
-                                    <label for="moyens_pedagogiques" class="form-label">Moyens pédagogiques</label>
-                                    <textarea name="moyens_pedagogiques" id="moyens_pedagogiques" class="form-control mb-2">{{ old('moyens_pedagogiques', $catalogueFormation->moyens_pedagogiques) }}</textarea>
-                                </div>
-                            </div>
+                                            <div class="row mt-2">
+                                                <div class="col-md-6">
+                                                    <label for="tarif" class="form-label">Tarif</label>
+                                                    <input type="number" name="tarif" id="tarif"
+                                                        class="form-control mb-2 @error('tarif') is-invalid @enderror"
+                                                        value="{{ old('tarif', $catalogueFormation->tarif) }}" required step="1">
+                                                    @error('tarif')
+                                                        <div class="invalid-feedback">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
 
-                            <div class="row mt-3">
-                                <div class="col-md-12">
-                                    <label for="modalites_suivi" class="form-label">Modalités de suivi</label>
-                                    <textarea name="modalites_suivi" id="modalites_suivi" class="form-control mb-2">{{ old('modalites_suivi', $catalogueFormation->modalites_suivi) }}</textarea>
-                                </div>
-                            </div>
-
-                            <div class="row mt-3">
-                                <div class="col-md-12">
-                                    <label for="evaluation" class="form-label">Evaluation</label>
-                                    <textarea name="evaluation" id="evaluation" class="form-control mb-2">{{ old('evaluation', $catalogueFormation->evaluation) }}</textarea>
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <label for="image_url" class="form-label">Image</label>
-                                    <input type="file" name="image_url" id="image_url"
-                                        class="form-control mb-2 @error('image_url') is-invalid @enderror">
-                                    @error('image_url')
-                                        <div class="invalid-feedback d-block">{{ $message }}</div>
-                                    @enderror
-
-                                    @if ($catalogueFormation->image_url)
-                                        @php
-                                            $extension = strtolower(
-                                                pathinfo($catalogueFormation->image_url, PATHINFO_EXTENSION),
-                                            );
-                                        @endphp
-
-                                        <div class="mt-2 text-center">
-                                            @if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp']))
-                                                <img src="{{ asset($catalogueFormation->image_url) }}"
-                                                    alt="Image actuelle" class="img-fluid rounded shadow"
-                                                    style="max-width: 250px;">
-                                            @elseif (in_array($extension, ['mp4', 'webm', 'ogg']))
-                                                <video controls class="rounded shadow"
-                                                    style="max-width: 100%; height: auto;">
-                                                    <source src="{{ asset('storage/' . $catalogueFormation->image_url) }}"
-                                                        type="video/{{ $extension }}">
-                                                    Votre navigateur ne supporte pas la lecture de vidéos.
-                                                </video>
-                                            @elseif (in_array($extension, ['mp3', 'wav', 'ogg']))
-                                                <audio controls class="rounded shadow mt-2" style="width: 100%;">
-                                                    <source src="{{ asset($catalogueFormation->image_url) }}"
-                                                        type="audio/{{ $extension }}">
-                                                    Votre navigateur ne supporte pas la lecture d'audio.
-                                                </audio>
-                                            @else
-                                                <a href="{{ asset($catalogueFormation->image_url) }}" target="_blank"
-                                                    class="btn btn-outline-primary">
-                                                    Télécharger le fichier
-                                                </a>
-                                            @endif
+                                                <div class="col-md-6">
+                                                    <label for="statut" class="form-label">Statut</label>
+                                                    <select name="statut" id="statut"
+                                                        class="form-select mb-2 @error('statut') is-invalid @enderror" required>
+                                                        <option value="">Sélectionnez un statut</option>
+                                                        <option value="1"
+                                                            {{ old('statut', $catalogueFormation->statut) == '1' ? 'selected' : '' }}>
+                                                            Actif
+                                                        </option>
+                                                        <option value="0"
+                                                            {{ old('statut', $catalogueFormation->statut) == '0' ? 'selected' : '' }}>Inactif
+                                                        </option>
+                                                    </select>
+                                                    @error('statut')
+                                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+                                            </div>
                                         </div>
-                                    @endif
-
+                                    </div>
                                 </div>
 
-                                <div class="col-md-6">
-                                    <label for="cursus_pdf" class="form-label">Cursus PDF</label>
-                                    <input type="file" name="cursus_pdf" id="cursus_pdf" accept=".pdf"
-                                        class="form-control mb-2 @error('cursus_pdf') is-invalid @enderror">
-                                    @error('cursus_pdf')
-                                        <div class="invalid-feedback d-block">{{ $message }}</div>
-                                    @enderror
-
-                                    @if ($catalogueFormation->cursus_pdf)
-                                        <div class="mt-2">
-                                            <a href="{{ route('catalogue_formation.download-pdf', $catalogueFormation->id) }}"
-                                                class="text-blue-600 hover:text-blue-800">
-                                                Voir le PDF actuel
-                                            </a>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="headingProgrammeEdit">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseProgrammeEdit" aria-expanded="false" aria-controls="collapseProgrammeEdit">
+                                            Objectifs & Programme
+                                        </button>
+                                    </h2>
+                                    <div id="collapseProgrammeEdit" class="accordion-collapse collapse" aria-labelledby="headingProgrammeEdit" data-bs-parent="#catalogueAccordionEdit">
+                                        <div class="accordion-body">
+                                            <div class="row mt-1">
+                                                <div class="col-md-12">
+                                                    <label for="objectifs" class="form-label">Objectifs</label>
+                                                    <textarea name="objectifs" id="objectifs" class="form-control mb-2">{{ old('objectifs', $catalogueFormation->objectifs) }}</textarea>
+                                                </div>
+                                            </div>
+                                            <div class="row mt-2">
+                                                <div class="col-md-12">
+                                                    <label for="programme" class="form-label">Programme</label>
+                                                    <textarea name="programme" id="programme" class="form-control mb-2">{{ old('programme', $catalogueFormation->programme) }}</textarea>
+                                                </div>
+                                            </div>
                                         </div>
-                                    @endif
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <label for="tarif" class="form-label">Tarif</label>
-                                    <input type="number" name="tarif" id="tarif"
-                                        class="form-control mb-2 @error('tarif') is-invalid @enderror"
-                                        value="{{ old('tarif', $catalogueFormation->tarif) }}" required step="1">
-                                    @error('tarif')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
+                                    </div>
                                 </div>
 
-                                <div class="col-md-6">
-                                    <label for="statut" class="form-label">Statut</label>
-                                    <select name="statut" id="statut"
-                                        class="form-select mb-2 @error('statut') is-invalid @enderror" required>
-                                        <option value="">Sélectionnez un statut</option>
-                                        <option value="1"
-                                            {{ old('statut', $catalogueFormation->statut) == '1' ? 'selected' : '' }}>
-                                            Actif
-                                        </option>
-                                        <option value="0"
-                                            {{ old('statut', $catalogueFormation->statut) == '0' ? 'selected' : '' }}>Inactif
-                                        </option>
-                                    </select>
-                                    @error('statut')
-                                        <div class="invalid-feedback d-block">{{ $message }}</div>
-                                    @enderror
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="headingModalitesEdit">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseModalitesEdit" aria-expanded="false" aria-controls="collapseModalitesEdit">
+                                            Modalités & Logistique
+                                        </button>
+                                    </h2>
+                                    <div id="collapseModalitesEdit" class="accordion-collapse collapse" aria-labelledby="headingModalitesEdit" data-bs-parent="#catalogueAccordionEdit">
+                                        <div class="accordion-body">
+                                            <div class="row mt-2">
+                                                <div class="col-md-12">
+                                                    <label for="modalites" class="form-label">Modalités</label>
+                                                    <textarea name="modalites" id="modalites" class="form-control mb-2">{{ old('modalites', $catalogueFormation->modalites) }}</textarea>
+                                                </div>
+                                            </div>
+                                            <div class="row mt-2">
+                                                <div class="col-md-12">
+                                                    <label for="modalites_accompagnement" class="form-label">Modalités d'accompagnement</label>
+                                                    <textarea name="modalites_accompagnement" id="modalites_accompagnement" class="form-control mb-2">{{ old('modalites_accompagnement', $catalogueFormation->modalites_accompagnement) }}</textarea>
+                                                </div>
+                                            </div>
+                                            <div class="row mt-2">
+                                                <div class="col-md-12">
+                                                    <label for="moyens_pedagogiques" class="form-label">Moyens pédagogiques</label>
+                                                    <textarea name="moyens_pedagogiques" id="moyens_pedagogiques" class="form-control mb-2">{{ old('moyens_pedagogiques', $catalogueFormation->moyens_pedagogiques) }}</textarea>
+                                                </div>
+                                            </div>
+                                            <div class="row mt-2">
+                                                <div class="col-md-12">
+                                                    <label for="modalites_suivi" class="form-label">Modalités de suivi</label>
+                                                    <textarea name="modalites_suivi" id="modalites_suivi" class="form-control mb-2">{{ old('modalites_suivi', $catalogueFormation->modalites_suivi) }}</textarea>
+                                                </div>
+                                            </div>
+                                            <div class="row mt-2">
+                                                <div class="col-md-12">
+                                                    <label for="evaluation" class="form-label">Evaluation</label>
+                                                    <textarea name="evaluation" id="evaluation" class="form-control mb-2">{{ old('evaluation', $catalogueFormation->evaluation) }}</textarea>
+                                                </div>
+                                            </div>
+                                            <div class="row mt-2">
+                                                <div class="col-md-6">
+                                                    <label for="lieu" class="form-label">Lieu</label>
+                                                    <input type="text" name="lieu" id="lieu" class="form-control mb-2" value="{{ old('lieu', $catalogueFormation->lieu) }}">
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="niveau" class="form-label">Niveau</label>
+                                                    <input type="text" name="niveau" id="niveau" class="form-control mb-2" value="{{ old('niveau', $catalogueFormation->niveau) }}">
+                                                </div>
+                                            </div>
+                                            <div class="row mt-2">
+                                                <div class="col-md-6">
+                                                    <label for="public_cible" class="form-label">Public cible</label>
+                                                    <input type="text" name="public_cible" id="public_cible" class="form-control mb-2" value="{{ old('public_cible', $catalogueFormation->public_cible) }}">
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="nombre_participants" class="form-label">Nombre de participants</label>
+                                                    <input type="number" name="nombre_participants" id="nombre_participants" class="form-control mb-2" value="{{ old('nombre_participants', $catalogueFormation->nombre_participants) }}">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
