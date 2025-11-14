@@ -292,28 +292,28 @@ class QuizController extends Controller
                         'categorie' => $quiz->formation->categorie,
                     ] : null,
                     'questions' => $quiz->questions->map(function ($question) {
-                        return [
-                            'id' => (string) $question->id,
-                            'quizId' => $question->quiz_id,
-                            'text' => $question->text,
-                            'type' => $question->type,
-                            'explication' => $question->explication,
-                            'points' => $question->points,
-                            'astuce' => $question->astuce,
-                            'mediaUrl' => $question->media_url,
-                            'answers' => $question->reponses->map(function ($reponse) {
-                                return [
-                                    'id' => (string) $reponse->id,
-                                    'text' => $reponse->text,
-                                    'isCorrect' => $reponse->is_correct,
-                                    'position' => $reponse->position,
-                                    'matchPair' => $reponse->match_pair,
-                                    'bankGroup' => $reponse->bank_group,
-                                    'flashcardBack' => $reponse->flashcard_back,
-                                ];
-                            })->toArray(),
-                        ];
-                    })->toArray(),
+                    return [
+                        'id' => (string) $question->id,
+                        'quizId' => $question->quiz_id,
+                        'text' => $question->text,
+                        'type' => $question->type,
+                        'explication' => $question->explication,
+                        'points' => $question->points,
+                        'astuce' => $question->astuce,
+                        'mediaUrl' => $question->media_url,
+                        'answers' => $question->reponses->map(function ($reponse) {
+                            return [
+                                'id' => (string) $reponse->id,
+                                'text' => $reponse->text,
+                                'isCorrect' => $reponse->is_correct,
+                                'position' => $reponse->position,
+                                'matchPair' => $reponse->match_pair,
+                                'bankGroup' => $reponse->bank_group,
+                                'flashcardBack' => $reponse->flashcard_back,
+                            ];
+                        })->toArray(),
+                    ];
+                })->toArray(),
                 ];
                 return [
                     'id' => (string) $progression->id,
@@ -1095,8 +1095,13 @@ class QuizController extends Controller
     public function getGlobalClassement()
     {
         try {
-            // Charger les classements avec stagiaire + user + formateurs
-            $classements = Classement::with(['stagiaire.user', 'stagiaire.formateurs.user', 'quiz'])
+            // Charger les classements avec stagiaire + user + formateurs + leurs formations
+            $classements = Classement::with([
+                'stagiaire.user',
+                'stagiaire.formateurs.user',
+                'stagiaire.formateurs.catalogue_formations.formation', // Correction ici
+                'quiz'
+            ])
                 ->get()
                 ->groupBy('stagiaire_id')
                 ->map(function ($group) {
@@ -1121,6 +1126,23 @@ class QuizController extends Controller
                                 'nom' => $formateur->user->name,
                                 'telephone' => $formateur->telephone,
                                 'image' => $formateur->user->image ?? null,
+                                'formations' => $formateur->catalogue_formations->map(function ($catalogueFormation) {
+                                    return [
+                                        'id' => $catalogueFormation->id,
+                                        'titre' => $catalogueFormation->titre,
+                                        'description' => $catalogueFormation->description,
+                                        'duree' => $catalogueFormation->duree,
+                                        'tarif' => $catalogueFormation->tarif,
+                                        'statut' => $catalogueFormation->statut,
+                                        'image_url' => $catalogueFormation->image_url,
+                                        'formation' => $catalogueFormation->formation ? [
+                                            'id' => $catalogueFormation->formation->id,
+                                            'titre' => $catalogueFormation->formation->titre,
+                                            'categorie' => $catalogueFormation->formation->categorie,
+                                            'icon' => $catalogueFormation->formation->icon,
+                                        ] : null
+                                    ];
+                                })
                             ];
                         }),
                         'totalPoints' => $totalPoints,
@@ -1701,9 +1723,11 @@ class QuizController extends Controller
             $formations = Formation::whereHas('catalogueFormation', function ($query) use ($catalogues) {
                 $query->whereIn('catalogue_formations.id', $catalogues);
             })
-                ->with(['quizzes' => function ($query) {
-                    $query->where('status', 'actif')->with(['questions.reponses', 'formation']);
-                }])
+                ->with([
+                    'quizzes' => function ($query) {
+                        $query->where('status', 'actif')->with(['questions.reponses', 'formation']);
+                    }
+                ])
                 ->get();
 
             // Formatter
