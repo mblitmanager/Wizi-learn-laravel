@@ -4,28 +4,31 @@ FROM php:8.2-fpm-alpine AS builder
 
 WORKDIR /app
 
-# Installer les dépendances système
+# Installer les dépendances système nécessaires pour les extensions PHP
 RUN apk add --no-cache \
-    curl \
-    git \
-    zip \
-    unzip \
+    bash \
     build-base \
-    oniguruma-dev \
-    libpng-dev \
-    libjpeg-turbo-dev \
+    curl \
     freetype-dev \
-    postgresql-dev \
-    mysql-dev \
-    sqlite-dev \
+    git \
+    libjpeg-turbo-dev \
+    libpng-dev \
     libxml2-dev \
-    readline-dev
+    mysql-dev \
+    oniguruma-dev \
+    postgresql-dev \
+    readline-dev \
+    sqlite-dev \
+    unzip \
+    zip
 
-# Installer les extensions PHP nécessaires
-RUN docker-php-ext-install -j$(nproc) \
+# Installer les extensions PHP avec les dépendances correctes
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \
+    docker-php-ext-install -j$(nproc) \
     bcmath \
     ctype \
     fileinfo \
+    gd \
     json \
     mbstring \
     pdo \
@@ -33,8 +36,7 @@ RUN docker-php-ext-install -j$(nproc) \
     pdo_pgsql \
     pdo_sqlite \
     tokenizer \
-    xml \
-    gd
+    xml
 
 # Installer Node.js et npm pour Vite/assets
 RUN apk add --no-cache nodejs npm
@@ -62,24 +64,26 @@ FROM php:8.2-fpm-alpine
 
 WORKDIR /app
 
-# Installer uniquement les dépendances runtime
+# Installer les dépendances runtime (alphabétiquement)
 RUN apk add --no-cache \
-    mysql-client \
-    postgresql-client \
-    curl \
     bash \
-    libpng \
-    libjpeg-turbo \
+    curl \
     freetype \
-    oniguruma \
+    libjpeg-turbo \
+    libpng \
     libxml2 \
+    mysql-client \
+    oniguruma \
+    postgresql-client \
     readline
 
-# Installer les extensions PHP nécessaires
-RUN docker-php-ext-install -j$(nproc) \
+# Installer les extensions PHP avec configuration correcte
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \
+    docker-php-ext-install -j$(nproc) \
     bcmath \
     ctype \
     fileinfo \
+    gd \
     json \
     mbstring \
     pdo \
@@ -87,8 +91,7 @@ RUN docker-php-ext-install -j$(nproc) \
     pdo_pgsql \
     pdo_sqlite \
     tokenizer \
-    xml \
-    gd
+    xml
 
 # Copier les fichiers compilés et dépendances du builder
 COPY --from=builder /app /app
