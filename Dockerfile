@@ -4,8 +4,8 @@ FROM php:8.2-fpm-alpine AS builder
 
 WORKDIR /app
 
-# Installer les dépendances système nécessaires pour les extensions PHP
-RUN apk add --no-cache \
+# Installer toutes les dépendances en une seule commande RUN (optimisation)
+RUN apk add --update --no-cache \
     bash \
     build-base \
     curl \
@@ -15,6 +15,8 @@ RUN apk add --no-cache \
     libpng-dev \
     libxml2-dev \
     mysql-dev \
+    nodejs \
+    npm \
     oniguruma-dev \
     postgresql-dev \
     readline-dev \
@@ -23,50 +25,41 @@ RUN apk add --no-cache \
     zip \
     zlib-dev
 
-# Installer les extensions PHP avec les dépendances correctes
+# Configurer et installer les extensions PHP
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \
     docker-php-ext-install -j$(nproc) \
-    bcmath \
-    ctype \
-    fileinfo \
-    gd \
-    json \
-    mbstring \
-    pdo \
-    pdo_mysql \
-    pdo_pgsql \
-    pdo_sqlite \
-    tokenizer \
-    xml
-
-# Installer Node.js et npm pour Vite/assets
-RUN apk add --no-cache nodejs npm
+        bcmath \
+        ctype \
+        fileinfo \
+        gd \
+        json \
+        mbstring \
+        pdo \
+        pdo_mysql \
+        pdo_pgsql \
+        pdo_sqlite \
+        tokenizer \
+        xml
 
 # Installer Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Copier les fichiers composer
+# Copier les fichiers composer et installer les dépendances
 COPY composer.json composer.lock ./
-
-# Installer les dépendances PHP (sans scripts)
 RUN composer install --no-scripts --no-interaction --prefer-dist --optimize-autoloader
 
-# Copier tout le projet
+# Copier le projet et préparer les assets
 COPY . .
-
-# Générer l'autoloader optimisé
-RUN composer dump-autoload --optimize
-
-# Installer les dépendances Node et compiler les assets
-RUN npm ci && npm run build
+RUN composer dump-autoload --optimize && \
+    npm ci && npm run build
 
 # Stage 2 : Runtime - Image finale
 FROM php:8.2-fpm-alpine
 
 WORKDIR /app
 
-# Installer les dépendances runtime (alphabétiquement)
-RUN apk add --no-cache \
+# Installer uniquement les dépendances runtime requises
+RUN apk add --update --no-cache \
     bash \
     curl \
     freetype \
@@ -79,21 +72,33 @@ RUN apk add --no-cache \
     readline \
     zlib
 
-# Installer les extensions PHP avec configuration correcte
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \
+# Installer uniquement les extensions PHP runtime nécessaires
+# IMPORTANT: Les extensions doivent être réinstallées car les .so ne sont pas copiées du builder
+RUN apk add --update --no-cache --virtual .build-deps \
+    freetype-dev \
+    libjpeg-turbo-dev \
+    libpng-dev \
+    libxml2-dev \
+    mysql-dev \
+    oniguruma-dev \
+    postgresql-dev \
+    sqlite-dev \
+    zlib-dev && \
+    docker-php-ext-configure gd --with-freetype --with-jpeg && \
     docker-php-ext-install -j$(nproc) \
-    bcmath \
-    ctype \
-    fileinfo \
-    gd \
-    json \
-    mbstring \
-    pdo \
-    pdo_mysql \
-    pdo_pgsql \
-    pdo_sqlite \
-    tokenizer \
-    xml
+        bcmath \
+        ctype \
+        fileinfo \
+        gd \
+        json \
+        mbstring \
+        pdo \
+        pdo_mysql \
+        pdo_pgsql \
+        pdo_sqlite \
+        tokenizer \
+        xml && \
+    apk del .build-deps
 
 # Copier les fichiers compilés et dépendances du builder
 COPY --from=builder /app /app
