@@ -20,7 +20,8 @@ RUN apk add --no-cache \
     readline-dev \
     sqlite-dev \
     unzip \
-    zip
+    zip \
+    zlib-dev
 
 # Installer les extensions PHP avec les dépendances correctes
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \
@@ -75,7 +76,8 @@ RUN apk add --no-cache \
     mysql-client \
     oniguruma \
     postgresql-client \
-    readline
+    readline \
+    zlib
 
 # Installer les extensions PHP avec configuration correcte
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \
