@@ -1,0 +1,49 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Node
+node_modules
+npm-debug.log
+yarn-error.log
+package-lock.json
+
+# Laravel
+bootstrap/cache/*
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+.env.local
+.env.*.local
+
+# PHP
+vendor/
+.phpunit.result.cache
+*.phar
+
+# Testing
+tests/
+phpunit.xml
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Documentation
+README.md
+DOCKER_DEPLOY.md
+docs/
+
+# Tools
+tools/

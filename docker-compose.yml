@@ -1,0 +1,117 @@
+version: '3.9'
+
+services:
+  # Service PHP/Laravel
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: wizi-laravel-app
+    restart: unless-stopped
+    working_dir: /app
+    environment:
+      - APP_NAME=Wizi-Learn
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - APP_KEY=${APP_KEY:-}
+      - DB_CONNECTION=mysql
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_DATABASE=${DB_NAME:-wizi_learn}
+      - DB_USERNAME=${DB_USER:-root}
+      - DB_PASSWORD=${DB_PASSWORD:-password}
+      - CACHE_DRIVER=redis
+      - QUEUE_CONNECTION=redis
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-null}
+      - MAIL_DRIVER=smtp
+      - MAIL_HOST=${MAIL_HOST:-mailhog}
+      - MAIL_PORT=${MAIL_PORT:-1025}
+      - MAIL_USERNAME=${MAIL_USERNAME:-}
+      - MAIL_PASSWORD=${MAIL_PASSWORD:-}
+      - JWT_SECRET=${JWT_SECRET:-}
+      - RUN_MIGRATIONS=true
+      - RUN_SEEDS=false
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./:/app
+      - ./storage/logs:/app/storage/logs
+    depends_on:
+      - mysql
+      - redis
+      - mailhog
+    networks:
+      - wizi-network
+    command: php -S 0.0.0.0:8000 -t public
+
+  # Service MySQL
+  mysql:
+    image: mysql:8.0
+    container_name: wizi-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_NAME:-wizi_learn}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-password}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-password}
+      MYSQL_USER: ${DB_USER:-wizi}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - wizi-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Service Redis (Cache & Queue)
+  redis:
+    image: redis:7-alpine
+    container_name: wizi-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - wizi-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Service MailHog (Email testing)
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: wizi-mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - wizi-network
+
+  # Service Node (optionnel - pour le watch des assets)
+  node:
+    image: node:20-alpine
+    container_name: wizi-node
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./:/app
+    networks:
+      - wizi-network
+    command: npm run dev
+
+networks:
+  wizi-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+  redis_data:

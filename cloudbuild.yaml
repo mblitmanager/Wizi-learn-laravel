@@ -1,0 +1,57 @@
+# Configuration pour Google Cloud Build
+# Déploie automatiquement sur Cloud Run
+
+steps:
+  # Step 1 : Build l'image Docker
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/$_SERVICE_NAME:$SHORT_SHA'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/$_SERVICE_NAME:latest'
+      - '.'
+    id: 'build-image'
+
+  # Step 2 : Push l'image vers Google Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'gcr.io/$PROJECT_ID/$_SERVICE_NAME:$SHORT_SHA'
+    id: 'push-image'
+
+  # Step 3 : Déploie sur Cloud Run
+  - name: 'gcr.io/cloud-builders/run'
+    args:
+      - 'deploy'
+      - '${_SERVICE_NAME}'
+      - '--image=gcr.io/$PROJECT_ID/$_SERVICE_NAME:$SHORT_SHA'
+      - '--region=${_REGION}'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
+      - '--set-env-vars=${_ENV_VARS}'
+      - '--memory=512Mi'
+      - '--cpu=1'
+      - '--timeout=900s'
+      - '--max-instances=100'
+      - '--min-instances=0'
+    id: 'deploy-cloudrun'
+
+# Configuration des images à mettre en cache
+images:
+  - 'gcr.io/$PROJECT_ID/$_SERVICE_NAME:$SHORT_SHA'
+  - 'gcr.io/$PROJECT_ID/$_SERVICE_NAME:latest'
+
+# Variables personnalisées (à définir dans Cloud Build)
+substitutions:
+  _SERVICE_NAME: 'wizi-learn-api'
+  _REGION: 'europe-west1'
+  _ENV_VARS: 'APP_ENV=production,APP_DEBUG=false'
+
+# Timeout du build
+timeout: '3600s'
+
+# Options de build
+options:
+  machineType: 'N1_HIGHCPU_8'
+  logging: CLOUD_LOGGING_ONLY
