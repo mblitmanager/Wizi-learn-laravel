@@ -89,7 +89,6 @@ RUN apk add --update --no-cache --virtual .build-deps \
         bcmath \
         ctype \
         fileinfo \
-        gd \
         json \
         mbstring \
         pdo \

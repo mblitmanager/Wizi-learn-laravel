@@ -53,6 +53,38 @@ class QuizeRepository implements QuizRepositoryInterface
             ->get();
     }
 
+    /**
+     * Récupère les quiz du stagiaire avec les participations de l'utilisateur
+     * (optimisé pour éviter les requêtes N+1)
+     */
+    public function getQuizzesWithUserParticipations($stagiaireId, $userId): Collection
+    {
+        $quizzes = $this->getQuizzesByStagiaire($stagiaireId);
+        $quizIds = $quizzes->pluck('id')->toArray();
+
+        // Récupérer TOUTES les participations de l'utilisateur pour ces quiz en une seule requête
+        $participations = QuizParticipation::where('user_id', $userId)
+            ->whereIn('quiz_id', $quizIds)
+            ->orderByDesc('created_at')
+            ->get();
+
+        // Indexer pour retrouver rapidement par quiz_id (garder la plus récente)
+        $participationsByQuizId = [];
+        foreach ($participations as $p) {
+            if (!isset($participationsByQuizId[$p->quiz_id])) {
+                $participationsByQuizId[$p->quiz_id] = $p;
+            }
+        }
+
+        // Attacher les participations aux quiz
+        $quizzes->each(function ($quiz) use ($participationsByQuizId) {
+            $quiz->setAttribute('user_last_participation', 
+                $participationsByQuizId[$quiz->id] ?? null);
+        });
+
+        return $quizzes;
+    }
+
     public function getQuizQuestions($quizId): Collection
     {
         return Questions::where('quiz_id', $quizId)
