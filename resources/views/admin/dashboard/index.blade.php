@@ -1,65 +1,107 @@
 @extends('admin.layout')
 
 @section('content')
-    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-4">
+    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-4 g-4 mb-4">
         <div class="col">
-            <div class="card radius-10 border-start border-0 border-4 border-info">
-                <div class="card-body">
+            <div class="dashboard-card">
+                <div class="card-body p-4">
                     <div class="d-flex align-items-center">
-                        <div>
-                            <p class="mb-0 text-secondary">Total Stagiaire</p>
-                            <h4 class="my-1 text-info">{{ $totalStagiaires }}</h4>
+                        <div class="flex-grow-1">
+                            <p class="stat-label mb-1">Total Stagiaire</p>
+                            <h3 class="stat-number">{{ $totalStagiaires }}</h3>
                         </div>
-                        <div class="widgets-icons-2 rounded-circle bg-gradient-orange text-white ms-auto"><i
-                                class="bx bxs-group"></i>
+                        <div class="card-icon">
+                            <i class='bx bxs-graduation'></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col">
-            <div class="card radius-10 border-start border-0 border-4 border-danger">
-                <div class="card-body">
+            <div class="dashboard-card">
+                <div class="card-body p-4">
                     <div class="d-flex align-items-center">
-                        <div>
-                            <p class="mb-0 text-secondary">Total commerciaux</p>
-                            <h4 class="my-1 text-danger">{{ $totalCommerciaux }}</h4>
-
+                        <div class="flex-grow-1">
+                            <p class="stat-label mb-1">Total commerciaux</p>
+                            <h3 class="stat-number">{{ $totalCommerciaux }}</h3>
                         </div>
-                        <div class="widgets-icons-2 rounded-circle bg-gradient-orange text-white ms-auto"><i
-                                class="bx bxs-group"></i>
+                        <div class="card-icon">
+                            <i class='bx bxs-user-voice'></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col">
-            <div class="card radius-10 border-start border-0 border-4 border-success">
-                <div class="card-body">
+            <div class="dashboard-card">
+                <div class="card-body p-4">
                     <div class="d-flex align-items-center">
-                        <div>
-                            <p class="mb-0 text-secondary">Total formateurs</p>
-                            <h4 class="my-1 text-success">{{ $totalFormateurs }}</h4>
-
+                        <div class="flex-grow-1">
+                            <p class="stat-label mb-1">Total formateurs</p>
+                            <h3 class="stat-number">{{ $totalFormateurs }}</h3>
                         </div>
-                        <div class="widgets-icons-2 rounded-circle bg-gradient-orange text-white ms-auto"><i
-                                class="bx bxs-group"></i>
+                        <div class="card-icon">
+                            <i class='bx bxs-user-check'></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col">
-            <div class="card radius-10 border-start border-0 border-4 border-warning">
-                <div class="card-body">
+            <div class="dashboard-card">
+                <div class="card-body p-4">
                     <div class="d-flex align-items-center">
-                        <div>
-                            <p class="mb-0 text-secondary">Total pôle relation client</p>
-                            <h4 class="my-1 text-warning">{{ $totalPoleRelationClient }}</h4>
-
+                        <div class="flex-grow-1">
+                            <p class="stat-label mb-1">Total pôle relation client</p>
+                            <h3 class="stat-number">{{ $totalPoleRelationClient }}</h3>
                         </div>
-                        <div class="widgets-icons-2 rounded-circle bg-gradient-orange text-white ms-auto"><i
-                                class="bx bxs-group"></i>
+                        <div class="card-icon">
+                            <i class='bx bxs-user-detail'></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-2 g-4 mb-4">
+        <div class="col">
+            <div class="dashboard-card">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <p class="stat-label mb-1">Android - Utilisateurs suivis</p>
+                            <h3 class="stat-number">{{ $androidUsers ?? 0 }}</h3>
+                            <div class="mt-2">
+                                <p class="mb-0 small text-muted"><i class='bx bx-user-plus me-1'></i>Premières utilisations:
+                                    {{ $androidFirstUses ?? 0 }}</p>
+                                <p class="mb-0 small text-muted"><i class='bx bx-trending-up me-1'></i>Actifs 30j:
+                                    {{ $androidActive30d ?? 0 }}</p>
+                            </div>
+                        </div>
+                        <div class="card-icon bg-success">
+                            <i class='bx bxl-android'></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="dashboard-card">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <p class="stat-label mb-1">iOS - Utilisateurs suivis</p>
+                            <h3 class="stat-number">{{ $iosUsers ?? 0 }}</h3>
+                            <div class="mt-2">
+                                <p class="mb-0 small text-muted"><i class='bx bx-user-plus me-1'></i>Premières utilisations:
+                                    {{ $iosFirstUses ?? 0 }}</p>
+                                <p class="mb-0 small text-muted"><i class='bx bx-trending-up me-1'></i>Actifs 30j:
+                                    {{ $iosActive30d ?? 0 }}</p>
+                            </div>
+                        </div>
+                        <div class="card-icon bg-dark">
+                            <i class='bx bxl-apple'></i>
                         </div>
                     </div>
                 </div>
@@ -67,100 +109,67 @@
         </div>
     </div>
 
-    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-2 mt-3">
+    <div class="row row-cols-1 row-cols-md-3 g-4 mb-4">
         <div class="col">
-            <div class="card radius-10 border-start border-0 border-4 border-primary">
-                <div class="card-body">
+            <div class="dashboard-card">
+                <div class="card-body p-4">
                     <div class="d-flex align-items-center">
-                        <div>
-                            <p class="mb-0 text-secondary">Android - Utilisateurs suivis</p>
-                            <h4 class="my-1 text-primary">{{ $androidUsers ?? 0 }}</h4>
-                            <p class="mb-0 text-secondary small">Premières utilisations: {{ $androidFirstUses ?? 0 }}</p>
-                            <p class="mb-0 text-secondary small">Actifs 30j: {{ $androidActive30d ?? 0 }}</p>
+                        <div class="flex-grow-1">
+                            <p class="stat-label mb-1">App téléchargée</p>
+                            <h3 class="stat-number">{{ $totalAppDownloads ?? 0 }}</h3>
                         </div>
-                        <div class="widgets-icons-2 rounded-circle bg-gradient-orange text-white ms-auto"><i
-                                class="bx bxl-android"></i></div>
+                        <div class="card-icon bg-info">
+                            <i class='bx bx-download'></i>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col">
-            <div class="card radius-10 border-start border-0 border-4 border-dark">
-                <div class="card-body">
+            <div class="dashboard-card">
+                <div class="card-body p-4">
                     <div class="d-flex align-items-center">
-                        <div>
-                            <p class="mb-0 text-secondary">iOS - Utilisateurs suivis</p>
-                            <h4 class="my-1 text-dark">{{ $iosUsers ?? 0 }}</h4>
-                            <p class="mb-0 text-secondary small">Premières utilisations: {{ $iosFirstUses ?? 0 }}</p>
-                            <p class="mb-0 text-secondary small">Actifs 30j: {{ $iosActive30d ?? 0 }}</p>
+                        <div class="flex-grow-1">
+                            <p class="stat-label mb-1">Première connexion</p>
+                            <h3 class="stat-number">{{ $totalFirstLogins ?? 0 }}</h3>
                         </div>
-                        <div class="widgets-icons-2 rounded-circle bg-gradient-orange text-white ms-auto"><i
-                                class="bx bxl-apple"></i></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-
-
-
-    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-4">
-        <div class="col">
-            <div class="card radius-10 border-start border-0 border-4 border-danger">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div>
-                            <p class="mb-0 text-secondary">App téléchargée</p>
-                            <h4 class="my-1 text-danger">{{ $totalAppDownloads ?? 0 }}</h4>
+                        <div class="card-icon bg-warning">
+                            <i class='bx bx-log-in'></i>
                         </div>
-                        <div class="widgets-icons-2 rounded-circle bg-gradient-orange text-white ms-auto"><i
-                                class="bx bx-download"></i></div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col">
-            <div class="card radius-10 border-start border-0 border-4 border-warning">
-                <div class="card-body">
+            <div class="dashboard-card">
+                <div class="card-body p-4">
                     <div class="d-flex align-items-center">
-                        <div>
-                            <p class="mb-0 text-secondary">Première connexion</p>
-                            <h4 class="my-1 text-warning">{{ $totalFirstLogins ?? 0 }}</h4>
+                        <div class="flex-grow-1">
+                            <p class="stat-label mb-1">Quiz joués</p>
+                            <h3 class="stat-number">{{ $totalQuizzesPlayed ?? 0 }}</h3>
                         </div>
-                        <div class="widgets-icons-2 rounded-circle bg-gradient-orange text-white ms-auto"><i
-                                class="bx bx-log-in"></i></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col">
-            <div class="card radius-10 border-start border-0 border-4 border-success">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div>
-                            <p class="mb-0 text-secondary">Quiz joués</p>
-                            <h4 class="my-1 text-success">{{ $totalQuizzesPlayed ?? 0 }}</h4>
+                        <div class="card-icon bg-success">
+                            <i class='bx bx-play-circle'></i>
                         </div>
-                        <div class="widgets-icons-2 rounded-circle bg-gradient-orange text-white ms-auto"><i
-                                class="bx bx-play-circle"></i></div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="row mt-5">
+    <div class="row mt-4">
         <div class="col-md-6 mb-4">
-            <div class="card shadow-sm border-0">
+            <div class="dashboard-card h-100">
                 <div class="card-body">
-                    <h5 class="card-title">Statistiques de quiz par jour</h5>
+                    <h5 class="card-title d-flex align-items-center">
+                        <i class='bx bx-bar-chart-alt-2 me-2'></i>Statistiques de quiz par jour
+                    </h5>
 
                     <!-- Filtres supplémentaires -->
                     <div class="row mb-3">
                         <div class="col-md-4 mb-2">
-                            <label for="formateurFilterDaily" class="form-label">Formateur :</label>
-                            <select id="formateurFilterDaily" class="form-select">
+                            <label for="formateurFilterDaily" class="form-label small fw-bold">Formateur :</label>
+                            <select id="formateurFilterDaily" class="form-select form-select-sm">
                                 <option value="">Tous</option>
                                 @foreach ($formateurs ?? [] as $formateur)
                                     <option value="{{ $formateur->id }}">{{ $formateur->user->name }}</option>
@@ -168,8 +177,8 @@
                             </select>
                         </div>
                         <div class="col-md-4 mb-2">
-                            <label for="commercialFilterDaily" class="form-label">Commercial :</label>
-                            <select id="commercialFilterDaily" class="form-select">
+                            <label for="commercialFilterDaily" class="form-label small fw-bold">Commercial :</label>
+                            <select id="commercialFilterDaily" class="form-select form-select-sm">
                                 <option value="">Tous</option>
                                 @foreach ($commerciaux ?? [] as $commercial)
                                     <option value="{{ $commercial->id }}">{{ $commercial->user->name }}</option>
@@ -177,8 +186,8 @@
                             </select>
                         </div>
                         <div class="col-md-4 mb-2">
-                            <label for="poleFilterDaily" class="form-label">Pôle relation client :</label>
-                            <select id="poleFilterDaily" class="form-select">
+                            <label for="poleFilterDaily" class="form-label small fw-bold">Pôle relation client :</label>
+                            <select id="poleFilterDaily" class="form-select form-select-sm">
                                 <option value="">Tous</option>
                                 @foreach ($poles ?? [] as $pole)
                                     <option value="{{ $pole->id }}">{{ $pole->user->name }}</option>
@@ -188,70 +197,79 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="quizSelectorDaily" class="form-label">Choisir un quiz :</label>
-                        <select id="quizSelectorDaily" class="form-select">
+                        <label for="quizSelectorDaily" class="form-label small fw-bold">Choisir un quiz :</label>
+                        <select id="quizSelectorDaily" class="form-select form-select-sm">
                             <option value="" selected>-- Tous les quiz --</option>
                         </select>
                     </div>
 
-                    <div style="height: 450px;">
+                    <div class="chart-container" style="height: 350px;">
                         <canvas id="filteredDailyChart"></canvas>
                     </div>
                     <div class="mt-3 text-end">
-                        <button id="exportDailyCSV" class="btn btn-outline-primary btn-sm">Exporter CSV</button>
+                        <button id="exportDailyCSV" class="btn btn-sm btn-outline-primary">
+                            <i class='bx bx-export me-1'></i>Exporter CSV
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="col-md-6 mb-4">
-            <div class="card shadow-sm border-0">
+            <div class="dashboard-card h-100">
                 <div class="card-body">
-                    <h5 class="card-title">Statistiques de quiz par mois</h5>
+                    <h5 class="card-title d-flex align-items-center">
+                        <i class='bx bx-bar-chart-alt-2 me-2'></i>Statistiques de quiz par mois
+                    </h5>
 
                     <!-- Filtres supplémentaires -->
                     <div class="row mb-3">
                         <div class="col-md-4 mb-2">
-                            <label for="formateurFilterMonthly" class="form-label">Formateur :</label>
-                            <select id="formateurFilterMonthly" class="form-select">
+                            <label for="formateurFilterMonthly" class="form-label small fw-bold">Formateur :</label>
+                            <select id="formateurFilterMonthly" class="form-select form-select-sm">
                                 <option value="">Tous</option>
                                 @foreach ($formateurs ?? [] as $formateur)
-                                    <option value="{{ $formateur->id }}">{{ $formateur->user->name }} {{ $formateur->prenom }}</option>
+                                    <option value="{{ $formateur->id }}">{{ $formateur->user->name }}
+                                        {{ $formateur->prenom }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="col-md-4 mb-2">
-                            <label for="commercialFilterMonthly" class="form-label">Commercial :</label>
-                            <select id="commercialFilterMonthly" class="form-select">
+                            <label for="commercialFilterMonthly" class="form-label small fw-bold">Commercial :</label>
+                            <select id="commercialFilterMonthly" class="form-select form-select-sm">
                                 <option value="">Tous</option>
                                 @foreach ($commerciaux ?? [] as $commercial)
-                                    <option value="{{ $commercial->id }}">{{ $commercial->user->name }} {{ $commercial->prenom }}</option>
+                                    <option value="{{ $commercial->id }}">{{ $commercial->user->name }}
+                                        {{ $commercial->prenom }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="col-md-4 mb-2">
-                            <label for="poleFilterMonthly" class="form-label">Pôle relation client :</label>
-                            <select id="poleFilterMonthly" class="form-select">
+                            <label for="poleFilterMonthly" class="form-label small fw-bold">Pôle relation client :</label>
+                            <select id="poleFilterMonthly" class="form-select form-select-sm">
                                 <option value="">Tous</option>
                                 @foreach ($poles ?? [] as $pole)
-                                    <option value="{{ $pole->id }}">{{ $pole->user->name }} {{ $pole->prenom }}</option>
+                                    <option value="{{ $pole->id }}">{{ $pole->user->name }} {{ $pole->prenom }}
+                                    </option>
                                 @endforeach
                             </select>
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <label for="quizSelectorMonthly" class="form-label">Choisir un quiz :</label>
-                        <select id="quizSelectorMonthly" class="form-select shadow-sm border border-primary">
+                        <label for="quizSelectorMonthly" class="form-label small fw-bold">Choisir un quiz :</label>
+                        <select id="quizSelectorMonthly" class="form-select form-select-sm">
                             <option value="" selected>-- Tous les quiz --</option>
                         </select>
                     </div>
 
-                    <div style="height: 450px;">
+                    <div class="chart-container" style="height: 350px;">
                         <canvas id="filteredMonthlyChart"></canvas>
                     </div>
                     <div class="mt-3 text-end">
-                        <button id="exportMonthlyCSV" class="btn btn-outline-primary btn-sm">Exporter CSV</button>
+                        <button id="exportMonthlyCSV" class="btn btn-sm btn-outline-primary">
+                            <i class='bx bx-export me-1'></i>Exporter CSV
+                        </button>
                     </div>
                 </div>
             </div>
@@ -260,44 +278,59 @@
 
     <div class="row mt-4">
         <div class="col-md-6 mb-4">
-            <div class="card shadow-sm border-0">
+            <div class="dashboard-card h-100">
                 <div class="card-body">
-                    <h5 class="card-title">Répartition des participations par quiz</h5>
-                    <div style="height: 350px;">
+                    <h5 class="card-title d-flex align-items-center">
+                        <i class='bx bx-pie-chart-alt-2 me-2'></i>Répartition des participations par quiz
+                    </h5>
+                    <div class="chart-container" style="height: 300px;">
                         <canvas id="pieQuizParticipation"></canvas>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-6 mb-4">
-            <div class="card shadow-sm border-0">
+            <div class="dashboard-card h-100">
                 <div class="card-body">
-                    <h5 class="card-title">Utilisateurs connectés</h5>
-                    <ul id="connectedUsersList" class="list-group">
-                        @forelse ($connectedUsers ?? [] as $user)
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <div>
-                                    <span class="badge bg-success rounded-circle me-2" style="width:10px;height:10px;"></span>
-                                    {{ $user->name }} <span class="text-muted ms-2">({{ $user->role }})</span>
-                                </div>
-                                <div>
-                                    @php
-                                        $platform = $user->platform ?? 'web';
-                                        $icon = 'bx bx-globe'; // Default to web
-                                        if ($platform === 'android') {
-                                            $icon = 'bx bxl-android';
-                                        } elseif ($platform === 'ios') {
-                                            $icon = 'bx bxl-apple';
-                                        }
-                                    @endphp
-                                    <i class="{{ $icon }} me-2"></i>
-                                    <span class="text-capitalize">{{ $platform }}</span>
-                                </div>
-                            </li>
-                        @empty
-                            <li class="list-group-item">Aucun utilisateur connecté.</li>
-                        @endforelse
-                    </ul>
+                    <h5 class="card-title d-flex align-items-center">
+                        <i class='bx bx-user-check me-2'></i>Utilisateurs connectés
+                    </h5>
+                    <div class="connected-users-container" style="max-height: 300px; overflow-y: auto;">
+                        <ul id="connectedUsersList" class="list-group list-group-flush">
+                            @forelse ($connectedUsers ?? [] as $user)
+                                <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                                    <div class="d-flex align-items-center">
+                                        <span class="status-indicator bg-success rounded-circle me-2"></span>
+                                        <div>
+                                            <span class="fw-medium">{{ $user->name }}</span>
+                                            <small class="d-block text-muted">{{ $user->role }}</small>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        @php
+                                            $platform = $user->platform ?? 'web';
+                                            $icon = 'bx bx-globe';
+                                            $platformClass = 'text-primary';
+                                            if ($platform === 'android') {
+                                                $icon = 'bx bxl-android';
+                                                $platformClass = 'text-success';
+                                            } elseif ($platform === 'ios') {
+                                                $icon = 'bx bxl-apple';
+                                                $platformClass = 'text-dark';
+                                            }
+                                        @endphp
+                                        <i class="{{ $icon }} {{ $platformClass }} me-1"></i>
+                                        <small class="text-capitalize">{{ $platform }}</small>
+                                    </div>
+                                </li>
+                            @empty
+                                <li class="list-group-item text-center py-3 text-muted">
+                                    <i class='bx bx-user-x fs-4 mb-2'></i>
+                                    <div>Aucun utilisateur connecté</div>
+                                </li>
+                            @endforelse
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
@@ -305,52 +338,211 @@
 
     <div class="row mt-4">
         <div class="col-md-6 mb-4">
-            <div class="card shadow-sm border-0">
+            <div class="dashboard-card h-100">
                 <div class="card-body">
-                    <h5 class="card-title">Quiz récemment joués</h5>
-                    <ul class="list-group">
-                        @forelse($recentQuizzes ?? [] as $quiz)
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>
-                                    <strong>{{ $quiz->quiz_title }}</strong> par {{ $quiz->user_name }}
-                                </span>
-                                <span
-                                    class="badge bg-primary">{{ $quiz->completed_at ? \Carbon\Carbon::parse($quiz->completed_at)->format('d/m/Y H:i') : '' }}</span>
-                            </li>
-                        @empty
-                            <li class="list-group-item">Aucun quiz récemment joué.</li>
-                        @endforelse
-                    </ul>
+                    <h5 class="card-title d-flex align-items-center">
+                        <i class='bx bx-history me-2'></i>Quiz récemment joués
+                    </h5>
+                    <div class="recent-quizzes-container" style="max-height: 300px; overflow-y: auto;">
+                        <ul class="list-group list-group-flush">
+                            @forelse($recentQuizzes ?? [] as $quiz)
+                                <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                                    <div>
+                                        <span class="fw-medium">{{ $quiz->quiz_title }}</span>
+                                        <small class="d-block text-muted">par {{ $quiz->user_name }}</small>
+                                    </div>
+                                    <span class="badge bg-primary rounded-pill">
+                                        {{ $quiz->completed_at ? \Carbon\Carbon::parse($quiz->completed_at)->format('d/m/Y H:i') : '' }}
+                                    </span>
+                                </li>
+                            @empty
+                                <li class="list-group-item text-center py-3 text-muted">
+                                    <i class='bx bx-play-circle fs-4 mb-2'></i>
+                                    <div>Aucun quiz récemment joué</div>
+                                </li>
+                            @endforelse
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
         <div class="col-md-6 mb-4">
-            <div class="card shadow-sm border-0">
+            <div class="dashboard-card h-100">
                 <div class="card-body">
-                    <h5 class="card-title">Quiz en cours</h5>
-                    <ul class="list-group">
-                        @forelse($activeQuizzes ?? [] as $quiz)
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>
-                                    <strong>{{ $quiz->quiz_title }}</strong> par {{ $quiz->user_name }}
-                                </span>
-                                <span
-                                    class="badge bg-warning">{{ $quiz->started_at ? \Carbon\Carbon::parse($quiz->started_at)->format('d/m/Y H:i') : '' }}</span>
-                            </li>
-                        @empty
-                            <li class="list-group-item">Aucun quiz en cours.</li>
-                        @endforelse
-                    </ul>
+                    <h5 class="card-title d-flex align-items-center">
+                        <i class='bx bx-time-five me-2'></i>Quiz en cours
+                    </h5>
+                    <div class="active-quizzes-container" style="max-height: 300px; overflow-y: auto;">
+                        <ul class="list-group list-group-flush">
+                            @forelse($activeQuizzes ?? [] as $quiz)
+                                <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                                    <div>
+                                        <span class="fw-medium">{{ $quiz->quiz_title }}</span>
+                                        <small class="d-block text-muted">par {{ $quiz->user_name }}</small>
+                                    </div>
+                                    <span class="badge bg-warning rounded-pill">
+                                        {{ $quiz->started_at ? \Carbon\Carbon::parse($quiz->started_at)->format('d/m/Y H:i') : '' }}
+                                    </span>
+                                </li>
+                            @empty
+                                <li class="list-group-item text-center py-3 text-muted">
+                                    <i class='bx bx-time fs-4 mb-2'></i>
+                                    <div>Aucun quiz en cours</div>
+                                </li>
+                            @endforelse
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 @endsection
 
+
 @section('scripts')
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --success: #4cc9f0;
+            --info: #4895ef;
+            --warning: #f72585;
+            --danger: #e63946;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gradient-start: #4361ee;
+            --gradient-end: #3a0ca3;
+            --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --card-hover: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .dashboard-card {
+            border-radius: 16px;
+            border: none;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+            overflow: hidden;
+            background: white;
+            position: relative;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--card-hover);
+        }
+
+        .dashboard-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+        }
+
+        .card-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            color: white;
+            box-shadow: 0 4px 10px rgba(67, 97, 238, 0.3);
+        }
+
+        .card-icon.bg-success {
+            background: linear-gradient(135deg, #4cc9f0, #4895ef);
+        }
+
+        .card-icon.bg-dark {
+            background: linear-gradient(135deg, #212529, #495057);
+        }
+
+        .card-icon.bg-info {
+            background: linear-gradient(135deg, #4895ef, #4361ee);
+        }
+
+        .card-icon.bg-warning {
+            background: linear-gradient(135deg, #f72585, #b5179e);
+        }
+
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #718096;
+            font-weight: 500;
+        }
+
+        .card-title {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 1.5rem;
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+
+        .card-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 40px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+            border-radius: 3px;
+        }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+        }
+
+        .chart-container {
+            position: relative;
+        }
+
+        .form-select-sm {
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .btn-outline-primary {
+            border-radius: 8px;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-outline-primary:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .list-group-item {
+            border: none;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .badge {
+            font-size: 0.7rem;
+            padding: 0.35em 0.65em;
+        }
+    </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
+        // Le code JavaScript reste identique à votre version originale
         const dailyStats = @json($dailyStats);
         const monthlyStats = @json($monthlyStats);
 
@@ -420,7 +612,7 @@
                         legend: {
                             display: true,
                             labels: {
-                                color: '#000000' // légende en noir
+                                color: '#000000'
                             }
                         },
                         tooltip: {
@@ -554,7 +746,8 @@
 
         // Initialisation
         window.addEventListener('DOMContentLoaded', function() {
-            initCharts();
+            updateDailyChart();
+            updateMonthlyChart();
             // Stockage initial pour l'export
             window._lastDailyExport = mergeDataByLabel(dailyGrouped);
             window._lastMonthlyExport = mergeDataByLabel(monthlyGrouped);

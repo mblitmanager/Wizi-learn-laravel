@@ -132,6 +132,198 @@ class QuizController extends Controller
      * @param  string  $id
      * @return \Illuminate\Http\Response
      */
+    // public function update(Request $request, $id)
+    // {
+    //     $request->validate([
+    //         'quiz_id' => 'required|exists:quizzes,id',
+    //         'quiz' => 'required|array',
+    //         'quiz.titre' => 'required|string',
+    //         'quiz.description' => 'nullable|string',
+    //         'quiz.niveau' => 'nullable|string',
+    //         'quiz.duree' => 'nullable|integer',
+    //         'quiz.formation_id' => 'required|exists:formations,id',
+    //         'questions' => 'nullable|array',
+    //         'questions.*.id' => 'nullable|exists:questions,id',
+    //         'questions.*.text' => 'required|string',
+    //         'questions.*.type' => 'required|string',
+    //         'questions.*.points' => 'required|integer|min:1',
+    //         'questions.*.reponses' => 'required|array|min:1',
+    //         'questions.*.reponses.*.id' => 'nullable|exists:reponses,id',
+    //         'questions.*.reponses.*.text' => 'required|string',
+    //     ], [
+    //         'quiz_id.required' => 'L\'ID du quiz est obligatoire.',
+    //         'quiz_id.exists' => 'Le quiz spécifié n\'existe pas.',
+    //         'quiz.titre.required' => 'Le titre du quiz est obligatoire.',
+    //         'quiz.formation_id.required' => 'La formation associée au quiz est obligatoire.',
+    //         'questions.*.text.required' => 'Le texte de la question est obligatoire.',
+    //         'questions.*.type.required' => 'Le type de question est obligatoire.',
+    //         'questions.*.points.required' => 'Le nombre de points pour la question est obligatoire.',
+    //         'questions.*.reponses.required' => 'Les réponses à la question sont obligatoires.',
+    //     ]);
+
+    //     DB::beginTransaction();
+
+    //     try {
+    //         $quiz = Quiz::findOrFail($id);
+    //         $quiz->update($request->input('quiz'));
+
+    //         $questionData = $request->input('questions', []);
+    //         $questionFiles = $request->file('questions', []);
+
+    //         foreach ($questionData as $index => &$questionInput) {
+    //             $questionInput['quiz_id'] = $quiz->id;
+
+    //             if (isset($questionFiles[$index]['media_file'])) {
+    //                 $file = $questionFiles[$index]['media_file'];
+    //                 $fileName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+    //                 $file->move(public_path('uploads/medias'), $fileName);
+    //                 $questionInput['media_url'] = 'uploads/medias/' . $fileName;
+    //             }
+    //         }
+    //         unset($questionInput);
+
+    //         foreach ($questionData as $questionInput) {
+    //             // Suppression des questions marquées pour suppression
+    //             if (!empty($questionInput['id']) && !empty($questionInput['_delete'])) {
+    //                 $question = $quiz->questions()->find($questionInput['id']);
+    //                 if ($question) {
+    //                     $question->correspondancePairs()->delete();
+    //                     $question->reponses()->delete();
+    //                     if ($question->media_url && file_exists(public_path($question->media_url))) {
+    //                         @unlink(public_path($question->media_url));
+    //                     }
+    //                     $question->delete();
+    //                 }
+    //                 continue;
+    //             }
+
+    //             // Mise à jour ou création de la question
+    //             $question = !empty($questionInput['id'])
+    //                 ? $quiz->questions()->find($questionInput['id'])
+    //                 : $quiz->questions()->create($questionInput);
+
+    //             if (!$question)
+    //                 continue;
+
+    //             if (!empty($questionInput['id'])) {
+    //                 if (!empty($questionInput['media_url']) && $question->media_url !== $questionInput['media_url']) {
+    //                     if ($question->media_url && file_exists(public_path($question->media_url))) {
+    //                         @unlink(public_path($question->media_url));
+    //                     }
+    //                 }
+    //                 $question->update($questionInput);
+    //             }
+
+    //             $reponsesInput = $questionInput['reponses'] ?? [];
+    //             $reponseIds = [];
+    //             $leftItems = [];
+    //             $rightItems = [];
+
+    //             // Supprimer les anciennes paires de correspondance si nécessaire
+    //             if ($question->type === 'correspondance') {
+    //                 $question->correspondancePairs()->delete();
+    //             }
+
+    //             // Gestion des réponses
+    //             foreach ($reponsesInput as $reponseInput) {
+    //                 $reponseData = [
+    //                     'text' => $reponseInput['text'],
+    //                     'is_correct' => $question->type === 'correspondance' ? null : ($reponseInput['is_correct'] ?? 0),
+    //                     'position' => $reponseInput['position'] ?? null,
+    //                     'match_pair' => $reponseInput['match_pair'] ?? null,
+    //                     'bank_group' => $reponseInput['bank_group'] ?? null,
+    //                     'flashcard_back' => $reponseInput['flashcard_back'] ?? null,
+    //                 ];
+
+    //                 $reponse = !empty($reponseInput['id'])
+    //                     ? $question->reponses()->find($reponseInput['id'])
+    //                     : $question->reponses()->create($reponseData);
+
+    //                 if ($reponse && !empty($reponseInput['id'])) {
+    //                     $reponse->update($reponseData);
+    //                 }
+
+    //                 $reponseIds[] = $reponse->id;
+
+    //                 // Préparation des items pour correspondance
+    //                 if ($question->type === 'correspondance') {
+    //                     $itemData = [
+    //                         'id' => $reponse->id,
+    //                         'text' => $reponse->text,
+    //                         'bank_group' => $reponse->bank_group,
+    //                     ];
+
+    //                     if ($reponse->match_pair === 'left') {
+    //                         $leftItems[] = $itemData;
+    //                     } elseif ($reponse->match_pair === 'right') {
+    //                         $rightItems[] = $itemData;
+    //                     }
+    //                 }
+    //             }
+
+    //             // Suppression des réponses non incluses
+    //             $question->reponses()->whereNotIn('id', $reponseIds)->delete();
+
+    //             // Création des paires de correspondance
+    //             if ($question->type === 'correspondance') {
+    //                 foreach ($leftItems as $leftItem) {
+    //                     $rightItem = collect($rightItems)->firstWhere('bank_group', $leftItem['bank_group']);
+
+    //                     if ($rightItem) {
+    //                         CorrespondancePair::create([
+    //                             'question_id' => $question->id,
+    //                             'left_text' => $leftItem['text'],
+    //                             'right_text' => $rightItem['text'],
+    //                             'left_id' => $leftItem['id'],
+    //                             'right_id' => $rightItem['id']
+    //                         ]);
+    //                     }
+    //                 }
+    //             }
+    //         }
+
+    //         DB::commit();
+
+    //         // Envoyer une notification FCM aux stagiaires de la formation
+    //         $formation = $quiz->formation;
+    //         $formationTitre = $formation ? $formation->titre : '';
+    //         if ($formation) {
+    //             $catalogueIds = \App\Models\CatalogueFormation::where('formation_id', $formation->id)->pluck('id');
+    //             $stagiaires = \App\Models\Stagiaire::whereHas('catalogue_formations', function ($q) use ($catalogueIds) {
+    //                 $q->whereIn('catalogue_formation_id', $catalogueIds);
+    //             })->with('user')->get();
+    //             $iconUrl = url('media/wizi.png');
+    //             foreach ($stagiaires as $stagiaire) {
+    //                 if ($stagiaire->user && $stagiaire->user->fcm_token) {
+    //                     $title = "\"{$formationTitre}\"";
+    //                     $body = "Le quiz \"{$quiz->titre}\" a été mis à jour pour la formation \"{$formationTitre}\".";
+    //                     $data = [
+    //                         'quiz_id' => (string) $quiz->id,
+    //                         'formation_id' => (string) $quiz->formation_id,
+    //                         'type' => 'quiz',
+    //                         'event' => 'updated',
+    //                         'icon' => $iconUrl,
+    //                     ];
+    //                     $this->notificationService->sendFcmToUser($stagiaire->user, $title, $body, $data);
+    //                     \App\Models\Notification::create([
+    //                         'user_id' => $stagiaire->user->id,
+    //                         'type' => $data['type'],
+    //                         'title' => $title,
+    //                         'message' => $body,
+    //                         'data' => $data,
+    //                         'read' => false,
+    //                     ]);
+    //                 }
+    //             }
+    //         }
+    //         return redirect()->route('quiz.index')->with('success', 'Quiz mis à jour avec succès.');
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+    //         return redirect()->back()
+    //             ->withInput()
+    //             ->with('error', 'Erreur lors de la mise à jour : ' . $e->getMessage());
+    //     }
+    // }
     public function update(Request $request, $id)
     {
         $request->validate([
@@ -142,23 +334,12 @@ class QuizController extends Controller
             'quiz.niveau' => 'nullable|string',
             'quiz.duree' => 'nullable|integer',
             'quiz.formation_id' => 'required|exists:formations,id',
-            'questions' => 'nullable|array',
-            'questions.*.id' => 'nullable|exists:questions,id',
-            'questions.*.text' => 'required|string',
-            'questions.*.type' => 'required|string',
-            'questions.*.points' => 'required|integer|min:1',
-            'questions.*.reponses' => 'required|array|min:1',
-            'questions.*.reponses.*.id' => 'nullable|exists:reponses,id',
-            'questions.*.reponses.*.text' => 'required|string',
+            // RETIREZ la validation required pour les questions supprimées
         ], [
             'quiz_id.required' => 'L\'ID du quiz est obligatoire.',
             'quiz_id.exists' => 'Le quiz spécifié n\'existe pas.',
             'quiz.titre.required' => 'Le titre du quiz est obligatoire.',
             'quiz.formation_id.required' => 'La formation associée au quiz est obligatoire.',
-            'questions.*.text.required' => 'Le texte de la question est obligatoire.',
-            'questions.*.type.required' => 'Le type de question est obligatoire.',
-            'questions.*.points.required' => 'Le nombre de points pour la question est obligatoire.',
-            'questions.*.reponses.required' => 'Les réponses à la question sont obligatoires.',
         ]);
 
         DB::beginTransaction();
@@ -170,7 +351,30 @@ class QuizController extends Controller
             $questionData = $request->input('questions', []);
             $questionFiles = $request->file('questions', []);
 
+            // COLLECTER TOUTES LES QUESTIONS EXISTANTES POUR SUPPRESSION
+            $existingQuestionIds = $quiz->questions()->pluck('id')->toArray();
+            $updatedQuestionIds = [];
+
             foreach ($questionData as $index => &$questionInput) {
+                // VÉRIFIER SI LA QUESTION DOIT ÊTRE SUPPRIMÉE
+                if (isset($questionInput['_delete']) && $questionInput['_delete'] == '1') {
+                    // Marquer pour suppression - on ne l'ajoute pas aux IDs mis à jour
+                    if (!empty($questionInput['id'])) {
+                        // La question sera supprimée car elle n'est pas dans updatedQuestionIds
+                        $question = $quiz->questions()->find($questionInput['id']);
+                        if ($question) {
+                            $question->correspondancePairs()->delete();
+                            $question->reponses()->delete();
+                            if ($question->media_url && file_exists(public_path($question->media_url))) {
+                                @unlink(public_path($question->media_url));
+                            }
+                            $question->delete();
+                        }
+                    }
+                    continue; // Passer à la question suivante
+                }
+
+                // SI LA QUESTION N'EST PAS SUPPRIMÉE, LA TRAITER NORMALEMENT
                 $questionInput['quiz_id'] = $quiz->id;
 
                 if (isset($questionFiles[$index]['media_file'])) {
@@ -179,41 +383,29 @@ class QuizController extends Controller
                     $file->move(public_path('uploads/medias'), $fileName);
                     $questionInput['media_url'] = 'uploads/medias/' . $fileName;
                 }
-            }
-            unset($questionInput);
-
-            foreach ($questionData as $questionInput) {
-                // Suppression des questions marquées pour suppression
-                if (!empty($questionInput['id']) && !empty($questionInput['_delete'])) {
-                    $question = $quiz->questions()->find($questionInput['id']);
-                    if ($question) {
-                        $question->correspondancePairs()->delete();
-                        $question->reponses()->delete();
-                        if ($question->media_url && file_exists(public_path($question->media_url))) {
-                            @unlink(public_path($question->media_url));
-                        }
-                        $question->delete();
-                    }
-                    continue;
-                }
 
                 // Mise à jour ou création de la question
-                $question = !empty($questionInput['id'])
-                    ? $quiz->questions()->find($questionInput['id'])
-                    : $quiz->questions()->create($questionInput);
-
-                if (!$question)
-                    continue;
-
                 if (!empty($questionInput['id'])) {
-                    if (!empty($questionInput['media_url']) && $question->media_url !== $questionInput['media_url']) {
-                        if ($question->media_url && file_exists(public_path($question->media_url))) {
-                            @unlink(public_path($question->media_url));
+                    $question = $quiz->questions()->find($questionInput['id']);
+                    if ($question) {
+                        // Vérifier si un nouveau fichier a été uploadé
+                        if (isset($questionInput['media_url']) && $question->media_url !== $questionInput['media_url']) {
+                            if ($question->media_url && file_exists(public_path($question->media_url))) {
+                                @unlink(public_path($question->media_url));
+                            }
                         }
+                        $question->update($questionInput);
+                        $updatedQuestionIds[] = $question->id;
                     }
-                    $question->update($questionInput);
+                } else {
+                    // Nouvelle question
+                    $question = $quiz->questions()->create($questionInput);
+                    $updatedQuestionIds[] = $question->id;
                 }
 
+                if (!$question) continue;
+
+                // GESTION DES RÉPONSES
                 $reponsesInput = $questionInput['reponses'] ?? [];
                 $reponseIds = [];
                 $leftItems = [];
@@ -224,8 +416,18 @@ class QuizController extends Controller
                     $question->correspondancePairs()->delete();
                 }
 
-                // Gestion des réponses
                 foreach ($reponsesInput as $reponseInput) {
+                    // VÉRIFIER SI LA RÉPONSE DOIT ÊTRE SUPPRIMÉE
+                    if (isset($reponseInput['_delete']) && $reponseInput['_delete'] == '1') {
+                        if (!empty($reponseInput['id'])) {
+                            $reponse = $question->reponses()->find($reponseInput['id']);
+                            if ($reponse) {
+                                $reponse->delete();
+                            }
+                        }
+                        continue;
+                    }
+
                     $reponseData = [
                         'text' => $reponseInput['text'],
                         'is_correct' => $question->type === 'correspondance' ? null : ($reponseInput['is_correct'] ?? 0),
@@ -235,15 +437,16 @@ class QuizController extends Controller
                         'flashcard_back' => $reponseInput['flashcard_back'] ?? null,
                     ];
 
-                    $reponse = !empty($reponseInput['id'])
-                        ? $question->reponses()->find($reponseInput['id'])
-                        : $question->reponses()->create($reponseData);
-
-                    if ($reponse && !empty($reponseInput['id'])) {
-                        $reponse->update($reponseData);
+                    if (!empty($reponseInput['id'])) {
+                        $reponse = $question->reponses()->find($reponseInput['id']);
+                        if ($reponse) {
+                            $reponse->update($reponseData);
+                            $reponseIds[] = $reponse->id;
+                        }
+                    } else {
+                        $reponse = $question->reponses()->create($reponseData);
+                        $reponseIds[] = $reponse->id;
                     }
-
-                    $reponseIds[] = $reponse->id;
 
                     // Préparation des items pour correspondance
                     if ($question->type === 'correspondance') {
@@ -281,10 +484,27 @@ class QuizController extends Controller
                     }
                 }
             }
+            unset($questionInput);
+
+            // SUPPRIMER LES QUESTIONS QUI N'ONT PAS ÉTÉ MISES À JOUR (celles supprimées)
+            $questionsToDelete = array_diff($existingQuestionIds, $updatedQuestionIds);
+            if (!empty($questionsToDelete)) {
+                foreach ($questionsToDelete as $questionId) {
+                    $question = $quiz->questions()->find($questionId);
+                    if ($question) {
+                        $question->correspondancePairs()->delete();
+                        $question->reponses()->delete();
+                        if ($question->media_url && file_exists(public_path($question->media_url))) {
+                            @unlink(public_path($question->media_url));
+                        }
+                        $question->delete();
+                    }
+                }
+            }
 
             DB::commit();
 
-            // Envoyer une notification FCM aux stagiaires de la formation
+            // [Le reste de votre code pour les notifications...]
             $formation = $quiz->formation;
             $formationTitre = $formation ? $formation->titre : '';
             if ($formation) {
@@ -316,6 +536,7 @@ class QuizController extends Controller
                     }
                 }
             }
+
             return redirect()->route('quiz.index')->with('success', 'Quiz mis à jour avec succès.');
         } catch (\Exception $e) {
             DB::rollBack();
