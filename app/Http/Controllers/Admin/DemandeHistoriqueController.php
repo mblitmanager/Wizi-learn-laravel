@@ -15,10 +15,9 @@ class DemandeHistoriqueController extends Controller
             $query = DemandeInscription::with(['parrain', 'filleul', 'formation'])
                 ->orderBy('created_at', 'desc');
 
-            // Filtrage par type de demande
+            // Filtrage par type de demande - CORRIGÉ
             if ($request->has('type') && $request->type !== '') {
-                $filterValue = $this->getFilterValue($request->type);
-                $query->where('motif', $filterValue);
+                $query->where('motif', $request->type); // Utilisez directement la valeur
             }
 
             // Filtrage par statut
@@ -125,8 +124,7 @@ class DemandeHistoriqueController extends Controller
             ->orderBy('created_at', 'desc');
 
         if (!empty($filters['type'])) {
-            $filterValue = $this->getFilterValue($filters['type']);
-            $query->where('motif', $filterValue);
+            $query->where('motif', $filters['type']); // Utilisez directement la valeur
         }
 
         if (!empty($filters['statut'])) {
@@ -134,16 +132,6 @@ class DemandeHistoriqueController extends Controller
         }
 
         return $query->get();
-    }
-
-    /**
-     * Convertit le type de filtre en valeur de motif
-     */
-    private function getFilterValue($type): string
-    {
-        return $type === 'demande_inscription_parrainage'
-            ? 'Soumission d\'une demande d\'inscription par parrainage'
-            : 'Demande d\'inscription à une formation';
     }
 
     /**
