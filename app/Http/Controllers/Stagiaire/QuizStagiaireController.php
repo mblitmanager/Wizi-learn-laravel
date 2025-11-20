@@ -192,7 +192,7 @@ class QuizStagiaireController extends Controller
             }
 
             // Récupérer les quiz avec participations optimisées (une seule requête pour les participations)
-            $quizzes = $this->quizRepository->getQuizzesWithUserParticipations(
+            $quizzes = $this->quizService->getQuizzesWithUserParticipations(
                 $user->stagiaire->id,
                 $user->getKey()
             );
