@@ -35,17 +35,37 @@ class QuizController extends Controller
     public function getQuizzesByCategory($category)
     {
         try {
-            // Récupérer les quizzes des formations ayant la catégorie spécifiée et qui ont des stagiaires
+            $user = Auth::user();
+            $stagiaire = Stagiaire::where('user_id', $user->getKey())->first();
+
+            if (!$stagiaire) {
+                return response()->json([]);
+            }
+
+            // Récupérer les quizzes des formations ayant la catégorie spécifiée et qui sont assignées au stagiaire connecté
             $quizzes = Quiz::select('quizzes.*')
                 ->join('formations', 'formations.id', '=', 'quizzes.formation_id')
                 ->join('catalogue_formations', 'catalogue_formations.formation_id', '=', 'formations.id')
                 ->join('stagiaire_catalogue_formations', 'stagiaire_catalogue_formations.catalogue_formation_id', '=', 'catalogue_formations.id')
-                ->join('stagiaires', 'stagiaires.id', '=', 'stagiaire_catalogue_formations.stagiaire_id')
                 ->where('formations.categorie', $category)
-                ->where('stagiaires.role', 'stagiaire')
+                ->where('stagiaire_catalogue_formations.stagiaire_id', $stagiaire->id)
                 ->where('quizzes.status', 'actif')
+                ->distinct()
                 ->with(['questions.reponses', 'formation'])
                 ->get();
+
+            Log::info('getQuizzesByCategory request', [
+                'category_requested' => $category,
+                'count' => $quizzes->count(),
+                'quizzes_found' => $quizzes->map(function($q) {
+                    return [
+                        'id' => $q->id,
+                        'titre' => $q->titre,
+                        'formation_id' => $q->formation_id,
+                        'formation_categorie' => $q->formation->categorie ?? 'N/A'
+                    ];
+                })
+            ]);
 
             // Transformer les données pour correspondre au format TypeScript
             $formattedQuizzes = $quizzes->map(function ($quiz) {
@@ -465,6 +485,13 @@ class QuizController extends Controller
         try {
             $quiz = Quiz::with(['questions.reponses', 'formation'])
                 ->findOrFail($id);
+
+            Log::info('getQuizById request', [
+                'id_requested' => $id,
+                'quiz_found_id' => $quiz->id,
+                'titre' => $quiz->titre,
+                'formation_categorie' => $quiz->formation->categorie ?? 'N/A'
+            ]);
 
             return response()->json([
                 'id' => (string) $quiz->id,
