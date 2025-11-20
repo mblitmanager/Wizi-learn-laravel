@@ -209,15 +209,19 @@ class QuizStagiaireController extends Controller
                     'niveau' => $quiz->niveau ?? 'débutant',
                     'status' => $quiz->status ?? 'actif',
                     'nb_points_total' => $quiz->nb_points_total,
+                    'formationId' => $quiz->formation?->id ? (string) $quiz->formation->id : null,
+                    'categorie' => $quiz->formation?->categorie ?? null,
                     'formation' => $quiz->formation ? [
                         'id' => $quiz->formation->id,
                         'titre' => $quiz->formation->titre ?? null,
+                        'categorie' => $quiz->formation->categorie ?? null,
                     ] : null,
                     'questions' => $quiz->questions->map(function ($question) {
                         return [
                             'id' => (string) $question->id,
                             'text' => $question->text ?? null,
                             'type' => $question->type ?? null,
+                            'points' => $question->points ?? 0,
                             'answers' => $question->reponses->map(function ($r) {
                                 return [
                                     'id' => (string) $r->id,

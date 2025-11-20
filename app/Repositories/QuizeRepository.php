@@ -6,6 +6,7 @@ use App\Models\Quiz;
 use App\Models\Questions;
 use App\Models\Reponse;
 use App\Models\Participation;
+use App\Models\QuizParticipation;
 use App\Repositories\Interfaces\QuizRepositoryInterface;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -42,14 +43,14 @@ class QuizeRepository implements QuizRepositoryInterface
     public function getQuizzesByStagiaire($stagiaireId): Collection
     {
         return Quiz::where('status', 'actif')
-            ->whereHas('formation', function($query) use ($stagiaireId) {
-                $query->whereHas('catalogueFormation', function($q) use ($stagiaireId) {
-                    $q->whereHas('stagiaires', function($q) use ($stagiaireId) {
+            ->whereHas('formation', function ($query) use ($stagiaireId) {
+                $query->whereHas('catalogueFormation', function ($q) use ($stagiaireId) {
+                    $q->whereHas('stagiaires', function ($q) use ($stagiaireId) {
                         $q->where('stagiaires.id', $stagiaireId);
                     });
                 });
             })
-            ->with(['formation','questions.reponses'])
+            ->with(['formation', 'questions.reponses'])
             ->get();
     }
 
@@ -78,8 +79,10 @@ class QuizeRepository implements QuizRepositoryInterface
 
         // Attacher les participations aux quiz
         $quizzes->each(function ($quiz) use ($participationsByQuizId) {
-            $quiz->setAttribute('user_last_participation', 
-                $participationsByQuizId[$quiz->id] ?? null);
+            $quiz->setAttribute(
+                'user_last_participation',
+                $participationsByQuizId[$quiz->id] ?? null
+            );
         });
 
         return $quizzes;
@@ -196,7 +199,7 @@ class QuizeRepository implements QuizRepositoryInterface
 
     public function getQuizzesByCategory($categoryId): Collection
     {
-        return Quiz::whereHas('formation', function($query) use ($categoryId) {
+        return Quiz::whereHas('formation', function ($query) use ($categoryId) {
             $query->where('category_id', $categoryId);
         })->get();
     }
