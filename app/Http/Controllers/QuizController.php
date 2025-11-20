@@ -35,17 +35,37 @@ class QuizController extends Controller
     public function getQuizzesByCategory($category)
     {
         try {
-            // Récupérer les quizzes des formations ayant la catégorie spécifiée et qui ont des stagiaires
+            $user = Auth::user();
+            $stagiaire = Stagiaire::where('user_id', $user->getKey())->first();
+
+            if (!$stagiaire) {
+                return response()->json([]);
+            }
+
+            // Récupérer les quizzes des formations ayant la catégorie spécifiée et qui sont assignées au stagiaire connecté
             $quizzes = Quiz::select('quizzes.*')
                 ->join('formations', 'formations.id', '=', 'quizzes.formation_id')
                 ->join('catalogue_formations', 'catalogue_formations.formation_id', '=', 'formations.id')
                 ->join('stagiaire_catalogue_formations', 'stagiaire_catalogue_formations.catalogue_formation_id', '=', 'catalogue_formations.id')
-                ->join('stagiaires', 'stagiaires.id', '=', 'stagiaire_catalogue_formations.stagiaire_id')
                 ->where('formations.categorie', $category)
-                ->where('stagiaires.role', 'stagiaire')
+                ->where('stagiaire_catalogue_formations.stagiaire_id', $stagiaire->id)
                 ->where('quizzes.status', 'actif')
+                ->distinct()
                 ->with(['questions.reponses', 'formation'])
                 ->get();
+
+            Log::info('getQuizzesByCategory request', [
+                'category_requested' => $category,
+                'count' => $quizzes->count(),
+                'quizzes_found' => $quizzes->map(function($q) {
+                    return [
+                        'id' => $q->id,
+                        'titre' => $q->titre,
+                        'formation_id' => $q->formation_id,
+                        'formation_categorie' => $q->formation->categorie ?? 'N/A'
+                    ];
+                })
+            ]);
 
             // Transformer les données pour correspondre au format TypeScript
             $formattedQuizzes = $quizzes->map(function ($quiz) {
@@ -292,28 +312,28 @@ class QuizController extends Controller
                         'categorie' => $quiz->formation->categorie,
                     ] : null,
                     'questions' => $quiz->questions->map(function ($question) {
-                        return [
-                            'id' => (string) $question->id,
-                            'quizId' => $question->quiz_id,
-                            'text' => $question->text,
-                            'type' => $question->type,
-                            'explication' => $question->explication,
-                            'points' => $question->points,
-                            'astuce' => $question->astuce,
-                            'mediaUrl' => $question->media_url,
-                            'answers' => $question->reponses->map(function ($reponse) {
-                                return [
-                                    'id' => (string) $reponse->id,
-                                    'text' => $reponse->text,
-                                    'isCorrect' => $reponse->is_correct,
-                                    'position' => $reponse->position,
-                                    'matchPair' => $reponse->match_pair,
-                                    'bankGroup' => $reponse->bank_group,
-                                    'flashcardBack' => $reponse->flashcard_back,
-                                ];
-                            })->toArray(),
-                        ];
-                    })->toArray(),
+                    return [
+                        'id' => (string) $question->id,
+                        'quizId' => $question->quiz_id,
+                        'text' => $question->text,
+                        'type' => $question->type,
+                        'explication' => $question->explication,
+                        'points' => $question->points,
+                        'astuce' => $question->astuce,
+                        'mediaUrl' => $question->media_url,
+                        'answers' => $question->reponses->map(function ($reponse) {
+                            return [
+                                'id' => (string) $reponse->id,
+                                'text' => $reponse->text,
+                                'isCorrect' => $reponse->is_correct,
+                                'position' => $reponse->position,
+                                'matchPair' => $reponse->match_pair,
+                                'bankGroup' => $reponse->bank_group,
+                                'flashcardBack' => $reponse->flashcard_back,
+                            ];
+                        })->toArray(),
+                    ];
+                })->toArray(),
                 ];
                 return [
                     'id' => (string) $progression->id,
@@ -465,6 +485,13 @@ class QuizController extends Controller
         try {
             $quiz = Quiz::with(['questions.reponses', 'formation'])
                 ->findOrFail($id);
+
+            Log::info('getQuizById request', [
+                'id_requested' => $id,
+                'quiz_found_id' => $quiz->id,
+                'titre' => $quiz->titre,
+                'formation_categorie' => $quiz->formation->categorie ?? 'N/A'
+            ]);
 
             return response()->json([
                 'id' => (string) $quiz->id,
@@ -1095,8 +1122,13 @@ class QuizController extends Controller
     public function getGlobalClassement()
     {
         try {
-            // Charger les classements avec stagiaire + user + formateurs
-            $classements = Classement::with(['stagiaire.user', 'stagiaire.formateurs.user', 'quiz'])
+            // Charger les classements avec stagiaire + user + formateurs + leurs formations
+            $classements = Classement::with([
+                'stagiaire.user',
+                'stagiaire.formateurs.user',
+                'stagiaire.formateurs.catalogue_formations.formation', // Correction ici
+                'quiz'
+            ])
                 ->get()
                 ->groupBy('stagiaire_id')
                 ->map(function ($group) {
@@ -1121,6 +1153,23 @@ class QuizController extends Controller
                                 'nom' => $formateur->user->name,
                                 'telephone' => $formateur->telephone,
                                 'image' => $formateur->user->image ?? null,
+                                'formations' => $formateur->catalogue_formations->map(function ($catalogueFormation) {
+                                    return [
+                                        'id' => $catalogueFormation->id,
+                                        'titre' => $catalogueFormation->titre,
+                                        'description' => $catalogueFormation->description,
+                                        'duree' => $catalogueFormation->duree,
+                                        'tarif' => $catalogueFormation->tarif,
+                                        'statut' => $catalogueFormation->statut,
+                                        'image_url' => $catalogueFormation->image_url,
+                                        'formation' => $catalogueFormation->formation ? [
+                                            'id' => $catalogueFormation->formation->id,
+                                            'titre' => $catalogueFormation->formation->titre,
+                                            'categorie' => $catalogueFormation->formation->categorie,
+                                            'icon' => $catalogueFormation->formation->icon,
+                                        ] : null
+                                    ];
+                                })
                             ];
                         }),
                         'totalPoints' => $totalPoints,
@@ -1701,9 +1750,11 @@ class QuizController extends Controller
             $formations = Formation::whereHas('catalogueFormation', function ($query) use ($catalogues) {
                 $query->whereIn('catalogue_formations.id', $catalogues);
             })
-                ->with(['quizzes' => function ($query) {
-                    $query->where('status', 'actif')->with(['questions.reponses', 'formation']);
-                }])
+                ->with([
+                    'quizzes' => function ($query) {
+                        $query->where('status', 'actif')->with(['questions.reponses', 'formation']);
+                    }
+                ])
                 ->get();
 
             // Formatter

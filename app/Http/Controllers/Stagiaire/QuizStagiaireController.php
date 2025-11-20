@@ -191,11 +191,60 @@ class QuizStagiaireController extends Controller
                 }
             }
 
-            // Récupérer les quiz du stagiaire avec leurs questions et réponses
-            $quizzes = $this->quizService->getQuizzesByStagiaire($user->stagiaire->id);
+            // Récupérer les quiz avec participations optimisées (une seule requête pour les participations)
+            $quizzes = $this->quizService->getQuizzesWithUserParticipations(
+                $user->stagiaire->id,
+                $user->getKey()
+            );
+
+            // Formatter les quiz avec participations attachées
+            $formatted = $quizzes->map(function ($quiz) {
+                $lastParticipation = $quiz->getAttribute('user_last_participation');
+
+                return [
+                    'id' => (string) $quiz->id,
+                    'titre' => $quiz->titre,
+                    'description' => $quiz->description,
+                    'duree' => $quiz->duree ?? null,
+                    'niveau' => $quiz->niveau ?? 'débutant',
+                    'status' => $quiz->status ?? 'actif',
+                    'nb_points_total' => $quiz->nb_points_total,
+                    'formationId' => $quiz->formation?->id ? (string) $quiz->formation->id : null,
+                    'categorie' => $quiz->formation?->categorie ?? null,
+                    'formation' => $quiz->formation ? [
+                        'id' => $quiz->formation->id,
+                        'titre' => $quiz->formation->titre ?? null,
+                        'categorie' => $quiz->formation->categorie ?? null,
+                    ] : null,
+                    'questions' => $quiz->questions->map(function ($question) {
+                        return [
+                            'id' => (string) $question->id,
+                            'text' => $question->text ?? null,
+                            'type' => $question->type ?? null,
+                            'points' => $question->points ?? 0,
+                            'answers' => $question->reponses->map(function ($r) {
+                                return [
+                                    'id' => (string) $r->id,
+                                    'text' => $r->text,
+                                    'isCorrect' => (bool) ($r->is_correct ?? false)
+                                ];
+                            })->toArray()
+                        ];
+                    })->toArray(),
+                    'userParticipation' => $lastParticipation ? [
+                        'id' => $lastParticipation->id,
+                        'status' => $lastParticipation->status,
+                        'score' => $lastParticipation->score,
+                        'correct_answers' => $lastParticipation->correct_answers,
+                        'time_spent' => $lastParticipation->time_spent,
+                        'started_at' => $lastParticipation->started_at?->toIso8601String(),
+                        'completed_at' => $lastParticipation->completed_at?->toIso8601String(),
+                    ] : null,
+                ];
+            });
 
             return response()->json([
-                'data' => $quizzes
+                'data' => $formatted
             ]);
         } catch (JWTException $e) {
             return response()->json(['error' => 'Non autorisé'], 401);

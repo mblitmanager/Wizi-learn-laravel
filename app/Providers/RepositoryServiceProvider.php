@@ -11,6 +11,7 @@ use App\Repositories\ContactRepository;
 use App\Repositories\ParrainageRepository;
 use App\Repositories\RankingRepository;
 use App\Repositories\NotificationRepository;
+use App\Repositories\Interfaces\QuizRepositoryInterface;
 
 class RepositoryServiceProvider extends ServiceProvider
 {
@@ -23,6 +24,7 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(ParrainageRepositoryInterface::class, ParrainageRepository::class);
         $this->app->bind(RankingRepositoryInterface::class, RankingRepository::class);
         $this->app->bind(NotificationRepositoryInterface::class, NotificationRepository::class);
+        $this->app->bind(QuizRepositoryInterface::class, \App\Repositories\QuizeRepository::class);
     }
 
     /**

@@ -27,6 +27,47 @@
                 <div class="card-body">
                     <div class="card">
                         <div class="table-responsive px-3 py-3">
+                            <div class="mb-3">
+                                <form id="media-filters" method="GET" action="{{ route('medias.index') }}" class="row g-2 align-items-end">
+                                    <div class="col-sm-4">
+                                        <label class="form-label">Formation</label>
+                                        <select name="formation" class="form-select form-select-sm">
+                                            <option value="">Toutes</option>
+                                            @if(isset($formations))
+                                                @foreach($formations as $f)
+                                                    <option value="{{ $f->id }}" {{ request('formation') == $f->id ? 'selected' : '' }}>{{ $f->titre }}</option>
+                                                @endforeach
+                                            @endif
+                                        </select>
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <label class="form-label">Type</label>
+                                        <select name="type" class="form-select form-select-sm">
+                                            <option value="">Tous</option>
+                                            @if(isset($types))
+                                                @foreach($types as $t)
+                                                    <option value="{{ $t }}" {{ request('type') == $t ? 'selected' : '' }}>{{ ucfirst($t) }}</option>
+                                                @endforeach
+                                            @endif
+                                        </select>
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <label class="form-label">Catégorie</label>
+                                        <select name="category" class="form-select form-select-sm">
+                                            <option value="">Toutes</option>
+                                            @if(isset($categories))
+                                                @foreach($categories as $c)
+                                                    <option value="{{ $c }}" {{ request('category') == $c ? 'selected' : '' }}>{{ ucfirst($c) }}</option>
+                                                @endforeach
+                                            @endif
+                                        </select>
+                                    </div>
+                                    <div class="col-sm-2">
+                                        <button type="submit" class="btn btn-sm btn-primary">Filtrer</button>
+                                        <a href="{{ route('medias.index') }}" class="btn btn-sm btn-secondary">Réinitialiser</a>
+                                    </div>
+                                </form>
+                            </div>
                             <table id="stagiairesTable" class="table table-bordered table-striped table-hover mb-0">
 
                                 <thead>
@@ -37,22 +78,7 @@
                                         <th>url</th>
                                         <th>Action</th>
                                     </tr>
-                                    <tr>
-                                        <th><input type="text" placeholder="Filtrer"
-                                                class="form-control form-control-sm" />
-                                        </th>
-                                        <th><input type="text" placeholder="Filtrer"
-                                                class="form-control form-control-sm" />
-                                        </th>
-                                        </th>
-                                        <th><input type="text" placeholder="Filtrer"
-                                                class="form-control form-control-sm" />
-                                        </th>
-                                        <th><input type="text" placeholder="Filtrer"
-                                                class="form-control form-control-sm" />
-                                        </th>
-                                        <th></th>
-                                    </tr>
+                                    <!-- per-column inputs removed: filters handled via the form above -->
                                 </thead>
                                 <tbody>
                                     @foreach ($media as $row)
@@ -122,6 +148,10 @@
                         });
                     });
                 }
+            });
+            // auto-submit filter form when selects change
+            $(document).on('change', '#media-filters select', function() {
+                $('#media-filters').submit();
             });
         });
     </script>

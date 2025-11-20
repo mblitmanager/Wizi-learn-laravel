@@ -63,4 +63,9 @@ class QuizService
     {
         return $this->quizRepository->submitQuizAnswers($quizId, $stagiaireId, $answers);
     }
+
+    public function getQuizzesWithUserParticipations($stagiaireId, $userId)
+    {
+        return $this->quizRepository->getQuizzesWithUserParticipations($stagiaireId, $userId);
+    }
 }

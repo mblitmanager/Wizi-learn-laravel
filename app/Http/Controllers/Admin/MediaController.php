@@ -26,10 +26,29 @@ class MediaController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $media = $this->mediaService->list();
-        return view('admin.media.index', compact('media'));
+        // Build query with optional filters: formation, type, category
+        $query = \App\Models\Media::with('formation');
+
+        if ($request->filled('formation')) {
+            $query->where('formation_id', $request->formation);
+        }
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+        if ($request->filled('category')) {
+            $query->where('categorie', $request->category);
+        }
+
+        $media = $query->orderBy('ordre', 'asc')->paginate(15)->appends($request->query());
+
+        // Data for filters
+        $formations = Formation::select('id', 'titre')->get();
+        $types = ['image', 'video', 'audio', 'document'];
+        $categories = \App\Models\Media::select('categorie')->distinct()->pluck('categorie');
+
+        return view('admin.media.index', compact('media', 'formations', 'types', 'categories'));
     }
 
     /**

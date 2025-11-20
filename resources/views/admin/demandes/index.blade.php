@@ -40,14 +40,14 @@
                             class="row g-3 align-items-end">
                             <div class="col-md-4">
                                 <label for="type" class="form-label fw-semibold">Type de demande</label>
-                                <select name="type" id="type" class="form-select">
+                                <select name="type" id="type" class="form-select" required>
                                     <option value="">Tous les types</option>
-                                    <option value="demande_inscription_parrainage"
-                                        {{ request('type') === 'demande_inscription_parrainage' ? 'selected' : '' }}>
+                                    <option value="Soumission d'une demande d'inscription par parrainage" 
+                                        {{ request('type') === "Soumission d'une demande d'inscription par parrainage" ? 'selected' : '' }}>
                                         Parrainage
                                     </option>
-                                    <option value="demande_inscription_formation"
-                                        {{ request('type') === 'demande_inscription_formation' ? 'selected' : '' }}>
+                                    <option required value="Demande d'inscription à une formation" 
+                                        {{ request('type') === "Demande d'inscription à une formation" ? 'selected' : '' }}>
                                         Formation
                                     </option>
                                 </select>

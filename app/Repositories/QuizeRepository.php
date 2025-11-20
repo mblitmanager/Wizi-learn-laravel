@@ -6,6 +6,7 @@ use App\Models\Quiz;
 use App\Models\Questions;
 use App\Models\Reponse;
 use App\Models\Participation;
+use App\Models\QuizParticipation;
 use App\Repositories\Interfaces\QuizRepositoryInterface;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -42,15 +43,49 @@ class QuizeRepository implements QuizRepositoryInterface
     public function getQuizzesByStagiaire($stagiaireId): Collection
     {
         return Quiz::where('status', 'actif')
-            ->whereHas('formation', function($query) use ($stagiaireId) {
-                $query->whereHas('catalogueFormation', function($q) use ($stagiaireId) {
-                    $q->whereHas('stagiaires', function($q) use ($stagiaireId) {
+            ->whereHas('formation', function ($query) use ($stagiaireId) {
+                $query->whereHas('catalogueFormation', function ($q) use ($stagiaireId) {
+                    $q->whereHas('stagiaires', function ($q) use ($stagiaireId) {
                         $q->where('stagiaires.id', $stagiaireId);
                     });
                 });
             })
-            ->with(['formation','questions.reponses'])
+            ->with(['formation', 'questions.reponses'])
             ->get();
+    }
+
+    /**
+     * Récupère les quiz du stagiaire avec les participations de l'utilisateur
+     * (optimisé pour éviter les requêtes N+1)
+     */
+    public function getQuizzesWithUserParticipations($stagiaireId, $userId): Collection
+    {
+        $quizzes = $this->getQuizzesByStagiaire($stagiaireId);
+        $quizIds = $quizzes->pluck('id')->toArray();
+
+        // Récupérer TOUTES les participations de l'utilisateur pour ces quiz en une seule requête
+        $participations = QuizParticipation::where('user_id', $userId)
+            ->whereIn('quiz_id', $quizIds)
+            ->orderByDesc('created_at')
+            ->get();
+
+        // Indexer pour retrouver rapidement par quiz_id (garder la plus récente)
+        $participationsByQuizId = [];
+        foreach ($participations as $p) {
+            if (!isset($participationsByQuizId[$p->quiz_id])) {
+                $participationsByQuizId[$p->quiz_id] = $p;
+            }
+        }
+
+        // Attacher les participations aux quiz
+        $quizzes->each(function ($quiz) use ($participationsByQuizId) {
+            $quiz->setAttribute(
+                'user_last_participation',
+                $participationsByQuizId[$quiz->id] ?? null
+            );
+        });
+
+        return $quizzes;
     }
 
     public function getQuizQuestions($quizId): Collection
@@ -164,7 +199,7 @@ class QuizeRepository implements QuizRepositoryInterface
 
     public function getQuizzesByCategory($categoryId): Collection
     {
-        return Quiz::whereHas('formation', function($query) use ($categoryId) {
+        return Quiz::whereHas('formation', function ($query) use ($categoryId) {
             $query->where('category_id', $categoryId);
         })->get();
     }
