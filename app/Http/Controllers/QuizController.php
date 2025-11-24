@@ -22,6 +22,8 @@ use Illuminate\Support\Facades\DB;
 use App\Models\QuizCategory;
 use App\Models\Formation;
 use App\Models\CatalogueFormation;
+use App\Models\Participation;
+use App\Models\ParticipationAnswer;
 
 class QuizController extends Controller
 {
@@ -57,7 +59,7 @@ class QuizController extends Controller
             Log::info('getQuizzesByCategory request', [
                 'category_requested' => $category,
                 'count' => $quizzes->count(),
-                'quizzes_found' => $quizzes->map(function($q) {
+                'quizzes_found' => $quizzes->map(function ($q) {
                     return [
                         'id' => $q->id,
                         'titre' => $q->titre,
@@ -312,28 +314,28 @@ class QuizController extends Controller
                         'categorie' => $quiz->formation->categorie,
                     ] : null,
                     'questions' => $quiz->questions->map(function ($question) {
-                    return [
-                        'id' => (string) $question->id,
-                        'quizId' => $question->quiz_id,
-                        'text' => $question->text,
-                        'type' => $question->type,
-                        'explication' => $question->explication,
-                        'points' => $question->points,
-                        'astuce' => $question->astuce,
-                        'mediaUrl' => $question->media_url,
-                        'answers' => $question->reponses->map(function ($reponse) {
-                            return [
-                                'id' => (string) $reponse->id,
-                                'text' => $reponse->text,
-                                'isCorrect' => $reponse->is_correct,
-                                'position' => $reponse->position,
-                                'matchPair' => $reponse->match_pair,
-                                'bankGroup' => $reponse->bank_group,
-                                'flashcardBack' => $reponse->flashcard_back,
-                            ];
-                        })->toArray(),
-                    ];
-                })->toArray(),
+                        return [
+                            'id' => (string) $question->id,
+                            'quizId' => $question->quiz_id,
+                            'text' => $question->text,
+                            'type' => $question->type,
+                            'explication' => $question->explication,
+                            'points' => $question->points,
+                            'astuce' => $question->astuce,
+                            'mediaUrl' => $question->media_url,
+                            'answers' => $question->reponses->map(function ($reponse) {
+                                return [
+                                    'id' => (string) $reponse->id,
+                                    'text' => $reponse->text,
+                                    'isCorrect' => $reponse->is_correct,
+                                    'position' => $reponse->position,
+                                    'matchPair' => $reponse->match_pair,
+                                    'bankGroup' => $reponse->bank_group,
+                                    'flashcardBack' => $reponse->flashcard_back,
+                                ];
+                            })->toArray(),
+                        ];
+                    })->toArray(),
                 ];
                 return [
                     'id' => (string) $progression->id,
@@ -1869,5 +1871,66 @@ class QuizController extends Controller
                 'message' => $e->getMessage()
             ], 500);
         }
+    }
+    public function resumeParticipation($quizId)
+    {
+        $user = Auth::user();
+        $stagiaire = Stagiaire::where('user_id', $user->id)->first();
+
+        if (!$stagiaire) {
+            return response()->json(['error' => 'Stagiaire not found'], 404);
+        }
+
+        $participation = Participation::where('stagiaire_id', $stagiaire->id)
+            ->where('quiz_id', $quizId)
+            ->first();
+
+        if (!$participation) {
+            return response()->json(['error' => 'No participation found'], 404);
+        }
+
+        $participation->load(['currentQuestion', 'challenges']);
+        return response()->json($participation->resume_data);
+    }
+    public function saveProgress(Request $request, $quizId)
+    {
+        $validated = $request->validate([
+            'current_question_id' => 'nullable|exists:questions,id',
+            'answers' => 'nullable|array',
+            'time_spent' => 'nullable|string',
+        ]);
+
+        $user = Auth::user();
+        $stagiaire = Stagiaire::where('user_id', $user->id)->firstOrFail();
+
+        $participation = Participation::where('stagiaire_id', $stagiaire->id)
+            ->where('quiz_id', $quizId)
+            ->firstOrFail();
+
+        if ($request->has('current_question_id')) {
+            $participation->current_question_id = $request->current_question_id;
+        }
+
+        if ($request->has('time_spent')) {
+            $participation->heure = $request->time_spent;
+        }
+
+        $participation->save();
+
+        if ($request->has('answers')) {
+            foreach ($request->answers as $questionId => $answerData) {
+                ParticipationAnswer::updateOrCreate(
+                    [
+                        'participation_id' => $participation->id,
+                        'question_id' => $questionId
+                    ],
+                    [
+                        'answer_data' => $answerData
+                    ]
+                );
+            }
+        }
+
+        return response()->json(['success' => true]);
     }
 }

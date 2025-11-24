@@ -166,7 +166,9 @@ Route::middleware(['auth:api', 'detectClient'])->group(function () {
     Route::post('/quiz/{id}/result', [QuizController::class, 'submitQuizResult']);
     Route::get('/quiz/{id}/participation', [QuizController::class, 'getCurrentParticipation']);
     Route::post('/quiz/{id}/complete', [QuizController::class, 'completeParticipation']);
-    Route::get('/quiz-participations/{participation}/resume', [App\Http\Controllers\QuizController::class, 'getParticipationResume']);
+    // New resume endpoint for quiz participation
+    Route::get('/quiz/{quizId}/participation/resume', [QuizController::class, 'resumeParticipation']);
+    Route::post('/quiz/{quizId}/participation/progress', [QuizController::class, 'saveProgress']);
     Route::post('/avatar/{id}/update-profile', [FormationStagiaireController::class, 'updateImage']);
 
     Route::get('/parrainage/stats/{parrain_id}', [ParrainageController::class, 'getStatsParrain']);
