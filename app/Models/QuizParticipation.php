@@ -17,7 +17,8 @@ class QuizParticipation extends Model
         'completed_at',
         'score',
         'correct_answers',
-        'time_spent'
+        'time_spent',
+        'current_question_id'
     ];
 
     protected $casts = [
@@ -42,5 +43,20 @@ class QuizParticipation extends Model
 
     {
         return $this->belongsTo(Quiz::class);
+    }
+
+    // Accessor to format resume payload for frontend
+    public function getResumeDataAttribute()
+    {
+        return [
+            'participation_id' => $this->id,
+            'quiz_id' => $this->quiz_id,
+            'current_question_id' => $this->current_question_id,
+            'answers' => $this->answers->mapWithKeys(function ($answer) {
+                return [$answer->question_id => $answer->answer_ids];
+            })->toArray(),
+            'score' => $this->score,
+            'time_spent' => $this->time_spent,
+        ];
     }
 }
