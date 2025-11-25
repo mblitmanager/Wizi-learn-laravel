@@ -253,16 +253,22 @@ class FormateurController extends Controller
                 ->with('error', 'Erreur: ' . $e->getMessage());
         }
     }
-
     /**
      * Display the specified resource.
      */
     public function show(string $id)
     {
         $formateur = $this->formateurService->show($id);
+
+        // Charger les relations nécessaires
+        $formateur->load([
+            'catalogue_formations.formation', // Charger la formation parente
+            'stagiaires.user',
+            'user'
+        ]);
+
         return view('admin.formateur.show', compact('formateur'));
     }
-
     /**
      * Show the form for editing the specified resource.
      */

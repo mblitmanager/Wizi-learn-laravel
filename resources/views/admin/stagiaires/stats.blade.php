@@ -143,7 +143,7 @@
                                         <small class="text-muted">Stagiaires non actifs</small>
                                     </div>
                                     <div class="bg-info bg-opacity-10 p-3 rounded">
-                                        <i class="bx bx-time-five fs-1 text-info"></i>
+                                        <i class="bx bx-time-five fs-1 text-white"></i>
                                     </div>
                                 </div>
                             </div>
@@ -159,7 +159,7 @@
                                         <small class="text-muted">Stagiaires inactifs</small>
                                     </div>
                                     <div class="bg-primary bg-opacity-10 p-3 rounded">
-                                        <i class="bx bx-calendar-x fs-1 text-primary"></i>
+                                        <i class="bx bx-calendar-x fs-1 text-white"></i>
                                     </div>
                                 </div>
                             </div>
@@ -175,7 +175,7 @@
                                         <small class="text-muted">Stagiaires très inactifs</small>
                                     </div>
                                     <div class="bg-danger bg-opacity-10 p-3 rounded">
-                                        <i class="bx bx-user-minus fs-1 text-danger"></i>
+                                        <i class="bx bx-user-minus fs-1 text-white"></i>
                                     </div>
                                 </div>
                             </div>
