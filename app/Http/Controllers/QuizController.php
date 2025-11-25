@@ -1875,13 +1875,13 @@ class QuizController extends Controller
     public function resumeParticipation($quizId)
     {
         $user = Auth::user();
-        $stagiaire = Stagiaire::where('user_id', $user->id)->first();
+        $stagiaire = Stagiaire::where('user_id', $user->getKey())->first();
 
         if (!$stagiaire) {
             return response()->json(['error' => 'Stagiaire not found'], 404);
         }
 
-        $participation = Participation::where('stagiaire_id', $stagiaire->id)
+        $participation = QuizParticipation::where('stagiaire_id', $stagiaire->id)
             ->where('quiz_id', $quizId)
             ->first();
 
@@ -1889,7 +1889,7 @@ class QuizController extends Controller
             return response()->json(['error' => 'No participation found'], 404);
         }
 
-        $participation->load(['currentQuestion', 'challenges']);
+        $participation->load('answers');
         return response()->json($participation->resume_data);
     }
     public function saveProgress(Request $request, $quizId)
@@ -1901,9 +1901,9 @@ class QuizController extends Controller
         ]);
 
         $user = Auth::user();
-        $stagiaire = Stagiaire::where('user_id', $user->id)->firstOrFail();
+        $stagiaire = Stagiaire::where('user_id', $user->getKey())->firstOrFail();
 
-        $participation = Participation::where('stagiaire_id', $stagiaire->id)
+        $participation = QuizParticipation::where('stagiaire_id', $stagiaire->id)
             ->where('quiz_id', $quizId)
             ->firstOrFail();
 
@@ -1912,20 +1912,20 @@ class QuizController extends Controller
         }
 
         if ($request->has('time_spent')) {
-            $participation->heure = $request->time_spent;
+            $participation->time_spent = $request->time_spent;
         }
 
         $participation->save();
 
         if ($request->has('answers')) {
             foreach ($request->answers as $questionId => $answerData) {
-                ParticipationAnswer::updateOrCreate(
+                QuizParticipationAnswer::updateOrCreate(
                     [
                         'participation_id' => $participation->id,
                         'question_id' => $questionId
                     ],
                     [
-                        'answer_data' => $answerData
+                        'answer_ids' => $answerData
                     ]
                 );
             }
