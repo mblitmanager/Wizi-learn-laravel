@@ -1875,13 +1875,8 @@ class QuizController extends Controller
     public function resumeParticipation($quizId)
     {
         $user = Auth::user();
-        $stagiaire = Stagiaire::where('user_id', $user->getKey())->first();
 
-        if (!$stagiaire) {
-            return response()->json(['error' => 'Stagiaire not found'], 404);
-        }
-
-        $participation = QuizParticipation::where('stagiaire_id', $stagiaire->id)
+        $participation = QuizParticipation::where('user_id', $user->id)
             ->where('quiz_id', $quizId)
             ->first();
 
@@ -1897,13 +1892,12 @@ class QuizController extends Controller
         $validated = $request->validate([
             'current_question_id' => 'nullable|exists:questions,id',
             'answers' => 'nullable|array',
-            'time_spent' => 'nullable|string',
+            'time_spent' => 'nullable|integer',
         ]);
 
         $user = Auth::user();
-        $stagiaire = Stagiaire::where('user_id', $user->getKey())->firstOrFail();
 
-        $participation = QuizParticipation::where('stagiaire_id', $stagiaire->id)
+        $participation = QuizParticipation::where('user_id', $user->id)
             ->where('quiz_id', $quizId)
             ->firstOrFail();
 
