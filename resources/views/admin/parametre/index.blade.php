@@ -163,12 +163,7 @@
                             <a href="{{ route('admin.parametre.reset-data') }}" class="btn btn-outline-warning text-start">
                                 <i class="bx bx-reset me-2"></i>Réinitialiser les données
                             </a>
-                            <a href="#" class="btn btn-outline-info text-start">
-                                <i class="bx bx-backup me-2"></i>Sauvegarde des données
-                            </a>
-                            <a href="#" class="btn btn-outline-secondary text-start">
-                                <i class="bx bx-stats me-2"></i>Statistiques système
-                            </a>
+
                         </div>
                     </div>
                 </div>
@@ -185,12 +180,7 @@
                             <a href="{{ route('parametre.create') }}" class="btn btn-outline-primary text-start">
                                 <i class="bx bx-plus me-2"></i>Ajouter un utilisateur
                             </a>
-                            <a href="#" class="btn btn-outline-success text-start">
-                                <i class="bx bx-import me-2"></i>Importer des utilisateurs
-                            </a>
-                            <a href="#" class="btn btn-outline-danger text-start">
-                                <i class="bx bx-export me-2"></i>Exporter la liste
-                            </a>
+
                         </div>
                     </div>
                 </div>

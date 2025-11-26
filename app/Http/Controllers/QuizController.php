@@ -292,28 +292,28 @@ class QuizController extends Controller
                         'categorie' => $quiz->formation->categorie,
                     ] : null,
                     'questions' => $quiz->questions->map(function ($question) {
-                    return [
-                        'id' => (string) $question->id,
-                        'quizId' => $question->quiz_id,
-                        'text' => $question->text,
-                        'type' => $question->type,
-                        'explication' => $question->explication,
-                        'points' => $question->points,
-                        'astuce' => $question->astuce,
-                        'mediaUrl' => $question->media_url,
-                        'answers' => $question->reponses->map(function ($reponse) {
-                            return [
-                                'id' => (string) $reponse->id,
-                                'text' => $reponse->text,
-                                'isCorrect' => $reponse->is_correct,
-                                'position' => $reponse->position,
-                                'matchPair' => $reponse->match_pair,
-                                'bankGroup' => $reponse->bank_group,
-                                'flashcardBack' => $reponse->flashcard_back,
-                            ];
-                        })->toArray(),
-                    ];
-                })->toArray(),
+                        return [
+                            'id' => (string) $question->id,
+                            'quizId' => $question->quiz_id,
+                            'text' => $question->text,
+                            'type' => $question->type,
+                            'explication' => $question->explication,
+                            'points' => $question->points,
+                            'astuce' => $question->astuce,
+                            'mediaUrl' => $question->media_url,
+                            'answers' => $question->reponses->map(function ($reponse) {
+                                return [
+                                    'id' => (string) $reponse->id,
+                                    'text' => $reponse->text,
+                                    'isCorrect' => $reponse->is_correct,
+                                    'position' => $reponse->position,
+                                    'matchPair' => $reponse->match_pair,
+                                    'bankGroup' => $reponse->bank_group,
+                                    'flashcardBack' => $reponse->flashcard_back,
+                                ];
+                            })->toArray(),
+                        ];
+                    })->toArray(),
                 ];
                 return [
                     'id' => (string) $progression->id,
@@ -1099,7 +1099,7 @@ class QuizController extends Controller
             $classements = Classement::with([
                 'stagiaire.user',
                 'stagiaire.formateurs.user',
-                'stagiaire.formateurs.catalogue_formations.formation', // Correction ici
+                'stagiaire.catalogue_formations.formation', // Ajouter cette relation
                 'quiz'
             ])
                 ->get()
@@ -1118,15 +1118,11 @@ class QuizController extends Controller
                             'nom' => $stagiaire->user->name ?? '',
                             'image' => $stagiaire->user->image ?? null,
                         ],
-                        'formateurs' => $stagiaire->formateurs->map(function ($formateur) {
-                            return [
-                                'id' => $formateur->id,
-                                'civilite' => $formateur->civilite,
-                                'prenom' => $formateur->prenom,
-                                'nom' => $formateur->user->name,
-                                'telephone' => $formateur->telephone,
-                                'image' => $formateur->user->image ?? null,
-                                'formations' => $formateur->catalogue_formations->map(function ($catalogueFormation) {
+                        'formateurs' => $stagiaire->formateurs->map(function ($formateur) use ($stagiaire) {
+                            // Récupérer uniquement les formations que ce formateur a assignées à ce stagiaire
+                            $formationsAssignees = $stagiaire->catalogue_formations
+                                ->where('pivot.formateur_id', $formateur->id)
+                                ->map(function ($catalogueFormation) {
                                     return [
                                         'id' => $catalogueFormation->id,
                                         'titre' => $catalogueFormation->titre,
@@ -1142,9 +1138,21 @@ class QuizController extends Controller
                                             'icon' => $catalogueFormation->formation->icon,
                                         ] : null
                                     ];
-                                })
+                                });
+
+                            return [
+                                'id' => $formateur->id,
+                                'civilite' => $formateur->civilite,
+                                'prenom' => $formateur->prenom,
+                                'nom' => $formateur->user->name,
+                                'telephone' => $formateur->telephone,
+                                'image' => $formateur->user->image ?? null,
+                                'formations' => $formationsAssignees
                             ];
-                        }),
+                        })->filter(function ($formateur) {
+                            // Filtrer les formateurs qui ont au moins une formation assignée au stagiaire
+                            return $formateur['formations']->isNotEmpty();
+                        })->values(),
                         'totalPoints' => $totalPoints,
                         'quizCount' => $quizCount,
                         'averageScore' => $averageScore,
