@@ -184,13 +184,13 @@
                                         </span>
                                     </td>
                                     <td>
-                                        <div class="d-flex justify-content-center gap-2">
+                                        <div class="btn-group btn-group-sm">
                                             <a href="{{ route('quiz.show', $row->id) }}"
                                                 class="btn btn-sm btn-info text-white" title="Afficher les détails">
                                                 Afficher
                                             </a>
                                             <a href="{{ route('quiz.edit', $row->id) }}"
-                                                class="btn btn-sm btn-warning text-white" title="Modifier le quiz">
+                                                class="btn btn-sm btn-success text-white" title="Modifier le quiz">
                                                 Modifier
                                             </a>
                                         </div>
@@ -381,14 +381,14 @@
             border-radius: 12px;
         }
 
-        .table th {
-            font-weight: 600;
-            font-size: 0.875rem;
-        }
-
         .btn {
             border-radius: 6px;
             font-weight: 500;
+        }
+
+        .table th {
+            font-weight: 600;
+            font-size: 0.875rem;
         }
 
         .badge {
@@ -396,25 +396,31 @@
             font-weight: 500;
         }
 
-        .modal-content {
-            border-radius: 12px;
-        }
-
-        .progress {
-            border-radius: 6px;
-        }
-
-        .form-control,
-        .form-select {
-            border-radius: 6px;
-        }
-
         .alert {
-            border-radius: 8px;
+            border-radius: 10px;
         }
 
-        .d-none {
-            display: none !important;
+        .table-hover tbody tr:hover {
+            background-color: rgba(0, 123, 255, 0.04) !important;
+        }
+
+        .filters input {
+            font-size: 0.8rem;
+        }
+
+        .dataTables_empty {
+            text-align: center;
+            padding: 2rem !important;
+            color: #6c757d !important;
+        }
+
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+
+        .btn-group-sm>.btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
         }
     </style>
 @endsection

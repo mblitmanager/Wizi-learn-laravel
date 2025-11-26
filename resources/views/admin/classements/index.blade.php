@@ -1,155 +1,212 @@
 @extends('admin.layout')
+@section('title', 'Classements par partenaire')
 
 @section('content')
-    <div class="container-fluid py-4">
-        <div class="shadow-lg border-0 px-2 py-2 mb-3">
-            <div class="page-breadcrumb d-none d-sm-flex align-items-center">
-                <div class="breadcrumb-title pe-3"></div>
-                <div class="ps-3">
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb mb-0 p-0">
-                            <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
-                            </li>
-                            <li class="breadcrumb-item active text-uppercase fw-bold" aria-current="page">Classements par
-                                partenaire
-                            </li>
-                        </ol>
-                    </nav>
-                </div>
-            </div>
-        </div>
+    <div class="container-fluid">
 
+        <!-- En-tête -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <div
+                    class="page-breadcrumb d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between">
 
-        <div class="col-md-12">
-            <div class="card">
-
-                <div class="card-body p-0">
-
-                    <div class="card">
-                        <div class="table-responsive px-4 py-4">
-                            <div class="dataTables_wrapper dt-bootstrap5">
-                                <table id="stagiairesTable" class="table table-bordered table-striped table-hover mb-0">
-                                    <thead>
-                                        <tr>
-                                            <th>Logo</th>
-                                            <th>Partenaire</th>
-                                            <th>Stagiaires</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                        <tr>
-                                            <th>
-                                                <input type="text" placeholder="Filtrer"
-                                                    class="form-control form-control-sm" />
-                                            </th>
-                                            <th>
-                                                <input type="text" placeholder="Filtrer"
-                                                    class="form-control form-control-sm" />
-                                            </th>
-                                            <th>
-                                                <input type="text" placeholder="Filtrer"
-                                                    class="form-control form-control-sm" />
-                                            </th>
-                                            <th></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @forelse($partenaires as $partenaire)
-                                            <tr>
-                                                <td>
-                                                    @if ($partenaire->logo)
-                                                        <img src="{{ asset($partenaire->logo) }}"
-                                                            alt="{{ $partenaire->identifiant }}" class="rounded-circle"
-                                                            width="40">
-                                                    @else
-                                                        <div class="avatar-initials bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center"
-                                                            style="width: 40px; height: 40px;">
-                                                            {{ substr($partenaire->identifiant, 0, 2) }}
-                                                        </div>
-                                                    @endif
-                                                </td>
-                                                <td>
-                                                    <strong>{{ $partenaire->identifiant }}</strong><br>
-                                                    <small class="text-muted">{{ $partenaire->ville }}
-                                                        ({{ $partenaire->departement }})
-                                                    </small>
-                                                </td>
-                                                <td class="text-center">
-                                                    <span
-                                                        class="badge bg-info rounded-pill">{{ $partenaire->stagiaires_count }}</span>
-                                                </td>
-                                                <td class="text-center">
-                                                    <a href="{{ route('classements.show', $partenaire->id) }}"
-                                                        class="btn btn-sm btn-primary">
-                                                        <i class="fas fa-chart-line me-1"></i> Voir classement
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                        @empty
-                                            <tr>
-                                                <td colspan="4" class="text-center py-4">Aucun partenaire disponible</td>
-                                            </tr>
-                                        @endforelse
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
+                    <div class="mb-3 mb-md-0">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mb-0">
+                                <li class="breadcrumb-item">
+                                    <a href="{{ route('dashboard') }}" class="text-decoration-none">
+                                        <i class="bx bx-home-alt"></i>
+                                    </a>
+                                </li>
+                                <li class="breadcrumb-item active text-dark fw-semibold">
+                                    Classements partenaires
+                                </li>
+                            </ol>
+                        </nav>
                     </div>
+
                 </div>
             </div>
         </div>
+
+        <!-- Bloc principal -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-transparent border-bottom-0 py-3">
+                <h6 class="mb-0 text-dark fw-semibold">
+                    <i class="bx bx-pie-chart-alt me-2"></i>Liste des partenaires
+                </h6>
+            </div>
+
+            <div class="card-body">
+
+                <div class="table-responsive">
+                    <table id="partenaireTable" class="table table-hover table-striped align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="bg-primary text-white border-0">Logo</th>
+                                <th class="bg-primary text-white border-0">Partenaire</th>
+                                <th class="bg-primary text-white border-0 text-center">Stagiaires</th>
+                                <th class="bg-primary text-white border-0 text-center">Actions</th>
+                            </tr>
+                            <tr class="filters">
+                                <th><input type="text" class="form-control form-control-sm" placeholder="Filtrer...">
+                                </th>
+                                <th><input type="text" class="form-control form-control-sm" placeholder="Filtrer...">
+                                </th>
+                                <th><input type="text" class="form-control form-control-sm" placeholder="Filtrer...">
+                                </th>
+                                <th></th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @forelse ($partenaires as $partenaire)
+                                <tr>
+                                    <td>
+                                        @if ($partenaire->logo)
+                                            <img src="{{ asset($partenaire->logo) }}" alt="{{ $partenaire->identifiant }}"
+                                                class="rounded-circle" width="45" height="45">
+                                        @else
+                                            <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center"
+                                                style="width:45px;height:45px;font-weight:bold;">
+                                                {{ strtoupper(substr($partenaire->identifiant, 0, 2)) }}
+                                            </div>
+                                        @endif
+                                    </td>
+
+                                    <td>
+                                        <strong class="text-dark">{{ $partenaire->identifiant }}</strong><br>
+                                        <small class="text-muted">
+                                            {{ $partenaire->ville }} ({{ $partenaire->departement }})
+                                        </small>
+                                    </td>
+
+                                    <td class="text-center">
+                                        <span class="badge bg-info text-white px-3 py-2 fw-semibold">
+                                            {{ $partenaire->stagiaires_count }}
+                                        </span>
+                                    </td>
+
+                                    <td class="text-center">
+                                        <a href="{{ route('classements.show', $partenaire->id) }}"
+                                            class="btn btn-sm btn-primary text-white">
+                                            Voir classement
+                                        </a>
+                                    </td>
+                                </tr>
+                            @empty
+                                <!-- SUPPRIMEZ cette ligne -->
+                                <!-- <tr>
+                                                <td colspan="4" class="text-center py-4 text-muted">
+                                                    Aucun partenaire trouvé.
+                                                </td>
+                                            </tr> -->
+                            @endforelse
+                        </tbody>
+
+                    </table>
+                </div>
+
+            </div>
+        </div>
+
     </div>
 @endsection
 
-@push('styles')
-    <style>
-        .avatar-initials {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-        }
-
-        .table th {
-            font-weight: 600;
-        }
-    </style>
-@endpush
 @section('scripts')
     <script>
         $(document).ready(function() {
-            var table = $('#stagiairesTable').DataTable({
+            // Vérifiez d'abord si la table a des données
+            var hasData = {{ count($partenaires) > 0 ? 'true' : 'false' }};
+
+            var table = $('#partenaireTable').DataTable({
                 language: {
-                    url: "https://cdn.datatables.net/plug-ins/1.13.5/i18n/fr-FR.json"
+                    url: "https://cdn.datatables.net/plug-ins/1.13.5/i18n/fr-FR.json",
+                    // Ajoutez un message personnalisé pour les tables vides
+                    emptyTable: "Aucun partenaire trouvé."
                 },
                 paging: true,
                 searching: true,
                 ordering: true,
-                lengthMenu: [5, 10, 25, 50],
                 pageLength: 10,
-                dom: 'Bfrtip',
-                buttons: ['copy', 'csv', 'excel', 'pdf', 'print'],
+                lengthMenu: [5, 10, 25, 50],
+                dom: '<"row"<"col-md-6"B><"col-md-6"f>>rt<"row"<"col-md-6"l><"col-md-6"p>>',
+
+                buttons: [{
+                        extend: 'copy',
+                        className: 'btn btn-sm btn-outline-secondary',
+                        text: '<i class="bx bx-copy me-1"></i>Copier'
+                    },
+                    {
+                        extend: 'csv',
+                        className: 'btn btn-sm btn-outline-primary',
+                        text: '<i class="bx bx-file me-1"></i>CSV'
+                    },
+                    {
+                        extend: 'excel',
+                        className: 'btn btn-sm btn-outline-success',
+                        text: '<i class="bx bx-spreadsheet me-1"></i>Excel'
+                    },
+                    {
+                        extend: 'pdf',
+                        className: 'btn btn-sm btn-outline-danger',
+                        text: '<i class="bx bx-file me-1"></i>PDF'
+                    },
+                    {
+                        extend: 'print',
+                        className: 'btn btn-sm btn-outline-info',
+                        text: '<i class="bx bx-printer me-1"></i>Imprimer'
+                    }
+                ],
+
                 initComplete: function() {
-                    this.api().columns().every(function() {
-                        var that = this;
-                        $('input', this.header()).on('keyup change clear', function() {
-                            if (that.search() !== this.value) {
-                                that.search(this.value).draw();
-                            }
+                    // Appliquez les filtres uniquement s'il y a des données
+                    if (hasData) {
+                        this.api().columns().every(function() {
+                            var that = this;
+                            // Correction : utilisez .filters au lieu de .footer()
+                            $('input', $('.filters').eq(0).children().eq(this.index()))
+                                .on('keyup change clear', function() {
+                                    if (that.search() !== this.value) {
+                                        that.search(this.value).draw();
+                                    }
+                                });
                         });
-                    });
+                    }
                 }
             });
+
+            // Alternative : si vous voulez garder la ligne vide personnalisée
+            // Supprimez complètement le initComplete et utilisez cette approche :
+
         });
     </script>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.querySelector('#importModal form');
-            const progressBarWrapper = document.getElementById('progressBarWrapper');
+    <style>
+        .card {
+            border-radius: 12px;
+        }
 
-            form.addEventListener('submit', function() {
-                progressBarWrapper.classList.remove('d-none');
-            });
-        });
-    </script>
+        .table th {
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .btn {
+            border-radius: 6px;
+            font-weight: 500;
+        }
+
+        .badge {
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        /* Style pour le message de table vide */
+        .dataTables_empty {
+            text-align: center;
+            padding: 2rem !important;
+            color: #6c757d !important;
+        }
+    </style>
 @endsection

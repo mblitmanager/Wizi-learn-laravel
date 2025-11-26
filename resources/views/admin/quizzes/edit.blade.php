@@ -256,11 +256,11 @@
                                                         aria-expanded="false"
                                                         aria-controls="collapse{{ $qIndex }}">
                                                         <div class="d-flex align-items-center flex-grow-1">
-                                                            <div class="question-number me-3">
+                                                            {{-- <div class="question-number me-3">
                                                                 <span class="badge bg-primary rounded-circle p-2">
                                                                     #{{ $question->id }}
                                                                 </span>
-                                                            </div>
+                                                            </div> --}}
                                                             <div class="question-content flex-grow-1">
                                                                 <h6 class="mb-1 fw-semibold text-dark">
                                                                     {{ Str::limit($question->text, 100) }}</h6>
