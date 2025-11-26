@@ -17,11 +17,13 @@ use App\Http\Controllers\Admin\StagiaireController;
 use App\Http\Controllers\Admin\UserAppUsageAdminController;
 use App\Http\Controllers\Admin\AdminStagiaireStatsController;
 use App\Http\Controllers\Admin\AdminInactivityController;
+use App\Http\Controllers\Admin\AdminDashboardStatsController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Formateur\FormateurDashboardController;
 use App\Http\Controllers\Formateur\FormateurStagiaireController;
 use App\Http\Controllers\Formateur\FormateurStagiaireStatsController;
 use App\Http\Controllers\Formateur\FormateurClassementController;
+use App\Http\Controllers\Commercial\CommercialDashboardController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -205,12 +207,42 @@ Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function
     // Inactivité
     Route::get('/inactivity', [AdminInactivityController::class, 'index'])->name('admin.inactivity.index');
     Route::post('/inactivity/notify', [AdminInactivityController::class, 'notify'])->name('admin.inactivity.notify');
+
+    // Statistiques avancées
+    Route::prefix('stats')->name('stats.')->group(function () {
+        Route::get('/par-formation', [AdminDashboardStatsController::class, 'statsParFormation'])->name('formation');
+        Route::get('/par-formateur', [AdminDashboardStatsController::class, 'statsParFormateur'])->name('formateur');
+        Route::get('/par-catalogue', [AdminDashboardStatsController::class, 'statsParCatalogue'])->name('catalogue');
+        Route::get('/classement', [AdminDashboardStatsController::class, 'classement'])->name('classement');
+        Route::get('/affluence', [AdminDashboardStatsController::class, 'affluence'])->name('affluence');
+    });
+});
+
+// Routes pour les commerciaux avec le middleware isCommercial
+Route::middleware(['auth', 'isCommercial'])->prefix('commercial')->name('commercial.')->group(function () {
+    // Tableau de bord commercial
+    Route::get('/dashboard', [CommercialDashboardController::class, 'index'])->name('dashboard');
+
+    // Statistiques avancées
+    Route::prefix('stats')->name('stats.')->group(function () {
+        Route::get('/par-formation', [CommercialDashboardController::class, 'statsParFormation'])->name('formation');
+        Route::get('/par-formateur', [CommercialDashboardController::class, 'statsParFormateur'])->name('formateur');
+        Route::get('/classement', [CommercialDashboardController::class, 'classement'])->name('classement');
+        Route::get('/affluence', [CommercialDashboardController::class, 'affluence'])->name('affluence');
+    });
 });
 
 //Routes pour les formateurs avec le middleware IsFormateur
 Route::middleware(['auth', 'isFormateur'])->prefix('formateur')->name('formateur.')->group(function () {
     // Tableau de bord formateur
     Route::get('/dashboard', [FormateurDashboardController::class, 'index'])->name('dashboard');
+
+    // Statistiques avancées
+    Route::prefix('stats')->name('stats.')->group(function () {
+        Route::get('/par-formation', [FormateurDashboardController::class, 'statsParFormation'])->name('formation');
+        Route::get('/classement', [FormateurDashboardController::class, 'classement'])->name('classement');
+        Route::get('/affluence', [FormateurDashboardController::class, 'affluence'])->name('affluence');
+    });
 
     // Routes stagiaires
     Route::get('/stagiaires', [FormateurStagiaireController::class, 'tousLesStagiaires'])->name('stagiaires.index');
@@ -224,30 +256,16 @@ Route::middleware(['auth', 'isFormateur'])->prefix('formateur')->name('formateur
     // Routes classement et application
     Route::get('/classement', [FormateurClassementController::class, 'classementGeneral'])->name('classement');
 
-    // CORRECTION : Route pour les utilisateurs de l'application
+    // Route pour les utilisateurs de l'application
     Route::get('/stagiaires-application', [FormateurClassementController::class, 'stagiairesAvecApplication'])->name('stagiaires.application');
 
-    // CORRECTION : Une seule route pour les détails de classement
+    // Une seule route pour les détails de classement
     Route::get('/stagiaires/{id}/classement', [FormateurClassementController::class, 'detailsClassement'])->name('stagiaires.details-classement');
 
     // Routes formations
-    Route::get('/formations', [\App\Http\Controllers\Admin\FormateurController::class, 'mesFormations'])->name('formations.index');
-    Route::get('/formations/{id}', [\App\Http\Controllers\Admin\FormateurController::class, 'showFormation'])->name('formations.show');
-    Route::get('/catalogue', [\App\Http\Controllers\Admin\FormateurController::class, 'catalogueFormations'])->name('catalogue.index');
-
-    // Routes classement et application
-    Route::get('/classement', [FormateurClassementController::class, 'classementGeneral'])->name('classement');
-
-    // CORRECTION : Route pour les utilisateurs de l'application
-    Route::get('/stagiaires-application', [FormateurClassementController::class, 'stagiairesAvecApplication'])->name('stagiaires.application');
-
-    // CORRECTION : Une seule route pour les détails de classement
-    Route::get('/stagiaires/{id}/classement', [FormateurClassementController::class, 'detailsClassement'])->name('stagiaires.details-classement');
-
-    // Routes formations
-    Route::get('/formations', [\App\Http\Controllers\Admin\FormateurController::class, 'mesFormations'])->name('formations.index');
-    Route::get('/formations/{id}', [\App\Http\Controllers\Admin\FormateurController::class, 'showFormation'])->name('formations.show');
-    Route::get('/catalogue', [\App\Http\Controllers\Admin\FormateurController::class, 'catalogueFormations'])->name('catalogue.index');
+    Route::get('/formations', [FormateurController::class, 'mesFormations'])->name('formations.index');
+    Route::get('/formations/{id}', [FormateurController::class, 'showFormation'])->name('formations.show');
+    Route::get('/catalogue', [FormateurController::class, 'catalogueFormations'])->name('catalogue.index');
 
     // Route profil
     Route::get('/profile', [\App\Http\Controllers\Admin\FormateurController::class, 'profile'])->name('profile');

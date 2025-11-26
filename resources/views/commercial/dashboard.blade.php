@@ -1,4 +1,3 @@
-{{-- resources/views/formateur/dashboard.blade.php --}}
 @extends('admin.layout')
 
 @section('content')
@@ -7,9 +6,9 @@
         <div class="row mb-4">
             <div class="col">
                 <h1 class="h3 mb-0">
-                    <i class='bx bx-chalkboard me-2'></i>Tableau de Bord Formateur
+                    <i class='bx bx-trending-up me-2'></i>Tableau de Bord Commercial
                 </h1>
-                <small class="text-muted">{{ $formateur->user->name }}</small>
+                <small class="text-muted">{{ $commercial->user->name }}</small>
             </div>
         </div>
 
@@ -35,8 +34,8 @@
                     <div class="card-body p-4">
                         <div class="d-flex align-items-center">
                             <div class="flex-grow-1">
-                                <p class="stat-label mb-1">En Formation</p>
-                                <h3 class="stat-number">{{ $stats['stagiaires_en_cours'] }}</h3>
+                                <p class="stat-label mb-1">Total Participations</p>
+                                <h3 class="stat-number">{{ $stats['total_participations'] }}</h3>
                             </div>
                             <div class="card-icon bg-success">
                                 <i class='bx bx-play-circle'></i>
@@ -50,11 +49,11 @@
                     <div class="card-body p-4">
                         <div class="d-flex align-items-center">
                             <div class="flex-grow-1">
-                                <p class="stat-label mb-1">Terminées</p>
-                                <h3 class="stat-number">{{ $stats['stagiaires_termines'] }}</h3>
+                                <p class="stat-label mb-1">Score Moyen</p>
+                                <h3 class="stat-number">{{ round($stats['avg_score'], 2) }}</h3>
                             </div>
                             <div class="card-icon bg-info">
-                                <i class='bx bx-check-circle'></i>
+                                <i class='bx bx-bar-chart-alt-2'></i>
                             </div>
                         </div>
                     </div>
@@ -66,7 +65,7 @@
                         <div class="d-flex align-items-center">
                             <div class="flex-grow-1">
                                 <p class="stat-label mb-1">Formations</p>
-                                <h3 class="stat-number">{{ $stats['formations_encadrees'] }}</h3>
+                                <h3 class="stat-number">{{ count($statsByFormation) }}</h3>
                             </div>
                             <div class="card-icon bg-warning">
                                 <i class='bx bx-book'></i>
@@ -77,14 +76,14 @@
             </div>
         </div>
 
-        <!-- Main Stats Sections -->
+        <!-- Stats Sections -->
         <div class="row g-4 mb-4">
             <!-- Stats par Formation -->
             <div class="col-md-6">
                 <div class="dashboard-card h-100">
                     <div class="card-body">
                         <h5 class="card-title">
-                            <i class='bx bx-book me-2'></i>Formations Encadrées
+                            <i class='bx bx-book me-2'></i>Statistiques par Formation
                         </h5>
                         <div class="table-responsive" style="max-height: 350px; overflow-y: auto;">
                             <table class="table table-hover table-sm">
@@ -104,20 +103,24 @@
                                                 <br>
                                                 <small class="text-muted">{{ $formation['catalogue'] }}</small>
                                             </td>
-                                            <td class="text-center"><span class="badge bg-light text-dark">{{ $formation['stagiaires_count'] }}</span></td>
+                                            <td class="text-center"><badge class="badge bg-light text-dark">{{ $formation['stagiaires_count'] }}</badge></td>
                                             <td class="text-center">{{ $formation['total_participations'] }}</td>
-                                            <td class="text-center">{{ $formation['avg_score'] }}</td>
+                                            <td class="text-center">
+                                                <small class="fw-medium">{{ $formation['avg_score'] }}</small>
+                                            </td>
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="4" class="text-center text-muted py-3">Aucune formation</td>
+                                            <td colspan="4" class="text-center text-muted py-3">
+                                                Aucune formation
+                                            </td>
                                         </tr>
                                     @endforelse
                                 </tbody>
                             </table>
                         </div>
                         <div class="mt-3">
-                            <a href="{{ route('formateur.stats.formation') }}" class="btn btn-sm btn-outline-primary">
+                            <a href="{{ route('commercial.stats.formation') }}" class="btn btn-sm btn-outline-primary">
                                 <i class='bx bx-detail me-1'></i>Voir Détails
                             </a>
                         </div>
@@ -162,14 +165,16 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="4" class="text-center text-muted py-3">Aucun stagiaire</td>
+                                            <td colspan="4" class="text-center text-muted py-3">
+                                                Aucun stagiaire
+                                            </td>
                                         </tr>
                                     @endforelse
                                 </tbody>
                             </table>
                         </div>
                         <div class="mt-3">
-                            <a href="{{ route('formateur.stats.classement') }}" class="btn btn-sm btn-outline-primary">
+                            <a href="{{ route('commercial.stats.classement') }}" class="btn btn-sm btn-outline-primary">
                                 <i class='bx bx-detail me-1'></i>Voir Classement Complet
                             </a>
                         </div>
@@ -178,7 +183,7 @@
             </div>
         </div>
 
-        <!-- Affluence et Quizzes -->
+        <!-- Affluence et Quizzes Récents -->
         <div class="row g-4">
             <div class="col-md-6">
                 <div class="dashboard-card h-100">
@@ -206,14 +211,16 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="4" class="text-center text-muted py-3">Aucune donnée</td>
+                                            <td colspan="4" class="text-center text-muted py-3">
+                                                Aucune donnée
+                                            </td>
                                         </tr>
                                     @endforelse
                                 </tbody>
                             </table>
                         </div>
                         <div class="mt-3">
-                            <a href="{{ route('formateur.stats.affluence') }}" class="btn btn-sm btn-outline-primary">
+                            <a href="{{ route('commercial.stats.affluence') }}" class="btn btn-sm btn-outline-primary">
                                 <i class='bx bx-detail me-1'></i>Voir Affluence Détaillée
                             </a>
                         </div>
@@ -225,25 +232,21 @@
                 <div class="dashboard-card h-100">
                     <div class="card-body">
                         <h5 class="card-title">
-                            <i class='bx bx-time me-2'></i>Derniers Stagiaires Ajoutés
+                            <i class='bx bx-time me-2'></i>Quiz Récents et Actifs
                         </h5>
                         <ul class="list-group list-group-flush" style="max-height: 300px; overflow-y: auto;">
-                            @forelse($recentStagiaires as $stagiaire)
-                                <li class="list-group-item py-2">
-                                    <div class="d-flex justify-content-between align-items-start">
-                                        <div>
-                                            <small class="fw-medium">{{ $stagiaire->user->name }}</small>
-                                            <br>
-                                            <small class="text-muted">
-                                                {{ $stagiaire->catalogue_formations->pluck('nom')->join(', ') ?: 'N/A' }}
-                                            </small>
-                                        </div>
-                                        <small class="text-muted">{{ $stagiaire->created_at->format('d/m/Y') }}</small>
+                            @forelse($recentQuizzes as $quiz)
+                                <li class="list-group-item py-2 d-flex justify-content-between">
+                                    <div>
+                                        <small class="fw-medium">{{ $quiz->titre }}</small>
+                                        <br>
+                                        <small class="text-muted">{{ $quiz->user_name }}</small>
                                     </div>
+                                    <span class="badge bg-success">{{ $quiz->score }}</span>
                                 </li>
                             @empty
                                 <li class="list-group-item text-center text-muted py-3">
-                                    Aucun stagiaire récent
+                                    Aucun quiz
                                 </li>
                             @endforelse
                         </ul>
