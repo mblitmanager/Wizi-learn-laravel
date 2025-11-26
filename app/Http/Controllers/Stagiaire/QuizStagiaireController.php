@@ -183,17 +183,18 @@ class QuizStagiaireController extends Controller
                 $user->load('stagiaire');
             }
 
-            // Vérifier si l'utilisateur est bien le stagiaire demandé ou a les droits d'accès
-            if ($user->role != 'formateur' && $user->role != 'admin') {
-                $userStagiaire = $user->stagiaire;
-                if (!$userStagiaire) {
-                    return response()->json(['error' => 'non autorisé'], 403);
-                }
+            // Vérifier que l'utilisateur a bien un stagiaire associé
+            $userStagiaire = $user->stagiaire;
+            if (!$userStagiaire) {
+                return response()->json([
+                    'error' => 'Aucun stagiaire associé à cet utilisateur',
+                    'data' => []
+                ], 403);
             }
 
             // Récupérer les quiz avec participations optimisées (une seule requête pour les participations)
             $quizzes = $this->quizService->getQuizzesWithUserParticipations(
-                $user->stagiaire->id,
+                $userStagiaire->id,
                 $user->getKey()
             );
 

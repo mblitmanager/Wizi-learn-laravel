@@ -134,3 +134,4 @@ class CommercialDashboardController extends Controller
         return view('commercial.stats.affluence', compact('commercial', 'affluenceData'));
     }
 }
+

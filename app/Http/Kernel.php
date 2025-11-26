@@ -58,6 +58,10 @@ class Kernel extends HttpKernel
         'jwt.auth' => \App\Http\Middleware\JwtMiddleware::class,
         'is.admin' => \App\Http\Middleware\IsAdmin::class,
         'is.formateur' => \App\Http\Middleware\IsFormateur::class,
+        'is.commercial' => \App\Http\Middleware\IsCommercial::class,
+        'isAdmin' => \App\Http\Middleware\IsAdmin::class,
+        'isFormateur' => \App\Http\Middleware\IsFormateur::class,
+        'isCommercial' => \App\Http\Middleware\IsCommercial::class,
         'track.user' => \App\Http\Middleware\TrackUserActivity::class,
         'detectClient' => \App\Http\Middleware\DetectClientPlatform::class,
     ];

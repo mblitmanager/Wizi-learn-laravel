@@ -276,4 +276,34 @@ class DashboardStatsService
             default => self::DATE_FORMAT_MONTH,
         };
     }
+
+    /**
+     * Obtenir les quiz récents avec statistiques
+     */
+    public function getRecentQuizStats($limit = 10)
+    {
+        return Quiz::with('formation')
+            ->select('quizzes.*')
+            ->selectRaw('(SELECT COUNT(*) FROM quiz_participations WHERE quiz_id = quizzes.id) as total_attempts')
+            ->selectRaw('(SELECT AVG(score) FROM quiz_participations WHERE quiz_id = quizzes.id) as avg_score')
+            ->orderBy('created_at', 'desc')
+            ->limit($limit)
+            ->get();
+    }
+
+    /**
+     * Obtenir les quiz actifs avec statistiques
+     */
+    public function getActiveQuizStats($limit = 10)
+    {
+        return Quiz::with('formation')
+            ->select('quizzes.*')
+            ->selectRaw('(SELECT COUNT(*) FROM quiz_participations WHERE quiz_id = quizzes.id AND created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)) as recent_attempts')
+            ->selectRaw('(SELECT AVG(score) FROM quiz_participations WHERE quiz_id = quizzes.id AND created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)) as recent_avg_score')
+            ->where('status', 'published')
+            ->orderBy('updated_at', 'desc')
+            ->limit($limit)
+            ->get();
+    }
 }
+
