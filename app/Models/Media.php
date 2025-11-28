@@ -22,6 +22,8 @@ class Media extends Model
         'formation_id',
         'duree',
         'ordre',
+        'video_platform',
+        'video_file_path',
 
     ];
 
@@ -40,5 +42,52 @@ class Media extends Model
     public function getIsUrlAttribute()
     {
         return filter_var($this->url, FILTER_VALIDATE_URL);
+    }
+
+    /**
+     * Get the full URL for server-hosted videos.
+     */
+    public function getVideoUrlAttribute()
+    {
+        if ($this->video_platform === 'server' && $this->video_file_path) {
+            return asset('storage/videos/' . $this->video_file_path);
+        }
+        return $this->url;
+    }
+
+    /**
+     * Get the video thumbnail URL based on platform.
+     */
+    public function getThumbnailUrlAttribute()
+    {
+        switch ($this->video_platform) {
+            case 'youtube':
+                $videoId = $this->extractYoutubeId($this->url);
+                return $videoId ? "https://img.youtube.com/vi/{$videoId}/mqdefault.jpg" : null;
+
+            case 'dailymotion':
+                // Dailymotion thumbnail requires video ID extraction
+                $videoId = $this->extractDailymotionId($this->url);
+                return $videoId ? "https://www.dailymotion.com/thumbnail/video/{$videoId}" : null;
+
+            case 'server':
+                // For server videos, we could generate thumbnails or use a default
+                return null; // Or implement video thumbnail generation
+
+            default:
+                return null;
+        }
+    }
+
+    private function extractYoutubeId($url)
+    {
+        preg_match('/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/ ]{11})/', $url, $matches);
+        return $matches[1] ?? null;
+    }
+
+    private function extractDailymotionId($url)
+    {
+        preg_match('/(?:dailymotion\.com\/(?:video|hub)\/|dai\.ly\/)([a-zA-Z0-9]+)/', $url, $matches);
+        return $matches[1] ?? null;
     }
 }

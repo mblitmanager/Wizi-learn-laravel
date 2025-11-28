@@ -51,6 +51,11 @@ help:
 install: build up migrate
 	@echo "$(GREEN)✅ Installation completed!$(NC)"
 
+# Start (convenience) - copies .env.docker to .env, brings up stack and runs migrations
+start:
+	@echo "$(BLUE)Running start script (copy .env.docker -> .env, up, migrate)...$(NC)"
+	@powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/start-docker.ps1
+
 build:
 	@echo "$(BLUE)Building Docker images...$(NC)"
 	$(DOCKER_COMPOSE) build

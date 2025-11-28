@@ -237,4 +237,50 @@ class MediaController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
+    /**
+     * Upload a video file to the server.
+     */
+    public function uploadVideo(\App\Http\Requests\VideoUploadRequest $request)
+    {
+        try {
+            $user = JWTAuth::parseToken()->authenticate();
+
+            if (!$user) {
+                return response()->json(['error' => 'Unauthorized'], 401);
+            }
+
+            $video = $request->file('video');
+            $filename = time() . '_' . str_replace(' ', '_', $video->getClientOriginalName());
+
+            // Store the video in storage/app/public/videos
+            $path = $video->storeAs('videos', $filename, 'public');
+
+            // Create media entry
+            $media = \App\Models\Media::create([
+                'titre' => $request->titre,
+                'description' => $request->description,
+                'formation_id' => $request->formation_id,
+                'categorie' => $request->categorie,
+                'ordre' => $request->ordre ?? 0,
+                'type' => 'video',
+                'url' => asset('storage/' . $path),
+                'video_platform' => 'server',
+                'video_file_path' => $filename,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Vidéo téléchargée avec succès',
+                'media' => $media,
+            ], 201);
+        } catch (JWTException $e) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Erreur lors du téléchargement: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
