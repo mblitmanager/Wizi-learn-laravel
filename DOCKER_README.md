@@ -24,15 +24,18 @@ Ce projet est entièrement configuré pour fonctionner avec Docker, tant en dév
 ### 1. Installation locale (Docker)
 
 ```powershell
-# Copier le fichier .env
-copy .env.docker.example .env.local
+# Option A (recommandé) : copier le fichier d'environnement Docker en `.env`
+copy .env.docker .env
 
-# Démarrer les conteneurs
-docker-compose up -d
+# Option B : lancer docker-compose en précisant explicitement le fichier d'env (ne modifie pas .env local)
+docker compose --env-file .env.docker up -d
+
+# Démarrer les conteneurs (si vous avez copié en .env ou utilisez --env-file)
+docker compose up -d
 
 # Initialiser la base de données
-docker-compose exec app php artisan migrate
-docker-compose exec app php artisan db:seed
+docker compose exec app php artisan migrate --force
+docker compose exec app php artisan db:seed
 ```
 
 ### 2. Accéder à l'application

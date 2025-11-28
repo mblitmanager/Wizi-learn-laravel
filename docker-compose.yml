@@ -108,6 +108,23 @@ services:
       - wizi-network
     command: npm run dev
 
+  # phpMyAdmin optional (DB management UI)
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: wizi-phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_USER: ${DB_USER:-wizi}
+      PMA_PASSWORD: ${DB_PASSWORD:-password}
+    ports:
+      - "8080:80"
+    depends_on:
+      - mysql
+    networks:
+      - wizi-network
+
 networks:
   wizi-network:
     driver: bridge

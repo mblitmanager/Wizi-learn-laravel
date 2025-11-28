@@ -1,32 +1,36 @@
 # Multi-stage build pour optimiser la taille de l'image finale
 # Stage 1 : Builder - Composer et dépendances PHP
-FROM php:8.2-fpm-alpine AS builder
+FROM php:8.2-fpm AS builder
 
 WORKDIR /app
 
-# Installer toutes les dépendances en une seule commande RUN (optimisation)
-RUN apk add --update --no-cache \
-    bash \
-    build-base \
+# Install build dependencies (Debian-based image)
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    build-essential \
+    ca-certificates \
     curl \
-    freetype-dev \
     git \
-    libjpeg-turbo-dev \
+    libfreetype-dev \
+    libjpeg-dev \
+    libonig-dev \
     libpng-dev \
+    libpq-dev \
+    libsqlite3-dev \
+    libwebp-dev \
     libxml2-dev \
-    mysql-dev \
+    libzip-dev \
     nodejs \
     npm \
-    oniguruma-dev \
-    postgresql-dev \
-    readline-dev \
-    sqlite-dev \
+    pkg-config \
     unzip \
     zip \
-    zlib-dev
+ && rm -rf /var/lib/apt/lists/*
 
-# Configurer et installer les extensions PHP
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \
+# Configure and install PHP extensions
+RUN docker-php-ext-configure gd \
+        --with-freetype \
+        --with-jpeg \
+        --with-webp && \
     docker-php-ext-install -j$(nproc) \
         bcmath \
         ctype \
@@ -39,90 +43,66 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \
         pdo_pgsql \
         pdo_sqlite \
         tokenizer \
-        xml
+        xml \
+        zip
 
-# Installer Composer
+# Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Copier les fichiers composer et installer les dépendances
+# Copy composer files and install dependencies
 COPY composer.json composer.lock ./
 RUN composer install --no-scripts --no-interaction --prefer-dist --optimize-autoloader
 
-# Copier le projet et préparer les assets
+# Copy project and prepare assets
 COPY . .
 RUN composer dump-autoload --optimize && \
     npm ci && npm run build
 
 # Stage 2 : Runtime - Image finale
-FROM php:8.2-fpm-alpine
+FROM php:8.2-fpm
 
 WORKDIR /app
 
-# Installer uniquement les dépendances runtime requises
-RUN apk add --update --no-cache \
-    bash \
+# Install runtime dependencies (Debian)
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    ca-certificates \
     curl \
-    freetype \
-    libjpeg-turbo \
-    libpng \
+    libfreetype6 \
+    libjpeg62-turbo \
+    libonig5 \
+    libpng16-16 \
+    libwebp7 \
     libxml2 \
-    mysql-client \
-    oniguruma \
-    postgresql-client \
-    readline \
-    zlib
+    libzip5 \
+    zlib1g \
+ && rm -rf /var/lib/apt/lists/*
 
-# Installer uniquement les extensions PHP runtime nécessaires
-# IMPORTANT: Les extensions doivent être réinstallées car les .so ne sont pas copiées du builder
-RUN apk add --update --no-cache --virtual .build-deps \
-    freetype-dev \
-    libjpeg-turbo-dev \
-    libpng-dev \
-    libxml2-dev \
-    mysql-dev \
-    oniguruma-dev \
-    postgresql-dev \
-    sqlite-dev \
-    zlib-dev && \
-    docker-php-ext-configure gd --with-freetype --with-jpeg && \
-    docker-php-ext-install -j$(nproc) \
-        bcmath \
-        ctype \
-        fileinfo \
-        json \
-        mbstring \
-        pdo \
-        pdo_mysql \
-        pdo_pgsql \
-        pdo_sqlite \
-        tokenizer \
-        xml && \
-    apk del .build-deps
+# Copy PHP extensions from builder
+COPY --from=builder /usr/local/lib/php/extensions /usr/local/lib/php/extensions
+COPY --from=builder /usr/local/etc/php/conf.d /usr/local/etc/php/conf.d
 
-# Copier les fichiers compilés et dépendances du builder
+# Copy built app from builder
 COPY --from=builder /app /app
 
-# Créer les répertoires de stockage nécessaires
+# Create necessary storage directories
 RUN mkdir -p storage/logs storage/framework/cache storage/framework/sessions storage/framework/views \
     && chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
-# Copier le script d'entrée
+# Copy entrypoint script
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
-# Exposer le port 8000
+# Expose port 8000
 EXPOSE 8000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-# Utiliser l'utilisateur www-data
+# Use www-data user
 USER www-data
 
-# Commande d'entrée
+# Entrypoint
 ENTRYPOINT ["docker-entrypoint.sh"]
-
-# Commande par défaut : lancer Laravel
 CMD ["php", "-S", "0.0.0.0:8000", "-t", "public"]
