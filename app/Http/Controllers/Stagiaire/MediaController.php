@@ -273,8 +273,12 @@ class MediaController extends Controller
             $video = $request->file('video');
             $filename = time() . '_' . str_replace(' ', '_', $video->getClientOriginalName());
 
-            // Store the video in storage/app/public/videos
-            $path = $video->storeAs('videos', $filename, 'public');
+            // Store the video in /public/uploads/medias
+            $uploadDir = public_path('uploads/medias');
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
+            $video->move($uploadDir, $filename);
 
             // Create media entry
             $media = \App\Models\Media::create([
@@ -284,7 +288,7 @@ class MediaController extends Controller
                 'categorie' => $request->categorie,
                 'ordre' => $request->ordre ?? 0,
                 'type' => 'video',
-                'url' => asset('storage/' . $path),
+                'url' => '/uploads/medias/' . $filename,
                 'video_platform' => 'server',
                 'video_file_path' => $filename,
                 'size' => $video->getSize(),
