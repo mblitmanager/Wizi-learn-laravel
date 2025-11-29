@@ -82,6 +82,31 @@ class Media extends Model
         }
     }
 
+    protected static function booted()
+    {
+        static::creating(function ($media) {
+            // If a server-hosted file path is provided, prefer 'server' platform
+            if (!empty($media->video_file_path)) {
+                $media->video_platform = 'server';
+            }
+
+            // If URL clearly points to storage/videos, set to server
+            if (!empty($media->url) && (str_contains($media->url, '/storage/videos/') || str_contains($media->url, '/videos/'))) {
+                $media->video_platform = 'server';
+            }
+        });
+
+        static::updating(function ($media) {
+            // ensure updates that include a server file path keep the platform consistent
+            if (!empty($media->video_file_path)) {
+                $media->video_platform = 'server';
+            }
+            if (!empty($media->url) && (str_contains($media->url, '/storage/videos/') || str_contains($media->url, '/videos/'))) {
+                $media->video_platform = 'server';
+            }
+        });
+    }
+
     private function extractYoutubeId($url)
     {
         preg_match('/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/ ]{11})/', $url, $matches);
