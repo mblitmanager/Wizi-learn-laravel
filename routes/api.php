@@ -208,6 +208,11 @@ Route::get('/media/stream/{path}', [MediaController::class, 'stream'])
     ->middleware('throttle:60,1')
     ->where('path', '.*');
 
+Route::get('/media/subtitle/{path}', [MediaController::class, 'streamSubtitle'])
+    ->withoutMiddleware([JwtMiddleware::class])
+    ->middleware('throttle:60,1')
+    ->where('path', '.*');
+
 // Routes d'authentification
 Route::post('refresh-token', [App\Http\Controllers\Auth\AuthController::class, 'refresh']);
 

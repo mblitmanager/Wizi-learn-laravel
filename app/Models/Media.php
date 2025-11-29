@@ -54,9 +54,10 @@ class Media extends Model
      */
     public function getVideoUrlAttribute()
     {
-        // For server-hosted videos, ensure proper URL
+        // For server-hosted videos, return streaming URL
         if ($this->type === 'video' && $this->video_file_path) {
-            return asset('storage/videos/' . $this->video_file_path);
+            // Return relative API URL for streaming
+            return '/api/media/stream/' . $this->video_file_path;
         }
         return $this->url;
     }
@@ -67,7 +68,7 @@ class Media extends Model
     public function getSubtitleUrlAttribute()
     {
         if ($this->subtitle_file_path) {
-            return asset('storage/subtitles/' . $this->subtitle_file_path);
+            return '/api/media/subtitle/' . $this->subtitle_file_path;
         }
         return null;
     }
