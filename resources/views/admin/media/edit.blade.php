@@ -372,23 +372,10 @@
 
             // Gestion du changement de type de média
             function updateSourceOptions() {
-                if (typeSelect.value === 'video') {
-                    sourceFileRadioDiv.style.display = 'none';
-                    sourceUrlRadioDiv.style.display = 'inline-block';
-                    // Sélectionne automatiquement "Utiliser un lien"
-                    document.getElementById('edit_source_url').checked = true;
-                    fileUploadField.style.display = 'none';
-                    urlField.style.display = 'block';
-                } else {
-                    sourceFileRadioDiv.style.display = 'inline-block';
-                    sourceUrlRadioDiv.style.display = 'inline-block';
-                    // Réinitialise à "Téléverser un fichier" si c'était sur URL et qu'on change de type
-                    if (document.getElementById('edit_source_url').checked && typeSelect.value !== 'video') {
-                        document.getElementById('edit_source_file').checked = true;
-                        fileUploadField.style.display = 'block';
-                        urlField.style.display = 'none';
-                    }
-                }
+                // Pour tous les types, les deux options sont disponibles
+                sourceFileRadioDiv.style.display = 'inline-block';
+                sourceUrlRadioDiv.style.display = 'inline-block';
+                toggleFields();
             }
 
             // Initialiser l'état

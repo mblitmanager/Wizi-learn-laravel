@@ -267,6 +267,9 @@ class MediaController extends Controller
                 'url' => asset('storage/' . $path),
                 'video_platform' => 'server',
                 'video_file_path' => $filename,
+                'size' => $video->getSize(),
+                'mime' => $video->getMimeType(),
+                'uploaded_by' => $user->id,
             ]);
 
             return response()->json([
@@ -281,6 +284,39 @@ class MediaController extends Controller
                 'success' => false,
                 'error' => 'Erreur lors du téléchargement: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    /**
+     * List server-hosted videos (paginated).
+     */
+    public function listServerVideos(Request $request)
+    {
+        try {
+            JWTAuth::parseToken()->authenticate();
+            $perPage = (int) $request->get('perPage', 20);
+            $query = \App\Models\Media::where('video_platform', 'server')->orderBy('created_at', 'desc');
+            $videos = $query->paginate($perPage);
+
+            // append `video_url` attribute for server videos (uses accessor in model)
+            $videos->getCollection()->transform(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'titre' => $item->titre,
+                    'description' => $item->description,
+                    'url' => $item->video_url ?? $item->url,
+                    'size' => $item->size,
+                    'mime' => $item->mime,
+                    'uploaded_by' => $item->uploaded_by,
+                    'created_at' => $item->created_at,
+                ];
+            });
+
+            return response()->json($videos);
+        } catch (JWTException $e) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 }

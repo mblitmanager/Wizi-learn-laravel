@@ -6,6 +6,40 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class VideoUploadRequest extends FormRequest
 {
+    public function authorize()
+    {
+        return true;
+    }
+
+    public function rules()
+    {
+        return [
+            'video' => 'required|file|mimetypes:video/mp4,video/ogg,video/webm,video/quicktime,video/x-matroska,video/mpeg|max:512000', // max ~500MB
+            'titre' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
+            'formation_id' => 'nullable|integer|exists:formations,id',
+            'categorie' => 'nullable|string',
+            'ordre' => 'nullable|integer',
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'video.required' => 'Le fichier vidéo est requis.',
+            'video.mimetypes' => 'Format vidéo non supporté.',
+            'video.max' => 'La taille maximale est de 500MB.',
+        ];
+    }
+}
+<?php
+
+namespace App\Http\Requests;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class VideoUploadRequest extends FormRequest
+{
     /**
      * Determine if the user is authorized to make this request.
      */

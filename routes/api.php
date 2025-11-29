@@ -153,6 +153,7 @@ Route::middleware(['auth:api', 'detectClient'])->group(function () {
         Route::post('/{mediaId}/watched', [MediaController::class, 'markAsWatched']);
         Route::get('/formations-with-status', [MediaController::class, 'getFormationsWithWatchedStatus']);
         Route::post('/upload-video', [MediaController::class, 'uploadVideo']);
+        Route::get('/server', [MediaController::class, 'listServerVideos']);
     });
 
 

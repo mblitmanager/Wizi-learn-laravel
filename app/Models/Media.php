@@ -24,6 +24,9 @@ class Media extends Model
         'ordre',
         'video_platform',
         'video_file_path',
+        'size',
+        'mime',
+        'uploaded_by',
 
     ];
 
