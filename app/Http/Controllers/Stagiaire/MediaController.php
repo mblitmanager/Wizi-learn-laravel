@@ -171,6 +171,26 @@ class MediaController extends Controller
         return $response;
     }
 
+    /**
+     * Stream subtitle files (WebVTT format).
+     */
+    public function streamSubtitle(Request $request, $path)
+    {
+        $fullPath = storage_path('app/public/subtitles/' . $path);
+
+        if (!file_exists($fullPath)) {
+            abort(404);
+        }
+
+        $headers = [
+            'Content-Type' => 'text/vtt',
+            'Access-Control-Allow-Origin' => '*',
+            'Content-Disposition' => 'inline',
+        ];
+
+        return response()->file($fullPath, $headers);
+    }
+
     // App/Http/Controllers/Stagiaire/MediaController.php
     // Dans MediaController.php
     public function markAsWatched(Request $request, $mediaId)

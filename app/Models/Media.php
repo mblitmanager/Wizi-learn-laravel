@@ -24,6 +24,8 @@ class Media extends Model
         'ordre',
         'video_platform',
         'video_file_path',
+        'subtitle_file_path',
+        'subtitle_language',
         'size',
         'mime',
         'uploaded_by',
@@ -52,70 +54,49 @@ class Media extends Model
      */
     public function getVideoUrlAttribute()
     {
-        if ($this->video_platform === 'server' && $this->video_file_path) {
+        // For server-hosted videos, ensure proper URL
+        if ($this->type === 'video' && $this->video_file_path) {
             return asset('storage/videos/' . $this->video_file_path);
         }
         return $this->url;
     }
 
     /**
-     * Get the video thumbnail URL based on platform.
+     * Get the subtitle URL for server-hosted subtitle files.
+     */
+    public function getSubtitleUrlAttribute()
+    {
+        if ($this->subtitle_file_path) {
+            return asset('storage/subtitles/' . $this->subtitle_file_path);
+        }
+        return null;
+    }
+
+    /**
+     * Get the video thumbnail URL.
+     * For server videos, this would require thumbnail generation.
      */
     public function getThumbnailUrlAttribute()
     {
-        switch ($this->video_platform) {
-            case 'youtube':
-                $videoId = $this->extractYoutubeId($this->url);
-                return $videoId ? "https://img.youtube.com/vi/{$videoId}/mqdefault.jpg" : null;
-
-            case 'dailymotion':
-                // Dailymotion thumbnail requires video ID extraction
-                $videoId = $this->extractDailymotionId($this->url);
-                return $videoId ? "https://www.dailymotion.com/thumbnail/video/{$videoId}" : null;
-
-            case 'server':
-                // For server videos, we could generate thumbnails or use a default
-                return null; // Or implement video thumbnail generation
-
-            default:
-                return null;
-        }
+        // For server videos, you could implement thumbnail generation
+        // or return a default placeholder
+        return null;
     }
 
     protected static function booted()
     {
         static::creating(function ($media) {
-            // If a server-hosted file path is provided, prefer 'server' platform
-            if (!empty($media->video_file_path)) {
-                $media->video_platform = 'server';
-            }
-
-            // If URL clearly points to storage/videos, set to server
-            if (!empty($media->url) && (str_contains($media->url, '/storage/videos/') || str_contains($media->url, '/videos/'))) {
+            // Always set video platform to 'server' for video type
+            if ($media->type === 'video') {
                 $media->video_platform = 'server';
             }
         });
 
         static::updating(function ($media) {
-            // ensure updates that include a server file path keep the platform consistent
-            if (!empty($media->video_file_path)) {
-                $media->video_platform = 'server';
-            }
-            if (!empty($media->url) && (str_contains($media->url, '/storage/videos/') || str_contains($media->url, '/videos/'))) {
+            // Ensure video platform stays 'server' for video type
+            if ($media->type === 'video') {
                 $media->video_platform = 'server';
             }
         });
-    }
-
-    private function extractYoutubeId($url)
-    {
-        preg_match('/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/ ]{11})/', $url, $matches);
-        return $matches[1] ?? null;
-    }
-
-    private function extractDailymotionId($url)
-    {
-        preg_match('/(?:dailymotion\.com\/(?:video|hub)\/|dai\.ly\/)([a-zA-Z0-9]+)/', $url, $matches);
-        return $matches[1] ?? null;
     }
 }
