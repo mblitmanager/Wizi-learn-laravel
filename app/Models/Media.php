@@ -32,6 +32,14 @@ class Media extends Model
 
     ];
 
+    /**
+     * The accessors to append to the model's array form.
+     */
+    protected $appends = [
+        'video_url',
+        'subtitle_url',
+    ];
+
     public function formation()
     {
         return $this->belongsTo(Formation::class);
