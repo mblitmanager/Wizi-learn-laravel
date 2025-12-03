@@ -41,13 +41,9 @@ jobs:
           git reset --hard origin/main
           git pull origin main
           echo "✓ Code updated"
-          curl -sS https://getcomposer.org/installer | php
-          chmod +x composer.phar
-                    
+                          
           echo "➤ Installing dependencies..."
-          php composer.phar install
-          npm install
-          npm run build
+          composer install
           echo "✓ Composer dependencies installed"
           
           echo "➤ Optimizing Laravel..."
