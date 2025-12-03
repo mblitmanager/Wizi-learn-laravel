@@ -37,7 +37,9 @@ jobs:
         script: |
           set -e
           cd /var/www/wizilearn
-
+          echo "➤ Marking directory as safe for Git..."
+          git config --global --add safe.directory /var/www/wizilearn
+          
           echo "➤ Pulling latest changes..."
           git fetch --all
           git reset --hard origin/main
