@@ -19,7 +19,7 @@ jobs:
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
-        php-version: '8.2'
+        php-version: '8.4'
         extensions: mbstring, ctype, fileinfo, openssl, PDO, tokenizer, xml, gd, exif, pcntl, bcmath
         coverage: none
 
@@ -36,7 +36,7 @@ jobs:
         script_stop: true
         script: |
           set -e
-          cd ~/www
+          cd /var/www/wizilearn
           echo "➤ Pulling changes from Git..."
           git reset --hard origin/main
           git pull origin main
