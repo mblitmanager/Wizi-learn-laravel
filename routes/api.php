@@ -262,3 +262,24 @@ Route::middleware(['auth:api', 'detectClient'])->post('/stagiaire/onboarding-see
 
 // Rapport d'usage des applications mobiles (Android/iOS)
 Route::middleware(['auth:api', 'detectClient'])->post('/user-app-usage', [\App\Http\Controllers\Api\UserAppUsageController::class, 'report']);
+
+// Commercial Interface API Routes
+Route::middleware(['auth:api', 'detectClient'])->group(function () {
+    // Email API
+    Route::post('/email', [\App\Http\Controllers\Api\EmailController::class, 'send']);
+    
+    // Push Notification API
+    Route::post('/notify', [\App\Http\Controllers\Api\PushNotificationController::class, 'send']);
+    
+    // Statistics API
+    Route::get('/stats', [\App\Http\Controllers\Api\StatsController::class, 'index']);
+    
+    // Online Users API
+    Route::get('/online-users', [\App\Http\Controllers\Api\OnlineUsersController::class, 'index']);
+    
+    // Users List API
+    Route::get('/users', [\App\Http\Controllers\Api\UsersController::class, 'index']);
+    
+    // Notification History API
+    Route::get('/notification-history', [\App\Http\Controllers\Api\NotificationHistoryController::class, 'index']);
+});
