@@ -31,15 +31,16 @@ jobs:
       with:
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USERNAME }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        key: ${{ secrets.SSH_KEY }}
+        passphrase: ${{ secrets.SSH_PASSPHRASE }}
         timeout: 30s
         script_stop: true
         script: |
           set -e
           cd /var/www/wizilearn
           echo "➤ Pulling changes from Git..."
+          git fetch --all
           git reset --hard origin/main
-          git pull origin main
           echo "✓ Code updated"
                           
           echo "➤ Installing dependencies..."
