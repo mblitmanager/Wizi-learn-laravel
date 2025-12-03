@@ -48,7 +48,7 @@ jobs:
           echo "➤ Installing composer dependencies..."
           composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
           echo "✓ Dependencies installed"
-
+          
           echo "➤ Running Laravel optimizations..."
           php artisan optimize:clear
           php artisan config:cache
