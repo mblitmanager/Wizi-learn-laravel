@@ -26,15 +26,14 @@ jobs:
     - name: Validate composer.json
       run: composer validate
 
-    - name: Deploy via SSH
+    - name: Deploy via SSH using password
       uses: appleboy/ssh-action@v0.1.10
       with:
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USERNAME }}
-        key: ${{ secrets.SSH_KEY }}   # <-- Clé PRIVÉE SANS PASSPHRASE
+        password: ${{ secrets.SSH_PASSPHRASE }}  # <-- ton mot de passe
         timeout: 30s
         script_stop: true
-
         script: |
           set -e
           cd /var/www/wizilearn
