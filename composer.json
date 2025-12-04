@@ -11,6 +11,7 @@
     "require": {
         "php": "^8.2",
         "api-platform/laravel": "^4.1",
+        "barryvdh/laravel-dompdf": "^3.1",
         "darkaonline/l5-swagger": "^9.0",
         "google/apiclient": "^2.0",
         "jenssegers/agent": "^2.6",

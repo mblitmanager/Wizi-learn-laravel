@@ -272,13 +272,31 @@ Route::middleware(['auth:api', 'detectClient'])->group(function () {
     Route::post('/notify', [\App\Http\Controllers\Api\PushNotificationController::class, 'send']);
     
     // Statistics API
-    Route::get('/stats', [\App\Http\Controllers\Api\StatsController::class, 'index']);
+    // Statistics routes for Admin, Commercial, and Formateur
+Route::middleware(['auth:api', 'detectClient', 'role:admin'])->group(function () {
+    Route::get('/admin/stats/dashboard', [App\Http\Controllers\Api\Admin\StatisticsController::class, 'dashboard']);
+    Route::get('/admin/stats/quiz', [App\Http\Controllers\Api\Admin\StatisticsController::class, 'quizStats']);
+    Route::get('/admin/stats/formation', [App\Http\Controllers\Api\Admin\StatisticsController::class, 'formationStats']);
+    Route::get('/admin/stats/online-users', [App\Http\Controllers\Api\Admin\StatisticsController::class, 'onlineUsers']);
+    Route::get('/admin/stats/affluence', [App\Http\Controllers\Api\Admin\StatisticsController::class, 'affluence']);
+    Route::post('/admin/stats/export/pdf', [App\Http\Controllers\Api\Admin\StatisticsController::class, 'exportPdf']);
+    Route::post('/admin/stats/export/excel', [App\Http\Controllers\Api\Admin\StatisticsController::class, 'exportExcel']);
+});
+
+Route::middleware(['auth:api', 'detectClient', 'role:commercial'])->group(function () {
+    Route::get('/commercial/stats/dashboard', [App\Http\Controllers\Api\Commercial\CommercialStatisticsController::class, 'dashboard']);
+    // Additional commercial stats endpoints can be added here
+});
+
+Route::middleware(['auth:api', 'detectClient', 'role:formateur'])->group(function () {
+    Route::get('/formateur/stats/dashboard', [App\Http\Controllers\Api\Formateur\FormateurStatisticsController::class, 'dashboard']);
+    // Additional formateur stats endpoints can be added here
+});
+
     
     // Online Users API
     Route::get('/online-users', [\App\Http\Controllers\Api\OnlineUsersController::class, 'index']);
     
-    // Users List API
-    Route::get('/users', [\App\Http\Controllers\Api\UsersController::class, 'index']);
     
     // Notification History API
     Route::get('/notification-history', [\App\Http\Controllers\Api\NotificationHistoryController::class, 'index']);
