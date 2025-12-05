@@ -15,8 +15,7 @@ class CommercialStatisticsController extends Controller
     public function __construct()
     {
         $this->middleware('auth:api');
-        // TODO: Add commercial role middleware
-        // $this->middleware('role:commercial');
+        $this->middleware('commercial');
     }
 
     /**

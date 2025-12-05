@@ -18,8 +18,7 @@ class FormateurStatisticsController extends Controller
     public function __construct()
     {
         $this->middleware('auth:api');
-        // TODO: Add formateur role middleware
-        // $this->middleware('role:formateur');
+        $this->middleware('formateur');
     }
 
     /**
