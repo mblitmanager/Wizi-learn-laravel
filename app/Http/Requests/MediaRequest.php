@@ -21,44 +21,12 @@ class MediaRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+        $sourceType = $this->input('source_type', 'file');
+        $mediaId = $this->route('media'); // For edit mode
+
+        $rules = [
             'titre' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'url' => [
-                'nullable',
-                function ($attribute, $value, $fail) {
-                    $sourceType = request()->input('source_type');
-                    $mediaId = request()->route('media'); // ou request()->route('id')
-
-                    // Si on est en mode édition et qu'aucun nouveau fichier n'est fourni, on skip la validation
-                    if ($mediaId && !request()->hasFile('url') && $sourceType === 'file') {
-                        return;
-                    }
-
-                    if ($sourceType === 'file') {
-                        if (!request()->hasFile('url')) {
-                            $fail('Le fichier est requis lorsque vous choisissez de téléverser un fichier.');
-                            return;
-                        }
-                        $file = request()->file('url');
-                        $allowedMimes = ['jpg', 'jpeg', 'png', 'gif', 'mp4', 'avi', 'mov', 'pdf', 'mp3', 'wav', 'ogg'];
-                        if (!in_array(strtolower($file->getClientOriginalExtension()), $allowedMimes)) {
-                            $fail('Le fichier doit être au format jpg, jpeg, png, gif, mp4, avi, mov, pdf, mp3, wav ou ogg');
-                        }
-                        if ($file->getSize() > 102400 * 1024) { // 100MB en octets
-                            $fail('Le fichier ne doit pas dépasser 100 Mo.');
-                        }
-                    } elseif ($sourceType === 'url') {
-                        if (empty($value)) {
-                            $fail('L\'URL est requise lorsque vous choisissez d\'utiliser un lien.');
-                            return;
-                        }
-                        if (!filter_var($value, FILTER_VALIDATE_URL)) {
-                            $fail('L\'URL fournie n\'est pas valide.');
-                        }
-                    }
-                }
-            ],
             'type' => 'required|string|in:video,document,image,audio',
             'categorie' => 'required|string|in:tutoriel,astuce',
             'duree' => 'nullable|integer|min:1',
@@ -66,6 +34,32 @@ class MediaRequest extends FormRequest
             'formation_id' => 'required|exists:formations,id',
             'source_type' => 'required|in:file,url',
         ];
+
+        // Conditional validation based on source_type
+        if ($sourceType === 'file') {
+            // In edit mode, file is optional (keep existing if not uploaded)
+            if ($mediaId) {
+                $rules['url'] = [
+                    'nullable',
+                    'file',
+                    'max:512000', // 500MB
+                    'mimes:jpg,jpeg,png,gif,mp4,avi,mov,pdf,mp3,wav,ogg,mkv'
+                ];
+            } else {
+                // In create mode, file is required
+                $rules['url'] = [
+                    'required',
+                    'file',
+                    'max:512000', // 500MB
+                    'mimes:jpg,jpeg,png,gif,mp4,avi,mov,pdf,mp3,wav,ogg,mkv'
+                ];
+            }
+        } else {
+            // source_type === 'url'
+            $rules['url'] = 'required|url|max:500';
+        }
+
+        return $rules;
     }
 
     public function messages()
@@ -77,13 +71,18 @@ class MediaRequest extends FormRequest
 
             'description.string' => 'La description doit être une chaîne de caractères.',
 
-            'url.*' => 'Le champ URL n\'est pas valide.',
+            'url.required' => 'Le fichier ou l\'URL est requis.',
+            'url.file' => 'Un fichier valide est requis.',
+            'url.max' => 'Le fichier ne doit pas dépasser 500 MB.',
+            'url.mimes' => 'Le fichier doit être au format jpg, jpeg, png, gif, mp4, avi, mov, pdf, mp3, wav, ogg ou mkv.',
+            'url.url' => 'L\'URL fournie n\'est pas valide.',
+            
             'source_type.required' => 'Le type de source est obligatoire.',
             'source_type.in' => 'Le type de source doit être soit "file" ou "url".',
 
             'type.required' => 'Le type est obligatoire.',
             'type.string' => 'Le type doit être une chaîne de caractères.',
-            'type.in' => 'Le type doit être soit "video", "document" ou "image".',
+            'type.in' => 'Le type doit être soit "video", "document", "image" ou "audio".',
 
             'categorie.string' => 'La catégorie doit être une chaîne de caractères.',
             'categorie.required' => 'La catégorie est obligatoire.',
