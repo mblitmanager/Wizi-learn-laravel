@@ -70,7 +70,7 @@ class ProfileController extends Controller
             'birth_date' => 'sometimes|date',
             'gender' => 'sometimes|in:male,female,other',
             'bio' => 'sometimes|string|max:1000',
-            'avatar' => 'sometimes|image|mimes:jpeg,png,jpg,gif|max:2048'
+            'avatar' => 'sometimes|image|mimes:jpeg,png,jpg,gif|max:56048'
         ]);
 
         $updated = $this->stagiaireService->update($id, $validated);
@@ -134,7 +134,7 @@ class ProfileController extends Controller
     public function uploadAvatar(Request $request)
     {
         $request->validate([
-            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
+            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif|max:56048'
         ]);
 
         $user = \Auth::user();

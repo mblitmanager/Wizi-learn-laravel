@@ -147,7 +147,7 @@ class FormationStagiaireController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:56048',
             ]);
 
             if ($validator->fails()) {

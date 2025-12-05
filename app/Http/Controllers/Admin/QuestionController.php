@@ -57,7 +57,7 @@ class QuestionController extends Controller
                 'text' => 'required|string',
                 'type' => 'required|string',
                 'points' => 'required|integer',
-                'media_url' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+                'media_url' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:56048',
                 'reponses.*.text' => 'required|string',
                 'reponses.*.is_correct' => 'nullable|boolean',
             ]);

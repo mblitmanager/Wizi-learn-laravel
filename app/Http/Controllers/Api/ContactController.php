@@ -18,7 +18,7 @@ class ContactController extends Controller
             'subject' => 'required|string|max:255',
             'problem_type' => 'required|string',
             'message' => 'required|string',
-            'attachments.*' => 'file|mimes:jpg,jpeg,png,pdf,doc,docx|max:2048'
+            'attachments.*' => 'file|mimes:jpg,jpeg,png,pdf,doc,docx|max:56048'
         ]);
 
         // Récupération des infos utilisateur

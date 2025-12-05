@@ -69,7 +69,7 @@ class StagiaireController extends Controller
             return response()->json(['success' => false, 'error' => 'Utilisateur non trouvé'], 404);
         }
         $request->validate([
-            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif|max:56048',
         ]);
         if ($request->hasFile('avatar')) {
             $image = $request->file('avatar');
