@@ -6,46 +6,12 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class VideoUploadRequest extends FormRequest
 {
-    public function authorize()
-    {
-        return true;
-    }
-
-    public function rules()
-    {
-        return [
-            'video' => 'required|file|mimetypes:video/mp4,video/ogg,video/webm,video/quicktime,video/x-matroska,video/mpeg|max:512000', // max ~500MB
-            'titre' => 'nullable|string|max:255',
-            'description' => 'nullable|string',
-            'formation_id' => 'nullable|integer|exists:formations,id',
-            'categorie' => 'nullable|string',
-            'ordre' => 'nullable|integer',
-        ];
-    }
-
-    public function messages()
-    {
-        return [
-            'video.required' => 'Le fichier vidéo est requis.',
-            'video.mimetypes' => 'Format vidéo non supporté.',
-            'video.max' => 'La taille maximale est de 500MB.',
-        ];
-    }
-}
-<?php
-
-namespace App\Http\Requests;
-
-use Illuminate\Foundation\Http\FormRequest;
-
-class VideoUploadRequest extends FormRequest
-{
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return true; // Adjust based on your auth requirements
+        return true;
     }
 
     /**
@@ -57,8 +23,8 @@ class VideoUploadRequest extends FormRequest
             'video' => [
                 'required',
                 'file',
-                'mimetypes:video/mp4,video/webm,video/quicktime,video/x-msvideo',
-                'max:102400', // 100MB max
+                'mimetypes:video/mp4,video/webm,video/quicktime,video/x-msvideo,video/mpeg,video/ogg,video/x-matroska',
+                'max:512000', // 500MB max (increased for production)
             ],
             'titre' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -75,10 +41,14 @@ class VideoUploadRequest extends FormRequest
     {
         return [
             'video.required' => 'Un fichier vidéo est requis.',
-            'video.mimetypes' => 'Le fichier doit être une vidéo au format MP4, WebM, MOV ou AVI.',
-            'video.max' => 'La vidéo ne doit pas dépasser 100 MB.',
+            'video.mimetypes' => 'Le fichier doit être une vidéo au format MP4, WebM, MOV, AVI, MPEG, OGG ou MKV.',
+            'video.max' => 'La vidéo ne doit pas dépasser 500 MB.',
+            'video.uploaded' => 'Le fichier n\'a pas pu être uploadé. Vérifiez la taille du fichier et les configurations du serveur.',
             'formation_id.required' => 'Une formation doit être sélectionnée.',
             'formation_id.exists' => 'La formation sélectionnée n\'existe pas.',
+            'titre.required' => 'Un titre est requis.',
+            'categorie.required' => 'Une catégorie est requise.',
+            'categorie.in' => 'La catégorie doit être tutoriel ou astuce.',
         ];
     }
 }

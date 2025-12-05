@@ -305,7 +305,7 @@ class JWTAuthController extends Controller
 //            ),
 //        ]
 //    )]
-    public function logout()
+    public function logout(Request $request)
     {
         try {
             $user = auth()->user();
@@ -320,6 +320,14 @@ class JWTAuthController extends Controller
                         ?->update([
                         'logout_at' => now()
                     ]);
+
+                // Révoquer le refresh token si fourni
+                if ($request->has('refresh_token')) {
+                    $this->tokenService->revokeToken($request->refresh_token);
+                } else {
+                    // Révoquer tous les tokens de l'utilisateur
+                    $this->tokenService->revokeAllTokens($user);
+                }
 
                 $user->update([
                     'is_online' => false,
