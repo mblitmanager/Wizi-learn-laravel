@@ -29,6 +29,7 @@ use Illuminate\Support\Facades\Broadcast;
 use App\Http\Controllers\Admin\AchievementController as AdminAchievementController;
 
 Route::post('login', [JWTAuthController::class, 'login']);
+Route::post('refresh', [JWTAuthController::class, 'refresh']);
 Route::prefix('parrainage')->group(function () {
     Route::get('/get-data/{token}', [ParrainageController::class, 'getParrainData']);
     Route::post('/register-filleul', [ParrainageController::class, 'registerFilleul']);

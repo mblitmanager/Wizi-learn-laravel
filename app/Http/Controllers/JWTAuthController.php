@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Mail\PasswordResetMail;
 use App\Models\LoginHistories;
 use App\Models\User;
+use App\Services\TokenService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -26,6 +27,12 @@ use OpenApi\Attributes as OA;
 )]
 class JWTAuthController extends Controller
 {
+    protected $tokenService;
+
+    public function __construct(TokenService $tokenService)
+    {
+        $this->tokenService = $tokenService;
+    }
     #[OA\Post(
         path: "/api/register",
         summary: "Enregistrer un utilisateur",
@@ -160,19 +167,46 @@ class JWTAuthController extends Controller
                 'login_at' => now()
             ]);
 
-            $token = JWTAuth::claims([
-                'role' => $user->role,
-                'ip' => $ip
-            ])->fromUser($user);
+            // Create access and refresh tokens
+            $tokens = $this->tokenService->createTokens(
+                $user,
+                $request->userAgent(),
+                $ip
+            );
 
             return response()->json([
-                'token' => $token,
+                'token' => $tokens['access_token'],
+                'refresh_token' => $tokens['refresh_token'],
+                'expires_in' => $tokens['expires_in'],
+                'token_type' => $tokens['token_type'],
                 'user' => $user->load('stagiaire')
             ]);
         } catch (JWTException $e) {
             return response()->json(['error' => 'Impossible de créer le token'], 500);
         }
     }
+
+    /**
+     * Refresh access token using refresh token
+     */
+    public function refresh(Request $request)
+    {
+        $request->validate([
+            'refresh_token' => 'required|string',
+        ]);
+
+        try {
+            $tokens = $this->tokenService->refreshAccessToken($request->refresh_token);
+            
+            return response()->json($tokens);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'refresh_failed',
+                'message' => $e->getMessage()
+            ], 401);
+        }
+    }
+
     private function getLocation($ip)
     {
         if ($ip === '127.0.0.1')
