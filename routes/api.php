@@ -73,6 +73,11 @@ Route::middleware(['auth:api', 'detectClient'])->group(function () {
     Route::get('/stagiaire/rewards', [RankingController::class, 'getMyRewards']);
     Route::get('/stagiaire/progress', [RankingController::class, 'getMyProgress']);
 
+    // Formation ranking routes
+    Route::get('/formations/{formationId}/classement', [App\Http\Controllers\FormationClassementController::class, 'getClassement']);
+    Route::get('/stagiaire/formations/{formationId}/classement', [App\Http\Controllers\FormationClassementController::class, 'getMyRanking']);
+    Route::get('/formations/classement/summary', [App\Http\Controllers\FormationClassementController::class, 'getFormationsWithTopRanking']);
+
     // Parrainage routes
     Route::post('/parrainage/generate-link', [ParrainageController::class, 'generateLink']);
 
