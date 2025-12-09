@@ -313,7 +313,7 @@ class RankingController extends Controller
                     return [
                         'id' => $formateur->id,
                         'prenom' => $formateur->prenom,
-                        'nom' => $formateur->user->nom,
+                        'nom' => $formateur->user->name,
                         'image' => $formateur->user->image ?? null,
                     ];
                 }),
