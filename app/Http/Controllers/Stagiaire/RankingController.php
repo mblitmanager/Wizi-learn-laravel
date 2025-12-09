@@ -239,4 +239,152 @@ class RankingController extends Controller
             return response()->json(['error' => 'non autorisé'], 403);
         }
     }
+
+    /**
+     * Get detailed information about a specific stagiaire
+     * Including formations, formateurs, and quiz statistics
+     */
+    public function getStagiaireDetails($stagiaireId)
+    {
+        try {
+            $user = JWTAuth::parseToken()->authenticate();
+            
+            // Load stagiaire with all necessary relations
+            $stagiaire = \App\Models\Stagiaire::with([
+                'user',
+                'formateurs',
+                'catalogue_formations',
+                'classements.quiz'
+            ])->findOrFail($stagiaireId);
+
+            // Calculate total points
+            $totalPoints = $stagiaire->classements->sum('points');
+            
+            // Calculate quiz stats by level
+            $quizByLevel = $stagiaire->classements->groupBy(function($classement) {
+                return $classement->quiz->niveau ?? 'inconnu';
+            })->map(function($group) {
+                return [
+                    'completed' => $group->count(),
+                    'total' => $group->count(), // You might want to calculate actual total available
+                ];
+            });
+
+            // Get total quizzes
+            $totalQuizzes = $stagiaire->classements->count();
+            
+            // Calculate success percentage (assuming points above 70% is success)
+            $successCount = $stagiaire->classements->filter(function($c) {
+                $quiz = $c->quiz;
+                if (!$quiz || !$quiz->nb_points_total) return false;
+                return ($c->points / $quiz->nb_points_total) >= 0.7;
+            })->count();
+            
+            $successPercentage = $totalQuizzes > 0 ? round(($successCount / $totalQuizzes) * 100, 2) : 0;
+
+            // Get last activity
+            $lastActivity = $stagiaire->classements->max('updated_at');
+
+            // Calculate rang in global ranking
+            $allClassements = \App\Models\Classement::select('stagiaire_id')
+                ->selectRaw('SUM(points) as total_points')
+                ->groupBy('stagiaire_id')
+                ->orderByDesc('total_points')
+                ->get();
+            
+            $rang = $allClassements->search(function($item) use ($stagiaireId) {
+                return $item->stagiaire_id == $stagiaireId;
+            }) + 1;
+
+            return response()->json([
+                'id' => $stagiaire->id,
+                'firstname' => $stagiaire->prenom,
+                'name' => $stagiaire->user->name ?? '',
+                'avatar' => $stagiaire->user->image ?? null,
+                'rang' => $rang ?: 999,
+                'totalPoints' => $totalPoints,
+                'formations' => $stagiaire->catalogue_formations->map(function($formation) {
+                    return [
+                        'id' => $formation->id,
+                        'titre' => $formation->titre ?? 'Formation sans titre',
+                    ];
+                }),
+                'formateurs' => $stagiaire->formateurs->map(function($formateur) {
+                    return [
+                        'id' => $formateur->id,
+                        'prenom' => $formateur->prenom,
+                        'nom' => $formateur->nom,
+                        'image' => $formateur->user->image ?? null,
+                    ];
+                }),
+                'quizStats' => [
+                    'totalCompleted' => $totalQuizzes,
+                    'totalQuiz' => $totalQuizzes,
+                    'pourcentageReussite' => $successPercentage,
+                    'byLevel' => [
+                        'debutant' => $quizByLevel->get('debutant', ['completed' => 0, 'total' => 0]),
+                        'intermediaire' => $quizByLevel->get('intermediaire', ['completed' => 0, 'total' => 0]),
+                        'expert' => $quizByLevel->get('expert', ['completed' => 0, 'total' => 0]),
+                    ],
+                    'lastActivity' => $lastActivity ? $lastActivity->toIso8601String() : null,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error in getStagiaireDetails', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'error' => 'Une erreur est survenue lors de la récupération des détails du stagiaire',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get current user's total points and accessible quiz levels
+     */
+    public function getUserPoints()
+    {
+        try {
+            $user = JWTAuth::parseToken()->authenticate();
+            
+            if (!isset($user->relations['stagiaire'])) {
+                $user->load('stagiaire');
+            }
+
+            $stagiaire = $user->stagiaire;
+            if (!$stagiaire) {
+                return response()->json(['error' => 'Stagiaire not found'], 404);
+            }
+
+            // Calculate total points
+            $totalPoints = $stagiaire->classements->sum('points');
+
+            // Determine accessible levels based on points
+            $accessibleLevels = [];
+            if ($totalPoints < 50) {
+                $accessibleLevels = ['debutant'];
+            } else if ($totalPoints < 100) {
+                $accessibleLevels = ['debutant', 'intermediaire'];
+            } else {
+                $accessibleLevels = ['debutant', 'intermediaire', 'expert'];
+            }
+
+            return response()->json([
+                'totalPoints' => $totalPoints,
+                'accessibleLevels' => $accessibleLevels,
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error in getUserPoints', [
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'error' => 'Unable to retrieve user points',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

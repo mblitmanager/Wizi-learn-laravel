@@ -72,6 +72,10 @@ Route::middleware(['auth:api', 'detectClient'])->group(function () {
     Route::get('/stagiaire/ranking/formation/{formationId}', [RankingController::class, 'getFormationRanking']);
     Route::get('/stagiaire/rewards', [RankingController::class, 'getMyRewards']);
     Route::get('/stagiaire/progress', [RankingController::class, 'getMyProgress']);
+    
+    // New routes for stagiaire details and user points
+    Route::get('/stagiaires/{stagiaireId}/details', [RankingController::class, 'getStagiaireDetails']);
+    Route::get('/users/me/points', [RankingController::class, 'getUserPoints']);
 
     // Formation ranking routes
     Route::get('/formations/{formationId}/classement', [App\Http\Controllers\FormationClassementController::class, 'getClassement']);
