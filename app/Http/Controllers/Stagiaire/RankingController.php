@@ -248,7 +248,7 @@ class RankingController extends Controller
     {
         try {
             $user = JWTAuth::parseToken()->authenticate();
-            
+
             // Load stagiaire with all necessary relations
             $stagiaire = \App\Models\Stagiaire::with([
                 'user',
@@ -259,7 +259,7 @@ class RankingController extends Controller
 
             // Calculate total points
             $totalPoints = $stagiaire->classements->sum('points');
-            
+
             // Calculate quiz stats by level
             $quizByLevel = $stagiaire->classements->groupBy(function($classement) {
                 return $classement->quiz->niveau ?? 'inconnu';
@@ -272,14 +272,14 @@ class RankingController extends Controller
 
             // Get total quizzes
             $totalQuizzes = $stagiaire->classements->count();
-            
+
             // Calculate success percentage (assuming points above 70% is success)
             $successCount = $stagiaire->classements->filter(function($c) {
                 $quiz = $c->quiz;
                 if (!$quiz || !$quiz->nb_points_total) return false;
                 return ($c->points / $quiz->nb_points_total) >= 0.7;
             })->count();
-            
+
             $successPercentage = $totalQuizzes > 0 ? round(($successCount / $totalQuizzes) * 100, 2) : 0;
 
             // Get last activity
@@ -291,7 +291,7 @@ class RankingController extends Controller
                 ->groupBy('stagiaire_id')
                 ->orderByDesc('total_points')
                 ->get();
-            
+
             $rang = $allClassements->search(function($item) use ($stagiaireId) {
                 return $item->stagiaire_id == $stagiaireId;
             }) + 1;
@@ -322,9 +322,9 @@ class RankingController extends Controller
                     'totalQuiz' => $totalQuizzes,
                     'pourcentageReussite' => $successPercentage,
                     'byLevel' => [
-                        'debutant' => $quizByLevel->get('debutant', ['completed' => 0, 'total' => 0]),
-                        'intermediaire' => $quizByLevel->get('intermediaire', ['completed' => 0, 'total' => 0]),
-                        'expert' => $quizByLevel->get('expert', ['completed' => 0, 'total' => 0]),
+                        'debutant' => $quizByLevel->get('débutant', ['completed' => 0, 'total' => 0]),
+                        'intermediaire' => $quizByLevel->get('intermédiaire', ['completed' => 0, 'total' => 0]),
+                        'expert' => $quizByLevel->get('avancé', ['completed' => 0, 'total' => 0]),
                     ],
                     'lastActivity' => $lastActivity ? $lastActivity->toIso8601String() : null,
                 ],
@@ -349,7 +349,7 @@ class RankingController extends Controller
     {
         try {
             $user = JWTAuth::parseToken()->authenticate();
-            
+
             if (!isset($user->relations['stagiaire'])) {
                 $user->load('stagiaire');
             }
