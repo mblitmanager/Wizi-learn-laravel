@@ -276,8 +276,8 @@ class RankingController extends Controller
             // Calculate success percentage (assuming points above 70% is success)
             $successCount = $stagiaire->classements->filter(function($c) {
                 $quiz = $c->quiz;
-                if (!$quiz || !$quiz->nb_points_total) return false;
-                return ($c->points / $quiz->nb_points_total) >= 0.7;
+                if (!$quiz || !$quiz->score || $quiz->score == 0) return false;
+                return ($c->points / $quiz->score) >= 0.7;
             })->count();
 
             $successPercentage = $totalQuizzes > 0 ? round(($successCount / $totalQuizzes) * 100, 2) : 0;
