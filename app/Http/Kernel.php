@@ -64,5 +64,6 @@ class Kernel extends HttpKernel
         'isCommercial' => \App\Http\Middleware\IsCommercial::class,
         'track.user' => \App\Http\Middleware\TrackUserActivity::class,
         'detectClient' => \App\Http\Middleware\DetectClientPlatform::class,
+        'role' => \App\Http\Middleware\RoleMiddleware::class,
     ];
 }
