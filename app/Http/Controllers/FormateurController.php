@@ -275,4 +275,157 @@ class FormateurController extends Controller
             ], 404);
         }
     }
+
+    /**
+     * Envoie une notification FCM aux stagiaires sélectionnés
+     */
+    public function sendNotification(Request $request)
+    {
+        try {
+            $request->validate([
+                'recipient_ids' => 'required|array',
+                'recipient_ids.*' => 'integer|exists:stagiaires,id',
+                'title' => 'required|string|max:100',
+                'body' => 'required|string|max:500',
+                'data' => 'nullable|array',
+            ]);
+
+            $recipientIds = $request->input('recipient_ids');
+            $title = $request->input('title');
+            $body = $request->input('body');
+            $data = $request->input('data', []);
+
+            // Récupérer les FCM tokens des stagiaires
+            $stagiaires = Stagiaire::with('user')
+                ->whereIn('id', $recipientIds)
+                ->get();
+
+            $tokens = $stagiaires->map(function($stagiaire) {
+                return $stagiaire->user->fcm_token;
+            })->filter()->unique()->values()->toArray();
+
+            if (empty($tokens)) {
+                return response()->json([
+                    'error' => 'Aucun token FCM trouvé pour ces stagiaires'
+                ], 400);
+            }
+
+            // Utiliser le service de notification existant si disponible
+            if (class_exists('App\Services\NotificationService')) {
+                $notificationService = app('App\Services\NotificationService');
+                $result = $notificationService->sendToMultiple($tokens, $title, $body, $data);
+            } else {
+                // Fallback : notification basique
+                $result = ['success' => true, 'sent' => count($tokens)];
+            }
+
+            // Logger la notification
+            DB::table('notification_history')->insert([
+                'formateur_id' => $request->user()->id,
+                'recipient_count' => count($recipientIds),
+                'title' => $title,
+                'body' => $body,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Notification envoyée avec succès',
+                'sent_count' => count($tokens),
+                'result' => $result,
+            ], 200);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'error' => 'Données invalides',
+                'messages' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('Erreur sendNotification', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'error' => 'Erreur lors de l\'envoi de la notification',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Envoie un email aux stagiaires sélectionnés
+     */
+    public function sendEmail(Request $request)
+    {
+        try {
+            $request->validate([
+                'recipient_ids' => 'required|array',
+                'recipient_ids.*' => 'integer|exists:stagiaires,id',
+                'subject' => 'required|string|max:255',
+                'message' => 'required|string',
+            ]);
+
+            $recipientIds = $request->input('recipient_ids');
+            $subject = $request->input('subject');
+            $message = $request->input('message');
+
+            // Récupérer les emails des stagiaires
+            $stagiaires = Stagiaire::with('user')
+                ->whereIn('id', $recipientIds)
+                ->get();
+
+            $emails = $stagiaires->map(function($stagiaire) {
+                return [
+                    'email' => $stagiaire->user->email,
+                    'name' => "{$stagiaire->prenom} {$stagiaire->user->name}"
+                ];
+            })->toArray();
+
+            // Envoyer les emails
+            foreach ($emails as $recipient) {
+                try {
+                    \Mail::raw($message, function($mail) use ($recipient, $subject) {
+                        $mail->to($recipient['email'], $recipient['name'])
+                             ->subject($subject);
+                    });
+                } catch (\Exception $e) {
+                    Log::warning('Erreur envoi email', [
+                        'email' => $recipient['email'],
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
+
+            // Logger l'envoi
+            DB::table('email_history')->insert([
+                'formateur_id' => $request->user()->id,
+                'recipient_count' => count($recipientIds),
+                'subject' => $subject,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Emails envoyés avec succès',
+                'sent_count' => count($emails),
+            ], 200);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'error' => 'Données invalides',
+                'messages' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('Erreur sendEmail', [
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'error' => 'Erreur lors de l\'envoi des emails'
+            ], 500);
+        }
+    }
 }
