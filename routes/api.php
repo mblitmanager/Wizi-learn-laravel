@@ -44,6 +44,12 @@ Route::middleware(['auth:api', 'detectClient'])->group(function () {
     // Succès et récompenses stagiaire
     Route::get('/stagiaire/achievements', [App\Http\Controllers\Stagiaire\AchievementController::class, 'getAchievements']);
     Route::post('/stagiaire/achievements/check', [App\Http\Controllers\Stagiaire\AchievementController::class, 'checkAchievements']);
+    
+    // Profil stagiaire
+    Route::get('/stagiaires/profile', [App\Http\Controllers\Api\StagiaireProfileController::class, 'getProfile']);
+    Route::put('/stagiaires/profile', [App\Http\Controllers\Api\StagiaireProfileController::class, 'updateProfile']);
+    Route::patch('/stagiaires/profile', [App\Http\Controllers\Api\StagiaireProfileController::class, 'updateProfile']);
+    
     Route::post('logout', [JWTAuthController::class, 'logout']);
     Route::get('user', [JWTAuthController::class, 'getUser']);
     Route::get('me', [JWTAuthController::class, 'getMe']);
