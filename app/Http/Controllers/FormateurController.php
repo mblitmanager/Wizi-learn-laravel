@@ -428,4 +428,197 @@ class FormateurController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Récupère le classement des stagiaires d'une formation spécifique
+     */
+    public function getFormationRanking(Request $request, $formationId)
+    {
+        try {
+            // Récupérer tous les stagiaires de la formation avec leurs points
+            $stagiaires = DB::table('stagiaires')
+                ->join('users', 'stagiaires.user_id', '=', 'users.id')
+                ->join('catalogue_stagiaire', 'stagiaires.id', '=', 'catalogue_stagiaire.stagiaire_id')
+                ->leftJoin('quiz_submissions', 'stagiaires.id', '=', 'quiz_submissions.stagiaire_id')
+                ->where('catalogue_stagiaire.catalogue_formation_id', $formationId)
+                ->select(
+                    'stagiaires.id',
+                    'stagiaires.prenom',
+                    'users.name as nom',
+                    'users.email',
+                    DB::raw('COALESCE(SUM(quiz_submissions.score), 0) as total_points'),
+                    DB::raw('COUNT(quiz_submissions.id) as total_quiz')
+                )
+                ->groupBy('stagiaires.id', 'stagiaires.prenom', 'users.name', 'users.email')
+                ->orderBy('total_points', 'desc')
+                ->get();
+
+            return response()->json([
+                'formation_id' => $formationId,
+                'ranking' => $stagiaires,
+                'total_stagiaires' => $stagiaires->count(),
+            ], 200);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur getFormationRanking', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Erreur récupération classement'], 500);
+        }
+    }
+
+    /**
+     * Récupère le classement de tous les stagiaires du formateur
+     */
+    public function getMesStagiairesRanking(Request $request)
+    {
+        try {
+            // Récupérer tous les stagiaires avec leurs points totaux
+            $stagiaires = Stagiaire::with(['user'])
+                ->leftJoin('quiz_submissions', 'stagiaires.id', '=', 'quiz_submissions.stagiaire_id')
+                ->select(
+                    'stagiaires.id',
+                    'stagiaires.prenom',
+                    DB::raw('COALESCE(SUM(quiz_submissions.score), 0) as total_points'),
+                    DB::raw('COUNT(quiz_submissions.id) as total_quiz'),
+                    DB::raw('AVG(quiz_submissions.score) as avg_score')
+                )
+                ->groupBy('stagiaires.id', 'stagiaires.prenom')
+                ->orderBy('total_points', 'desc')
+                ->get()
+                ->map(function($stagiaire, $index) {
+                    return [
+                        'rank' => $index + 1,
+                        'id' => $stagiaire->id,
+                        'prenom' => $stagiaire->prenom,
+                        'nom' => $stagiaire->user->name ?? '',
+                        'email' => $stagiaire->user->email ?? '',
+                        'total_points' => (int) $stagiaire->total_points,
+                        'total_quiz' => (int) $stagiaire->total_quiz,
+                        'avg_score' => round($stagiaire->avg_score ?? 0, 1),
+                    ];
+                });
+
+            return response()->json([
+                'ranking' => $stagiaires,
+                'total_stagiaires' => $stagiaires->count(),
+            ], 200);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur getMesStagiairesRanking', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Erreur récupération classement'], 500);
+        }
+    }
+
+    /**
+     * Récupère toutes les vidéos accessibles
+     */
+    public function getAllVideos(Request $request)
+    {
+        try {
+            $videos = DB::table('medias')
+                ->where('type', 'video')
+                ->orWhere('type', 'LIKE', '%video%')
+                ->select('id', 'titre', 'description', 'url', 'type', 'created_at')
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            return response()->json([
+                'videos' => $videos,
+                'total' => $videos->count(),
+            ], 200);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur getAllVideos', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Erreur récupération vidéos'], 500);
+        }
+    }
+
+    /**
+     * Récupère les statistiques de visionnage d'une vidéo
+     */
+    public function getVideoStats(Request $request, $videoId)
+    {
+        try {
+            if (!DB::getSchemaBuilder()->hasTable('video_views')) {
+                return response()->json([
+                    'video_id' => $videoId,
+                    'total_views' => 0,
+                    'total_duration_watched' => 0,
+                    'completion_rate' => 0,
+                    'views_by_stagiaire' => [],
+                ], 200);
+            }
+
+            $stats = DB::table('video_views')
+                ->where('media_id', $videoId)
+                ->selectRaw('
+                    COUNT(*) as total_views,
+                    SUM(duration_watched) as total_duration_watched,
+                    AVG(CASE WHEN completed = 1 THEN 100 ELSE 0 END) as completion_rate
+                ')
+                ->first();
+
+            $viewsByStagiaire = DB::table('video_views')
+                ->join('stagiaires', 'video_views.stagiaire_id', '=', 'stagiaires.id')
+                ->join('users', 'stagiaires.user_id', '=', 'users.id')
+                ->where('video_views.media_id', $videoId)
+                ->select(
+                    'stagiaires.id',
+                    'stagiaires.prenom',
+                    'users.name as nom',
+                    DB::raw('SUM(video_views.duration_watched) as total_watched'),
+                    DB::raw('MAX(video_views.completed) as completed')
+                )
+                ->groupBy('stagiaires.id', 'stagiaires.prenom', 'users.name')
+                ->get();
+
+            return response()->json([
+                'video_id' => $videoId,
+                'total_views' => $stats->total_views ?? 0,
+                'total_duration_watched' => $stats->total_duration_watched ?? 0,
+                'completion_rate' => round($stats->completion_rate ?? 0, 1),
+                'views_by_stagiaire' => $viewsByStagiaire,
+            ], 200);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur getVideoStats', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Erreur récupération stats vidéo'], 500);
+        }
+    }
+
+    /**
+     * Récupère les formations du formateur
+     */
+    public function getFormations(Request $request)
+    {
+        try {
+            // Pour l'instant, récupérer toutes les formations
+            // À adapter selon la logique métier (liaison formateur-formation)
+            $formations = DB::table('catalogue_formations')
+                ->select('id', 'nom', 'description', 'created_at')
+                ->get()
+                ->map(function($formation) {
+                    // Compter les stagiaires par formation
+                    $stagiaireCount = DB::table('catalogue_stagiaire')
+                        ->where('catalogue_formation_id', $formation->id)
+                        ->count();
+                    
+                    return [
+                        'id' => $formation->id,
+                        'nom' => $formation->nom,
+                        'description' => $formation->description,
+                        'stagiaires_count' => $stagiaireCount,
+                        'created_at' => $formation->created_at,
+                    ];
+                });
+
+            return response()->json([
+                'formations' => $formations,
+                'total' => $formations->count(),
+            ], 200);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur getFormations', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Erreur récupération formations'], 500);
+        }
+    }
 }

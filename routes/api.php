@@ -61,6 +61,17 @@ Route::middleware(['auth:api', 'detectClient'])->group(function () {
         // Communications
         Route::post('/send-notification', [App\Http\Controllers\FormateurController::class, 'sendNotification']);
         Route::post('/send-email', [App\Http\Controllers\FormateurController::class, 'sendEmail']);
+        
+        // Classements
+        Route::get('/classement/formation/{formationId}', [App\Http\Controllers\FormateurController::class, 'getFormationRanking']);
+        Route::get('/classement/mes-stagiaires', [App\Http\Controllers\FormateurController::class, 'getMesStagiairesRanking']);
+        
+        // Vidéos
+        Route::get('/videos', [App\Http\Controllers\FormateurController::class, 'getAllVideos']);
+        Route::get('/video/{id}/stats', [App\Http\Controllers\FormateurController::class, 'getVideoStats']);
+        
+        // Formations
+        Route::get('/formations', [App\Http\Controllers\FormateurController::class, 'getFormations']);
     });
     
     Route::post('logout', [JWTAuthController::class, 'logout']);
