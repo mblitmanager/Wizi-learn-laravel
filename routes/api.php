@@ -50,6 +50,15 @@ Route::middleware(['auth:api', 'detectClient'])->group(function () {
     Route::put('/stagiaire/profile', [App\Http\Controllers\Api\StagiaireProfileController::class, 'updateProfile']);
     Route::patch('/stagiaire/profile', [App\Http\Controllers\Api\StagiaireProfileController::class, 'updateProfile']);
     
+    // Routes Formateur - Dashboard et gestion stagiaires
+    Route::prefix('formateur')->middleware('role:formateur,formatrice')->group(function () {
+        Route::get('/dashboard/stats', [App\Http\Controllers\FormateurController::class, 'getDashboardStats']);
+        Route::get('/stagiaires', [App\Http\Controllers\FormateurController::class, 'getStagiaires']);
+        Route::get('/stagiaires/inactive', [App\Http\Controllers\FormateurController::class, 'getInactiveStagiaires']);
+        Route::get('/stagiaires/never-connected', [App\Http\Controllers\FormateurController::class, 'getNeverConnected']);
+        Route::get('/stagiaire/{id}/stats', [App\Http\Controllers\FormateurController::class, 'getStagiaireStats']);
+    });
+    
     Route::post('logout', [JWTAuthController::class, 'logout']);
     Route::get('user', [JWTAuthController::class, 'getUser']);
     Route::get('me', [JWTAuthController::class, 'getMe']);
