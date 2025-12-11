@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Stagiaire;
+use App\Models\Formateur;
 use App\Models\QuizSubmission;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -27,10 +28,18 @@ class FormateurController extends Controller
                 ], 403);
             }
             
-            // Récupérer tous les stagiaires (pour l'instant tous, à filtrer par formateur si liaison existe)
-            $stagiaires = Stagiaire::with('user')->get();
+            // Récupérer l'ID du formateur
+            $formateurModel = Formateur::where('user_id', $formateur->id)->first();
+            $formateurId = $formateurModel ? $formateurModel->id : null;
             
-            $totalStagiaires = $stagiaires->count();
+            // Filtrer les stagiaires assignés au formateur via formateur_stagiaire
+            $stagiairesQuery = Stagiaire::with('user');
+            if ($formateurId) {
+                $stagiairesQuery->whereHas('formateurs', function($query) use ($formateurId) {
+                    $query->where('formateurs.id', $formateurId);
+                });
+            }
+            $stagiaires = $stagiairesQuery->get();
             
             // Stagiaires actifs cette semaine
             $weekAgo = Carbon::now()->subWeek();
@@ -185,6 +194,49 @@ class FormateurController extends Controller
             Log::error('Erreur getOnlineStagiaires: ' . $e->getMessage());
             return response()->json([
                 'error' => 'Erreur lors de la récupération des stagiaires en ligne',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Déconnecter un ou plusieurs stagiaires
+     */
+    public function disconnectStagiaires(Request $request)
+    {
+        try {
+            $formateur = $request->user();
+            
+            // Vérification du rôle
+            if (!in_array($formateur->role, ['formateur', 'formatrice'])) {
+                return response()->json([
+                    'error' => 'Accès refusé - Rôle formateur requis'
+                ], 403);
+            }
+
+            $request->validate([
+                'stagiaire_ids' => 'required|array',
+                'stagiaire_ids.*' => 'integer|exists:stagiaires,id'
+            ]);
+
+            $stagiaireIds = $request->stagiaire_ids;
+            
+            // Récupérer les user_ids des stagiaires
+            $userIds = Stagiaire::whereIn('id', $stagiaireIds)->pluck('user_id')->toArray();
+            
+            // Mettre is_online à 0 pour ces utilisateurs
+            $updated = User::whereIn('id', $userIds)->update(['is_online' => 0]);
+
+            return response()->json([
+                'success' => true,
+                'message' => "$updated stagiaire(s) déconnecté(s)",
+                'disconnected_count' => $updated
+            ], 200);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur disconnectStagiaires: ' . $e->getMessage());
+            return response()->json([
+                'error' => 'Erreur lors de la déconnexion des stagiaires',
                 'message' => $e->getMessage()
             ], 500);
         }
