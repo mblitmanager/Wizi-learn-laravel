@@ -41,6 +41,8 @@ class FormateurController extends Controller
             }
             $stagiaires = $stagiairesQuery->get();
             
+            $totalStagiaires = $stagiaires->count();
+            
             // Stagiaires actifs cette semaine
             $weekAgo = Carbon::now()->subWeek();
             $activeStagiaires = $stagiaires->filter(function($stagiaire) use ($weekAgo) {
