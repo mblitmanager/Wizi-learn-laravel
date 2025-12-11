@@ -63,8 +63,55 @@ class FormateurController extends Controller
                 $totalVideoHours = round($totalVideoSeconds / 3600, 1);
             }
             
-            // Formations (à adapter selon structure réelle)
-            $formations = [];
+            // Stats par formation
+            $formations = DB::table('catalogue_formations')
+                ->leftJoin('catalogue_stagiaire', 'catalogue_formations.id', '=', 'catalogue_stagiaire.catalogue_formation_id')
+                ->leftJoin('stagiaires', 'catalogue_stagiaire.stagiaire_id', '=', 'stagiaires.id')
+                ->leftJoin('users', 'stagiaires.user_id', '=', 'users.id')
+                ->leftJoin('quiz_participations', 'users.id', '=', 'quiz_participations.user_id')
+                ->select(
+                    'catalogue_formations.id',
+                    'catalogue_formations.nom',
+                    DB::raw('COUNT(DISTINCT stagiaires.id) as total_stagiaires'),
+                    DB::raw('COUNT(DISTINCT CASE WHEN users.last_activity_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN stagiaires.id END) as stagiaires_actifs'),
+                    DB::raw('COALESCE(AVG(quiz_participations.score), 0) as score_moyen')
+                )
+                ->groupBy('catalogue_formations.id', 'catalogue_formations.nom')
+                ->get()
+                ->map(function($formation) {
+                    return [
+                        'id' => $formation->id,
+                        'nom' => $formation->nom,
+                        'total_stagiaires' => (int) $formation->total_stagiaires,
+                        'stagiaires_actifs' => (int) $formation->stagiaires_actifs,
+                        'score_moyen' => round($formation->score_moyen, 1)
+                    ];
+                });
+
+            // Stats par formateur (si table formateurs existe)
+            $statsFormateurs = [];
+            if (DB::getSchemaBuilder()->hasTable('formateurs')) {
+                $statsFormateurs = DB::table('formateurs')
+                    ->join('users', 'formateurs.user_id', '=', 'users.id')
+                    ->leftJoin('formateur_stagiaire', 'formateurs.id', '=', 'formateur_stagiaire.formateur_id')
+                    ->leftJoin('stagiaires', 'formateur_stagiaire.stagiaire_id', '=', 'stagiaires.id')
+                    ->select(
+                        'formateurs.id',
+                        'formateurs.prenom',
+                        'users.name as nom',
+                        DB::raw('COUNT(DISTINCT stagiaires.id) as total_stagiaires')
+                    )
+                    ->groupBy('formateurs.id', 'formateurs.prenom', 'users.name')
+                    ->get()
+                    ->map(function($formateur) {
+                        return [
+                            'id' => $formateur->id,
+                            'prenom' => $formateur->prenom,
+                            'nom' => $formateur->nom,
+                            'total_stagiaires' => (int) $formateur->total_stagiaires
+                        ];
+                    });
+            }
             
             return response()->json([
                 'total_stagiaires' => $totalStagiaires,
@@ -74,6 +121,7 @@ class FormateurController extends Controller
                 'avg_quiz_score' => round($avgQuizScore, 1),
                 'total_video_hours' => $totalVideoHours,
                 'formations' => $formations,
+                'formateurs' => $statsFormateurs,
             ], 200);
 
         } catch (\Exception $e) {
