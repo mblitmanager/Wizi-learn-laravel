@@ -71,12 +71,12 @@ class FormateurController extends Controller
                 ->leftJoin('quiz_participations', 'users.id', '=', 'quiz_participations.user_id')
                 ->select(
                     'catalogue_formations.id',
-                    'catalogue_formations.nom',
+                    'catalogue_formations.titre as nom',
                     DB::raw('COUNT(DISTINCT stagiaires.id) as total_stagiaires'),
                     DB::raw('COUNT(DISTINCT CASE WHEN users.last_activity_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN stagiaires.id END) as stagiaires_actifs'),
                     DB::raw('COALESCE(AVG(quiz_participations.score), 0) as score_moyen')
                 )
-                ->groupBy('catalogue_formations.id', 'catalogue_formations.nom')
+                ->groupBy('catalogue_formations.id', 'catalogue_formations.titre')
                 ->orderBy('total_stagiaires', 'desc');
             
             $formationsPerPage = $request->input('formations_per_page', 10);
