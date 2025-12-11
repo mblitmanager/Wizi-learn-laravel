@@ -65,8 +65,8 @@ class FormateurController extends Controller
             
             // Stats par formation (avec pagination)
             $formationsQuery = DB::table('catalogue_formations')
-                ->leftJoin('catalogue_stagiaire', 'catalogue_formations.id', '=', 'catalogue_stagiaire.catalogue_formation_id')
-                ->leftJoin('stagiaires', 'catalogue_stagiaire.stagiaire_id', '=', 'stagiaires.id')
+                ->leftJoin('stagiaire_catalogue_formations', 'catalogue_formations.id', '=', 'stagiaire_catalogue_formations.catalogue_formation_id')
+                ->leftJoin('stagiaires', 'stagiaire_catalogue_formations.stagiaire_id', '=', 'stagiaires.id')
                 ->leftJoin('users', 'stagiaires.user_id', '=', 'users.id')
                 ->leftJoin('quiz_participations', 'users.id', '=', 'quiz_participations.user_id')
                 ->select(
@@ -500,9 +500,9 @@ class FormateurController extends Controller
             // Récupérer tous les stagiaires de la formation avec leurs points
             $stagiaires = DB::table('stagiaires')
                 ->join('users', 'stagiaires.user_id', '=', 'users.id')
-                ->join('catalogue_stagiaire', 'stagiaires.id', '=', 'catalogue_stagiaire.stagiaire_id')
+                ->join('stagiaire_catalogue_formations', 'stagiaires.id', '=', 'stagiaire_catalogue_formations.stagiaire_id')
                 ->leftJoin('quiz_participations', 'users.id', '=', 'quiz_participations.user_id')
-                ->where('catalogue_stagiaire.catalogue_formation_id', $formationId)
+                ->where('stagiaire_catalogue_formations.catalogue_formation_id', $formationId)
                 ->select(
                     'stagiaires.id',
                     'stagiaires.prenom',
