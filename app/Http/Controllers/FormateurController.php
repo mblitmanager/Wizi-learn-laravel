@@ -599,13 +599,26 @@ class FormateurController extends Controller
     public function getFormationRanking(Request $request, $formationId)
     {
         try {
+            $formateur = $request->user();
+            
+            // Récupérer l'ID du formateur
+            $formateurModel = Formateur::where('user_id', $formateur->id)->first();
+            $formateurId = $formateurModel ? $formateurModel->id : null;
+            
             // Récupérer tous les stagiaires de la formation avec leurs points
-            $stagiaires = DB::table('stagiaires')
+            $query = DB::table('stagiaires')
                 ->join('users', 'stagiaires.user_id', '=', 'users.id')
                 ->join('stagiaire_catalogue_formations', 'stagiaires.id', '=', 'stagiaire_catalogue_formations.stagiaire_id')
                 ->leftJoin('quiz_participations', 'users.id', '=', 'quiz_participations.user_id')
-                ->where('stagiaire_catalogue_formations.catalogue_formation_id', $formationId)
-                ->select(
+                ->where('stagiaire_catalogue_formations.catalogue_formation_id', $formationId);
+            
+            // Filtrer par formateur si disponible
+            if ($formateurId) {
+                $query->join('formateur_stagiaire', 'stagiaires.id', '=', 'formateur_stagiaire.stagiaire_id')
+                      ->where('formateur_stagiaire.formateur_id', $formateurId);
+            }
+            
+            $stagiaires = $query->select(
                     'stagiaires.id',
                     'stagiaires.prenom',
                     'users.name as nom',
@@ -635,18 +648,34 @@ class FormateurController extends Controller
     public function getMesStagiairesRanking(Request $request)
     {
         try {
+            $formateur = $request->user();
+            
+            // Récupérer l'ID du formateur
+            $formateurModel = Formateur::where('user_id', $formateur->id)->first();
+            $formateurId = $formateurModel ? $formateurModel->id : null;
+            
             // Récupérer tous les stagiaires avec leurs points totaux
-            $stagiaires = Stagiaire::with(['user'])
+            $query = DB::table('stagiaires')
                 ->join('users', 'stagiaires.user_id', '=', 'users.id')
-                ->leftJoin('quiz_participations', 'users.id', '=', 'quiz_participations.user_id')
-                ->select(
+                ->leftJoin('quiz_participations', 'users.id', '=', 'quiz_participations.user_id');
+            
+            // Filtrer par formateur si disponible
+            if ($formateurId) {
+                $query->join('formateur_stagiaire', 'stagiaires.id', '=', 'formateur_stagiaire.stagiaire_id')
+                      ->where('formateur_stagiaire.formateur_id', $formateurId);
+            }
+            
+            $stagiaires = $query->select(
                     'stagiaires.id',
                     'stagiaires.prenom',
+                    'users.name as nom',
+                    'users.email',
+                    'users.image',
                     DB::raw('COALESCE(SUM(quiz_participations.score), 0) as total_points'),
-                    DB::raw('COUNT(quiz_participations.id) as total_quiz'),
-                    DB::raw('AVG(quiz_participations.score) as avg_score')
+                    DB::raw('COUNT(DISTINCT quiz_participations.id) as total_quiz'),
+                    DB::raw('COALESCE(AVG(quiz_participations.score), 0) as avg_score')
                 )
-                ->groupBy('stagiaires.id', 'stagiaires.prenom')
+                ->groupBy('stagiaires.id', 'stagiaires.prenom', 'users.name', 'users.email', 'users.image')
                 ->orderBy('total_points', 'desc')
                 ->get()
                 ->map(function($stagiaire, $index) {
@@ -654,11 +683,12 @@ class FormateurController extends Controller
                         'rank' => $index + 1,
                         'id' => $stagiaire->id,
                         'prenom' => $stagiaire->prenom,
-                        'nom' => $stagiaire->user->name ?? '',
-                        'email' => $stagiaire->user->email ?? '',
+                        'nom' => $stagiaire->nom,
+                        'email' => $stagiaire->email,
+                        'image' => $stagiaire->image,
                         'total_points' => (int) $stagiaire->total_points,
                         'total_quiz' => (int) $stagiaire->total_quiz,
-                        'avg_score' => round($stagiaire->avg_score ?? 0, 1),
+                        'avg_score' => round($stagiaire->avg_score, 1),
                     ];
                 });
 
