@@ -50,8 +50,8 @@ Route::middleware(['auth:api', 'detectClient'])->group(function () {
     Route::put('/stagiaire/profile', [App\Http\Controllers\Api\StagiaireProfileController::class, 'updateProfile']);
     Route::patch('/stagiaire/profile', [App\Http\Controllers\Api\StagiaireProfileController::class, 'updateProfile']);
     
-    // Routes Formateur - Dashboard et gestion stagiaires
-    Route::prefix('formateur')->middleware('role:formateur,formatrice')->group(function () {
+    // Routes Formateur - Dashboard et gestion stagiaires (vérification rôle dans controller)
+    Route::prefix('formateur')->middleware('auth:api')->group(function () {
         Route::get('/dashboard/stats', [App\Http\Controllers\FormateurController::class, 'getDashboardStats']);
         Route::get('/stagiaires', [App\Http\Controllers\FormateurController::class, 'getStagiaires']);
         Route::get('/stagiaires/inactive', [App\Http\Controllers\FormateurController::class, 'getInactiveStagiaires']);

@@ -12,10 +12,10 @@ class IsFormateur
 {
     public function handle(Request $request, Closure $next)
     {
-        if (Auth::check() && Auth::user()->role === 'formateur' || Auth::user()->role === 'formatrice') {
+        if (Auth::check() && (Auth::user()->role === 'formateur' || Auth::user()->role === 'formatrice')) {
             return $next($request);
         }
 
-        return redirect()->route('dashboard')->with('error', 'Access denied.');
+        return response()->json(['error' => 'Accès refusé - Rôle formateur requis'], 403);
     }
 }

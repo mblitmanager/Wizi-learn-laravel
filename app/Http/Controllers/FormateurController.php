@@ -20,6 +20,13 @@ class FormateurController extends Controller
         try {
             $formateur = $request->user();
             
+            // Vérification du rôle
+            if (!in_array($formateur->role, ['formateur', 'formatrice'])) {
+                return response()->json([
+                    'error' => 'Accès refusé - Rôle formateur requis'
+                ], 403);
+            }
+            
             // Récupérer tous les stagiaires (pour l'instant tous, à filtrer par formateur si liaison existe)
             $stagiaires = Stagiaire::with('user')->get();
             
@@ -41,9 +48,10 @@ class FormateurController extends Controller
                 return $stagiaire->user && !$stagiaire->user->last_login_at;
             })->count();
             
-            // Score moyen des quiz (utiliser DB::table car le modèle n'existe pas)
-            $avgQuizScore = DB::table('quiz_submissions')
-                ->whereIn('stagiaire_id', $stagiaires->pluck('id'))
+            // Score moyen des quiz (via user_id car quiz_participations utilise user_id pas stagiaire_id)
+            $userIds = $stagiaires->pluck('user.id')->filter();
+            $avgQuizScore = DB::table('quiz_participations')
+                ->whereIn('user_id', $userIds)
                 ->avg('score') ?? 0;
             
             // Total heures vidéos (si table video_views existe, sinon 0)
@@ -440,15 +448,15 @@ class FormateurController extends Controller
             $stagiaires = DB::table('stagiaires')
                 ->join('users', 'stagiaires.user_id', '=', 'users.id')
                 ->join('catalogue_stagiaire', 'stagiaires.id', '=', 'catalogue_stagiaire.stagiaire_id')
-                ->leftJoin('quiz_submissions', 'stagiaires.id', '=', 'quiz_submissions.stagiaire_id')
+                ->leftJoin('quiz_participations', 'users.id', '=', 'quiz_participations.user_id')
                 ->where('catalogue_stagiaire.catalogue_formation_id', $formationId)
                 ->select(
                     'stagiaires.id',
                     'stagiaires.prenom',
                     'users.name as nom',
                     'users.email',
-                    DB::raw('COALESCE(SUM(quiz_submissions.score), 0) as total_points'),
-                    DB::raw('COUNT(quiz_submissions.id) as total_quiz')
+                    DB::raw('COALESCE(SUM(quiz_participations.score), 0) as total_points'),
+                    DB::raw('COUNT(quiz_participations.id) as total_quiz')
                 )
                 ->groupBy('stagiaires.id', 'stagiaires.prenom', 'users.name', 'users.email')
                 ->orderBy('total_points', 'desc')
@@ -474,13 +482,14 @@ class FormateurController extends Controller
         try {
             // Récupérer tous les stagiaires avec leurs points totaux
             $stagiaires = Stagiaire::with(['user'])
-                ->leftJoin('quiz_submissions', 'stagiaires.id', '=', 'quiz_submissions.stagiaire_id')
+                ->join('users', 'stagiaires.user_id', '=', 'users.id')
+                ->leftJoin('quiz_participations', 'users.id', '=', 'quiz_participations.user_id')
                 ->select(
                     'stagiaires.id',
                     'stagiaires.prenom',
-                    DB::raw('COALESCE(SUM(quiz_submissions.score), 0) as total_points'),
-                    DB::raw('COUNT(quiz_submissions.id) as total_quiz'),
-                    DB::raw('AVG(quiz_submissions.score) as avg_score')
+                    DB::raw('COALESCE(SUM(quiz_participations.score), 0) as total_points'),
+                    DB::raw('COUNT(quiz_participations.id) as total_quiz'),
+                    DB::raw('AVG(quiz_participations.score) as avg_score')
                 )
                 ->groupBy('stagiaires.id', 'stagiaires.prenom')
                 ->orderBy('total_points', 'desc')
