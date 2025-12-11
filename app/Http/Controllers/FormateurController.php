@@ -36,13 +36,14 @@ class FormateurController extends Controller
             // Stagiaires inactifs (pas d'activité depuis 7+ jours)
             $inactiveCount = $totalStagiaires - $activeStagiaires;
             
-            // Stagiaires jamais connectés
+            // Stagiaires jamais connectés (vérification null-safe)
             $neverConnected = $stagiaires->filter(function($stagiaire) {
-                return !$stagiaire->user->last_login_at;
+                return $stagiaire->user && !$stagiaire->user->last_login_at;
             })->count();
             
-            // Score moyen des quiz
-            $avgQuizScore = QuizSubmission::whereIn('stagiaire_id', $stagiaires->pluck('id'))
+            // Score moyen des quiz (utiliser DB::table car le modèle n'existe pas)
+            $avgQuizScore = DB::table('quiz_submissions')
+                ->whereIn('stagiaire_id', $stagiaires->pluck('id'))
                 ->avg('score') ?? 0;
             
             // Total heures vidéos (si table video_views existe, sinon 0)
