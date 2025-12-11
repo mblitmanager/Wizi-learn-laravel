@@ -63,8 +63,8 @@ class FormateurController extends Controller
                 $totalVideoHours = round($totalVideoSeconds / 3600, 1);
             }
             
-            // Stats par formation
-            $formations = DB::table('catalogue_formations')
+            // Stats par formation (avec pagination)
+            $formationsQuery = DB::table('catalogue_formations')
                 ->leftJoin('catalogue_stagiaire', 'catalogue_formations.id', '=', 'catalogue_stagiaire.catalogue_formation_id')
                 ->leftJoin('stagiaires', 'catalogue_stagiaire.stagiaire_id', '=', 'stagiaires.id')
                 ->leftJoin('users', 'stagiaires.user_id', '=', 'users.id')
@@ -77,21 +77,23 @@ class FormateurController extends Controller
                     DB::raw('COALESCE(AVG(quiz_participations.score), 0) as score_moyen')
                 )
                 ->groupBy('catalogue_formations.id', 'catalogue_formations.nom')
-                ->get()
-                ->map(function($formation) {
-                    return [
-                        'id' => $formation->id,
-                        'nom' => $formation->nom,
-                        'total_stagiaires' => (int) $formation->total_stagiaires,
-                        'stagiaires_actifs' => (int) $formation->stagiaires_actifs,
-                        'score_moyen' => round($formation->score_moyen, 1)
-                    ];
-                });
+                ->orderBy('total_stagiaires', 'desc');
+            
+            $formationsPerPage = $request->input('formations_per_page', 10);
+            $formationsPaginated = $formationsQuery->paginate($formationsPerPage, ['*'], 'formations_page');
+            
+            $formations = [
+                'data' => $formationsPaginated->items(),
+                'current_page' => $formationsPaginated->currentPage(),
+                'last_page' => $formationsPaginated->lastPage(),
+                'per_page' => $formationsPaginated->perPage(),
+                'total' => $formationsPaginated->total(),
+            ];
 
-            // Stats par formateur (si table formateurs existe)
-            $statsFormateurs = [];
+            // Stats par formateur (avec pagination si table existe)
+            $statsFormateurs = ['data' => [], 'current_page' => 1, 'last_page' => 1, 'per_page' => 10, 'total' => 0];
             if (DB::getSchemaBuilder()->hasTable('formateurs')) {
-                $statsFormateurs = DB::table('formateurs')
+                $formateursQuery = DB::table('formateurs')
                     ->join('users', 'formateurs.user_id', '=', 'users.id')
                     ->leftJoin('formateur_stagiaire', 'formateurs.id', '=', 'formateur_stagiaire.formateur_id')
                     ->leftJoin('stagiaires', 'formateur_stagiaire.stagiaire_id', '=', 'stagiaires.id')
@@ -102,15 +104,18 @@ class FormateurController extends Controller
                         DB::raw('COUNT(DISTINCT stagiaires.id) as total_stagiaires')
                     )
                     ->groupBy('formateurs.id', 'formateurs.prenom', 'users.name')
-                    ->get()
-                    ->map(function($formateur) {
-                        return [
-                            'id' => $formateur->id,
-                            'prenom' => $formateur->prenom,
-                            'nom' => $formateur->nom,
-                            'total_stagiaires' => (int) $formateur->total_stagiaires
-                        ];
-                    });
+                    ->orderBy('total_stagiaires', 'desc');
+                
+                $formateursPerPage = $request->input('formateurs_per_page', 10);
+                $formateursPaginated = $formateursQuery->paginate($formateursPerPage, ['*'], 'formateurs_page');
+                
+                $statsFormateurs = [
+                    'data' => $formateursPaginated->items(),
+                    'current_page' => $formateursPaginated->currentPage(),
+                    'last_page' => $formateursPaginated->lastPage(),
+                    'per_page' => $formateursPaginated->perPage(),
+                    'total' => $formateursPaginated->total(),
+                ];
             }
             
             return response()->json([
