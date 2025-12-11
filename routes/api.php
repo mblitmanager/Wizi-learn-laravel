@@ -54,6 +54,7 @@ Route::middleware(['auth:api', 'detectClient'])->group(function () {
     Route::prefix('formateur')->middleware('auth:api')->group(function () {
         Route::get('/dashboard/stats', [App\Http\Controllers\FormateurController::class, 'getDashboardStats']);
         Route::get('/stagiaires', [App\Http\Controllers\FormateurController::class, 'getStagiaires']);
+        Route::get('/stagiaires/online', [App\Http\Controllers\FormateurController::class, 'getOnlineStagiaires']);
         Route::get('/stagiaires/inactive', [App\Http\Controllers\FormateurController::class, 'getInactiveStagiaires']);
         Route::get('/stagiaires/never-connected', [App\Http\Controllers\FormateurController::class, 'getNeverConnected']);
         Route::get('/stagiaire/{id}/stats', [App\Http\Controllers\FormateurController::class, 'getStagiaireStats']);

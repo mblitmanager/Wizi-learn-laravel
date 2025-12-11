@@ -143,6 +143,54 @@ class FormateurController extends Controller
     }
 
     /**
+     * Récupère la liste des stagiaires actuellement en ligne
+     */
+    public function getOnlineStagiaires(Request $request)
+    {
+        try {
+            $formateur = $request->user();
+            
+            // Vérification du rôle
+            if (!in_array($formateur->role, ['formateur', 'formatrice'])) {
+                return response()->json([
+                    'error' => 'Accès refusé - Rôle formateur requis'
+                ], 403);
+            }
+            
+            // Récupérer les stagiaires en ligne (is_online = 1)
+            $onlineStagiaires = Stagiaire::with(['user', 'catalogue_formations'])
+                ->whereHas('user', function($query) {
+                    $query->where('is_online', 1);
+                })
+                ->get()
+                ->map(function($stagiaire) {
+                    $formations = $stagiaire->catalogue_formations->pluck('titre')->toArray();
+                    return [
+                        'id' => $stagiaire->id,
+                        'prenom' => $stagiaire->prenom,
+                        'nom' => $stagiaire->user->name ?? '',
+                        'email' => $stagiaire->user->email ?? '',
+                        'avatar' => $stagiaire->user->avatar ?? null,
+                        'last_activity_at' => $stagiaire->user->last_activity_at,
+                        'formations' => $formations,
+                    ];
+                });
+
+            return response()->json([
+                'stagiaires' => $onlineStagiaires,
+                'total' => $onlineStagiaires->count(),
+            ], 200);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur getOnlineStagiaires: ' . $e->getMessage());
+            return response()->json([
+                'error' => 'Erreur lors de la récupération des stagiaires en ligne',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Récupère la liste des stagiaires du formateur
      */
     public function getStagiaires(Request $request)
