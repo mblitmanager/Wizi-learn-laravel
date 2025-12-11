@@ -27,7 +27,7 @@ use App\Http\Controllers\Commercial\CommercialDashboardController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('stagiaire');
+    return redirect()->route('dashboard');
 });
 
 Route::get('/administrateur', function () {
