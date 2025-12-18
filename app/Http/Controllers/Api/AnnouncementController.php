@@ -123,15 +123,12 @@ class AnnouncementController extends Controller
             $recipients = $this->getScopedStagiaireUsers($user);
         } elseif ($targetAudience === 'specific_users') {
              // ... same logic as before ...
-             $requestedIds = $request->recipient_ids;
-             if ($user->role === 'admin') {
-                 $recipients = User::whereIn('id', $requestedIds)->whereNotNull('fcm_token')->get();
-            } else {
-                 $allowedUsers = $this->getScopedStagiaireUsers($user);
-                 $allowedIds = $allowedUsers->pluck('id')->toArray();
-                 $validIds = array_intersect($requestedIds, $allowedIds);
-                 $recipients = User::whereIn('id', $validIds)->whereNotNull('fcm_token')->get();
-            }
+             // We can use the filteredIds we just saved
+             if (empty($filteredIds)) {
+                 $recipients = collect();
+             } else {
+                 $recipients = User::whereIn('id', $filteredIds)->whereNotNull('fcm_token')->get();
+             }
         }
 
         // --- DISPATCH JOBS ---
@@ -149,6 +146,29 @@ class AnnouncementController extends Controller
             'announcement' => $announcement,
             'recipients_count' => $recipients->count()
         ], 201);
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     * Cancels scheduled announcements or deletes history.
+     */
+    public function destroy($id)
+    {
+        $user = Auth::user();
+        $announcement = Announcement::find($id);
+
+        if (!$announcement) {
+            return response()->json(['error' => 'Announcement not found.'], 404);
+        }
+
+        // Authorization: Creator or Admin
+        if ($announcement->created_by !== $user->id && $user->role !== 'admin') {
+            return response()->json(['error' => 'Unauthorized.'], 403);
+        }
+
+        $announcement->delete();
+
+        return response()->json(['message' => 'Announcement deleted successfully.']);
     }
 
     /**
