@@ -65,7 +65,6 @@ class AnnouncementController extends Controller
         }
 
         // --- FETCH RECIPIENTS (Only validation needed here if scheduled, real fetch can happen later or now) ---
-        // For 'specific_users', we should validate IDs now regardless of schedule.
         if ($targetAudience === 'specific_users') {
              // ... scoped validation logic ...
               $allowedUsers = $this->getScopedStagiaireUsers($user);
@@ -73,11 +72,13 @@ class AnnouncementController extends Controller
                if ($user->role !== 'admin') {
                    $allowedIds = $allowedUsers->pluck('id')->toArray();
                    $validIds = array_intersect($requestedIds, $allowedIds);
-                   // Update request recipient_ids to only contain valid ones? Or fail?
-                   // Let's silently filter for safety or fail if strict. 
-                   // Current logic: we use validIds later.
-                   // For now, let's keep the recipients logic below but Wrap it.
+                   // Reset validIds to be array of integers
+                   $filteredIds = array_values($validIds);
+               } else {
+                   $filteredIds = $requestedIds;
                }
+        } else {
+            $filteredIds = null;
         }
 
         // --- CREATE ANNOUNCEMENT ---
@@ -88,24 +89,11 @@ class AnnouncementController extends Controller
             'title' => $request->title,
             'message' => $request->message,
             'target_audience' => $targetAudience,
+            'recipient_ids' => $filteredIds,
             'created_by' => $user->id,
             'status' => $status, 
             'sent_at' => $sentAt,
             'scheduled_at' => $scheduledAt,
-            // If specific users, we might need to store them if we process later!
-            // Wait, if we schedule, we need to know WHO to send to later.
-            // If target_audience is 'specific_users', we MUST store the relation.
-            // Announcement currently has no relation for recipients.
-            // We should ideally create an `announcement_recipients` table or store JSON.
-            // For now, let's store recipient_ids in a column `data` or similar if we want to support specific users scheduling.
-            // Or, we can just fetch recipients at runtime for dynamic groups (all/stagiaires), 
-            // BUT for 'specific_users', we LOSE the selection if we don't save it.
-            // I need to add a `recipients` column or table.
-            
-            // LET'S QUICKLY ADD `recipients` JSON column to announcements via migration?
-            // OR reuse `message` field? No.
-            // For this iteration, let's assuming scheduling specific users is TRICKY without a new column.
-            // I will add a migration for `recipient_ids` json column.
         ]);
         
         // If scheduled, stop here (after handling recipient storage - see next step)

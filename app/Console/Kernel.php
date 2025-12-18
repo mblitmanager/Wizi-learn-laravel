@@ -15,5 +15,8 @@ class Kernel extends ConsoleKernel
     {
         // Exécuter la commande unique pour rappels programmés (formations & inactivité) chaque jour à 8h
         $schedule->command('notify:scheduled')->dailyAt('08:00');
+
+        // Process scheduled announcements every minute
+        $schedule->command('announcements:process')->everyMinute();
     }
 }
