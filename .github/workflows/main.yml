@@ -71,6 +71,7 @@ jobs:
             echo "➤ Fixing Laravel storage permissions..."
             sudo chown -R www-data:www-data storage bootstrap/cache
             sudo chmod -R 775 storage bootstrap/cache
+            sudo chown -R www-data:www-data ./*
             echo "✓ Permissions fixed"
 
 
