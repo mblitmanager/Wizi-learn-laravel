@@ -12,7 +12,7 @@ class Announcement extends Model
     protected $fillable = [
         'title',
         'message',
-        'target_audience',
+        'target_audience', // Values: 'all', 'stagiaires', 'formateurs', 'autres', 'specific_users'
         'scheduled_at',
         'sent_at',
         'status',

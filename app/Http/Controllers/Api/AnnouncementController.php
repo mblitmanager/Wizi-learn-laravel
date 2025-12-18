@@ -5,10 +5,14 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Announcement;
 use App\Models\User;
+use App\Models\Formateur;
+use App\Models\Commercial;
+use App\Models\Stagiaire;
 use App\Services\NotificationService;
 use App\Jobs\SendFcmNotificationJob;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class AnnouncementController extends Controller
 {
@@ -21,11 +25,17 @@ class AnnouncementController extends Controller
 
     public function index()
     {
-        $announcements = Announcement::with('creator')
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+        $user = Auth::user();
         
-        return response()->json($announcements);
+        // Users see announcements created by them
+        // Or if Admin, see all? For now, let's show history of what THEY sent.
+        $query = Announcement::with('creator')->orderBy('created_at', 'desc');
+
+        if ($user->role !== 'admin') {
+           $query->where('created_by', $user->id);
+        }
+
+        return response()->json($query->paginate(10));
     }
 
     public function store(Request $request)
@@ -33,33 +43,79 @@ class AnnouncementController extends Controller
         $request->validate([
             'title' => 'required|string',
             'message' => 'required|string',
-            'target_audience' => 'required|in:all,creators,subscribers',
+            'target_audience' => 'required|in:all,stagiaires,formateurs,autres,specific_users',
+            'recipient_ids' => 'nullable|array|required_if:target_audience,specific_users',
+            'recipient_ids.*' => 'integer|exists:users,id',
         ]);
 
+        $user = Auth::user();
+        $targetAudience = $request->target_audience;
+
+        // --- AUTHORIZATION & SCOPING ---
+        if ($user->role === 'formateur' || $user->role === 'formatrice') {
+            if (!in_array($targetAudience, ['stagiaires', 'specific_users'])) {
+                return response()->json(['error' => 'Formateurs can only send to Stagiaires or Specific Users.'], 403);
+            }
+        } elseif ($user->role === 'commercial') {
+             if (!in_array($targetAudience, ['stagiaires', 'specific_users'])) {
+                return response()->json(['error' => 'Commercials can only send to Stagiaires or Specific Users.'], 403);
+            }
+        }
+
+        // --- FETCH RECIPIENTS ---
+        $recipients = collect();
+
+        if ($targetAudience === 'all') {
+            if ($user->role === 'admin') {
+                $recipients = User::whereNotNull('fcm_token')->get();
+            } else {
+                 return response()->json(['error' => 'Only Admin can send to All.'], 403);
+            }
+        } elseif ($targetAudience === 'formateurs') {
+             if ($user->role === 'admin') {
+                $recipients = User::whereIn('role', ['formateur', 'formatrice'])->whereNotNull('fcm_token')->get();
+             } else {
+                 return response()->json(['error' => 'Only Admin can send to Formateurs group.'], 403);
+             }
+        } elseif ($targetAudience === 'autres') {
+             // Define 'autres' logic, maybe roles not in [admin, formateur, stagiaire]? 
+             // or just a placeholder for now. Let's assume 'commercial' + 'admin' for now?
+             // Or maybe literally 'other roles'.
+             if ($user->role === 'admin') {
+                $recipients = User::whereIn('role', ['commercial', 'admin'])->whereNotNull('fcm_token')->get();
+             }
+        } elseif ($targetAudience === 'stagiaires') {
+            // Apply Scope
+            $recipients = $this->getScopedStagiaireUsers($user);
+        } elseif ($targetAudience === 'specific_users') {
+            // Check if these specific users are allowed for this sender
+            $allowedUsers = $this->getScopedStagiaireUsers($user);
+            $requestedIds = $request->recipient_ids;
+            
+            if ($user->role === 'admin') {
+                 $recipients = User::whereIn('id', $requestedIds)->whereNotNull('fcm_token')->get();
+            } else {
+                 // Intersect requested IDs with allowed IDs
+                 $allowedIds = $allowedUsers->pluck('id')->toArray();
+                 $validIds = array_intersect($requestedIds, $allowedIds);
+                 $recipients = User::whereIn('id', $validIds)->whereNotNull('fcm_token')->get();
+            }
+        }
+
+        // --- CREATE ANNOUNCEMENT ---
         $announcement = Announcement::create([
             'title' => $request->title,
             'message' => $request->message,
-            'target_audience' => $request->target_audience,
-            'created_by' => Auth::id() ?? 1, // Fallback for testing if not auth
-            'status' => 'sent', // For now immediate send
+            'target_audience' => $targetAudience,
+            'created_by' => $user->id,
+            'status' => 'sent', 
             'sent_at' => now(),
         ]);
 
-        // Send Notifications
-        $query = User::query();
-
-        if ($request->target_audience === 'creators') {
-            $query->whereIn('role', ['formateur', 'formatrice']);
-        } elseif ($request->target_audience === 'subscribers') {
-            $query->where('role', 'stagiaire');
-        }
-        // 'all' doesn't need a filter
-
-        $users = $query->whereNotNull('fcm_token')->get();
-
-        foreach ($users as $user) {
+        // --- DISPATCH JOBS ---
+        foreach ($recipients as $recipient) {
             SendFcmNotificationJob::dispatch(
-                $user,
+                $recipient,
                 $announcement->title,
                 $announcement->message,
                 ['type' => 'announcement', 'announcement_id' => $announcement->id]
@@ -69,7 +125,63 @@ class AnnouncementController extends Controller
         return response()->json([
             'message' => 'Announcement created and sending started.',
             'announcement' => $announcement,
-            'recipients_count' => $users->count()
+            'recipients_count' => $recipients->count()
         ], 201);
+    }
+
+    /**
+     * Helper to get allowed stagiaire USERS for the current user.
+     * Returns a Collection of User models (with FcmToken whereNotNull checked later usually, but here we return all valid users).
+     */
+    private function getScopedStagiaireUsers($sender)
+    {
+        if ($sender->role === 'admin') {
+            return User::where('role', 'stagiaire')->get();
+        }
+
+        if ($sender->role === 'formateur' || $sender->role === 'formatrice') {
+            $formateur = Formateur::where('user_id', $sender->id)->first();
+            if (!$formateur) return collect();
+
+            return User::whereHas('stagiaire', function($q) use ($formateur) {
+                $q->whereHas('formateurs', function($formateurQ) use ($formateur) {
+                    $formateurQ->where('formateurs.id', $formateur->id);
+                });
+            })->get();
+        }
+
+        if ($sender->role === 'commercial') {
+            $commercial = Commercial::where('user_id', $sender->id)->first();
+            if (!$commercial) return collect();
+             
+             return User::whereHas('stagiaire', function($q) use ($commercial) {
+                // Assuming relation name is 'commercials' in Stagiaire model as verified in Model file
+                $q->whereHas('commercials', function($commQ) use ($commercial) {
+                    $commQ->where('commercials.id', $commercial->id);
+                });
+            })->get();
+        }
+
+        return collect();
+    }
+
+    /**
+     * Endpoint to get potential recipients for the frontend selector.
+     */
+    public function getRecipients()
+    {
+        $user = Auth::user();
+        $recipients = collect();
+
+        if ($user->role === 'admin') {
+            $recipients = User::select('id', 'name', 'email', 'role')->get();
+        } else {
+            // Formateur / Commercial -> Only their stagiaires
+            $recipients = $this->getScopedStagiaireUsers($user)->map(function($u) {
+                return $u->only(['id', 'name', 'email', 'role']);
+            });
+        }
+
+        return response()->json($recipients);
     }
 }

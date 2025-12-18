@@ -344,5 +344,6 @@ Route::middleware(['auth:api', 'detectClient', 'role:formateur'])->group(functio
     Route::get('/notification-history', [\App\Http\Controllers\Api\NotificationHistoryController::class, 'index']);
 
     // Announcements
+    Route::get('announcements/recipients', [\App\Http\Controllers\Api\AnnouncementController::class, 'getRecipients']);
     Route::apiResource('announcements', \App\Http\Controllers\Api\AnnouncementController::class);
 });
