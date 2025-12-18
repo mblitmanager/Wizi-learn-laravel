@@ -13,6 +13,7 @@ class Announcement extends Model
         'title',
         'message',
         'target_audience', // Values: 'all', 'stagiaires', 'formateurs', 'autres', 'specific_users'
+        'recipient_ids',
         'scheduled_at',
         'sent_at',
         'status',
@@ -22,6 +23,7 @@ class Announcement extends Model
     protected $casts = [
         'scheduled_at' => 'datetime',
         'sent_at' => 'datetime',
+        'recipient_ids' => 'array',
     ];
 
     public function creator()
