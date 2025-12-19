@@ -170,6 +170,7 @@ Route::middleware(['auth:api', 'detectClient'])->group(function () {
 
     // Achievements
     Route::get('/stagiaire/achievements', [StagiaireAchievementController::class, 'getAchievements']);
+    Route::get('/stagiaire/achievements/all', [StagiaireAchievementController::class, 'getAllAchievements']);
     Route::post('/stagiaire/achievements/check', [StagiaireAchievementController::class, 'checkAchievements']);
 
     // Contacts

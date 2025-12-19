@@ -59,4 +59,20 @@ class AchievementController extends Controller
             return response()->json(['error' => 'Unauthorized'], 401);
         }
     }
+
+    // GET /api/stagiaire/achievements/all
+    public function getAllAchievements()
+    {
+        try {
+            $achievements = \App\Models\Achievement::with('quiz')->get()->map(function ($achievement) {
+                return [
+                    ...$achievement->toArray(),
+                    'quiz_title' => $achievement->quiz ? $achievement->quiz->titre : null,
+                ];
+            });
+            return response()->json(['achievements' => $achievements]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
 }
