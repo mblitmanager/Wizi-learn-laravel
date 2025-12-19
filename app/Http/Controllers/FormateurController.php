@@ -485,10 +485,12 @@ class FormateurController extends Controller
 
             // Logger la notification
             DB::table('notification_history')->insert([
-                'formateur_id' => $request->user()->id,
+                'type' => 'push',
+                'subject' => $title,
+                'message' => $body,
                 'recipient_count' => count($recipientIds),
-                'title' => $title,
-                'body' => $body,
+                'status' => 'sent',
+                'created_by' => $request->user()->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -563,10 +565,13 @@ class FormateurController extends Controller
             }
 
             // Logger l'envoi
-            DB::table('email_history')->insert([
-                'formateur_id' => $request->user()->id,
-                'recipient_count' => count($recipientIds),
+            DB::table('notification_history')->insert([
+                'type' => 'email',
                 'subject' => $subject,
+                'message' => $message,
+                'recipient_count' => count($recipientIds),
+                'status' => 'sent',
+                'created_by' => $request->user()->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
