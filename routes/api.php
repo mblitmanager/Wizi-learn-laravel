@@ -58,6 +58,7 @@ Route::middleware(['auth:api', 'detectClient'])->group(function () {
         Route::post('/stagiaires/disconnect', [App\Http\Controllers\FormateurController::class, 'disconnectStagiaires']);
         Route::get('/stagiaires/inactive', [App\Http\Controllers\FormateurController::class, 'getInactiveStagiaires']);
         Route::get('/stagiaires/never-connected', [App\Http\Controllers\FormateurController::class, 'getNeverConnected']);
+        Route::get('/stagiaires/performance', [App\Http\Controllers\FormateurController::class, 'getStudentsPerformance']);
         Route::get('/stagiaire/{id}/stats', [App\Http\Controllers\FormateurController::class, 'getStagiaireStats']);
         
         // Communications

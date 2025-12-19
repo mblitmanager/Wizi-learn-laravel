@@ -129,8 +129,32 @@ class FormateurController extends Controller
                 ];
             }
             
+            // Total formations assignées
+            $totalFormations = DB::table('catalogue_formations')
+                ->join('formateur_catalogue_formation', 'catalogue_formations.id', '=', 'formateur_catalogue_formation.catalogue_formation_id')
+                ->where('formateur_catalogue_formation.formateur_id', $formateurId)
+                ->count();
+            
+            if ($totalFormations == 0) {
+                // Fallback: check if there's a simpler assignment or if they are assigned directly to stagiaires
+                $totalFormations = DB::table('catalogue_formations')
+                    ->join('stagiaire_catalogue_formations', 'catalogue_formations.id', '=', 'stagiaire_catalogue_formations.catalogue_formation_id')
+                    ->join('formateur_stagiaire', 'stagiaire_catalogue_formations.stagiaire_id', '=', 'formateur_stagiaire.stagiaire_id')
+                    ->where('formateur_stagiaire.formateur_id', $formateurId)
+                    ->distinct('catalogue_formations.id')
+                    ->count('catalogue_formations.id');
+            }
+
+            // Nombre total de quiz terminés par ses stagiaires
+            $totalQuizzesTaken = DB::table('quiz_participations')
+                ->whereIn('user_id', $userIds)
+                ->where('status', 'completed')
+                ->count();
+            
             return response()->json([
                 'total_stagiaires' => $totalStagiaires,
+                'total_formations' => $totalFormations,
+                'total_quizzes_taken' => $totalQuizzesTaken,
                 'active_this_week' => $activeStagiaires,
                 'inactive_count' => $inactiveCount,
                 'never_connected' => $neverConnected,
@@ -294,20 +318,35 @@ class FormateurController extends Controller
         try {
             $days = $request->query('days', 7);
             $platform = $request->query('platform'); // web, android, ios
+            $scope = $request->query('scope', 'mine'); // mine or all
             
             $thresholdDate = Carbon::now()->subDays($days);
             
-            $query = Stagiaire::with(['user'])
-                ->whereHas('user', function($q) use ($thresholdDate, $platform) {
-                    $q->where(function($query) use ($thresholdDate) {
-                        $query->whereNull('last_activity_at')
-                              ->orWhere('last_activity_at', '<', $thresholdDate);
+            $query = Stagiaire::with(['user']);
+
+            // Filtre par formateur si scope = mine
+            if ($scope === 'mine') {
+                $user = $request->user();
+                $formateurModel = Formateur::where('user_id', $user->id)->first();
+                $formateurId = $formateurModel ? $formateurModel->id : null;
+                
+                if ($formateurId) {
+                    $query->whereHas('formateurs', function($q) use ($formateurId) {
+                        $q->where('formateurs.id', $formateurId);
                     });
-                    
-                    if ($platform) {
-                        $q->where('last_client', $platform);
-                    }
+                }
+            }
+
+            $query->whereHas('user', function($q) use ($thresholdDate, $platform) {
+                $q->where(function($query) use ($thresholdDate) {
+                    $query->whereNull('last_activity_at')
+                          ->orWhere('last_activity_at', '<', $thresholdDate);
                 });
+                
+                if ($platform) {
+                    $q->where('last_client', $platform);
+                }
+            });
             
             $inactiveStagiaires = $query->get()->map(function($stagiaire) {
                 $daysSinceActivity = null;
@@ -819,6 +858,79 @@ class FormateurController extends Controller
         } catch (\Exception $e) {
             Log::error('Erreur getFormations', ['error' => $e->getMessage()]);
             return response()->json(['error' => 'Erreur récupération formations'], 500);
+        }
+    }
+
+    /**
+     * Récupère la performance détaillée des stagiaires du formateur
+     */
+    public function getStudentsPerformance(Request $request)
+    {
+        try {
+            $user = $request->user();
+            
+            // Récupérer l'ID du formateur
+            $formateurModel = Formateur::where('user_id', $user->id)->first();
+            $formateurId = $formateurModel ? $formateurModel->id : null;
+
+            // Base query for stagiaires
+            $query = DB::table('stagiaires')
+                ->join('users', 'stagiaires.user_id', '=', 'users.id')
+                ->select(
+                    'stagiaires.id',
+                    'stagiaires.prenom',
+                    'users.id as user_id',
+                    'users.name as nom',
+                    'users.email',
+                    'users.image'
+                );
+
+            // Filtrer par formateur
+            if ($formateurId) {
+                $query->join('formateur_stagiaire', 'stagiaires.id', '=', 'formateur_stagiaire.stagiaire_id')
+                      ->where('formateur_stagiaire.formateur_id', $formateurId);
+            }
+
+            // Subquery for last quiz date
+            $query->addSelect([
+                'last_quiz_at' => DB::table('quiz_participations')
+                    ->select('completed_at')
+                    ->whereColumn('user_id', 'users.id')
+                    ->whereNotNull('completed_at')
+                    ->latest('completed_at')
+                    ->limit(1),
+                'total_quizzes' => DB::table('quiz_participations')
+                    ->select(DB::raw('count(*)'))
+                    ->whereColumn('user_id', 'users.id')
+                    ->where('status', 'completed'),
+                'total_logins' => DB::table('login_histories')
+                    ->select(DB::raw('count(*)'))
+                    ->whereColumn('user_id', 'users.id')
+            ]);
+
+            $students = $query->get()->map(function($student) {
+                return [
+                    'id' => $student->id,
+                    'name' => "{$student->prenom} {$student->nom}",
+                    'email' => $student->email,
+                    'image' => $student->image,
+                    'last_quiz_at' => $student->last_quiz_at,
+                    'total_quizzes' => (int)$student->total_quizzes,
+                    'total_logins' => (int)$student->total_logins,
+                ];
+            });
+
+            return response()->json([
+                'performance' => $students,
+                'rankings' => [
+                    'most_quizzes' => $students->sortByDesc('total_quizzes')->values()->take(5),
+                    'most_active' => $students->sortByDesc('total_logins')->values()->take(5),
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur getStudentsPerformance: ' . $e->getMessage());
+            return response()->json(['error' => 'Erreur récupération performance'], 500);
         }
     }
 }
