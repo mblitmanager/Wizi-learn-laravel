@@ -1,88 +1,82 @@
 <?php
 
-use App\Http\Controllers\Admin\AdminController;
-use App\Http\Controllers\Api\ParrainageEventApiController;
-use App\Http\Controllers\JWTAuthController;
-use App\Http\Middleware\JwtMiddleware;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\JWTAuthController;
+use App\Http\Controllers\Stagiaire\AchievementController as StagiaireAchievementController;
+use App\Http\Controllers\Api\StagiaireProfileController;
+use App\Http\Controllers\FormateurController;
+use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\AchievementController as AdminAchievementController;
+use App\Http\Controllers\Api\Commercial\CommercialStatisticsController;
+use App\Http\Controllers\Api\UserSettingsController;
 use App\Http\Controllers\Stagiaire\FormationStagiaireController;
-use App\Http\Controllers\Admin\FormateurController;
+use App\Http\Controllers\Stagiaire\FormationController;
 use App\Http\Controllers\Stagiaire\QuizStagiaireController;
+use App\Http\Controllers\QuizController;
 use App\Http\Controllers\Stagiaire\ContactController;
 use App\Http\Controllers\Stagiaire\RankingController;
-use App\Http\Controllers\Stagiaire\ParrainageController;
-use App\Http\Controllers\Stagiaire\PartnerController;
-use App\Http\Controllers\QuizController;
-use App\Http\Controllers\Stagiaire\FormationController;
-use App\Http\Controllers\Stagiaire\ProfileController;
-use App\Http\Controllers\Admin\ReponseController;
 use App\Http\Controllers\Stagiaire\CatalogueFormationController;
-use App\Http\Controllers\Stagiaire\MediaController;
-use App\Http\Controllers\BroadcastingController;
 use App\Http\Controllers\Stagiaire\StagiaireController;
 use App\Http\Controllers\Stagiaire\InscriptionCatalogueFormationController;
-use App\Events\TestNotification;
-use App\Http\Controllers\DailyNotificationController;
-use App\Http\Controllers\Api\DailyFormationNotificationController;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Broadcast;
-use App\Http\Controllers\Admin\AchievementController as AdminAchievementController;
+use App\Http\Controllers\Api\Admin\UserClientStatsController;
 
+// Authentication routes
 Route::post('login', [JWTAuthController::class, 'login']);
 Route::post('refresh', [JWTAuthController::class, 'refresh']);
-Route::prefix('parrainage')->group(function () {
-    Route::get('/get-data/{token}', [ParrainageController::class, 'getParrainData']);
-    Route::post('/register-filleul', [ParrainageController::class, 'registerFilleul']);
-});
-Route::get('formationParrainage', [CatalogueFormationController::class, 'getAllCatalogueFormations']);
-
-// Demande de réinitialisation
 Route::post('/forgot-password', [JWTAuthController::class, 'sendResetLink']);
 Route::post('/reset-password', [JWTAuthController::class, 'resetPassword']);
-// Cette route est déjà en dehors du groupe Route::middleware(['auth:api']), donc elle est publique.
+
+// Authenticated routes
 Route::middleware(['auth:api', 'detectClient'])->group(function () {
-    // Succès et récompenses stagiaire
-    Route::get('/stagiaire/achievements', [App\Http\Controllers\Stagiaire\AchievementController::class, 'getAchievements']);
-    Route::post('/stagiaire/achievements/check', [App\Http\Controllers\Stagiaire\AchievementController::class, 'checkAchievements']);
-    
-    // Profil stagiaire
-    Route::get('/stagiaire/profile', [App\Http\Controllers\Api\StagiaireProfileController::class, 'getProfile']);
-    Route::put('/stagiaire/profile', [App\Http\Controllers\Api\StagiaireProfileController::class, 'updateProfile']);
-    Route::patch('/stagiaire/profile', [App\Http\Controllers\Api\StagiaireProfileController::class, 'updateProfile']);
-    
-    // Routes Formateur - Dashboard et gestion stagiaires (vérification rôle dans controller)
+    // Stagiaire routes
+    Route::get('/stagiaire/achievements', [StagiaireAchievementController::class, 'getAchievements']);
+    Route::post('/stagiaire/achievements/check', [StagiaireAchievementController::class, 'checkAchievements']);
+    Route::get('/stagiaire/profile', [StagiaireProfileController::class, 'getProfile']);
+    Route::put('/stagiaire/profile', [StagiaireProfileController::class, 'updateProfile']);
+    Route::patch('/stagiaire/profile', [StagiaireProfileController::class, 'updateProfile']);
+
+    // Formateur routes
     Route::prefix('formateur')->middleware('auth:api')->group(function () {
-        Route::get('/dashboard/stats', [App\Http\Controllers\FormateurController::class, 'getDashboardStats']);
-        Route::get('/stagiaires', [App\Http\Controllers\FormateurController::class, 'getStagiaires']);
-        Route::get('/stagiaires/online', [App\Http\Controllers\FormateurController::class, 'getOnlineStagiaires']);
-        Route::post('/stagiaires/disconnect', [App\Http\Controllers\FormateurController::class, 'disconnectStagiaires']);
-        Route::get('/stagiaires/inactive', [App\Http\Controllers\FormateurController::class, 'getInactiveStagiaires']);
-        Route::get('/stagiaires/never-connected', [App\Http\Controllers\FormateurController::class, 'getNeverConnected']);
-        Route::get('/stagiaires/performance', [App\Http\Controllers\FormateurController::class, 'getStudentsPerformance']);
-        Route::get('/stagiaire/{id}/stats', [App\Http\Controllers\FormateurController::class, 'getStagiaireStats']);
-        
-        // Communications
-        Route::post('/send-notification', [App\Http\Controllers\FormateurController::class, 'sendNotification']);
-        Route::post('/send-email', [App\Http\Controllers\FormateurController::class, 'sendEmail']);
-        
-        // Classements
-        Route::get('/classement/formation/{formationId}', [App\Http\Controllers\FormateurController::class, 'getFormationRanking']);
-        Route::get('/classement/mes-stagiaires', [App\Http\Controllers\FormateurController::class, 'getMesStagiairesRanking']);
-        
-        // Vidéos
-        Route::get('/videos', [App\Http\Controllers\FormateurController::class, 'getAllVideos']);
-        Route::get('/video/{id}/stats', [App\Http\Controllers\FormateurController::class, 'getVideoStats']);
-        
-        // Formations
-        Route::get('/formations', [App\Http\Controllers\FormateurController::class, 'getFormations']);
+        Route::get('/dashboard/stats', [FormateurController::class, 'getDashboardStats']);
+        Route::get('/stagiaires', [FormateurController::class, 'getStagiaires']);
+        Route::get('/stagiaires/online', [FormateurController::class, 'getOnlineStagiaires']);
+        Route::post('/stagiaires/disconnect', [FormateurController::class, 'disconnectStagiaires']);
+        Route::get('/stagiaires/inactive', [FormateurController::class, 'getInactiveStagiaires']);
+        Route::get('/stagiaires/never-connected', [FormateurController::class, 'getNeverConnected']);
+        Route::get('/stagiaires/performance', [FormateurController::class, 'getStudentsPerformance']);
+        Route::get('/stagiaire/{id}/stats', [FormateurController::class, 'getStagiaireStats']);
+        Route::post('/send-notification', [FormateurController::class, 'sendNotification']);
+        Route::post('/send-email', [FormateurController::class, 'sendEmail']);
+        Route::get('/classement/formation/{formationId}', [FormateurController::class, 'getFormationRanking']);
+        Route::get('/classement/mes-stagiaires', [FormateurController::class, 'getMesStagiairesRanking']);
+        Route::get('/videos', [FormateurController::class, 'getAllVideos']);
+        Route::get('/video/{id}/stats', [FormateurController::class, 'getVideoStats']);
+        Route::get('/formations', [FormateurController::class, 'getFormations']);
     });
-    
-    Route::post('logout', [JWTAuthController::class, 'logout']);
-    Route::get('user', [JWTAuthController::class, 'getUser']);
-    Route::get('me', [JWTAuthController::class, 'getMe']);
-    // User settings endpoints
-    Route::get('/user/settings', [App\Http\Controllers\Api\UserSettingsController::class, 'show']);
-    Route::put('/user/settings', [App\Http\Controllers\Api\UserSettingsController::class, 'update']);
+
+    // Commercial routes
+    Route::middleware(['role:commercial'])->group(function () {
+        Route::get('/commercial/stats/dashboard', [CommercialStatisticsController::class, 'dashboard']);
+    });
+
+    // Admin routes
+    Route::middleware(['role:admin'])->group(function () {
+        Route::get('/admin/stats/dashboard', [AdminController::class, 'dashboard']);
+        Route::get('/admin/stats/quiz', [AdminController::class, 'quizStats']);
+        Route::get('/admin/stats/formation', [AdminController::class, 'formationStats']);
+        Route::get('/admin/stats/online-users', [AdminController::class, 'onlineUsers']);
+        Route::get('/admin/stats/affluence', [AdminController::class, 'affluence']);
+        Route::post('/admin/stats/export/pdf', [AdminController::class, 'exportPdf']);
+        Route::post('/admin/stats/export/excel', [AdminController::class, 'exportExcel']);
+        Route::get('/admin/achievements', [AdminAchievementController::class, 'apiIndex']);
+        Route::get('/admin/user-client-stats', [UserClientStatsController::class, 'index']);
+    });
+
+    // User settings (optional, kept for completeness)
+    Route::get('/user/settings', [UserSettingsController::class, 'show']);
+    Route::put('/user/settings', [UserSettingsController::class, 'update']);
+
+    // Formation & quiz routes (core to stagiaire/formateur)
     Route::get('/formation/categories/', [FormationStagiaireController::class, 'getCategories']);
     Route::get('/formations/categories/{categoryId}', [FormationStagiaireController::class, 'getFormationsByCategory']);
     Route::get('/stagiaire/formations', [FormationStagiaireController::class, 'getFormations']);
@@ -92,265 +86,41 @@ Route::middleware(['auth:api', 'detectClient'])->group(function () {
     Route::get('/quiz/categories', [QuizController::class, 'getCategories']);
     Route::get('/quiz/{quizId}/questions', [QuizStagiaireController::class, 'getQuestionsByQuizId']);
     Route::get('/stagiaire/quizzes', [QuizStagiaireController::class, 'getStagiaireQuizzes']);
-    // Contacts routes
+
+    // Contact routes (core for stagiaire)
     Route::get('/stagiaire/contacts', [ContactController::class, 'getContacts']);
     Route::get('/stagiaire/contacts/formateurs', [ContactController::class, 'getFormateurs']);
     Route::get('/stagiaire/contacts/commerciaux', [ContactController::class, 'getCommerciaux']);
     Route::get('/stagiaire/contacts/pole-relation', [ContactController::class, 'getPoleRelation']);
     Route::get('/stagiaire/contacts/pole-save', [ContactController::class, 'getPoleSav']);
-    Route::post('/user/photo', [\App\Http\Controllers\Stagiaire\StagiaireController::class, 'updateProfilePhoto']);
+    Route::post('/user/photo', [StagiaireController::class, 'updateProfilePhoto']);
 
-    // Ranking and rewards routes
+    // Ranking & rewards (core)
     Route::get('/stagiaire/ranking/global', [RankingController::class, 'getGlobalRanking']);
     Route::get('/stagiaire/ranking/formation/{formationId}', [RankingController::class, 'getFormationRanking']);
     Route::get('/stagiaire/rewards', [RankingController::class, 'getMyRewards']);
     Route::get('/stagiaire/progress', [RankingController::class, 'getMyProgress']);
-    
-    // New routes for stagiaire details and user points
     Route::get('/stagiaires/{stagiaireId}/details', [RankingController::class, 'getStagiaireDetails']);
     Route::get('/users/me/points', [RankingController::class, 'getUserPoints']);
 
-    // Formation ranking routes
+    // Formation ranking routes (core)
     Route::get('/formations/{formationId}/classement', [App\Http\Controllers\FormationClassementController::class, 'getClassement']);
     Route::get('/stagiaire/formations/{formationId}/classement', [App\Http\Controllers\FormationClassementController::class, 'getMyRanking']);
     Route::get('/formations/classement/summary', [App\Http\Controllers\FormationClassementController::class, 'getFormationsWithTopRanking']);
 
-    // Parrainage routes
-    Route::post('/parrainage/generate-link', [ParrainageController::class, 'generateLink']);
+    // Classements
+    Route::get('/quiz/classement/global', [App\Http\Controllers\Api\QuizController::class, 'getGlobalRanking']);
+    Route::get('/stagiaire/ranking/formation/{id}', [App\Http\Controllers\Api\RankingController::class, 'getFormationRanking']);
 
-    // Routes pour les stagiaires
-    Route::prefix('stagiaire')->group(function () {
-        // Route::get('/formations', [FormationStagiaireController::class, 'getFormations']);
-        Route::get('/show', [ProfileController::class, 'show']);
-        Route::post('/profile/photo', [ProfileController::class, 'uploadAvatar']);
-        Route::get('/partner', [PartnerController::class, 'getMyPartner']);
+    // Parrainage Events
+    Route::get('/parrainage-events', [App\Http\Controllers\Api\ParrainageController::class, 'getEvents']);
+
+    // Logout & User Info
+    Route::post('/logout', [App\Http\Controllers\Api\AuthController::class, 'logout']);
+    Route::get('/user', function (Request $request) {
+        return $request->user();
     });
-    Route::post('/stagiaire/inscription-catalogue-formation', [InscriptionCatalogueFormationController::class, 'inscrire']);
-    // New route for getting responses to a question
-    Route::get('/questions/{questionId}/reponses', [ReponseController::class, 'getReponsesByQuestion']);
-
-    // New route for submitting a quiz
-    Route::post('/quizzes/{quizId}/submit', [QuizStagiaireController::class, 'submitQuiz']);
-
-    // Routes de parrainage
-    Route::prefix('stagiaire/parrainage')->group(function () {
-        Route::get('stats', [ParrainageController::class, 'getStatsParrain']);
-        Route::get('filleuls', [ParrainageController::class, 'getFilleuls']);
-        Route::post('accept', [ParrainageController::class, 'acceptParrainage']);
-        Route::get('rewards', [ParrainageController::class, 'getParrainageRewards']);
-        Route::get('history', [ParrainageController::class, 'getParrainageHistory']);
-    });
-
-    // Routes de gestion des catalogue de formation
-    Route::prefix('catalogueFormations')->group(function () {
-        Route::get('formations', [CatalogueFormationController::class, 'getAllCatalogueFormations']);
-        Route::get('with-formations', [CatalogueFormationController::class, 'getCataloguesWithFormations']);
-        Route::get('stagiaire', [CatalogueFormationController::class, 'getFormationsAndCatalogues']);
-        Route::get('/formations/{id}', [CatalogueFormationController::class, 'getCatalogueFormationById']);
-        Route::get('/formations/{id}/pdf', [CatalogueFormationController::class, 'getCataloguePdf']);
-    });
-
-    Route::prefix('formation')->group(function () {
-        Route::get('listFormation', [FormationController::class, 'getAllFormations']);
-    });
-    // Quiz routes
-    Route::prefix('quiz')->group(function () {
-        // Routes de base
-        Route::get('/categories', [QuizController::class, 'getCategories']);
-        Route::get('/category/{categoryId}', [QuizController::class, 'getQuizzesByCategory']);
-        Route::get('/{quizId}/questions', [QuizStagiaireController::class, 'getQuestionsByQuizId']);
-        Route::post('/{quizId}/submit', [QuizStagiaireController::class, 'submitQuiz']);
-
-        // Routes de participation
-        Route::get('/{quizId}/participation', [QuizController::class, 'getCurrentParticipation']);
-        Route::post('/{quizId}/participation', [QuizController::class, 'startParticipation']);
-        Route::post('/{quizId}/complete', [QuizController::class, 'completeParticipation']);
-
-        // Routes de statistiques
-        Route::get('/history', [QuizController::class, 'getQuizHistory']);
-        Route::get('/stats', [QuizController::class, 'getQuizStats']);
-        Route::get('/{quizId}/statistics', [QuizController::class, 'getQuizStatistics']);
-        Route::get('/classement/global', [QuizController::class, 'getGlobalClassement']);
-        Route::get('/{quizId}/user-participations', [QuizController::class, 'getUserParticipations']);
-
-        // Nouvelles routes pour les statistiques détaillées
-        Route::get('/stats/categories', [QuizController::class, 'getGlobalCategoryStats']);
-        Route::get('/stats/progress', [QuizController::class, 'getProgressStats']);
-        Route::get('/stats/trends', [QuizController::class, 'getQuizTrends']);
-        Route::get('/stats/performance', [QuizController::class, 'getPerformanceStats']);
-        Route::get('/by-formations', [QuizController::class, 'getQuizzesGroupedByFormation']);
-    });
-
-    // Achievements (admin list for mobile display)
-    Route::get('/admin/achievements', [AdminAchievementController::class, 'apiIndex']);
-    // Admin: user client stats (counts per platform)
-    Route::get('/admin/user-client-stats', [\App\Http\Controllers\Api\Admin\UserClientStatsController::class, 'index'])
-        ->middleware(['auth:api', 'is.admin']);
-    // Routes pour les tutoriels et astuce
-    Route::prefix('medias')->group(function () {
-        Route::get('tutoriels', [MediaController::class, 'getTutoriels']);
-        Route::get('astuces', [MediaController::class, 'getAstuces']);
-        Route::get('formations/{formationId}/tutoriels', [MediaController::class, 'getTutorielsByFormation']);
-        Route::get('formations/{formationId}/astuces', [MediaController::class, 'getAstucesByFormation']);
-        Route::get('formations/interactives', [MediaController::class, 'getInteractiveFormations']);
-        Route::post('/{mediaId}/watched', [MediaController::class, 'markAsWatched']);
-        Route::get('/formations-with-status', [MediaController::class, 'getFormationsWithWatchedStatus']);
-        Route::post('/upload-video', [MediaController::class, 'uploadVideo']);
-        Route::get('/server', [MediaController::class, 'listServerVideos']);
-    });
-
-
-    // Questions routes
-    Route::prefix('questions')->group(function () {
-        Route::get('/{questionId}/reponses', [ReponseController::class, 'getReponsesByQuestion']);
-        Route::get('questionById/{id}', [ReponseController::class, 'getQuestionById']);
-    });
-    // Quiz routes
-    Route::get('/quiz/category/{category}', [QuizController::class, 'getQuizzesByCategory']);
-    Route::get('/quiz/{id}', [QuizController::class, 'getQuizById']);
-    Route::post('/quiz/{id}/result', [QuizController::class, 'submitQuizResult']);
-    Route::get('/quiz/{id}/participation', [QuizController::class, 'getCurrentParticipation']);
-    Route::post('/quiz/{id}/complete', [QuizController::class, 'completeParticipation']);
-    // New resume endpoint for quiz participation
-    Route::get('/quiz/{quizId}/participation/resume', [QuizController::class, 'resumeParticipation']);
-    Route::post('/quiz/{quizId}/participation/progress', [QuizController::class, 'saveProgress']);
-    Route::post('/avatar/{id}/update-profile', [FormationStagiaireController::class, 'updateImage']);
-
-    Route::get('/parrainage/stats/{parrain_id}', [ParrainageController::class, 'getStatsParrain']);
-    Route::get('/user-status', [ProfileController::class, 'onlineUsers'])->middleware(['auth:api', 'detectClient']);
-    Route::get('/test-notif', function () {
-        $data = [
-            'title' => 'Nouvelle notification',
-            'message' => 'Une notification vient d’être envoyée !',
-        ];
-
-        event(new TestNotification($data));
-
-        return 'Notification envoyée !';
-    });
-    Route::get('/send-daily-notification', [DailyNotificationController::class, 'send']);
-    Route::middleware(['auth:api', 'detectClient'])->post('/notify-daily-formation', [DailyFormationNotificationController::class, 'notify']);
-
-    Route::post('/contact', [\App\Http\Controllers\Api\ContactController::class, 'sendContactForm']);
-
-    Route::get('/parrainage-events', [ParrainageEventApiController::class, 'index']);
+    Route::get('/me', [App\Http\Controllers\Api\AuthController::class, 'me']);
 });
 
-// // Admin Achievement Management
-// Route::prefix('admin/achievements')->middleware(['auth:api', 'admin'])->group(function () {
-//     Route::get('/', [\App\Http\Controllers\Admin\AdminAchievementController::class, 'index']);
-//     Route::post('/', [\App\Http\Controllers\Admin\AdminAchievementController::class, 'store']);
-//     Route::put('/{id}', [\App\Http\Controllers\Admin\AdminAchievementController::class, 'update']);
-//     Route::delete('/{id}', [\App\Http\Controllers\Admin\AdminAchievementController::class, 'destroy']);
-//     Route::post('/reset', [\App\Http\Controllers\Admin\AdminAchievementController::class, 'resetAchievements']);
-//     Route::get('/statistics', [\App\Http\Controllers\Admin\AdminAchievementController::class, 'statistics']);
-// });
-
-Route::get('/media/stream/{path}', [MediaController::class, 'stream'])
-    ->withoutMiddleware([JwtMiddleware::class])
-    ->middleware('throttle:60,1')
-    ->where('path', '.*');
-
-Route::get('/media/subtitle/{path}', [MediaController::class, 'streamSubtitle'])
-    ->withoutMiddleware([JwtMiddleware::class])
-    ->middleware('throttle:60,1')
-    ->where('path', '.*');
-
-// Routes d'authentification
-Route::post('refresh-token', [App\Http\Controllers\Auth\AuthController::class, 'refresh']);
-
-// Broadcasting Authentication
-Route::post('/broadcasting/auth', [BroadcastingController::class, 'auth'])
-    ->middleware(['auth:api']);
-
-// Routes de parrainage sans connection
-
-// Routes pour les notifications
-Route::middleware(['auth:api', 'detectClient'])->group(function () {
-    Route::get('/notifications', [App\Http\Controllers\Api\NotificationController::class, 'index']);
-    Route::post('/notifications/{id}/read', [App\Http\Controllers\Api\NotificationController::class, 'markAsRead']);
-    Route::post('/notifications/mark-all-read', [App\Http\Controllers\Api\NotificationController::class, 'markAllAsRead']);
-    Route::delete('/notifications/{id}', [App\Http\Controllers\Api\NotificationController::class, 'delete']);
-    Route::get('/notifications/unread-count', [App\Http\Controllers\Api\NotificationController::class, 'getUnreadCount']);
-});
-
-
-// Route pour enregistrer le token FCM
-Route::middleware(['auth:api', 'detectClient'])->post('/fcm-token', [App\Http\Controllers\FcmTokenController::class, 'store']);
-
-// Route pour envoyer une notification (Pusher + FCM)
-Route::middleware(['auth:api', 'detectClient'])->post('/send-notification', [App\Http\Controllers\NotificationAPIController::class, 'send']);
-
-
-Route::post('/pusher/auth', function (Request $request) {
-    return Broadcast::auth($request);
-});
-
-
-Route::get('/test-fcm', function () {
-    $user = \App\Models\User::whereNotNull('fcm_token')->first();
-    return app(\App\Services\NotificationService::class)->sendFcmToUser(
-        $user,
-        'Test FCM',
-        'Ceci est un test FCM via route',
-        ['type' => 'test']
-    ) ? 'OK' : 'Erreur';
-});
-
-// Quick test endpoint to send an arbitrary FCM payload. Provide either 'token' OR 'user_id'.
-// NOTE: This route is public for convenience — protect it or remove in production.
-Route::post('/test-fcm', [App\Http\Controllers\Api\TestFcmController::class, 'send']);
-
-Route::middleware(['auth:api', 'detectClient'])->post('/stagiaire/onboarding-seen', [StagiaireController::class, 'setOnboardingSeen']);
-
-// Rapport d'usage des applications mobiles (Android/iOS)
-Route::middleware(['auth:api', 'detectClient'])->post('/user-app-usage', [\App\Http\Controllers\Api\UserAppUsageController::class, 'report']);
-
-// Commercial Interface API Routes
-Route::middleware(['auth:api', 'detectClient'])->group(function () {
-    // Email API
-    Route::post('/email', [\App\Http\Controllers\Api\EmailController::class, 'send']);
-    
-    // Push Notification API
-    Route::post('/notify', [\App\Http\Controllers\Api\PushNotificationController::class, 'send']);
-    
-    // Statistics API
-    // Statistics routes for Admin, Commercial, and Formateur
-Route::middleware(['auth:api', 'detectClient', 'role:admin'])->group(function () {
-    Route::get('/admin/stats/dashboard', [App\Http\Controllers\Api\Admin\StatisticsController::class, 'dashboard']);
-    Route::get('/admin/stats/quiz', [App\Http\Controllers\Api\Admin\StatisticsController::class, 'quizStats']);
-    Route::get('/admin/stats/formation', [App\Http\Controllers\Api\Admin\StatisticsController::class, 'formationStats']);
-    Route::get('/admin/stats/online-users', [App\Http\Controllers\Api\Admin\StatisticsController::class, 'onlineUsers']);
-    Route::get('/admin/stats/affluence', [App\Http\Controllers\Api\Admin\StatisticsController::class, 'affluence']);
-    Route::post('/admin/stats/export/pdf', [App\Http\Controllers\Api\Admin\StatisticsController::class, 'exportPdf']);
-    Route::post('/admin/stats/export/excel', [App\Http\Controllers\Api\Admin\StatisticsController::class, 'exportExcel']);
-});
-
-Route::middleware(['auth:api', 'detectClient', 'role:commercial'])->group(function () {
-    Route::get('/commercial/stats/dashboard', [App\Http\Controllers\Api\Commercial\CommercialStatisticsController::class, 'dashboard']);
-    // Additional commercial stats endpoints can be added here
-});
-
-Route::middleware(['auth:api', 'detectClient', 'role:formateur'])->group(function () {
-    Route::get('/formateur/stats/dashboard', [App\Http\Controllers\Api\Formateur\FormateurStatisticsController::class, 'dashboard']);
-    // Additional formateur stats endpoints can be added here
-});
-
-    
-    // Online Users API
-    Route::get('/online-users', [\App\Http\Controllers\Api\OnlineUsersController::class, 'index']);
-    
-    
-    // Notification History API
-    Route::get('/notification-history', [\App\Http\Controllers\Api\NotificationHistoryController::class, 'index']);
-
-    // Announcements
-    Route::get('announcements/recipients', [\App\Http\Controllers\Api\AnnouncementController::class, 'getRecipients']);
-    Route::apiResource('announcements', \App\Http\Controllers\Api\AnnouncementController::class);
-
-    // Auto-reminders monitoring
-    Route::get('auto-reminders/stats', [\App\Http\Controllers\Api\AutoReminderController::class, 'getStats']);
-    Route::get('auto-reminders/history', [\App\Http\Controllers\Api\AutoReminderController::class, 'getHistory']);
-    Route::get('auto-reminders/targeted', [\App\Http\Controllers\Api\AutoReminderController::class, 'getTargetedUsers']);
-    Route::post('auto-reminders/run', [\App\Http\Controllers\Api\AutoReminderController::class, 'runManualReminders']);
-});
+?>
