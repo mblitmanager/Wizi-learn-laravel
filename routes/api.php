@@ -346,4 +346,8 @@ Route::middleware(['auth:api', 'detectClient', 'role:formateur'])->group(functio
     // Announcements
     Route::get('announcements/recipients', [\App\Http\Controllers\Api\AnnouncementController::class, 'getRecipients']);
     Route::apiResource('announcements', \App\Http\Controllers\Api\AnnouncementController::class);
+
+    // Auto-reminders monitoring
+    Route::get('auto-reminders/stats', [\App\Http\Controllers\Api\AutoReminderController::class, 'getStats']);
+    Route::get('auto-reminders/history', [\App\Http\Controllers\Api\AutoReminderController::class, 'getHistory']);
 });

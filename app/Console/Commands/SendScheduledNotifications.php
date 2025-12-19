@@ -40,6 +40,7 @@ class SendScheduledNotifications extends Command
         $this->sendFormationReminders();
         $this->sendAppInactivityReminders();
         $this->sendQuizInactivityReminders();
+        $this->sendFirstQuizReminders();
 
         $this->info('Fin envoi notifications programmées.');
         return 0;
@@ -111,7 +112,6 @@ class SendScheduledNotifications extends Command
             })->get();
 
             foreach ($users as $user) {
-                // skip if already notified in deduplication window for this inactivity period
                 $window = $this->deduplicationWindow['inactivity_app'] ?? 7;
                 $already = \App\Models\Notification::where('user_id', $user->id)
                     ->where('type', 'inactivity_app')
@@ -144,11 +144,10 @@ class SendScheduledNotifications extends Command
 
     protected function sendQuizInactivityReminders()
     {
-        $this->info('Traitement: inactivité quiz (3,7,30 jours)');
-        $daysList = [3,7,30];
+        $this->info('Traitement: inactivité quiz (7, 30, 90 jours)');
+        $daysList = [7, 30, 90]; // Updated to match user request: 7, 30, 3 months
 
-        // We'll compute last quiz participation date per user using quiz participations (completed_at or started_at)
-        $users = User::with('appUsages')->get();
+        $users = User::with('stagiaire')->get();
 
         foreach ($users as $user) {
             $lastParticipation = QuizParticipation::where('user_id', $user->id)
@@ -156,22 +155,14 @@ class SendScheduledNotifications extends Command
                 ->orderBy('completed_at', 'desc')
                 ->first();
 
-            $lastQuizAt = $lastParticipation ? Carbon::parse($lastParticipation->completed_at) : null;
+            if (!$lastParticipation) continue; // Skip those who never played (handled by sendFirstQuizReminders)
+
+            $lastQuizAt = Carbon::parse($lastParticipation->completed_at);
 
             foreach ($daysList as $days) {
                 $threshold = Carbon::now()->subDays($days);
-                $shouldNotify = false;
-
-                if ($lastQuizAt) {
-                    if ($lastQuizAt->lte($threshold)) {
-                        $shouldNotify = true;
-                    }
-                } else {
-                    // never played any quiz -> consider for notification at all thresholds
-                    $shouldNotify = true;
-                }
-
-                if ($shouldNotify) {
+                
+                if ($lastQuizAt->lte($threshold)) {
                     $window = $this->deduplicationWindow['inactivity_quiz'] ?? 7;
                     $already = \App\Models\Notification::where('user_id', $user->id)
                         ->where('type', 'inactivity_quiz')
@@ -181,9 +172,7 @@ class SendScheduledNotifications extends Command
                     if ($already) continue;
 
                     $title = 'On vous attend sur les quiz !';
-                    $message = $lastQuizAt
-                        ? "Cela fait {$days} jours depuis votre dernier quiz. Revisitez vos formations et testez vos connaissances !"
-                        : "Vous n'avez pas encore joué à un quiz. Lancez-en un pour tester vos connaissances !";
+                    $message = "Cela fait {$days} jours depuis votre dernier quiz. Revisitez vos formations et testez vos connaissances !";
 
                     if ($user->fcm_token) {
                         $this->notificationService->sendFcmToUser($user, $title, $message, [
@@ -201,6 +190,49 @@ class SendScheduledNotifications extends Command
                     ]);
                     $this->info("Notifié user {$user->email} pour inactivité quiz {$days} jours");
                 }
+            }
+        }
+    }
+
+    protected function sendFirstQuizReminders()
+    {
+        $this->info('Traitement: premier quiz non joué (1, 3, 7 jours après connexion)');
+        $daysList = [1, 3, 7];
+
+        foreach ($daysList as $days) {
+            $thresholdStart = Carbon::now()->subDays($days)->startOfDay();
+            $thresholdEnd = Carbon::now()->subDays($days)->endOfDay();
+
+            // Users who logged in for the first time exactly $days ago AND never played a quiz
+            $users = User::whereBetween('created_at', [$thresholdStart, $thresholdEnd])
+                ->whereDoesntHave('quizParticipations')
+                ->get();
+
+            foreach ($users as $user) {
+                $already = \App\Models\Notification::where('user_id', $user->id)
+                    ->where('type', 'first_quiz_reminder')
+                    ->where('data->days', (string)$days)
+                    ->exists();
+                if ($already) continue;
+
+                $title = 'Lancez votre premier quiz !';
+                $message = "Vous êtes inscrit depuis {$days} jour(s). N'attendez plus pour tester vos connaissances avec votre premier quiz !";
+
+                if ($user->fcm_token) {
+                    $this->notificationService->sendFcmToUser($user, $title, $message, [
+                        'type' => 'first_quiz_reminder',
+                        'days' => (string)$days,
+                    ]);
+                }
+
+                \App\Models\Notification::create([
+                    'user_id' => $user->id,
+                    'type' => 'first_quiz_reminder',
+                    'message' => $message,
+                    'data' => ['days' => $days],
+                    'read' => false,
+                ]);
+                $this->info("Notifié user {$user->email} pour premier quiz non joué ({$days} jours)");
             }
         }
     }
