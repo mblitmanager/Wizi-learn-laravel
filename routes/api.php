@@ -350,4 +350,6 @@ Route::middleware(['auth:api', 'detectClient', 'role:formateur'])->group(functio
     // Auto-reminders monitoring
     Route::get('auto-reminders/stats', [\App\Http\Controllers\Api\AutoReminderController::class, 'getStats']);
     Route::get('auto-reminders/history', [\App\Http\Controllers\Api\AutoReminderController::class, 'getHistory']);
+    Route::get('auto-reminders/targeted', [\App\Http\Controllers\Api\AutoReminderController::class, 'getTargetedUsers']);
+    Route::post('auto-reminders/run', [\App\Http\Controllers\Api\AutoReminderController::class, 'runManualReminders']);
 });

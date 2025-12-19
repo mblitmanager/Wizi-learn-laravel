@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Services\NotificationService;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
 use App\Models\Stagiaire;
 use App\Models\User;
 use App\Models\QuizParticipation;
@@ -23,6 +24,7 @@ class SendScheduledNotifications extends Command
      */
     protected $deduplicationWindow = [
         'formation' => 1,
+        'formation_end' => 1,
         'inactivity_app' => 7,
         'inactivity_quiz' => 7,
     ];
@@ -38,9 +40,12 @@ class SendScheduledNotifications extends Command
         $this->info('Début envoi notifications programmées...');
 
         $this->sendFormationReminders();
+        $this->sendFormationEndReminders();
         $this->sendAppInactivityReminders();
         $this->sendQuizInactivityReminders();
         $this->sendFirstQuizReminders();
+
+        Cache::put('auto_reminders_last_run', Carbon::now()->toDateTimeString());
 
         $this->info('Fin envoi notifications programmées.');
         return 0;
@@ -234,6 +239,51 @@ class SendScheduledNotifications extends Command
                 ]);
                 $this->info("Notifié user {$user->email} pour premier quiz non joué ({$days} jours)");
             }
+        }
+    }
+
+    protected function sendFormationEndReminders()
+    {
+        $this->info('Traitement: rappels fin de formation (J-3)');
+        $today = Carbon::today();
+        $days = 3;
+
+        $targetDate = $today->copy()->addDays($days)->toDateString();
+        $stagiaires = Stagiaire::whereDate('date_fin_formation', $targetDate)->with('user')->get();
+
+        foreach ($stagiaires as $stagiaire) {
+            $user = $stagiaire->user;
+            if (!$user) continue;
+
+            $already = \App\Models\Notification::where('user_id', $user->id)
+                ->where('type', 'formation_end')
+                ->where('data->formation_id', (string)($stagiaire->formation_id ?? ''))
+                ->where('created_at', '>=', Carbon::now()->subDays(1))
+                ->exists();
+
+            if ($already) continue;
+
+            $title = 'Votre formation finit bientôt !';
+            $message = "Votre formation se termine dans 3 jours. C'est le moment idéal pour valider vos derniers quiz et obtenir votre attestation !";
+
+            if ($user->fcm_token) {
+                $this->notificationService->sendFcmToUser($user, $title, $message, [
+                    'type' => 'formation_end',
+                    'formation_id' => (string)($stagiaire->formation_id ?? ''),
+                ]);
+            }
+
+            \App\Models\Notification::create([
+                'user_id' => $user->id,
+                'type' => 'formation_end',
+                'message' => $message,
+                'data' => [
+                    'formation_id' => (string)($stagiaire->formation_id ?? ''),
+                    'date_fin_formation' => (string)$stagiaire->date_fin_formation,
+                ],
+                'read' => false,
+            ]);
+            $this->info("Notifié user {$user->email} pour fin de formation (J-3)");
         }
     }
 }
