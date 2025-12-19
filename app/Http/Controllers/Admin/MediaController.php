@@ -236,15 +236,20 @@ class MediaController extends Controller
      */
     public function destroy(string $id)
     {
-        $media = $this->mediaService->show($id);
-        if ($media) {
-            // Supprimer le fichier physique si c'est un upload local
-            if ($media->url && !filter_var($media->url, FILTER_VALIDATE_URL) && file_exists(public_path($media->url))) {
-                @unlink(public_path($media->url));
+        try {
+            $media = $this->mediaService->show($id);
+            if ($media) {
+                // Supprimer le fichier physique si c'est un upload local
+                if ($media->url && !filter_var($media->url, FILTER_VALIDATE_URL) && file_exists(public_path($media->url))) {
+                    @unlink(public_path($media->url));
+                }
+                $this->mediaService->delete($id);
             }
-            $this->mediaService->delete($id);
+            return redirect()->route('medias.index')->with('success', 'Le média a été supprimé avec succès.');
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Erreur lors de la suppression du média : ' . $e->getMessage());
+            return redirect()->route('medias.index')->with('error', 'Impossible de supprimer le média. Il est probablement lié à d\'autres éléments (quiz, historique, etc.).');
         }
-        return redirect()->route('medias.index')->with('success', 'Le média a été supprimé avec succès.');
     }
 
     public function stream(Request $request, $filename)

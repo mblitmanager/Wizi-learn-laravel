@@ -95,13 +95,18 @@ class AchievementController extends Controller
     // GET /api/admin/achievements
     public function apiIndex()
     {
-        $achievements = Achievement::with('quiz')->get()->map(function ($achievement) {
-            return [
-                ...$achievement->toArray(),
-                'quiz_title' => $achievement->quiz ? $achievement->quiz->titre : null,
-            ];
-        });
-        return response()->json(['achievements' => $achievements]);
+        try {
+            $achievements = Achievement::with('quiz')->get()->map(function ($achievement) {
+                return [
+                    ...$achievement->toArray(),
+                    'quiz_title' => $achievement->quiz ? $achievement->quiz->titre : null,
+                ];
+            });
+            return response()->json(['achievements' => $achievements]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('API Achievements Error: ' . $e->getMessage());
+            return response()->json(['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()], 500);
+        }
     }
 
     // POST /api/admin/achievements

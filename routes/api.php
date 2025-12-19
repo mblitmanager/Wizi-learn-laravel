@@ -29,7 +29,7 @@ use App\Http\Controllers\Api\NotificationController as UserNotificationControlle
 use App\Http\Controllers\FormateurController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Api\Commercial\CommercialStatisticsController;
-use App\Http\Controllers\Api\Admin\UserClientStatsController as AdminUserClientStatsController;
+// use App\Http\Controllers\Api\Admin\UserClientStatsController as AdminUserClientStatsController;
 use App\Http\Controllers\Api\Admin\StatisticsController as AdminStatisticsController;
 use App\Http\Controllers\Api\Formateur\FormateurStatisticsController;
 
@@ -352,7 +352,7 @@ Route::middleware(['auth:api', 'detectClient'])->group(function () {
         Route::post('/admin/stats/export/excel', [AdminController::class, 'exportExcel']);
         
         Route::get('/admin/achievements', [AdminAchievementController::class, 'apiIndex']);
-        Route::get('/admin/user-client-stats', [UserClientStatsController::class, 'index']);
+        // Route::get('/admin/user-client-stats', [UserClientStatsController::class, 'index']);
         
         // Admin StatisticsController aliases
         Route::get('/admin/stats/quiz-api', [AdminStatisticsController::class, 'quizStats']);
