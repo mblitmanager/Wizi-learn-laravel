@@ -40,9 +40,9 @@ class QuizeRepository implements QuizRepositoryInterface
         return Quiz::destroy($id) > 0;
     }
 
-    public function getQuizzesByStagiaire($stagiaireId): Collection
+    public function getQuizzesByStagiaire($stagiaireId, $withQuestions = true): Collection
     {
-        return Quiz::where('status', 'actif')
+        $query = Quiz::where('status', 'actif')
             ->whereHas('formation', function ($query) use ($stagiaireId) {
                 $query->whereHas('catalogueFormation', function ($q) use ($stagiaireId) {
                     $q->whereHas('stagiaires', function ($q) use ($stagiaireId) {
@@ -50,17 +50,23 @@ class QuizeRepository implements QuizRepositoryInterface
                     });
                 });
             })
-            ->with(['formation', 'questions.reponses'])
-            ->get();
+            ->with(['formation'])
+            ->withSum('questions', 'points');
+
+        if ($withQuestions) {
+            $query->with('questions.reponses');
+        }
+
+        return $query->get();
     }
 
     /**
      * Récupère les quiz du stagiaire avec les participations de l'utilisateur
      * (optimisé pour éviter les requêtes N+1)
      */
-    public function getQuizzesWithUserParticipations($stagiaireId, $userId): Collection
+    public function getQuizzesWithUserParticipations($stagiaireId, $userId, $withQuestions = true): Collection
     {
-        $quizzes = $this->getQuizzesByStagiaire($stagiaireId);
+        $quizzes = $this->getQuizzesByStagiaire($stagiaireId, $withQuestions);
         $quizIds = $quizzes->pluck('id')->toArray();
 
         // Récupérer TOUTES les participations de l'utilisateur pour ces quiz en une seule requête

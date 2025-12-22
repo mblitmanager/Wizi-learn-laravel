@@ -35,13 +35,21 @@ class FormationController extends Controller
             }
 
             // Récupère les formations à traverps les catalogues de formation
-            $formations = Formation::whereHas('catalogueFormation', function ($query) use ($id) {
+            $withMedia = request()->query('with_media', 'false') === 'true';
+
+            // Récupère les formations à travers les catalogues de formation
+            $query = Formation::whereHas('catalogueFormation', function ($query) use ($id) {
                 $query->whereHas('stagiaires', function ($q) use ($id) {
                     $q->where('stagiaires.id', $id);
                 });
             })
-            ->with(['medias', 'catalogueFormation'])
-            ->get();
+            ->with(['catalogueFormation']);
+
+            if ($withMedia) {
+                $query->with(['medias']);
+            }
+
+            $formations = $query->get();
 
             return response()->json([
                 'success' => true,

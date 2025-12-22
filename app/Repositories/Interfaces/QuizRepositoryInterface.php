@@ -13,8 +13,8 @@ interface QuizRepositoryInterface
     public function update($id, array $data): bool;
     public function delete($id): bool;
     public function getQuestionsByQuizId($quizId): Collection;
-    public function getQuizzesByStagiaire($stagiaireId): Collection;
+    public function getQuizzesByStagiaire($stagiaireId, $withQuestions = true): Collection;
     public function getUniqueCategories(): Collection;
     public function submitQuizAnswers($quizId, $stagiaireId, array $answers): array;
-    public function getQuizzesWithUserParticipations($stagiaireId, $userId): Collection;
+    public function getQuizzesWithUserParticipations($stagiaireId, $userId, $withQuestions = true): Collection;
 }

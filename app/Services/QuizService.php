@@ -45,14 +45,16 @@ class QuizService
         return $this->quizRepository->delete($id);
     }
 
-    public function getQuizzesByStagiaire($stagiaireId)
+    public function getQuizzesByStagiaire($stagiaireId, $withQuestions = true)
     {
-        return $this->quizRepository->getQuizzesByStagiaire($stagiaireId);
+        return $this->quizRepository->getQuizzesByStagiaire($stagiaireId, $withQuestions);
     }
 
     public function getCategories()
     {
-        return $this->quizRepository->getUniqueCategories();
+        return \Illuminate\Support\Facades\Cache::remember('quiz_categories', 60 * 24, function () {
+            return $this->quizRepository->getUniqueCategories();
+        });
     }
     public function getQuestionsByQuizId($quizId)
     {
@@ -64,8 +66,8 @@ class QuizService
         return $this->quizRepository->submitQuizAnswers($quizId, $stagiaireId, $answers);
     }
 
-    public function getQuizzesWithUserParticipations($stagiaireId, $userId)
+    public function getQuizzesWithUserParticipations($stagiaireId, $userId, $withQuestions = true)
     {
-        return $this->quizRepository->getQuizzesWithUserParticipations($stagiaireId, $userId);
+        return $this->quizRepository->getQuizzesWithUserParticipations($stagiaireId, $userId, $withQuestions);
     }
 }

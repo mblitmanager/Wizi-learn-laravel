@@ -193,9 +193,11 @@ class QuizStagiaireController extends Controller
             }
 
             // Récupérer les quiz avec participations optimisées (une seule requête pour les participations)
+            // false pour ne pas charger les questions et leurs réponses (Optimisation Latence)
             $quizzes = $this->quizService->getQuizzesWithUserParticipations(
                 $userStagiaire->id,
-                $user->getKey()
+                $user->getKey(),
+                false
             );
 
             // Formatter les quiz avec participations attachées
@@ -209,7 +211,7 @@ class QuizStagiaireController extends Controller
                     'duree' => $quiz->duree ?? null,
                     'niveau' => $quiz->niveau ?? 'débutant',
                     'status' => $quiz->status ?? 'actif',
-                    'nb_points_total' => $quiz->nb_points_total,
+                    'nb_points_total' => $quiz->questions_sum_points ?? $quiz->nb_points_total ?? 0,
                     'formationId' => $quiz->formation?->id ? (string) $quiz->formation->id : null,
                     'categorie' => $quiz->formation?->categorie ?? null,
                     'formation' => $quiz->formation ? [
@@ -217,7 +219,7 @@ class QuizStagiaireController extends Controller
                         'titre' => $quiz->formation->titre ?? null,
                         'categorie' => $quiz->formation->categorie ?? null,
                     ] : null,
-                    'questions' => $quiz->questions->map(function ($question) {
+                    'questions' => $quiz->relationLoaded('questions') ? $quiz->questions->map(function ($question) {
                         return [
                             'id' => (string) $question->id,
                             'text' => $question->text ?? null,
@@ -231,7 +233,7 @@ class QuizStagiaireController extends Controller
                                 ];
                             })->toArray()
                         ];
-                    })->toArray(),
+                    })->toArray() : [],
                     'userParticipation' => $lastParticipation ? [
                         'id' => $lastParticipation->id,
                         'status' => $lastParticipation->status,
