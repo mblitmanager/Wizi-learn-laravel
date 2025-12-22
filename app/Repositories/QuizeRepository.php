@@ -50,14 +50,30 @@ class QuizeRepository implements QuizRepositoryInterface
                     });
                 });
             })
-            ->with(['formation'])
-            ->withSum('questions', 'points');
+            ->with(['formation']);
 
         if ($withQuestions) {
             $query->with('questions.reponses');
+        } else {
+            // Optimization: Fetch only id and points to calculate sum in PHP
+            $query->with('questions:id,quiz_id,points');
         }
 
-        return $query->get();
+        $quizzes = $query->get();
+
+        // Calculate total points in PHP
+        $quizzes->each(function ($quiz) use ($withQuestions) {
+            $quiz->questions_sum_points = $quiz->questions->sum(function ($question) {
+                return (float) $question->points;
+            });
+
+            // Hide questions if they were only fetched for points
+            if (!$withQuestions) {
+                $quiz->unsetRelation('questions');
+            }
+        });
+
+        return $quizzes;
     }
 
     /**
