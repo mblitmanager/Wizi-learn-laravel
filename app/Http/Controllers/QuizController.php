@@ -1125,6 +1125,7 @@ class QuizController extends Controller
     {
         try {
             $period = request('period', 'all');
+            Log::info('Global ranking requested with period: ' . $period);
 
             // Charger les classements avec stagiaire + user + formateurs + leurs formations
             $query = Classement::with([
