@@ -1124,14 +1124,25 @@ class QuizController extends Controller
     public function getGlobalClassement()
     {
         try {
+            $period = request('period', 'all');
+
             // Charger les classements avec stagiaire + user + formateurs + leurs formations
-            $classements = Classement::with([
+            $query = Classement::with([
                 'stagiaire.user',
                 'stagiaire.formateurs.user',
                 'stagiaire.catalogue_formations.formation', // Ajouter cette relation
                 'quiz'
-            ])
-                ->get()
+            ]);
+
+            // Appliquer le filtre de période si nécessaire
+            if ($period === 'week') {
+                $query->where('updated_at', '>=', now()->startOfWeek());
+            } elseif ($period === 'month') {
+                $query->where('updated_at', '>=', now()->startOfMonth());
+            }
+
+            $classements = $query->get()
+
                 ->groupBy('stagiaire_id')
                 ->map(function ($group) {
                     $totalPoints = $group->sum('points');

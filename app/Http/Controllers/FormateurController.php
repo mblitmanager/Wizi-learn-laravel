@@ -693,6 +693,7 @@ class FormateurController extends Controller
     {
         try {
             $formateur = $request->user();
+            $period = $request->query('period', 'all');
             
             // Récupérer l'ID du formateur
             $formateurModel = Formateur::where('user_id', $formateur->id)->first();
@@ -701,7 +702,15 @@ class FormateurController extends Controller
             // Récupérer tous les stagiaires avec leurs points totaux
             $query = DB::table('stagiaires')
                 ->join('users', 'stagiaires.user_id', '=', 'users.id')
-                ->leftJoin('quiz_participations', 'users.id', '=', 'quiz_participations.user_id');
+                ->leftJoin('quiz_participations', function($join) use ($period) {
+                    $join->on('users.id', '=', 'quiz_participations.user_id');
+                    
+                    if ($period === 'week') {
+                        $join->where('quiz_participations.created_at', '>=', Carbon::now()->subWeek());
+                    } elseif ($period === 'month') {
+                        $join->where('quiz_participations.created_at', '>=', Carbon::now()->subMonth());
+                    }
+                });
             
             // Filtrer par formateur si disponible
             if ($formateurId) {
@@ -739,6 +748,7 @@ class FormateurController extends Controller
             return response()->json([
                 'ranking' => $stagiaires,
                 'total_stagiaires' => $stagiaires->count(),
+                'period' => $period,
             ], 200);
 
         } catch (\Exception $e) {
