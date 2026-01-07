@@ -168,6 +168,9 @@ Route::middleware(['auth:api', 'detectClient'])->group(function () {
     Route::post('/stagiaire/profile/photo', [ProfileController::class, 'uploadAvatar']);
     Route::get('/user-status', [ProfileController::class, 'onlineUsers']);
 
+    // Dashboard - Consolidated Home Page Data
+    Route::get('/stagiaire/dashboard/home', [App\Http\Controllers\Stagiaire\DashboardController::class, 'getHomeData']);
+
     // Achievements
     Route::get('/stagiaire/achievements', [StagiaireAchievementController::class, 'getAchievements']);
     Route::get('/stagiaire/achievements/all', [StagiaireAchievementController::class, 'getAllAchievements']);

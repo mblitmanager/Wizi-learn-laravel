@@ -110,4 +110,90 @@ class DashboardService
             'percentile' => 0 // À implémenter
         ];
     }
+
+    /**
+     * Get optimized home data - consolidates multiple endpoints
+     */
+    /**
+     * Get optimized home data - consolidates multiple endpoints
+     */
+    public function getHomeData($stagiaireId)
+    {
+        $stagiaire = \App\Models\Stagiaire::with([
+            'user', 
+            'formateurs.user', 
+            'commercials.user', 
+            'poleRelationClients.user'
+        ])->find($stagiaireId);
+        
+        if (!$stagiaire) {
+            throw new \Exception('Stagiaire not found');
+        }
+
+        // 1. Get basic quiz stats (NOT full quiz list)
+        $quizStats = \App\Models\Classement::where('stagiaire_id', $stagiaireId)
+            ->selectRaw('COUNT(*) as total_quizzes, SUM(points) as total_points, AVG(points) as avg_score')
+            ->first();
+
+        // 2. Get last 3 quiz history entries (NOT full history)
+        $recentHistory = \App\Models\Classement::where('stagiaire_id', $stagiaireId)
+            ->with(['quiz' => function($q) {
+                $q->select(['id', 'titre', 'niveau']);
+            }])
+            ->orderBy('updated_at', 'desc')
+            ->take(3)
+            ->get(['id', 'quiz_id', 'points', 'updated_at']);
+
+        // 3. Get contacts summary (lightweight)
+        $mapContact = function($contact) {
+            return [
+                'id' => $contact->id,
+                'prenom' => $contact->prenom,
+                'nom' => $contact->user->name ?? $contact->nom ?? '',
+                'email' => $contact->user->email ?? $contact->email ?? null,
+                'telephone' => $contact->telephone ?? null
+            ];
+        };
+
+        $formateurs = $stagiaire->formateurs->map($mapContact);
+        $commerciaux = $stagiaire->commercials->map($mapContact);
+        $poleRelation = $stagiaire->poleRelationClients->map($mapContact);
+
+        // 4. Get top 3 catalogue formations (lightweight)
+        $catalogueFormations = \App\Models\CatalogueFormation::where('statut', 1)
+            ->with(['formation' => function($q) {
+                $q->where('statut', 1)
+                  ->select(['id', 'titre', 'categorie']);
+            }])
+            ->select(['id', 'titre', 'duree', 'image_url', 'formation_id'])
+            ->take(3)
+            ->get();
+
+        // 5. Get quiz categories (lightweight)
+        $categories = \App\Models\Formation::where('statut', 1)
+            ->select('categorie')
+            ->distinct()
+            ->pluck('categorie');
+
+        return [
+            'user' => [
+                'id' => $stagiaire->id,
+                'prenom' => $stagiaire->prenom,
+                'image' => $stagiaire->user->image ?? null
+            ],
+            'quiz_stats' => [
+                'total_quizzes' => $quizStats->total_quizzes ?? 0,
+                'total_points' => $quizStats->total_points ?? 0,
+                'average_score' => round($quizStats->avg_score ?? 0, 2)
+            ],
+            'recent_history' => $recentHistory,
+            'contacts' => [
+                'formateurs' => $formateurs,
+                'commerciaux' => $commerciaux,
+                'pole_relation' => $poleRelation
+            ],
+            'catalogue_formations' => $catalogueFormations,
+            'categories' => $categories
+        ];
+    }
 } 
