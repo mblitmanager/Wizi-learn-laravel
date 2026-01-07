@@ -108,33 +108,38 @@ class QuizController extends Controller
             }
 
             // Récupérer les catégories uniques depuis les formations associées aux quizzes du stagiaire
-            $categories = Quiz::select('quizzes.*')
-                ->join('formations', 'formations.id', '=', 'quizzes.formation_id')
-                ->join('catalogue_formations', 'catalogue_formations.formation_id', '=', 'formations.id')
-                ->join('stagiaire_catalogue_formations', 'stagiaire_catalogue_formations.catalogue_formation_id', '=', 'catalogue_formations.id')
-                ->where('stagiaire_catalogue_formations.stagiaire_id', $stagiaire->id)
-                ->with(['formation'])
-                ->distinct()
-                ->get()
-                ->map(function ($quiz) use ($stagiaire) {
-                    return [
-                        'id' => $quiz->formation->categorie ?? 'non-categorise',
-                        'name' => $quiz->formation->categorie ?? 'Non catégorisé',
-                        'color' => $this->getCategoryColor($quiz->formation->categorie ?? 'Non catégorisé'),
-                        'icon' => $this->getCategoryIcon($quiz->formation->categorie ?? 'Non catégorisé'),
-                        'description' => $this->getCategoryDescription($quiz->formation->categorie ?? 'Non catégorisé'),
-                        'quizCount' => Quiz::select('quizzes.*')
-                            ->join('formations', 'formations.id', '=', 'quizzes.formation_id')
-                            ->join('catalogue_formations', 'catalogue_formations.formation_id', '=', 'formations.id')
-                            ->join('stagiaire_catalogue_formations', 'stagiaire_catalogue_formations.catalogue_formation_id', '=', 'catalogue_formations.id')
-                            ->where('stagiaire_catalogue_formations.stagiaire_id', $stagiaire->id)
-                            ->where('quizzes.formation_id', $quiz->formation_id)
-                            ->count(),
-                        'colorClass' => 'category-' . strtolower(str_replace(' ', '-', $quiz->formation->categorie ?? 'non-categorise'))
-                    ];
-                })
-                ->unique('id')
-                ->values();
+            // Cache for 24 hours (86400 seconds)
+            $cacheKey = "quiz_categories_{$stagiaire->id}";
+
+            $categories = \Illuminate\Support\Facades\Cache::remember($cacheKey, 86400, function () use ($stagiaire) {
+                return Quiz::select('quizzes.*')
+                    ->join('formations', 'formations.id', '=', 'quizzes.formation_id')
+                    ->join('catalogue_formations', 'catalogue_formations.formation_id', '=', 'formations.id')
+                    ->join('stagiaire_catalogue_formations', 'stagiaire_catalogue_formations.catalogue_formation_id', '=', 'catalogue_formations.id')
+                    ->where('stagiaire_catalogue_formations.stagiaire_id', $stagiaire->id)
+                    ->with(['formation'])
+                    ->distinct()
+                    ->get()
+                    ->map(function ($quiz) use ($stagiaire) {
+                        return [
+                            'id' => $quiz->formation->categorie ?? 'non-categorise',
+                            'name' => $quiz->formation->categorie ?? 'Non catégorisé',
+                            'color' => $this->getCategoryColor($quiz->formation->categorie ?? 'Non catégorisé'),
+                            'icon' => $this->getCategoryIcon($quiz->formation->categorie ?? 'Non catégorisé'),
+                            'description' => $this->getCategoryDescription($quiz->formation->categorie ?? 'Non catégorisé'),
+                            'quizCount' => Quiz::select('quizzes.*')
+                                ->join('formations', 'formations.id', '=', 'quizzes.formation_id')
+                                ->join('catalogue_formations', 'catalogue_formations.formation_id', '=', 'formations.id')
+                                ->join('stagiaire_catalogue_formations', 'stagiaire_catalogue_formations.catalogue_formation_id', '=', 'catalogue_formations.id')
+                                ->where('stagiaire_catalogue_formations.stagiaire_id', $stagiaire->id)
+                                ->where('quizzes.formation_id', $quiz->formation_id)
+                                ->count(),
+                            'colorClass' => 'category-' . strtolower(str_replace(' ', '-', $quiz->formation->categorie ?? 'non-categorise'))
+                        ];
+                    })
+                    ->unique('id')
+                    ->values();
+            });
 
             return response()->json($categories);
         } catch (\Exception $e) {

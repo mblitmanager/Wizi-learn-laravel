@@ -25,22 +25,27 @@ class CatalogueFormationController extends Controller
 
     public function getAllCatalogueFormations()
     {
-        // Récupérer uniquement les catalogues actifs avec leur formation
-        // Optimisé: sélection des colonnes spécifiques pour réduire payload
-        $catalogueFormations = CatalogueFormation::where('statut', 1)
-            ->select(['id', 'formation_id', 'titre', 'description', 'image_url', 'duree', 'tarif', 'cursus_pdf', 'statut', 'updated_at'])
-            ->with([
-                'formation' => function ($q) {
-                    $q->where('statut', 1)
-                      ->select(['id', 'titre', 'categorie', 'image_url', 'duree']);
-                }
-            ])
-            ->get();
+        // Cache this global list for 60 minutes (3600 seconds)
+        $cacheKey = 'catalogue_formations_list';
 
-        // Truncate description to reduce payload size
-        $catalogueFormations = $catalogueFormations->map(function ($item) {
-            $item->description = Str::limit((string)$item->description, 250);
-            return $item;
+        $catalogueFormations = \Illuminate\Support\Facades\Cache::remember($cacheKey, 3600, function () {
+            // Récupérer uniquement les catalogues actifs avec leur formation
+            // Optimisé: sélection des colonnes spécifiques pour réduire payload
+            $data = CatalogueFormation::where('statut', 1)
+                ->select(['id', 'formation_id', 'titre', 'description', 'image_url', 'duree', 'tarif', 'cursus_pdf', 'statut', 'updated_at'])
+                ->with([
+                    'formation' => function ($q) {
+                        $q->where('statut', 1)
+                          ->select(['id', 'titre', 'categorie', 'image_url', 'duree']);
+                    }
+                ])
+                ->get();
+    
+            // Truncate description to reduce payload size
+            return $data->map(function ($item) {
+                $item->description = Str::limit((string)$item->description, 250);
+                return $item;
+            });
         });
 
         return response()->json($catalogueFormations);
