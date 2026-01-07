@@ -14,6 +14,11 @@ class FormationRepository implements FormationRepositoryInterface
         return Formation::with(['catalogueFormation'])->get();
     }
 
+    public function paginate($perPage = 15)
+    {
+        return Formation::with(['catalogueFormation'])->paginate($perPage);
+    }
+
     public function find($id): ?Formation
     {
         return Formation::with(['catalogueFormation'])->find($id);

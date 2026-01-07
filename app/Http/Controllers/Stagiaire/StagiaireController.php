@@ -22,7 +22,9 @@ class StagiaireController extends Controller
                 return [
                     'id' => (string)$catalogue->id,
                     'titre' => $catalogue->titre,
-                    'description' => $catalogue->description,
+                    'titre' => $catalogue->titre,
+                    'description' => \Illuminate\Support\Str::limit((string)$catalogue->description, 250),
+                    'categorie' => $catalogue->formation->categorie,
                     'categorie' => $catalogue->formation->categorie,
                     'prerequis' => $catalogue->prerequis,
                     'duree' => $catalogue->duree,

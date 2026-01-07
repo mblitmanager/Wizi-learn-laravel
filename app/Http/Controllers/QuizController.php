@@ -53,113 +53,27 @@ class QuizController extends Controller
                 ->where('stagiaire_catalogue_formations.stagiaire_id', $stagiaire->id)
                 ->where('quizzes.status', 'actif')
                 ->distinct()
-                ->with(['questions.reponses', 'formation'])
+                ->with(['formation'])   // Removed 'questions.reponses'
+                ->withCount('questions') // Add count instead
                 ->get();
 
-            Log::info('getQuizzesByCategory request', [
+            Log::info('getQuizzesByCategory request (Optimized)', [
                 'category_requested' => $category,
                 'count' => $quizzes->count(),
-                'quizzes_found' => $quizzes->map(function ($q) {
-                    return [
-                        'id' => $q->id,
-                        'titre' => $q->titre,
-                        'formation_id' => $q->formation_id,
-                        'formation_categorie' => $q->formation->categorie ?? 'N/A'
-                    ];
-                })
             ]);
 
             // Transformer les données pour correspondre au format TypeScript
+            // Format Allégé pour liste
             $formattedQuizzes = $quizzes->map(function ($quiz) {
                 return [
                     'id' => (string) $quiz->id,
                     'titre' => $quiz->titre,
-                    'description' => $quiz->description,
+                    'description' => \Illuminate\Support\Str::limit($quiz->description, 150),
                     'categorie' => $quiz->formation->categorie ?? 'Non catégorisé',
                     'categorieId' => $quiz->formation->categorie ?? 'non-categorise',
                     'niveau' => $quiz->niveau ?? 'débutant',
-                    'questions' => $quiz->questions->map(function ($question) {
-                        $questionData = [
-                            'id' => (string) $question->id,
-                            'text' => $question->text,
-                            'type' => $question->type ?? 'choix multiples',
-                        ];
-
-                        // Gestion spécifique selon le type de question
-                        switch ($question->type) {
-                            case 'choix multiples':
-                            case 'vrai/faux':
-                                $questionData['answers'] = $question->reponses->map(function ($reponse) {
-                                    return [
-                                        'id' => (string) $reponse->id,
-                                        'text' => $reponse->text,
-                                        'isCorrect' => (bool) $reponse->is_correct
-                                    ];
-                                })->toArray();
-                                break;
-
-                            case 'rearrangement':
-                                $questionData['answers'] = $question->reponses->map(function ($reponse) {
-                                    return [
-                                        'id' => (string) $reponse->id,
-                                        'text' => $reponse->text,
-                                        'position' => (int) $reponse->position
-                                    ];
-                                })->sortBy('position')->values()->toArray();
-                                break;
-
-                            case 'remplir le champ vide':
-                                $questionData['blanks'] = $question->reponses->map(function ($reponse) {
-                                    return [
-                                        'id' => (string) $reponse->id,
-                                        'text' => $reponse->text,
-                                        'bankGroup' => $reponse->bank_group
-                                    ];
-                                })->toArray();
-                                break;
-
-                            case 'banque de mots':
-                                $questionData['wordbank'] = $question->reponses->map(function ($reponse) {
-                                    return [
-                                        'id' => (string) $reponse->id,
-                                        'text' => $reponse->text,
-                                        'isCorrect' => (bool) $reponse->is_correct,
-                                        'bankGroup' => $reponse->bank_group
-                                    ];
-                                })->toArray();
-                                break;
-
-                            case 'carte flash':
-                                $questionData['flashcard'] = [
-                                    'front' => $question->text,
-                                    'back' => $question->flashcard_back
-                                ];
-                                break;
-
-                            case 'correspondance':
-                                $questionData['matching'] = $question->reponses->map(function ($reponse) {
-                                    return [
-                                        'id' => (string) $reponse->id,
-                                        'text' => $reponse->text,
-                                        'matchPair' => $reponse->match_pair
-                                    ];
-                                })->toArray();
-                                break;
-
-                            case 'question audio':
-                                $questionData['audioUrl'] = $question->audio_url ?? $question->media_url ?? null;
-                                $questionData['answers'] = $question->reponses->map(function ($reponse) {
-                                    return [
-                                        'id' => (string) $reponse->id,
-                                        'text' => $reponse->text,
-                                        'isCorrect' => (bool) $reponse->is_correct
-                                    ];
-                                })->toArray();
-                                break;
-                        }
-
-                        return $questionData;
-                    })->toArray(),
+                    'questionCount' => $quiz->questions_count, // Use pre-calculated count
+                    'questions' => [], // Empty array for list view to save bandwidth
                     'points' => (int) ($quiz->nb_points_total ?? 0)
                 ];
             });
@@ -281,27 +195,26 @@ class QuizController extends Controller
 
         $history = Progression::with([
             'quiz.formation',
-            'quiz.questions.reponses',
+            // 'quiz.questions.reponses', // REMOVED: Too heavy for list view
         ])
             ->where('stagiaire_id', $stagiaire->id)
+            ->withCount('quiz as total_questions_count') // Approximate, or rely on quiz->nb_questions
             ->orderBy('created_at', 'desc')
             ->get()
             ->map(function ($progression) {
                 $quiz = $progression->quiz;
+                if (!$quiz) return null; // Handle deleted quizzes safely
+
                 $niveau = $quiz->niveau ?? 'débutant';
-                $totalQuestions = $progression->total_questions;
-                if ($niveau === 'débutant' && $totalQuestions > 5) {
-                    $totalQuestions = 5;
-                } elseif ($niveau === 'intermédiaire' && $totalQuestions > 10) {
-                    $totalQuestions = 10;
-                } elseif ($niveau === 'avancé' && $totalQuestions > 20) {
-                    $totalQuestions = 20;
-                }
-                // Construction d'un objet quiz complet pour le front
+                
+                // Use progression's stored total if available, or quiz aggregation
+                $totalQuestions = $progression->total_questions ?? $quiz->questions_count ?? 0;
+
+                // Construction d'un objet quiz allégé
                 $quizData = [
                     'id' => (int) $quiz->id,
                     'titre' => $quiz->titre,
-                    'description' => $quiz->description,
+                    'description' => \Illuminate\Support\Str::limit($quiz->description, 100),
                     'duree' => $quiz->duree,
                     'niveau' => $quiz->niveau,
                     'status' => $quiz->status,
@@ -309,33 +222,10 @@ class QuizController extends Controller
                     'formation' => $quiz->formation ? [
                         'id' => $quiz->formation->id,
                         'titre' => $quiz->formation->titre,
-                        'description' => $quiz->formation->description,
-                        'duree' => $quiz->formation->duree,
                         'categorie' => $quiz->formation->categorie,
                     ] : null,
-                    'questions' => $quiz->questions->map(function ($question) {
-                        return [
-                            'id' => (string) $question->id,
-                            'quizId' => $question->quiz_id,
-                            'text' => $question->text,
-                            'type' => $question->type,
-                            'explication' => $question->explication,
-                            'points' => $question->points,
-                            'astuce' => $question->astuce,
-                            'mediaUrl' => $question->media_url,
-                            'answers' => $question->reponses->map(function ($reponse) {
-                                return [
-                                    'id' => (string) $reponse->id,
-                                    'text' => $reponse->text,
-                                    'isCorrect' => $reponse->is_correct,
-                                    'position' => $reponse->position,
-                                    'matchPair' => $reponse->match_pair,
-                                    'bankGroup' => $reponse->bank_group,
-                                    'flashcardBack' => $reponse->flashcard_back,
-                                ];
-                            })->toArray(),
-                        ];
-                    })->toArray(),
+                    // Questions removed for performance
+                    'questions' => [], 
                 ];
                 return [
                     'id' => (string) $progression->id,
@@ -346,7 +236,8 @@ class QuizController extends Controller
                     'totalQuestions' => $totalQuestions,
                     'correctAnswers' => $progression->correct_answers
                 ];
-            });
+            })
+            ->filter(); // Remove nulls
 
         return response()->json($history);
     }

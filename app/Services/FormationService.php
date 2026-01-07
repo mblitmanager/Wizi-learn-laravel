@@ -20,6 +20,11 @@ class FormationService
         return $this->formationRepository->all();
     }
 
+    public function getPaginated($perPage = 10)
+    {
+        return $this->formationRepository->paginate($perPage);
+    }
+
     public function getById($id)
     {
         return $this->formationRepository->find($id);

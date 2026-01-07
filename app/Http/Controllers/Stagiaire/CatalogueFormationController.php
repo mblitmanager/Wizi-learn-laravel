@@ -13,6 +13,8 @@ use App\Models\Stagiaire;
 use App\Repositories\Interfaces\CatalogueFormationInterface;
 
 
+use Illuminate\Support\Str;
+
 class CatalogueFormationController extends Controller
 {
     protected $catalogueFormationService;
@@ -34,6 +36,12 @@ class CatalogueFormationController extends Controller
                 }
             ])
             ->get();
+
+        // Truncate description to reduce payload size
+        $catalogueFormations = $catalogueFormations->map(function ($item) {
+            $item->description = Str::limit((string)$item->description, 250);
+            return $item;
+        });
 
         return response()->json($catalogueFormations);
     }
@@ -120,7 +128,17 @@ class CatalogueFormationController extends Controller
     public function getCataloguesWithFormations()
     {
         try {
-            $catalogues = CatalogueFormation::with(['formation', 'formateurs', 'stagiaires'])->get();
+            // Optimisation: Sélectionner uniquement les colonnes nécessaires
+            $catalogues = CatalogueFormation::where('statut', 1)
+                ->select(['id', 'formation_id', 'titre', 'description', 'image_url', 'duree', 'tarif', 'cursus_pdf', 'statut', 'created_at', 'updated_at'])
+                ->with([
+                    'formation' => function ($q) {
+                        $q->select(['id', 'titre', 'categorie', 'image_url', 'duree', 'video_url', 'statut']);
+                    },
+                    'formateurs:id', 
+                    'stagiaires:id'
+                ])
+                ->get();
 
             if ($catalogues->isEmpty()) {
                 return response()->json([
@@ -131,14 +149,19 @@ class CatalogueFormationController extends Controller
                     'member' => []
                 ]);
             }
-
+            
+            // Truncate descriptions BEFORE mapping to formatted array
+            // Optimization for memory and payload
             $formattedCatalogues = $catalogues->map(function ($catalogue) {
+                // Determine description safely
+                $description = \Illuminate\Support\Str::limit((string)$catalogue->description, 250);
+                
                 return [
                     '@id' => "/api/catalogue_formations/{$catalogue->id}",
                     '@type' => 'CatalogueFormation',
                     'id' => $catalogue->id,
                     'titre' => $catalogue->titre,
-                    'description' => $catalogue->description,
+                    'description' => $description,
                     'prerequis' => $catalogue->prerequis,
                     'imageUrl' => $catalogue->image_url,
                     'cursusPdf' => $catalogue->cursus_pdf,

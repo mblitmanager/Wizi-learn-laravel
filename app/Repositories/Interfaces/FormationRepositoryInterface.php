@@ -13,4 +13,5 @@ interface FormationRepositoryInterface
     public function delete($id): bool;
     public function getUniqueCategories(): \Illuminate\Support\Collection;
     public function getFormationsByStagiaire($stagiaireId): \Illuminate\Support\Collection;
+    public function paginate($perPage = 15);
 }

@@ -35,13 +35,25 @@ class FormationController extends Controller
             }
 
             // Récupère les formations à traverps les catalogues de formation
-            $formations = Formation::whereHas('catalogueFormation', function ($query) use ($id) {
+            $formations = Formation::select(['id', 'titre', 'categorie', 'image_url', 'duree', 'statut'])
+            ->whereHas('catalogueFormation', function ($query) use ($id) {
                 $query->whereHas('stagiaires', function ($q) use ($id) {
                     $q->where('stagiaires.id', $id);
                 });
             })
-            ->with(['medias', 'catalogueFormation'])
+            ->with([
+                'catalogueFormation' => function ($q) {
+                    $q->select(['id', 'formation_id', 'titre', 'description', 'image_url', 'tarif', 'statut']);
+                }
+            ])
             ->get();
+            
+            // Truncate descriptions if necessary (though strictly simpler objects are better)
+            $formations->each(function ($formation) {
+                if ($formation->catalogueFormation) {
+                     $formation->catalogueFormation->description = \Illuminate\Support\Str::limit((string)$formation->catalogueFormation->description, 250);
+                }
+            });
 
             return response()->json([
                 'success' => true,
@@ -63,10 +75,9 @@ class FormationController extends Controller
     public function getAllFormations()
     {
         try {
-            $formations = $this->formationService->getAll();
-            $pagianted = PaginationHelper::paginate($formations, 10);
+            $paginated = $this->formationService->getPaginated(10);
             return response()->json([
-                'data' => $pagianted
+                'data' => $paginated
             ]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
