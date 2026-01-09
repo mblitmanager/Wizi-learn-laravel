@@ -23,33 +23,107 @@ class CatalogueFormationController extends Controller
         $this->catalogueFormationService = $catalogueFormationService;
     }
 
-    public function getAllCatalogueFormations()
+    public function getAllCatalogueFormations(Request $request)
     {
-        // Cache this global list for 60 minutes (3600 seconds)
-        $cacheKey = 'catalogue_formations_list';
+        // No caching for filtered/paginated results to ensure freshness and correct filtering
+        // $cacheKey = 'catalogue_formations_list_' . md5(json_encode($request->all()));
 
-        $catalogueFormations = \Illuminate\Support\Facades\Cache::remember($cacheKey, 3600, function () {
-            // Récupérer uniquement les catalogues actifs avec leur formation
-            // Optimisé: sélection des colonnes spécifiques pour réduire payload
-            $data = CatalogueFormation::where('statut', 1)
+        try {
+            $perPage = $request->input('per_page', 10);
+            $category = $request->input('category');
+            $search = $request->input('search');
+            $sort = $request->input('sort'); // nameAsc, priceDesc, etc.
+
+            $query = CatalogueFormation::where('statut', 1)
                 ->select(['id', 'formation_id', 'titre', 'description', 'image_url', 'duree', 'tarif', 'cursus_pdf', 'statut', 'updated_at'])
                 ->with([
                     'formation' => function ($q) {
                         $q->where('statut', 1)
-                          ->select(['id', 'titre', 'categorie', 'image_url', 'duree']);
+                            ->select(['id', 'titre', 'categorie', 'image', 'duree']);
                     }
-                ])
-                ->get();
-    
-            // Truncate description to reduce payload size
-            return $data->map(function ($item) {
-                $item->description = Str::limit((string)$item->description, 250);
-                return $item;
-            });
-        });
+                ]);
 
-        return response()->json($catalogueFormations);
+             // Filter by category
+            if ($category && $category !== 'Tous') {
+                $query->whereHas('formation', function ($q) use ($category) {
+                    $q->where('categorie', $category);
+                });
+            }
+
+            // Filter by search
+            if ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('titre', 'like', "%{$search}%")
+                      ->orWhere('description', 'like', "%{$search}%");
+                });
+            }
+
+            // Sorting
+            if ($sort) {
+                switch ($sort) {
+                    case 'nameAsc':
+                        $query->orderBy('titre', 'asc');
+                        break;
+                    case 'nameDesc':
+                        $query->orderBy('titre', 'desc');
+                        break;
+                    case 'priceAsc':
+                        $query->orderBy('tarif', 'asc');
+                        break;
+                    case 'priceDesc':
+                        $query->orderBy('tarif', 'desc');
+                        break;
+                    case 'durationAsc':
+                        $query->orderBy('duree', 'asc');
+                        break;
+                    case 'durationDesc':
+                        $query->orderBy('duree', 'desc');
+                        break;
+                    default:
+                        $query->orderBy('created_at', 'desc');
+                }
+            } else {
+                 $query->orderBy('created_at', 'desc');
+            }
+
+            if ($request->has('per_page')) {
+                $catalogueFormations = $query->paginate($perPage);
+
+                $data = $catalogueFormations->getCollection()->map(function ($item) {
+                    $item->description = Str::limit((string)$item->description, 250);
+                    return $item;
+                });
+
+                return response()->json([
+                    'data' => $data,
+                    'current_page' => $catalogueFormations->currentPage(),
+                    'last_page' => $catalogueFormations->lastPage(),
+                    'total' => $catalogueFormations->total(),
+                    'per_page' => $catalogueFormations->perPage(),
+                    'next_page_url' => $catalogueFormations->nextPageUrl(),
+                    'prev_page_url' => $catalogueFormations->previousPageUrl(),
+                ]);
+            } else {
+                // Return all items if no pagination requested
+                $catalogueFormations = $query->get();
+
+                $data = $catalogueFormations->map(function ($item) {
+                    $item->description = Str::limit((string)$item->description, 250);
+                    return $item;
+                });
+
+                return response()->json($data);
+            }
+
+
+        } catch (\Exception $e) {
+            Log::error('Erreur getAllCatalogueFormations: ' . $e->getMessage());
+            return response()->json(['error' => 'Erreur serveur'], 500);
+        }
     }
+    
+    // private function fetchCatalogueFormations() ... (removed as it's no longer used or I can keep it/ignore it)
+
 
     public function getCatalogueFormationById($id)
     {
@@ -130,76 +204,87 @@ class CatalogueFormationController extends Controller
     /**
      * Récupérer tous les catalogues avec leurs formations associées
      */
-    public function getCataloguesWithFormations()
+    /**
+     * Récupérer tous les catalogues avec leurs formations associées (Optimisé & Paginé)
+     */
+    public function getCataloguesWithFormations(Request $request)
     {
         try {
-            // Optimisation: Sélectionner uniquement les colonnes nécessaires
-            $catalogues = CatalogueFormation::where('statut', 1)
+            $perPage = $request->input('per_page', 9);
+            $category = $request->input('category');
+            $search = $request->input('search');
+
+            $query = CatalogueFormation::where('statut', 1)
                 ->select(['id', 'formation_id', 'titre', 'description', 'image_url', 'duree', 'tarif', 'cursus_pdf', 'statut', 'created_at', 'updated_at'])
                 ->with([
                     'formation' => function ($q) {
-                        $q->select(['id', 'titre', 'categorie', 'image_url', 'duree', 'video_url', 'statut']);
+                        $q->select(['id', 'titre', 'categorie', 'image', 'duree', 'statut']);
                     },
-                    'formateurs:id', 
-                    'stagiaires:id'
-                ])
-                ->get();
-
-            if ($catalogues->isEmpty()) {
-                return response()->json([
-                    '@context' => '/api/contexts/CatalogueFormation',
-                    '@id' => '/api/catalogue_formations',
-                    '@type' => 'Collection',
-                    'totalItems' => 0,
-                    'member' => []
+                    'formateurs',
+                    'stagiaires' => function ($q) {
+                         $q->select('id'); // Optimisation: On n'a pas besoin de tout le stagiaire ici
+                    }
                 ]);
+
+            // Filtrer par catégorie
+            if ($category && $category !== 'Tous') {
+                $query->whereHas('formation', function ($q) use ($category) {
+                    $q->where('categorie', $category);
+                });
             }
-            
-            // Truncate descriptions BEFORE mapping to formatted array
-            // Optimization for memory and payload
-            $formattedCatalogues = $catalogues->map(function ($catalogue) {
-                // Determine description safely
-                $description = \Illuminate\Support\Str::limit((string)$catalogue->description, 250);
+
+            // Filtrer par recherche (optionnel)
+            if ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('titre', 'like', "%{$search}%")
+                      ->orWhere('description', 'like', "%{$search}%");
+                });
+            }
+
+            // Pagination
+            $catalogues = $query->paginate($perPage);
+
+            // Transformation des données
+            $formattedData = $catalogues->getCollection()->map(function ($catalogue) {
+                 $description = \Illuminate\Support\Str::limit((string)$catalogue->description, 150);
                 
                 return [
-                    '@id' => "/api/catalogue_formations/{$catalogue->id}",
-                    '@type' => 'CatalogueFormation',
                     'id' => $catalogue->id,
                     'titre' => $catalogue->titre,
                     'description' => $description,
                     'prerequis' => $catalogue->prerequis,
-                    'imageUrl' => $catalogue->image_url,
-                    'cursusPdf' => $catalogue->cursus_pdf,
+                    'image_url' => $catalogue->image_url,
+                    'cursus_pdf' => $catalogue->cursus_pdf,
                     'tarif' => $catalogue->tarif,
                     'certification' => $catalogue->certification,
                     'statut' => $catalogue->statut,
                     'duree' => $catalogue->duree,
-                    'createdAt' => $catalogue->created_at,
-                    'updatedAt' => $catalogue->updated_at,
+                    'created_at' => $catalogue->created_at,
+                    'updated_at' => $catalogue->updated_at,
                     'cursusPdfUrl' => $catalogue->cursus_pdf ? asset('storage/' . $catalogue->cursus_pdf) : null,
                     'formation' => $catalogue->formation ? [
-                        '@id' => "/api/formations/{$catalogue->formation->id}",
-                        '@type' => 'Formation',
                         'id' => $catalogue->formation->id,
                         'titre' => $catalogue->formation->titre,
-                        'description' => $catalogue->formation->description,
+                        'description' => \Illuminate\Support\Str::limit((string)$catalogue->formation->description, 100),
                         'categorie' => $catalogue->formation->categorie,
                         'duree' => $catalogue->formation->duree,
                         'image_url' => $catalogue->formation->image_url,
                         'video_url' => $catalogue->formation->video_url,
                         'statut' => $catalogue->formation->statut
                     ] : null,
-                    'formateurs' => $catalogue->formateurs->map(fn($formateur) => "/api/formateurs/{$formateur->id}")->toArray(),
-                    'stagiaires' => $catalogue->stagiaires->map(fn($stagiaire) => "/api/stagiaires/{$stagiaire->id}")->toArray()
+                    'formateurs' => $catalogue->formateurs->map(fn($f) => $f->id)->toArray(),
+                    'stagiaires_count' => $catalogue->stagiaires->count() 
                 ];
             });
 
             return response()->json([
-                '@context' => '/api/contexts/CatalogueFormation',
-                '@id' => '/api/catalogue_formations',
-                '@type' => 'Collection',
-                'totalItems' => $catalogues->count(),
-                'member' => $formattedCatalogues
+                'data' => $formattedData,
+                'current_page' => $catalogues->currentPage(),
+                'last_page' => $catalogues->lastPage(),
+                'total' => $catalogues->total(),
+                'per_page' => $catalogues->perPage(),
+                'next_page_url' => $catalogues->nextPageUrl(),
+                'prev_page_url' => $catalogues->previousPageUrl(),
             ]);
 
         } catch (\Exception $e) {

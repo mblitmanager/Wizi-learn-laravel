@@ -35,7 +35,7 @@ class FormationController extends Controller
             }
 
             // Récupère les formations à traverps les catalogues de formation
-            $formations = Formation::select(['id', 'titre', 'categorie', 'image_url', 'duree', 'statut'])
+            $formations = Formation::select(['id', 'titre', 'categorie', 'image', 'duree', 'statut'])
             ->whereHas('catalogueFormation', function ($query) use ($id) {
                 $query->whereHas('stagiaires', function ($q) use ($id) {
                     $q->where('stagiaires.id', $id);
@@ -44,14 +44,22 @@ class FormationController extends Controller
             ->with([
                 'catalogueFormation' => function ($q) {
                     $q->select(['id', 'formation_id', 'titre', 'description', 'image_url', 'tarif', 'statut']);
+                },
+                'medias' => function ($q) use ($id) {
+                    $q->with(['stagiaires' => function ($sq) use ($id) {
+                        $sq->where('stagiaires.id', $id);
+                    }]);
                 }
             ])
             ->get();
-            
+
             // Truncate descriptions if necessary (though strictly simpler objects are better)
             $formations->each(function ($formation) {
-                if ($formation->catalogueFormation) {
-                     $formation->catalogueFormation->description = \Illuminate\Support\Str::limit((string)$formation->catalogueFormation->description, 250);
+                if ($formation->catalogueFormation && $formation->catalogueFormation->isNotEmpty()) {
+                    $formation->catalogueFormation->transform(function ($catalog) {
+                        $catalog->description = \Illuminate\Support\Str::limit((string)$catalog->description, 250);
+                        return $catalog;
+                    });
                 }
             });
 

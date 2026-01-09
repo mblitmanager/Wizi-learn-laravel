@@ -157,7 +157,9 @@ class MediaController extends Controller
             $file = fopen($fullPath, 'rb');
             fseek($file, $start);
             $remaining = $length;
-            $chunkSize = 1024 * 8;
+            // Optimized chunk size: 1MB for better streaming performance
+            // Larger chunks reduce overhead and improve load times for video content
+            $chunkSize = 1024 * 1024; // 1MB chunks
 
             while (!feof($file) && $remaining > 0) {
                 $toRead = min($chunkSize, $remaining);
