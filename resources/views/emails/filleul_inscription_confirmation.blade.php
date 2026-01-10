@@ -212,7 +212,7 @@
                                         <td class="greeting"
                                             style="font-size: 17px; color: #2d3748; margin-bottom: 20px; font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, 'Lucida Grande', sans-serif;">
                                             Bonjour <span class="highlight"
-                                                style="color: #2d3748; font-weight: 600;">{{ $filleul->stagiaire->prenom }}</span>,
+                                                style="color: #2d3748; font-weight: 600;">{{ $filleul->stagiaire->prenom }} {{ $filleul->name }}</span>,
                                         </td>
                                     </tr>
 
