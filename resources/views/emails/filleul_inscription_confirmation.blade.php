@@ -1,233 +1,327 @@
-<!DOCTYPE html>
-<html lang="fr">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
 
 <head>
-    <meta charset="UTF-8">
-    <title>Confirmation d'inscription par parrainage</title>
-    <style>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Confirmation d'inscription - Wizi Learn</title>
+    <!--[if !mso]><!-->
+    <style type="text/css">
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
-        * {
-            font-family: monospace;
-            font-size: 12px;
-        }
-
+    </style>
+    <!--<![endif]-->
+    <style type="text/css">
+        /* Styles inline pour la compatibilité email */
         body {
             margin: 0;
             padding: 0;
-            font-family: 'Inter', sans-serif;
-            background: #fafafa;
-            color: #333333;
+            width: 100% !important;
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+            font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, 'Lucida Grande', sans-serif;
+            background-color: #ffffff;
+            color: #4a5568;
             line-height: 1.6;
         }
 
-        .email-container {
-            max-width: 620px;
-            margin: 40px auto;
-            background: white;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
-            border-radius: 0;
-            overflow: hidden;
-            border: 1px solid #eaeaea;
+        table {
+            border-collapse: collapse;
+            mso-table-lspace: 0pt;
+            mso-table-rspace: 0pt;
+        }
+
+        img {
+            border: 0;
+            height: auto;
+            line-height: 100%;
+            outline: none;
+            text-decoration: none;
+            -ms-interpolation-mode: bicubic;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
         }
 
         .header {
-            padding: 40px 20px 30px;
-            background: #ffffff;
-            color: #222222;
+            padding: 30px 20px;
             text-align: center;
-            border-bottom: 1px solid #f0f0f0;
+            border-bottom: 2px solid #feb823;
+        }
+
+        .logo-container {
+            display: inline-block;
+            text-align: center;
         }
 
         .logo {
-            height: 48px;
-            margin-bottom: 20px;
-        }
-
-        .header h1 {
-            font-size: 22px;
-            margin: 10px 0 0;
-            color: #222222;
-            font-weight: 600;
-            letter-spacing: -0.2px;
+            height: 50px;
+            width: auto;
+            margin: 0 15px;
+            display: inline-block;
+            vertical-align: middle;
         }
 
         .content {
-            padding: 40px;
+            padding: 35px 25px;
         }
 
-        .content p {
-            margin-bottom: 20px;
-            font-size: 15px;
-            color: #555555;
-        }
-
-        .highlight-box {
-            background: #f9f9f9;
-            border-left: 3px solid #2c7be5;
-            padding: 24px;
-            margin: 30px 0;
-            border-radius: 0 4px 4px 0;
-        }
-
-        .highlight-box h2 {
-            margin-top: 0;
-            color: #222222;
+        .greeting {
             font-size: 17px;
-            font-weight: 600;
-            margin-bottom: 15px;
+            color: #2d3748;
+            margin-bottom: 20px;
+            font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, 'Lucida Grande', sans-serif;
         }
 
-        ul {
-            padding-left: 20px;
-            margin: 18px 0;
-        }
-
-        ul li {
-            margin-bottom: 8px;
-            color: #555555;
-            line-height: 1.5;
-        }
-
-        .cta-button {
-            display: inline-block;
-            background: #2c7be5;
-            color: #ffffff;
-            text-align: center;
-            padding: 14px 28px;
-            text-decoration: none;
-            font-weight: 500;
-            margin: 25px 0;
-            border-radius: 4px;
-            transition: background 0.2s ease;
+        .message {
             font-size: 15px;
+            color: #4a5568;
+            margin-bottom: 20px;
+            font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, 'Lucida Grande', sans-serif;
         }
 
-        .cta-button:hover {
-            background: #1a68d1;
+        .highlight {
+            color: #2d3748;
+            font-weight: 600;
+        }
+
+        .formation-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2d3748;
+            margin: 15px 0 10px 0;
+        }
+
+        .bullet-points {
+            margin: 15px 0;
+        }
+
+        .bullet-points div {
+            margin-bottom: 8px;
+            position: relative;
+            padding-left: 15px;
+        }
+
+        .bullet-points div:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #feb823;
+        }
+
+        .contact-box {
+            background: #f8f9fa;
+            border-left: 3px solid #feb823;
+            padding: 18px;
+            margin: 20px 0;
+            font-size: 14px;
         }
 
         .footer {
             padding: 25px;
             text-align: center;
-            font-size: 12px;
-            color: #999999;
-            background: #ffffff;
-            border-top: 1px solid #f0f0f0;
+            border-top: 1px solid #e2e8f0;
+            background: #f8f9fa;
         }
 
-        .footer a {
-            color: #666666;
-            text-decoration: none;
-            font-weight: 500;
-            margin: 0 10px;
+        .footer-container {
+            width: 100%;
+            max-width: 600px;
         }
 
-        .footer a:hover {
-            color: #2c7be5;
+        .footer-left,
+        .footer-right {
+            width: 50%;
+            vertical-align: top;
         }
 
-        .divider {
-            border-top: 1px solid #f0f0f0;
-            margin: 30px 0;
-            opacity: 0.5;
-        }
-
-        .info-card {
-            background: #f9f9f9;
-            border-radius: 0;
-            padding: 20px;
-            margin: 25px 0;
-            border-left: 3px solid #e0e0e0;
-        }
-
-        .info-card h3 {
-            margin-top: 0;
-            color: #222222;
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 15px;
-        }
-
-        .text-accent {
-            color: #2c7be5;
-            font-weight: 500;
-        }
-
-        .text-center {
+        .footer-center {
+            width: 100%;
             text-align: center;
+            padding-top: 15px;
         }
 
-        .signature {
-            margin-top: 30px;
-            color: #666666;
-            font-style: italic;
+        @media only screen and (max-width: 600px) {
+            .container {
+                width: 100% !important;
+            }
+
+            .content {
+                padding: 25px 20px !important;
+            }
+
+            .header {
+                padding: 25px 20px !important;
+            }
+
+            .greeting {
+                font-size: 16px !important;
+            }
+
+            .message {
+                font-size: 14px !important;
+            }
+
+            .footer-left,
+            .footer-right {
+                width: 100% !important;
+                display: block !important;
+                text-align: center !important;
+                padding-bottom: 15px;
+            }
+
+            .logo {
+                margin: 10px 15px !important;
+                display: block !important;
+            }
         }
     </style>
 </head>
 
-<body>
-    <div class="email-container">
-        <div class="header">
-            <img src="{{ $message->embed($logo) }}" alt="Logo" class="logo">
-            <h1>Bienvenue {{ $filleul->stagiaire->prenom }},</h1>
-        </div>
+<body style="margin: 0; padding: 0; background-color: #ffffff;">
+    <center>
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff">
+            <tr>
+                <td align="center">
+                    <table class="container" border="0" cellpadding="0" cellspacing="0" width="600">
+                        <!-- Header avec deux logos -->
+                        <tr>
+                            <td class="header"
+                                style="padding: 30px 20px; text-align: center; border-bottom: 2px solid #feb823;">
+                                <div class="logo-container">
+                                    <!-- Logo AOPIA -->
+                                    <img src="{{ $message->embed(public_path('assets/aopia.png')) }}"
+                                        alt="Logo AOPIA" class="logo"
+                                        style="height: 50px; width: auto; margin: 0 15px; display: inline-block; vertical-align: middle;" />
 
-        <div class="content">
-            <p>Votre inscription à la formation <strong class="text-accent">{{ $formation->titre }}</strong> a bien été
-                enregistrée grâce au parrainage de <strong>{{ $parrain->name }}</strong>.</p>
+                                    <!-- Logo Like Formation -->
+                                    <img src="{{ $message->embed(public_path('assets/like.png')) }}"
+                                        alt="Logo Like Formation" class="logo"
+                                        style="height: 50px; width: auto; margin: 0 15px; display: inline-block; vertical-align: middle;" />
+                                </div>
+                            </td>
+                        </tr>
 
-            <div class="highlight-box">
-                <h2>Votre mentorat personnalisé</h2>
-                <p>Votre parrain <strong>{{ $parrain->name }}</strong>, expert reconnu, vous apportera un soutien
-                    privilégié :</p>
-                <ul>
-                    <li>Guidage pour un démarrage efficace</li>
-                    <li>Réponses à vos interrogations techniques</li>
-                    <li>Transmission des meilleures pratiques métier</li>
-                </ul>
-            </div>
+                        <!-- Content -->
+                        <tr>
+                            <td class="content" style="padding: 35px 25px;">
+                                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                    <tr>
+                                        <td class="greeting"
+                                            style="font-size: 17px; color: #2d3748; margin-bottom: 20px; font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, 'Lucida Grande', sans-serif;">
+                                            Bonjour <span class="highlight"
+                                                style="color: #2d3748; font-weight: 600;">{{ $filleul->stagiaire->prenom }}</span>,
+                                        </td>
+                                    </tr>
 
-            <div class="info-card">
-                <h3>Caractéristiques de la formation</h3>
-                <ul>
-                    <li><strong>Durée :</strong> {{ $formation->duree }}</li>
-                    @if ($formation->certification)
-                        <li><strong>Certification :</strong> {{ $formation->certification }}</li>
-                    @endif
-                    <li><strong>Accès :</strong> Actif dans les 24 heures</li>
-                </ul>
-            </div>
+                                    <tr>
+                                        <td class="message"
+                                            style="font-size: 15px; color: #4a5568; margin-bottom: 20px; font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, 'Lucida Grande', sans-serif;">
+                                            Votre inscription à la formation <strong class="highlight">{{ $formation->titre }}</strong> a bien été enregistrée grâce au parrainage de <strong>{{ $parrain->name }}</strong>.
+                                        </td>
+                                    </tr>
 
-            <div class="divider"></div>
+                                    <tr>
+                                        <td class="message"
+                                            style="font-size: 15px; color: #4a5568; margin-bottom: 10px; font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, 'Lucida Grande', sans-serif;">
+                                            Votre parrain <strong>{{ $parrain->name }}</strong> vous apportera un soutien privilégié :
+                                        </td>
+                                    </tr>
 
-            <h3>Démarrage de votre parcours</h3>
-            <ul>
-                <li>Recevez vos codes d'accès par email</li>
-                <li>Connectez-vous à notre plateforme</li>
-                <li>Échangez avec votre parrain</li>
-            </ul>
+                                    <tr>
+                                        <td>
+                                            <div class="bullet-points">
+                                                <div>Guidage pour un démarrage efficace</div>
+                                                <div>Réponses à vos interrogations techniques</div>
+                                                <div>Transmission des meilleures pratiques métier</div>
+                                            </div>
+                                        </td>
+                                    </tr>
 
-            <div class="text-center">
-                <a href="{{ config('app.url') }}" class="cta-button">Accéder à la plateforme</a>
-            </div>
+                                    <tr>
+                                        <td>
+                                            <div class="formation-title">
+                                                {{ strtoupper($formation->titre) }}</div>
+                                            <p><strong>Durée :</strong> {{ $formation->duree }} heures</p>
+                                            @if ($formation->tarif)
+                                                <p><strong>Tarif :</strong>
+                                                    {{ number_format($formation->tarif, 0, ',', ' ') }} €
+                                                </p>
+                                            @endif
+                                        </td>
+                                    </tr>
 
-            <p class="signature">L'équipe pédagogique<br>{{ config('app.name') }}</p>
+                                    <tr>
+                                        <td>
+                                            <table class="contact-box" border="0" cellpadding="0"
+                                                cellspacing="0" width="100%">
+                                                <tr>
+                                                    <td>
+                                                        Pour toute question : <a
+                                                            href="mailto:contact@wizi-learn.com"
+                                                            style="color: #feb823; text-decoration: none;">contact@wizi-learn.com</a>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
 
-            <p>Pour toute assistance :<br>
-                <a href="mailto:support@example.com">support@example.com</a> | 01 23 45 67 89
-            </p>
-        </div>
+                                    <tr>
+                                        <td class="message"
+                                            style="font-size: 15px; color: #4a5568; margin-bottom: 20px; font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, 'Lucida Grande', sans-serif;">
+                                            Un conseiller de votre pôle Relation Client vous contactera
+                                            prochainement pour finaliser votre inscription.
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
 
-        <div class="footer">
-            <p>© {{ date('Y') }} {{ config('app.name') }}. Tous droits réservés.</p>
-            <p>
-                <a href="#">Mentions légales</a>
-                <a href="#">Confidentialité</a>
-                <a href="#">Préférences</a>
-            </p>
-        </div>
-    </div>
+                        <!-- Footer -->
+                        <tr>
+                            <td class="footer"
+                                style="padding: 25px; text-align: center; border-top: 1px solid #e2e8f0; background: #f8f9fa;">
+                                <table class="footer-container" border="0" cellpadding="0" cellspacing="0"
+                                    width="100%">
+                                    <tr>
+                                        <td class="footer-left"
+                                            style="width: 50%; vertical-align: top; text-align: left;">
+                                            <div style="font-size: 13px; color: #718096; line-height: 1.6;">
+                                                <strong>Contact AOPIA</strong><br />
+                                                contact@aopia.fr<br />
+                                                Tél : 09 72 51 29 04
+                                            </div>
+                                        </td>
+                                        <td class="footer-right"
+                                            style="width: 50%; vertical-align: top; text-align: right;">
+                                            <div style="font-size: 13px; color: #718096; line-height: 1.6;">
+                                                <strong>Contact Like Formation</strong><br />
+                                                likeformation@ns-conseil.com<br />
+                                                Tél : 09 74 77 59 20
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="footer-center"
+                                            style="width: 100%; text-align: center; padding-top: 15px;"
+                                            colspan="2">
+                                            <div style="font-size: 12px; color: #718096; line-height: 1.6;">
+                                                AOPIA et Like Formation sont des marques de NS-CONSEIL<br />
+                                                SIREN : 519 408 140 - Siège Social : 73 Av. du Château d'Eau 33700
+                                                MERIGNAC
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </center>
 </body>
 
 </html>
