@@ -17,7 +17,7 @@ class RankingRepository implements RankingRepositoryInterface
     public function getUserProgress(int $userId): array
     {
         $progress = Progression::where('stagiaire_id', $userId)
-            ->select('points', 'completed_quizzes', 'completed_challenges')
+            ->select('score', 'completed_quizzes', 'completed_challenges')
             ->first();
 
         if (!$progress) {
@@ -44,8 +44,8 @@ class RankingRepository implements RankingRepositoryInterface
     {
         return DB::table('progressions')
             ->join('users', 'progressions.stagiaire_id', '=', 'users.id')
-            ->select('users.id', 'users.name', 'progressions.points')
-            ->orderBy('progressions.points', 'desc')
+            ->select('users.id', 'users.name', 'progressions.score as points')
+            ->orderBy('progressions.score', 'desc')
             ->limit($limit)
             ->get()
             ->toArray();
@@ -75,10 +75,10 @@ class RankingRepository implements RankingRepositoryInterface
     private function calculateUserRank(int $userId): int
     {
         $userPoints = Progression::where('stagiaire_id', $userId)
-            ->value('points') ?? 0;
+            ->value('score') ?? 0;
 
         return DB::table('progressions')
-            ->where('points', '>', $userPoints)
+            ->where('score', '>', $userPoints)
             ->count() + 1;
     }
 
@@ -93,8 +93,8 @@ class RankingRepository implements RankingRepositoryInterface
         return DB::table('progressions')
             ->join('users', 'progressions.stagiaire_id', '=', 'users.id')
             ->where('progressions.formation_id', $formationId)
-            ->select('users.id', 'users.name', 'progressions.points')
-            ->orderBy('progressions.points', 'desc')
+            ->select('users.id', 'users.name', 'progressions.score as points')
+            ->orderBy('progressions.score', 'desc')
             ->get()
             ->toArray();
     }
@@ -122,7 +122,7 @@ class RankingRepository implements RankingRepositoryInterface
         // Calculer le nombre de quizzes complétés depuis participations
         $completedQuizzes = DB::table('participations')
             ->where('stagiaire_id', $stagiaireId)
-            ->where('status', 'completed')
+            ->where('deja_jouer', 1)
             ->count();
 
         // Pour l'instant, on met completed_challenges à 0 car on n'a pas encore implémenté cette fonctionnalité
