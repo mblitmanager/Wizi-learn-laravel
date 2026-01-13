@@ -36,10 +36,10 @@ class QuizStagiaireController extends Controller
             }
 
             // Vérifier si l'utilisateur est bien le stagiaire demandé ou a les droits d'accès
-            if ($user->id != $stagiaireId && $user->role != 'formateur' && $user->role != 'admin') {
+            if ($user->role != 'formateur' && $user->role != 'admin') {
                 // Vérifier si l'utilisateur est associé à ce stagiaire
                 $userStagiaire = $user->stagiaire;
-                if (!$userStagiaire || $userStagiaire->id != $stagiaireId) {
+                if (!$userStagiaire) {
                     return response()->json(['error' => 'non autorisé'], 403);
                 }
             }

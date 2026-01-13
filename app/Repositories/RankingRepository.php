@@ -108,7 +108,7 @@ class RankingRepository implements RankingRepositoryInterface
     public function getStagiaireRewards(int $stagiaireId): array
     {
         $progress = Progression::where('stagiaire_id', $stagiaireId)
-            ->select('points')
+            ->select('score')
             ->first();
 
         if (!$progress) {
@@ -129,7 +129,7 @@ class RankingRepository implements RankingRepositoryInterface
         $completedChallenges = 0;
 
         return [
-            'points' => $progress->points,
+            'points' => $progress->score,
             'completed_quizzes' => $completedQuizzes,
             'completed_challenges' => $completedChallenges
         ];
