@@ -216,7 +216,7 @@ class FormateurController extends Controller
                 'total' => $onlineStagiaires->count(),
             ], 200);
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Erreur getOnlineStagiaires: ' . $e->getMessage());
             return response()->json([
                 'error' => 'Erreur lors de la récupération des stagiaires en ligne',
@@ -283,15 +283,15 @@ class FormateurController extends Controller
                     return [
                         'id' => $stagiaire->id,
                         'prenom' => $stagiaire->prenom,
-                        'nom' => $stagiaire->user->name ?? '',
-                        'email' => $stagiaire->user->email ?? '',
+                        'nom' => $stagiaire->user?->name ?? '',
+                        'email' => $stagiaire->user?->email ?? '',
                         'telephone' => $stagiaire->telephone,
                         'ville' => $stagiaire->ville,
-                        'last_login_at' => $stagiaire->user->last_login_at ?? null,
-                        'last_activity_at' => $stagiaire->user->last_activity_at ?? null,
-                        'is_online' => $stagiaire->user->is_online ?? false,
-                        'last_client' => $stagiaire->user->last_client ?? null,
-                        'image' => $stagiaire->user->image ?? null,
+                        'last_login_at' => $stagiaire->user?->last_login_at ?? null,
+                        'last_activity_at' => $stagiaire->user?->last_activity_at ?? null,
+                        'is_online' => $stagiaire->user?->is_online ?? false,
+                        'last_client' => $stagiaire->user?->last_client ?? null,
+                        'image' => $stagiaire->user?->image ?? null,
                     ];
                 });
 
@@ -299,13 +299,15 @@ class FormateurController extends Controller
                 'stagiaires' => $stagiaires
             ], 200);
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Erreur getStagiaires', [
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
 
             return response()->json([
-                'error' => 'Erreur lors de la récupération des stagiaires'
+                'error' => 'Erreur lors de la récupération des stagiaires',
+                'message' => $e->getMessage()
             ], 500);
         }
     }
@@ -350,7 +352,7 @@ class FormateurController extends Controller
             
             $inactiveStagiaires = $query->get()->map(function($stagiaire) {
                 $daysSinceActivity = null;
-                if ($stagiaire->user->last_activity_at) {
+                if ($stagiaire->user?->last_activity_at) {
                     $daysSinceActivity = Carbon::parse($stagiaire->user->last_activity_at)
                         ->diffInDays(Carbon::now());
                 }
@@ -358,12 +360,12 @@ class FormateurController extends Controller
                 return [
                     'id' => $stagiaire->id,
                     'prenom' => $stagiaire->prenom,
-                    'nom' => $stagiaire->user->name ?? '',
-                    'email' => $stagiaire->user->email ?? '',
-                    'last_activity_at' => $stagiaire->user->last_activity_at,
+                    'nom' => $stagiaire->user?->name ?? '',
+                    'email' => $stagiaire->user?->email ?? '',
+                    'last_activity_at' => $stagiaire->user?->last_activity_at,
                     'days_since_activity' => $daysSinceActivity,
-                    'never_connected' => !$stagiaire->user->last_login_at,
-                    'last_client' => $stagiaire->user->last_client,
+                    'never_connected' => !$stagiaire->user?->last_login_at,
+                    'last_client' => $stagiaire->user?->last_client,
                 ];
             });
 
@@ -373,13 +375,15 @@ class FormateurController extends Controller
                 'threshold_days' => $days,
             ], 200);
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Erreur getInactiveStagiaires', [
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
 
             return response()->json([
-                'error' => 'Erreur lors de la récupération des stagiaires inactifs'
+                'error' => 'Erreur lors de la récupération des stagiaires inactifs',
+                'message' => $e->getMessage()
             ], 500);
         }
     }
@@ -399,10 +403,10 @@ class FormateurController extends Controller
                     return [
                         'id' => $stagiaire->id,
                         'prenom' => $stagiaire->prenom,
-                        'nom' => $stagiaire->user->name ?? '',
-                        'email' => $stagiaire->user->email ?? '',
+                        'nom' => $stagiaire->user?->name ?? '',
+                        'email' => $stagiaire->user?->email ?? '',
                         'created_at' => $stagiaire->created_at,
-                        'fcm_token' => $stagiaire->user->fcm_token ? 'Oui' : 'Non',
+                        'fcm_token' => ($stagiaire->user?->fcm_token) ? 'Oui' : 'Non',
                     ];
                 });
 
@@ -411,13 +415,15 @@ class FormateurController extends Controller
                 'count' => $neverConnected->count(),
             ], 200);
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Erreur getNeverConnected', [
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
 
             return response()->json([
-                'error' => 'Erreur lors de la récupération des stagiaires jamais connectés'
+                'error' => 'Erreur lors de la récupération des stagiaires jamais connectés',
+                'message' => $e->getMessage()
             ], 500);
         }
     }
@@ -442,7 +448,7 @@ class FormateurController extends Controller
                 ->first();
             
             // Dernière activité
-            $lastActivity = $stagiaire->user->last_activity_at 
+            $lastActivity = $stagiaire->user?->last_activity_at 
                 ? Carbon::parse($stagiaire->user->last_activity_at)->diffForHumans()
                 : 'Jamais';
             
@@ -450,8 +456,8 @@ class FormateurController extends Controller
                 'stagiaire' => [
                     'id' => $stagiaire->id,
                     'prenom' => $stagiaire->prenom,
-                    'nom' => $stagiaire->user->name,
-                    'email' => $stagiaire->user->email,
+                    'nom' => $stagiaire->user?->name ?? 'N/A',
+                    'email' => $stagiaire->user?->email ?? 'N/A',
                 ],
                 'quiz_stats' => [
                     'total_quiz' => $quizStats->total_quiz ?? 0,
@@ -462,20 +468,26 @@ class FormateurController extends Controller
                 ],
                 'activity' => [
                     'last_activity' => $lastActivity,
-                    'last_login' => $stagiaire->user->last_login_at,
-                    'is_online' => $stagiaire->user->is_online,
-                    'last_client' => $stagiaire->user->last_client,
+                    'last_login' => $stagiaire->user?->last_login_at,
+                    'is_online' => $stagiaire->user?->is_online ?? false,
+                    'last_client' => $stagiaire->user?->last_client,
                 ],
             ], 200);
 
-        } catch (\Exception $e) {
-            Log::error('Erreur getStagiaireStats', [
-                'error' => $e->getMessage()
-            ]);
-
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'error' => 'Stagiaire non trouvé'
             ], 404);
+        } catch (\Throwable $e) {
+            Log::error('Erreur getStagiaireStats', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'error' => 'Erreur lors de la récupération des statistiques',
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 

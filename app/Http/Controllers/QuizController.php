@@ -740,8 +740,16 @@ class QuizController extends Controller
                 'score' => $score,
                 'correct_answers' => $correctAnswers,
                 'total_questions' => $totalQuestions,
-                'time_spent' => $request->timeSpent,
                 'completion_time' => now()
+            ]);
+
+            // Mettre à jour la participation
+            $participation->update([
+                'status' => 'completed',
+                'score' => $score,
+                'correct_answers' => $correctAnswers,
+                'time_spent' => $request->timeSpent,
+                'completed_at' => now()
             ]);
 
             // TRAITEMENT DES ANSWERS
@@ -1809,6 +1817,7 @@ class QuizController extends Controller
 
         $participation = QuizParticipation::where('user_id', $user->id)
             ->where('quiz_id', $quizId)
+            ->where('status', 'in_progress')
             ->first();
 
         if (!$participation) {
