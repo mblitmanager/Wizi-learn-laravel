@@ -22,9 +22,33 @@ class RankingController extends Controller
     public function getGlobalRanking()
     {
         try {
-            // Récupérer tous les classements avec leurs relations
-            $classements = Classement::with(['stagiaire.user', 'quiz'])
-                ->get()
+            $period = request('period', 'all');
+            $quarter = (int) request('quarter', 0);
+            $month = request('month') ? (int) request('month') : null;
+            $year = request('year') ? (int) request('year') : now()->year;
+
+            Log::info('Global ranking requested', ['period' => $period, 'quarter' => $quarter, 'month' => $month, 'year' => $year]);
+
+            $query = Classement::with(['stagiaire.user', 'quiz']);
+
+            if ($period === 'week') {
+                $query->where('updated_at', '>=', now()->startOfWeek());
+            } elseif ($period === 'month') {
+                $m = $month ?? now()->month;
+                $query->whereMonth('updated_at', $m)->whereYear('updated_at', $year);
+            } elseif ($period === 'all' && $quarter) {
+                $start = ($quarter - 1) * 3 + 1;
+                $end = $start + 2;
+                $query->whereBetween(DB::raw('MONTH(updated_at)'), [$start, $end])->whereYear('updated_at', $year);
+            }
+
+            $raw = $query->get();
+
+            if ($raw->isEmpty()) {
+                return response()->json([]);
+            }
+
+            $classements = $raw
                 ->groupBy('stagiaire_id')
                 ->map(function ($group) {
                     $totalPoints = $group->sum('points');
@@ -37,13 +61,11 @@ class RankingController extends Controller
                         'totalPoints' => $totalPoints,
                         'quizCount' => $group->count(),
                         'averageScore' => $group->avg('points'),
-                        // Le level sera ajouté après le map
                     ];
                 })
                 ->sortByDesc('totalPoints')
                 ->values();
 
-            // Ajouter le rang et le level
             $classements = $classements->map(function ($item, $index) {
                 $level = $this->rankingService->calculateLevel($item['totalPoints']);
                 return [
@@ -55,15 +77,8 @@ class RankingController extends Controller
 
             return response()->json($classements);
         } catch (\Exception $e) {
-            Log::error('Erreur dans getGlobalClassement', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return response()->json([
-                'error' => 'Une erreur est survenue lors de la récupération du classement global',
-                'message' => $e->getMessage()
-            ], 500);
+            Log::error('Erreur dans getGlobalClassement', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            return response()->json(['error' => 'Une erreur est survenue lors de la récupération du classement global', 'message' => $e->getMessage()], 500);
         }
     }
     public function getMyRanking()
@@ -74,15 +89,41 @@ class RankingController extends Controller
             if (!isset($user->relations['stagiaire'])) {
                 $user->load('stagiaire');
             }
-
             $stagiaire = $user->stagiaire;
             if (!$stagiaire) {
                 return response()->json(['error' => 'non autorisé'], 403);
             }
 
-            // Récupérer tous les classements avec leurs relations
-            $classements = Classement::with(['stagiaire.user', 'quiz'])
-                ->get()
+            $period = request('period', 'all');
+            $quarter = (int) request('quarter', 0);
+            $month = request('month') ? (int) request('month') : null;
+            $year = request('year') ? (int) request('year') : now()->year;
+
+            $query = Classement::with(['stagiaire.user', 'quiz']);
+            if ($period === 'week') {
+                $query->where('updated_at', '>=', now()->startOfWeek());
+            } elseif ($period === 'month') {
+                $m = $month ?? now()->month;
+                $query->whereMonth('updated_at', $m)->whereYear('updated_at', $year);
+            } elseif ($period === 'all' && $quarter) {
+                $start = ($quarter - 1) * 3 + 1;
+                $end = $start + 2;
+                $query->whereBetween(DB::raw('MONTH(updated_at)'), [$start, $end])->whereYear('updated_at', $year);
+            }
+
+            $raw = $query->get();
+            if ($raw->isEmpty()) {
+                return response()->json([
+                    'stagiaire' => ['id' => (string)$stagiaire->id, 'prenom' => $stagiaire->prenom, 'image' => $stagiaire->user->image ?? null],
+                    'totalPoints' => 0,
+                    'quizCount' => 0,
+                    'averageScore' => 0,
+                    'rang' => 0,
+                    'level' => 0
+                ]);
+            }
+
+            $classements = $raw
                 ->groupBy('stagiaire_id')
                 ->map(function ($group) {
                     $totalPoints = $group->sum('points');
@@ -100,7 +141,6 @@ class RankingController extends Controller
                 ->sortByDesc('totalPoints')
                 ->values();
 
-            // Ajouter le rang et le level
             $classements = $classements->map(function ($item, $index) {
                 $level = $this->rankingService->calculateLevel($item['totalPoints']);
                 return [
@@ -110,13 +150,12 @@ class RankingController extends Controller
                 ];
             });
 
-            // Trouver le classement de l'utilisateur connecté
             $myClassement = $classements->first(function ($item) use ($stagiaire) {
                 return $item['stagiaire']['id'] == (string)$stagiaire->id;
             });
 
             if (!$myClassement) {
-                return response()->json(['error' => 'Aucun classement trouvé pour ce stagiaire'], 404);
+                return response()->json(['stagiaire' => ['id' => (string)$stagiaire->id, 'prenom' => $stagiaire->prenom, 'image' => $stagiaire->user->image ?? null], 'totalPoints' => 0, 'quizCount' => 0, 'averageScore' => 0, 'rang' => 0, 'level' => 0]);
             }
 
             return response()->json($myClassement);
@@ -193,10 +232,26 @@ class RankingController extends Controller
                 }
             }
 
-            // Récupérer le classement global
-            $classements = Classement::with(['stagiaire.user', 'quiz'])
-                ->get()
-                ->groupBy('stagiaire_id')
+            $period = request('period', 'all');
+            $quarter = (int) request('quarter', 0);
+            $month = request('month') ? (int) request('month') : null;
+            $year = request('year') ? (int) request('year') : now()->year;
+
+            $query = Classement::with(['stagiaire.user', 'quiz']);
+            if ($period === 'week') {
+                $query->where('updated_at', '>=', now()->startOfWeek());
+            } elseif ($period === 'month') {
+                $m = $month ?? now()->month;
+                $query->whereMonth('updated_at', $m)->whereYear('updated_at', $year);
+            } elseif ($period === 'all' && $quarter) {
+                $start = ($quarter - 1) * 3 + 1;
+                $end = $start + 2;
+                $query->whereBetween(DB::raw('MONTH(updated_at)'), [$start, $end])->whereYear('updated_at', $year);
+            }
+
+            $raw = $query->get();
+
+            $classements = $raw->groupBy('stagiaire_id')
                 ->map(function ($group) {
                     return [
                         'stagiaire' => [
@@ -212,7 +267,6 @@ class RankingController extends Controller
                 ->sortByDesc('totalPoints')
                 ->values();
 
-            // Trouver le classement de l'utilisateur connecté
             $myClassement = $classements->first(function ($item) use ($user) {
                 return $item['stagiaire']['id'] == (string)$user->stagiaire->id;
             });

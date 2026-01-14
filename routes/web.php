@@ -139,6 +139,11 @@ Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function
     // Routes pour la réinitialisation des données
     Route::get('/parametre/reset-data', [ParametreAdminController::class, 'showResetData'])->name('admin.parametre.reset-data');
     Route::post('/parametre/reset-data', [ParametreAdminController::class, 'resetData'])->name('admin.parametre.reset-data.post');
+    
+    // Data reset via Node.js API (new interface)
+    Route::get('/data-reset', function() {
+        return view('admin.data-reset');
+    })->name('admin.data-reset');
 
     Route::resource('parametre', ParametreAdminController::class);
     Route::put('/parametre/{id}/update-image', [ParametreAdminController::class, 'updateImage'])->name('parametre.updateImage');

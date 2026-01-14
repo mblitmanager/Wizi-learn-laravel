@@ -211,7 +211,7 @@ class QuizController extends Controller
                 if (!$quiz) return null; // Handle deleted quizzes safely
 
                 $niveau = $quiz->niveau ?? 'débutant';
-                
+
                 // Use progression's stored total if available, or quiz aggregation
                 $totalQuestions = $progression->total_questions ?? $quiz->questions_count ?? 0;
 
@@ -230,7 +230,7 @@ class QuizController extends Controller
                         'categorie' => $quiz->formation->categorie,
                     ] : null,
                     // Questions removed for performance
-                    'questions' => [], 
+                    'questions' => [],
                 ];
                 return [
                     'id' => (string) $progression->id,
@@ -1021,13 +1021,22 @@ class QuizController extends Controller
     {
         try {
             $period = request('period', 'all');
-            Log::info('Global ranking requested with period: ' . $period);
+            $quarter = (int) request('quarter', 0);
+            $month = request('month') ? (int) request('month') : null;
+            $year = request('year') ? (int) request('year') : now()->year;
+
+            Log::info('Global ranking requested', [
+                'period' => $period,
+                'quarter' => $quarter,
+                'month' => $month,
+                'year' => $year
+            ]);
 
             // Charger les classements avec stagiaire + user + formateurs + leurs formations
             $query = Classement::with([
                 'stagiaire.user',
                 'stagiaire.formateurs.user',
-                'stagiaire.catalogue_formations.formation', // Ajouter cette relation
+                'stagiaire.catalogue_formations.formation',
                 'quiz'
             ]);
 
@@ -1035,11 +1044,22 @@ class QuizController extends Controller
             if ($period === 'week') {
                 $query->where('updated_at', '>=', now()->startOfWeek());
             } elseif ($period === 'month') {
-                $query->where('updated_at', '>=', now()->startOfMonth());
+                $m = $month ?? now()->month;
+                $query->whereMonth('updated_at', $m)->whereYear('updated_at', $year);
+            } elseif ($period === 'all' && $quarter) {
+                $start = ($quarter - 1) * 3 + 1;
+                $end = $start + 2;
+                $query->whereBetween(DB::raw('MONTH(updated_at)'), [$start, $end])->whereYear('updated_at', $year);
             }
 
-            $classements = $query->get()
+            $raw = $query->get();
 
+            if ($raw->isEmpty()) {
+                // Conserver la même forme (tableau) — le client affichera 0 ou vide selon sa logique
+                return response()->json([]);
+            }
+
+            $classements = $raw
                 ->groupBy('stagiaire_id')
                 ->map(function ($group) {
                     $totalPoints = $group->sum('points');
@@ -1056,7 +1076,6 @@ class QuizController extends Controller
                             'image' => $stagiaire->user->image ?? null,
                         ],
                         'formateurs' => $stagiaire->formateurs->map(function ($formateur) use ($stagiaire) {
-                            // Récupérer uniquement les formations que ce formateur a assignées à ce stagiaire
                             $formationsAssignees = $stagiaire->catalogue_formations
                                 ->where('pivot.formateur_id', $formateur->id)
                                 ->map(function ($catalogueFormation) {
@@ -1087,7 +1106,6 @@ class QuizController extends Controller
                                 'formations' => $formationsAssignees
                             ];
                         })->filter(function ($formateur) {
-                            // Filtrer les formateurs qui ont au moins une formation assignée au stagiaire
                             return $formateur['formations']->isNotEmpty();
                         })->values(),
                         'totalPoints' => $totalPoints,
@@ -1098,10 +1116,7 @@ class QuizController extends Controller
                 ->sortByDesc('totalPoints')
                 ->values()
                 ->map(function ($item, $index) {
-                    return [
-                        ...$item,
-                        'rang' => $index + 1,
-                    ];
+                    return array_merge($item, ['rang' => $index + 1]);
                 });
 
             return response()->json($classements);
