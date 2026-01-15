@@ -829,10 +829,57 @@ class FormateurController extends Controller
     public function getAllVideos(Request $request)
     {
         try {
-            $videos = DB::table('medias')
-                ->where('type', 'video')
-                ->orWhere('type', 'LIKE', '%video%')
-                ->select('id', 'titre', 'description', 'url', 'type', 'created_at')
+            $user = $request->user();
+            $query = DB::table('medias')
+                ->where(function($q) {
+                    $q->where('type', 'video')
+                      ->orWhere('type', 'LIKE', '%video%');
+                });
+
+            // Si c'est un formateur, on filtre par ses formations
+            if (in_array($user->role, ['formateur', 'formatrice'])) {
+                $formateurModel = Formateur::where('user_id', $user->id)->first();
+                
+                if ($formateurModel) {
+                    $formationIds = DB::table('formateur_catalogue_formation')
+                        ->join('catalogue_formations', 'formateur_catalogue_formation.catalogue_formation_id', '=', 'catalogue_formations.id')
+                        ->where('formateur_catalogue_formation.formateur_id', $formateurModel->id)
+                        ->pluck('catalogue_formations.formation_id')
+                        ->filter()
+                        ->unique()
+                        ->toArray();
+
+                    if (!empty($formationIds)) {
+                        $query->whereIn('formation_id', $formationIds);
+                    } else {
+                        // Si aucune formation n'est assignée explicitly via le pivot, 
+                        // on peut tenter de voir si le formateur est lié via les stagiaires (fallback)
+                        $fallbackFormationIds = DB::table('formateur_stagiaire')
+                            ->join('stagiaire_catalogue_formations', 'formateur_stagiaire.stagiaire_id', '=', 'stagiaire_catalogue_formations.stagiaire_id')
+                            ->join('catalogue_formations', 'stagiaire_catalogue_formations.catalogue_formation_id', '=', 'catalogue_formations.id')
+                            ->where('formateur_stagiaire.formateur_id', $formateurModel->id)
+                            ->pluck('catalogue_formations.formation_id')
+                            ->filter()
+                            ->unique()
+                            ->toArray();
+
+                        if (!empty($fallbackFormationIds)) {
+                            $query->whereIn('formation_id', $fallbackFormationIds);
+                        } else {
+                            // Si vraiment rien, on retourne une liste vide pour la sécurité
+                            return response()->json([
+                                'videos' => [],
+                                'total' => 0,
+                                'message' => 'Aucune formation assignée trouvée'
+                            ], 200);
+                        }
+                    }
+                } else {
+                    return response()->json(['error' => 'Profil formateur non trouvé'], 404);
+                }
+            }
+
+            $videos = $query->select('id', 'titre', 'description', 'url', 'type', 'created_at', 'formation_id')
                 ->orderBy('created_at', 'desc')
                 ->get();
 
