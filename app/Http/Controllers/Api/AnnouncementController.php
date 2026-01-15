@@ -178,30 +178,32 @@ class AnnouncementController extends Controller
     private function getScopedStagiaireUsers($sender)
     {
         if ($sender->role === 'admin') {
-            return User::where('role', 'stagiaire')->get();
+            return User::where('role', 'stagiaire')->with(['stagiaire.formations'])->get();
         }
 
         if ($sender->role === 'formateur' || $sender->role === 'formatrice') {
             $formateur = Formateur::where('user_id', $sender->id)->first();
             if (!$formateur) return collect();
 
-            return User::whereHas('stagiaire', function($q) use ($formateur) {
-                $q->whereHas('formateurs', function($formateurQ) use ($formateur) {
-                    $formateurQ->where('formateurs.id', $formateur->id);
-                });
-            })->get();
+            return User::with(['stagiaire.formations'])
+                ->whereHas('stagiaire', function($q) use ($formateur) {
+                    $q->whereHas('formateurs', function($formateurQ) use ($formateur) {
+                        $formateurQ->where('formateurs.id', $formateur->id);
+                    });
+                })->get();
         }
 
         if ($sender->role === 'commercial') {
             $commercial = Commercial::where('user_id', $sender->id)->first();
             if (!$commercial) return collect();
              
-             return User::whereHas('stagiaire', function($q) use ($commercial) {
-                // Assuming relation name is 'commercials' in Stagiaire model as verified in Model file
-                $q->whereHas('commercials', function($commQ) use ($commercial) {
-                    $commQ->where('commercials.id', $commercial->id);
-                });
-            })->get();
+             return User::with(['stagiaire.formations'])
+                ->whereHas('stagiaire', function($q) use ($commercial) {
+                    // Assuming relation name is 'commercials' in Stagiaire model as verified in Model file
+                    $q->whereHas('commercials', function($commQ) use ($commercial) {
+                        $commQ->where('commercials.id', $commercial->id);
+                    });
+                })->get();
         }
 
         return collect();
@@ -220,7 +222,22 @@ class AnnouncementController extends Controller
         } else {
             // Formateur / Commercial -> Only their stagiaires
             $recipients = $this->getScopedStagiaireUsers($user)->map(function($u) {
-                return $u->only(['id', 'name', 'email', 'role']);
+                // Ensure stagiaire relation is loaded to get formations
+                $formationIds = [];
+                if ($u->stagiaire) {
+                    $formationIds = $u->stagiaire->formations->pluck('id')->toArray();
+                }
+                
+                return [
+                    'id' => $u->id,
+                    'name' => $u->name,
+                    'email' => $u->email,
+                    'role' => $u->role,
+                    'is_online' => $u->is_online,
+                    'last_login_at' => $u->last_login_at,
+                    'last_activity_at' => $u->last_activity_at,
+                    'formation_ids' => $formationIds
+                ];
             });
         }
 

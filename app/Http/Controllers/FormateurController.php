@@ -274,11 +274,29 @@ class FormateurController extends Controller
     public function getStagiaires(Request $request)
     {
         try {
-            $formateur = $request->user();
+            $user = $request->user();
             
-            // Récupérer tous les stagiaires avec leurs informations user
-            $stagiaires = Stagiaire::with(['user'])
-                ->get()
+            // Vérification du rôle
+            if (!in_array($user->role, ['admin', 'commercial', 'formateur', 'formatrice'])) {
+                return response()->json(['error' => 'Accès refusé'], 403);
+            }
+
+            $formateurModel = Formateur::where('user_id', $user->id)->first();
+            $formateurId = $formateurModel ? $formateurModel->id : null;
+            
+            // Récupérer les stagiaires (filtrer par formateur si c'est un formateur)
+            $query = Stagiaire::with(['user']);
+            
+            if (in_array($user->role, ['formateur', 'formatrice'])) {
+                if (!$formateurId) {
+                    return response()->json(['error' => 'Profil formateur non trouvé'], 404);
+                }
+                $query->whereHas('formateurs', function($q) use ($formateurId) {
+                    $q->where('formateurs.id', $formateurId);
+                });
+            }
+            
+            $stagiaires = $query->get()
                 ->map(function($stagiaire) {
                     return [
                         'id' => $stagiaire->id,
@@ -506,6 +524,24 @@ class FormateurController extends Controller
             ]);
 
             $recipientIds = $request->input('recipient_ids');
+            $user = $request->user();
+            $formateurModel = Formateur::where('user_id', $user->id)->first();
+            $formateurId = $formateurModel ? $formateurModel->id : null;
+
+            // Security check: ensure recipients belong to this formateur (if not admin/commercial)
+            if (in_array($user->role, ['formateur', 'formatrice'])) {
+                if (!$formateurId) return response()->json(['error' => 'Profil formateur non trouvé'], 404);
+                
+                $ownedCount = DB::table('formateur_stagiaire')
+                    ->where('formateur_id', $formateurId)
+                    ->whereIn('stagiaire_id', $recipientIds)
+                    ->count();
+                
+                if ($ownedCount !== count(array_unique($recipientIds))) {
+                    return response()->json(['error' => 'Certains destinataires ne font pas partie de votre liste.'], 403);
+                }
+            }
+
             $title = $request->input('title');
             $body = $request->input('body');
             $data = $request->input('data', []);
@@ -585,6 +621,24 @@ class FormateurController extends Controller
             ]);
 
             $recipientIds = $request->input('recipient_ids');
+            $user = $request->user();
+            $formateurModel = Formateur::where('user_id', $user->id)->first();
+            $formateurId = $formateurModel ? $formateurModel->id : null;
+
+            // Security check: ensure recipients belong to this formateur (if not admin/commercial)
+            if (in_array($user->role, ['formateur', 'formatrice'])) {
+                if (!$formateurId) return response()->json(['error' => 'Profil formateur non trouvé'], 404);
+                
+                $ownedCount = DB::table('formateur_stagiaire')
+                    ->where('formateur_id', $formateurId)
+                    ->whereIn('stagiaire_id', $recipientIds)
+                    ->count();
+                
+                if ($ownedCount !== count(array_unique($recipientIds))) {
+                    return response()->json(['error' => 'Certains destinataires ne font pas partie de votre liste.'], 403);
+                }
+            }
+
             $subject = $request->input('subject');
             $message = $request->input('message');
 
