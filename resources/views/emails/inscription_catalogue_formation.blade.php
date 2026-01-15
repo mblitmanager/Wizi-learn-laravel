@@ -272,7 +272,7 @@
                                                 </table>
                                             </td>
                                         </tr>
-
+<!--
                                         <tr>
                                             <td>
                                                 <div class="formation-title">
@@ -284,15 +284,16 @@
                                                     </p>
                                                 @endif
                                             </td>
-                                        </tr>
+                                        </tr> -->
 
                                         <tr>
                                             <td>
                                                 <div class="bullet-points">
                                                     <div>Profitez d'une formation accessible à tous les niveaux, de
                                                         l'initiation des débutants jusqu'au perfectionnement</div>
-                                                    <div>Assurez-vous d'avoir à disposition le matériel informatique
-                                                        approprié</div>
+                                                    @if (!empty($catalogueFormation->prerequis))
+                                                        <div>{{ $catalogueFormation->prerequis }}</div>
+                                                    @endif
                                                     <div>Utilisez l'environnement Windows avec des connaissances de base
                                                     </div>
                                                 </div>
@@ -584,7 +585,7 @@
                                             </td>
                                         </tr>
 
-                                        <tr>
+                                        <!-- <tr>
                                             <td>
                                                 <div class="formation-title">
                                                     {{ strtoupper($catalogueFormation->titre) }}</div>
@@ -595,17 +596,20 @@
                                                     </p>
                                                 @endif
                                             </td>
-                                        </tr>
+                                        </tr> -->
 
                                         <tr>
                                             <td>
                                                 <div class="bullet-points">
                                                     <div>Profitez d'une formation accessible à tous les niveaux, de
                                                         l'initiation des débutants jusqu'au perfectionnement</div>
-                                                    <div>Assurez-vous d'avoir à disposition le matériel informatique
-                                                        approprié</div>
-                                                    <div>Utilisez l'environnement Windows avec des connaissances de base
-                                                    </div>
+                                                    @if (!empty($catalogueFormation->prerequis))
+                                                        <div>{{ $catalogueFormation->prerequis }}</div>
+                                                    @endif
+                                                    <!-- <div>Assurez-vous d'avoir à disposition le matériel informatique
+                                                        approprié</div> -->
+                                                    <!-- <div>Utilisez l'environnement Windows avec des connaissances de base
+                                                    </div> -->
                                                 </div>
                                             </td>
                                         </tr>

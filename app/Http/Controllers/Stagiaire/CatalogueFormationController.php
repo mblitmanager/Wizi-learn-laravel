@@ -220,11 +220,9 @@ class CatalogueFormationController extends Controller
                     'formation' => function ($q) {
                         $q->select(['id', 'titre', 'categorie', 'image', 'duree', 'statut']);
                     },
-                    'formateurs',
-                    'stagiaires' => function ($q) {
-                         $q->select('id'); // Optimisation: On n'a pas besoin de tout le stagiaire ici
-                    }
-                ]);
+                    'formateurs'
+                ])
+                ->withCount('stagiaires'); // Utiliser withCount au lieu de with pour éviter l'ambiguïté SQL
 
             // Filtrer par catégorie
             if ($category && $category !== 'Tous') {
@@ -273,7 +271,7 @@ class CatalogueFormationController extends Controller
                         'statut' => $catalogue->formation->statut
                     ] : null,
                     'formateurs' => $catalogue->formateurs->map(fn($f) => $f->id)->toArray(),
-                    'stagiaires_count' => $catalogue->stagiaires->count() 
+                    'stagiaires_count' => $catalogue->stagiaires_count // Utiliser la valeur calculée par withCount 
                 ];
             });
 
