@@ -35,11 +35,15 @@ class NotificationService
                     'read' => false
                 ]);
 
-                event(new TestNotification([
-                    'type' => 'quiz',
-                    'message' => "Un nouveau quiz \"{$quizTitle}\" est disponible !",
-                    'quiz_title' => $quizTitle,
-                ]));
+                try {
+                    event(new TestNotification([
+                        'type' => 'quiz',
+                        'message' => "Un nouveau quiz \"{$quizTitle}\" est disponible !",
+                        'quiz_title' => $quizTitle,
+                    ]));
+                } catch (\Exception $e) {
+                    \Log::warning('Erreur lors du broadcast Pusher pour quiz: ' . $e->getMessage());
+                }
             }
         }
     }
@@ -89,15 +93,19 @@ class NotificationService
             ],
             'read' => false
         ]);
-        // Optionnel : broadcast Pusher
-        event(new \App\Events\TestNotification([
-            'type' => 'formation',
-            'message' => $message,
-            // 'formation_id' => $formationId,
-            'formation_title' => $formationTitle,
-            'date_debut' => $dateDebut,
-            // 'user_id' => $userId
-        ]));
+        // Optionnel : broadcast Pusher (avec gestion d'erreur)
+        try {
+            event(new \App\Events\TestNotification([
+                'type' => 'formation',
+                'message' => $message,
+                // 'formation_id' => $formationId,
+                'formation_title' => $formationTitle,
+                'date_debut' => $dateDebut,
+                // 'user_id' => $userId
+            ]));
+        } catch (\Exception $e) {
+            \Log::warning('Erreur lors du broadcast Pusher pour formation: ' . $e->getMessage());
+        }
     }
 
     public function notifyMediaCreated(int $userId, string $mediaTitle, int $mediaId): void
@@ -114,14 +122,18 @@ class NotificationService
             ],
             'read' => false
         ]);
-        // Broadcast temps réel Pusher
-        event(new \App\Events\TestNotification([
-            'type' => 'media',
-            'message' => $message,
-            // 'media_id' => $mediaId,
-            'media_title' => $mediaTitle,
-            // 'user_id' => $userId
-        ]));
+        // Broadcast temps réel Pusher (avec gestion d'erreur)
+        try {
+            event(new \App\Events\TestNotification([
+                'type' => 'media',
+                'message' => $message,
+                // 'media_id' => $mediaId,
+                'media_title' => $mediaTitle,
+                // 'user_id' => $userId
+            ]));
+        } catch (\Exception $e) {
+            \Log::warning('Erreur lors du broadcast Pusher pour media: ' . $e->getMessage());
+        }
     }
 
     public function notifyCustom(int $userId, string $type, string $message): void
@@ -134,12 +146,17 @@ class NotificationService
             'data' => [],
             'read' => false
         ]);
-        // Optionnel : broadcast Pusher
-        event(new \App\Events\TestNotification([
-            'type' => $type,
-            'message' => $message,
-            'user_id' => $userId
-        ]));
+        // Optionnel : broadcast Pusher (avec gestion d'erreur pour éviter que l'inscription échoue)
+        try {
+            event(new \App\Events\TestNotification([
+                'type' => $type,
+                'message' => $message,
+                'user_id' => $userId
+            ]));
+        } catch (\Exception $e) {
+            // Log l'erreur mais ne fait pas échouer l'inscription
+            \Log::warning('Erreur lors du broadcast Pusher pour notification: ' . $e->getMessage());
+        }
     }
 
     /**

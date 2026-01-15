@@ -72,21 +72,32 @@ class InscriptionCatalogueFormationController extends Controller
                 Mail::to($email)->send(new InscriptionCatalogueFormation($stagiaire, $catalogueFormation, true));
             }
 
-            // Notification pour le stagiaire
-            $this->notificationService->notifyCustom(
-                $user->id,
-                'inscription',
-                "Nous avons bien reçu votre demande d'inscription, votre conseiller/conseillère va prendre contact avec vous."
-            );
+            // Notification pour le stagiaire (ne doit pas faire échouer l'inscription)
+            try {
+                $this->notificationService->notifyCustom(
+                    $user->id,
+                    'inscription',
+                    "Nous avons bien reçu votre demande d'inscription, votre conseiller/conseillère va prendre contact avec vous."
+                );
+            } catch (\Exception $notificationError) {
+                // Log l'erreur mais continue le processus d'inscription
+                \Log::warning('Erreur lors de l\'envoi de la notification (inscription non affectée): ' . $notificationError->getMessage());
+            }
 
             return response()->json([
                 'success' => true,
                 'message' => 'Un mail de confirmation vous a été envoyé, votre conseiller va bientôt prendre contact avec vous.'
             ]);
         } catch (\Exception $e) {
+            \Log::error('Erreur lors de l\'inscription au catalogue formation: ' . $e->getMessage(), [
+                'user_id' => Auth::id(),
+                'catalogue_formation_id' => $request->catalogue_formation_id ?? null,
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             return response()->json([
                 'error' => 'Une erreur est survenue lors de l\'inscription.',
-                'details' => $e->getMessage()
+                'details' => config('app.debug') ? $e->getMessage() : 'Veuillez réessayer plus tard.'
             ], 500);
         }
     }
