@@ -638,12 +638,20 @@ class QuizController extends Controller
             $user = Auth::user();
             $quiz = Quiz::with(['formation', 'questions.reponses'])->findOrFail($id);
 
-            // Log complet pour le débogage
             Log::info('Début du traitement du quiz', [
                 'quiz_id' => $quiz->id,
                 'questions_in_quiz' => $quiz->questions->pluck('id'),
-                'questions_in_request' => array_keys($request->answers)
+                'questions_in_request' => array_keys($request->answers ?? [])
             ]);
+
+            // Validation de base (anti-cheat) : au moins 1 seconde par question
+            $minTime = count($request->answers ?? []) * 1; 
+            if ($request->timeSpent < $minTime) {
+                 return response()->json([
+                     'error' => 'Soumission trop rapide',
+                     'message' => 'Veuillez prendre le temps de lire les questions.'
+                 ], 422);
+            }
 
             // Validation
             $validated = $request->validate([
