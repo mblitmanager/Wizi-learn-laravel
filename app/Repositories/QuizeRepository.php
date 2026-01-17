@@ -16,12 +16,16 @@ class QuizeRepository implements QuizRepositoryInterface
 {
     public function all(): Collection
     {
-        return Quiz::with(['participations', 'questions.reponses', 'formation'])->get();
+        return Quiz::with(['participations', 'questions' => function($q) {
+            $q->whereHas('reponses');
+        }, 'questions.reponses', 'formation'])->get();
     }
 
     public function find($id): ?Quiz
     {
-        return Quiz::with(['participations', 'questions.reponses', 'formation'])->find($id);
+        return Quiz::with(['participations', 'questions' => function($q) {
+            $q->whereHas('reponses');
+        }, 'questions.reponses', 'formation'])->find($id);
     }
 
     public function create(array $data): Quiz
@@ -50,7 +54,9 @@ class QuizeRepository implements QuizRepositoryInterface
                     });
                 });
             })
-            ->with(['formation', 'questions.reponses'])
+            ->with(['formation', 'questions' => function($q) {
+                $q->whereHas('reponses');
+            }, 'questions.reponses'])
             ->get();
     }
 
@@ -91,6 +97,7 @@ class QuizeRepository implements QuizRepositoryInterface
     public function getQuizQuestions($quizId): Collection
     {
         return Questions::where('quiz_id', $quizId)
+            ->whereHas('reponses')
             ->with('reponses')
             ->get();
     }
@@ -225,6 +232,7 @@ class QuizeRepository implements QuizRepositoryInterface
     public function getQuestionsByQuizId($quizId): Collection
     {
         return Questions::where('quiz_id', $quizId)
+            ->whereHas('reponses')
             ->with('reponses')
             ->get();
     }
