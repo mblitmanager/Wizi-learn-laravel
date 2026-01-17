@@ -11,18 +11,22 @@ return new class extends Migration
      */
     public function up(): void
     {
+         if (!Schema::hasColumn('stagiaires', 'deleted_at')) {
         Schema::table('stagiaires', function (Blueprint $table) {
             $table->softDeletes();
         });
+    }
     }
 
     /**
      * Reverse the migrations.
      */
-    public function down(): void
-    {
+   public function down()
+{
+    if (Schema::hasColumn('stagiaires', 'deleted_at')) {
         Schema::table('stagiaires', function (Blueprint $table) {
             $table->dropSoftDeletes();
         });
     }
+}
 };
