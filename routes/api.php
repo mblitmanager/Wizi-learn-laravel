@@ -311,6 +311,7 @@ Route::middleware(['auth:api', 'detectClient'])->group(function () {
         Route::get('/videos', [FormateurController::class, 'getAllVideos']);
         Route::get('/video/{id}/stats', [FormateurController::class, 'getVideoStats']);
         Route::get('/formations', [FormateurController::class, 'getFormations']);
+        Route::get('/trends', [FormateurController::class, 'getTrends']);
     });
     
     // Manually triggered notifications

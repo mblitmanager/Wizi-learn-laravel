@@ -119,18 +119,19 @@ class CommercialStatisticsController extends Controller
     private function getActiveStudents(): int
     {
         return Stagiaire::whereHas('user', function ($query) {
-            $query->where('last_activity', '>=', Carbon::now()->subDays(30));
+            $query->where('last_activity_at', '>=', Carbon::now()->subDays(30));
         })->count();
     }
 
     private function getConversionRate(?string $period = null): float
     {
-        // TODO: Implement actual conversion tracking
-        // For now, return active/total ratio
+        // Conversion rate: Active students / Total students
         $total = $this->getTotalSignups($period);
-        $active = $period 
-            ? Stagiaire::whereHas('user', fn($q) => $q->where('last_activity', '>=', $this->getPeriodDate($period)))->count()
-            : $this->getActiveStudents();
+        $date = $period ? $this->getPeriodDate($period) : Carbon::now()->subDays(30);
+        
+        $active = Stagiaire::whereHas('user', function($q) use ($date) {
+            $q->where('last_activity_at', '>=', $date);
+        })->count();
         
         return $total > 0 ? round(($active / $total) * 100, 2) : 0;
     }
@@ -146,6 +147,7 @@ class CommercialStatisticsController extends Controller
                     'id' => $stagiaire->id,
                     'name' => $stagiaire->user->name ?? 'Unknown',
                     'email' => $stagiaire->user->email ?? '',
+                    'role' => $stagiaire->user->role ?? 'stagiaire',
                     'created_at' => $stagiaire->created_at->format('Y-m-d H:i'),
                 ];
             })
@@ -154,9 +156,9 @@ class CommercialStatisticsController extends Controller
 
     private function getTopSellingFormations(int $limit = 5, ?string $period = null): array
     {
-        $query = Formation::withCount(['stagiaires' => function ($q) use ($period) {
+        $query = \App\Models\CatalogueFormation::withCount(['stagiaires' => function ($q) use ($period) {
             if ($period) {
-                $q->where('created_at', '>=', $this->getPeriodDate($period));
+                $q->where('stagiaire_catalogue_formations.created_at', '>=', $this->getPeriodDate($period));
             }
         }]);
         
@@ -168,7 +170,7 @@ class CommercialStatisticsController extends Controller
                     'id' => $formation->id,
                     'name' => $formation->titre,
                     'enrollments' => $formation->stagiaires_count,
-                    'revenue' => $formation->stagiaires_count * 100, // TODO: Use actual price
+                    'price' => $formation->tarif ?? 0,
                 ];
             })
             ->toArray();
@@ -177,62 +179,81 @@ class CommercialStatisticsController extends Controller
     private function getSignupTrends(string $period = '30d'): array
     {
         $date = $this->getPeriodDate($period);
-        $groupBy = $this->getGroupByFormat($period);
         
-        return Stagiaire::where('created_at', '>=', $date)
+        // MySQL specific DATE_FORMAT for trends
+        $results = Stagiaire::where('created_at', '>=', $date)
             ->select(
-                DB::raw($groupBy . ' as date'),
+                DB::raw("DATE(created_at) as date"),
                 DB::raw('COUNT(*) as signups')
             )
             ->groupBy('date')
             ->orderBy('date')
+            ->get();
+            
+        return $results->map(function ($item) {
+            return [
+                'date' => $item->date,
+                'value' => $item->signups,
+            ];
+        })->toArray();
+    }
+
+    private function estimateRevenue(?string $period = null): float
+    {
+        $date = $period ? $this->getPeriodDate($period) : Carbon::now()->subDays(30);
+        
+        return DB::table('stagiaire_catalogue_formations')
+            ->join('catalogue_formations', 'stagiaire_catalogue_formations.catalogue_formation_id', '=', 'catalogue_formations.id')
+            ->where('stagiaire_catalogue_formations.created_at', '>=', $date)
+            ->sum('catalogue_formations.tarif') ?? 0;
+    }
+
+    private function getFormationBreakdown(?string $period = null): array
+    {
+        $date = $period ? $this->getPeriodDate($period) : Carbon::now()->subDays(30);
+        
+        return DB::table('stagiaire_catalogue_formations')
+            ->join('catalogue_formations', 'stagiaire_catalogue_formations.catalogue_formation_id', '=', 'catalogue_formations.id')
+            ->where('stagiaire_catalogue_formations.created_at', '>=', $date)
+            ->select(
+                'catalogue_formations.titre as formation_name',
+                DB::raw('COUNT(*) as count')
+            )
+            ->groupBy('catalogue_formations.id', 'catalogue_formations.titre')
             ->get()
-            ->map(function ($item) {
+            ->toArray();
+    }
+
+    private function getConversionByFormation(?string $period = null): array
+    {
+        $date = $period ? $this->getPeriodDate($period) : Carbon::now()->subDays(30);
+        
+        return \App\Models\CatalogueFormation::withCount(['stagiaires as total'])
+            ->withCount(['stagiaires as active' => function($q) use ($date) {
+                $q->whereHas('user', function($u) use ($date) {
+                    $u->where('last_activity_at', '>=', $date);
+                });
+            }])
+            ->get()
+            ->map(function($f) {
                 return [
-                    'date' => $item->date,
-                    'value' => $item->signups,
+                    'name' => $f->titre,
+                    'rate' => $f->total > 0 ? round(($f->active / $f->total) * 100, 2) : 0
                 ];
             })
             ->toArray();
     }
 
-    private function estimateRevenue(?string $period = null): float
-    {
-        // TODO: Implement with actual pricing data
-        return $this->getTotalSignups($period) * 100; // Placeholder
-    }
-
-    private function getFormationBreakdown(?string $period = null): array
-    {
-        $query = DB::table('formation_stagiaire')
-            ->join('formations', 'formation_stagiaire.formation_id', '=', 'formations.id')
-            ->select(
-                'formations.titre as formation_name',
-                DB::raw('COUNT(*) as count')
-            )
-            ->groupBy('formations.id', 'formations.titre');
-        
-        if ($period) {
-            $query->where('formation_stagiaire.created_at', '>=', $this->getPeriodDate($period));
-        }
-        
-        return $query->get()->toArray();
-    }
-
-    private function getConversionByFormation(?string $period = null): array
-    {
-        // TODO: Implement with actual conversion tracking
-        return [];
-    }
-
     private function getFunnelAnalysis(?string $period = null): array
     {
-        // TODO: Implement funnel tracking
+        $date = $period ? $this->getPeriodDate($period) : Carbon::now()->subDays(30);
+        
         return [
-            'visited' => 1000,
-            'registered' => 500,
-            'enrolled' => 300,
-            'active' => 200,
+            'registered' => Stagiaire::where('created_at', '>=', $date)->count(),
+            'enrolled' => DB::table('stagiaire_catalogue_formations')->where('created_at', '>=', $date)->distinct('stagiaire_id')->count(),
+            'active' => Stagiaire::whereHas('user', function($q) use ($date) {
+                $q->where('last_activity_at', '>=', $date);
+            })->count(),
         ];
     }
 
@@ -250,11 +271,11 @@ class CommercialStatisticsController extends Controller
     private function getGroupByFormat(string $period): string
     {
         return match ($period) {
-            '7d' => "DATE_FORMAT(created_at, '%Y-%m-%d')",
-            '30d' => "DATE_FORMAT(created_at, '%Y-%m-%d')",
-            '90d' => "DATE_FORMAT(created_at, '%Y-%W')",
-            '1y' => "DATE_FORMAT(created_at, '%Y-%m')",
-            default => "DATE_FORMAT(created_at, '%Y-%m-%d')",
+            '7d' => "%Y-%m-%d",
+            '30d' => "%Y-%m-%d",
+            '90d' => "%Y-%u",
+            '1y' => "%Y-%m",
+            default => "%Y-%m-%d",
         };
     }
 }

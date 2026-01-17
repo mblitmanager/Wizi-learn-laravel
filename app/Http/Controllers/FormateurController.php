@@ -953,14 +953,23 @@ class FormateurController extends Controller
     public function getFormations(Request $request)
     {
         try {
-            // Pour l'instant, récupérer toutes les formations
-            // À adapter selon la logique métier (liaison formateur-formation)
-            $formations = DB::table('catalogue_formations')
-                ->select('id', 'nom', 'description', 'created_at')
-                ->get()
+            $user = $request->user();
+            $formateurModel = Formateur::where('user_id', $user->id)->first();
+            $formateurId = $formateurModel ? $formateurModel->id : null;
+
+            $query = DB::table('catalogue_formations')
+                ->select('id', 'titre as nom', 'description', 'created_at');
+
+            // Optionally filter by formateur
+            if ($formateurId) {
+                $query->join('formateur_catalogue_formation', 'catalogue_formations.id', '=', 'formateur_catalogue_formation.catalogue_formation_id')
+                      ->where('formateur_catalogue_formation.formateur_id', $formateurId);
+            }
+
+            $formations = $query->get()
                 ->map(function($formation) {
                     // Compter les stagiaires par formation
-                    $stagiaireCount = DB::table('catalogue_stagiaire')
+                    $stagiaireCount = DB::table('stagiaire_catalogue_formations')
                         ->where('catalogue_formation_id', $formation->id)
                         ->count();
                     
@@ -981,6 +990,61 @@ class FormateurController extends Controller
         } catch (\Exception $e) {
             Log::error('Erreur getFormations', ['error' => $e->getMessage()]);
             return response()->json(['error' => 'Erreur récupération formations'], 500);
+        }
+    }
+
+    /**
+     * Récupère les tendances (quiz et activité) pour le dashboard formateur
+     */
+    public function getTrends(Request $request)
+    {
+        try {
+            $user = $request->user();
+            $formateurModel = Formateur::where('user_id', $user->id)->first();
+            $formateurId = $formateurModel ? $formateurModel->id : null;
+
+            // Date range: last 30 days
+            $startDate = Carbon::now()->subDays(30);
+
+            // Subquery for student IDs assigned to this formateur
+            $studentUserIds = DB::table('formateur_stagiaire')
+                ->join('stagiaires', 'formateur_stagiaire.stagiaire_id', '=', 'stagiaires.id')
+                ->where('formateur_stagiaire.formateur_id', $formateurId)
+                ->pluck('stagiaires.user_id');
+
+            // Quiz trends
+            $quizTrends = DB::table('quiz_participations')
+                ->whereIn('user_id', $studentUserIds)
+                ->where('completed_at', '>=', $startDate)
+                ->select(
+                    DB::raw('DATE(completed_at) as date'),
+                    DB::raw('COUNT(*) as count'),
+                    DB::raw('AVG(score) as avg_score')
+                )
+                ->groupBy('date')
+                ->orderBy('date')
+                ->get();
+
+            // Activity trends (based on user_app_usages or similar if exists)
+            $activityTrends = DB::table('login_histories')
+                ->whereIn('user_id', $studentUserIds)
+                ->where('created_at', '>=', $startDate)
+                ->select(
+                    DB::raw('DATE(created_at) as date'),
+                    DB::raw('COUNT(*) as count')
+                )
+                ->groupBy('date')
+                ->orderBy('date')
+                ->get();
+
+            return response()->json([
+                'quiz_trends' => $quizTrends,
+                'activity_trends' => $activityTrends,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur getTrends: ' . $e->getMessage());
+            return response()->json(['error' => 'Erreur récupération tendances'], 500);
         }
     }
 

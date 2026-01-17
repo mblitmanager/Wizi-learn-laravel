@@ -12,10 +12,13 @@ class IsCommercial
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (Auth::check() && Auth::user()->role === 'commercial') {
+        if (Auth::check() && in_array(Auth::user()->role, ['commercial', 'commerciale'])) {
             return $next($request);
         }
 
-        return redirect()->route('dashboard')->with('error', 'Access denied.');
+        return response()->json([
+            'error' => 'Accès refusé - Rôle commercial requis',
+            'status' => 403
+        ], 403);
     }
 }
