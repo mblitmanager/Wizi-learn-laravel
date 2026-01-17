@@ -94,44 +94,21 @@ class MediaController extends Controller
         $fullPath = public_path($path);
 
         if (!file_exists($fullPath)) {
-            abort(404);
-        }
-
-        $size = filesize($fullPath);
-        $start = 0;
-        $length = $size;
-        $mime = mime_content_type($fullPath);
-
-        $headers = [
-            'Content-Type' => $mime,
-            'Content-Length' => $size,
-            'Accept-Ranges' => 'bytes',
-            'Access-Control-Allow-Origin' => '*',
-            'Content-Disposition' => 'inline',
-        ];
-
-        if ($request->headers->has('Range')) {
-            $range = $request->header('Range');
-            if (preg_match('/bytes=(\d+)-(\d*)/', $range, $matches)) {
-                $start = intval($matches[1]);
-                $end = $matches[2] ? intval($matches[2]) : $size - 1;
-                $length = $end - $start + 1;
-
-                $headers['Content-Range'] = "bytes $start-$end/$size";
-                $headers['Content-Length'] = $length;
-                $status = 206;
+            // Check if it's in storage/app/public
+            $storagePath = storage_path('app/public/' . $path);
+            if (file_exists($storagePath)) {
+                $fullPath = $storagePath;
+            } else {
+                abort(404);
             }
-        } else {
-            $status = 200;
         }
 
-        // --- Début ajout pour achievement vidéo ---
+        // --- Achievement logic (runs before stream) ---
         try {
             $user = JWTAuth::parseToken()->authenticate();
             $stagiaire = $user->stagiaire;
             if ($stagiaire) {
-                // On stocke l'ID de la vidéo vue (si tutoriel)
-                $media = \App\Models\Media::where('url', $path)->first();
+                $media = \App\Models\Media::where('url', 'LIKE', '%' . $path . '%')->first();
                 if ($media && $media->categorie === 'tutoriel') {
                     $videosVues = [];
                     if (property_exists($stagiaire, 'videos_vues') && is_array($stagiaire->videos_vues)) {
@@ -144,33 +121,21 @@ class MediaController extends Controller
                         $stagiaire->videos_vues = json_encode($videosVues);
                         $stagiaire->save();
                     }
-                    // Vérification des achievements
                     app(\App\Services\StagiaireAchievementService::class)->checkAchievements($stagiaire);
                 }
             }
         } catch (\Exception $e) {
-            // On ignore les erreurs d'auth ou autres ici
+            // Ignore auth errors for streaming
         }
-        // --- Fin ajout pour achievement vidéo ---
 
-        $response = new StreamedResponse(function () use ($fullPath, $start, $length) {
-            $file = fopen($fullPath, 'rb');
-            fseek($file, $start);
-            $remaining = $length;
-            // Optimized chunk size: 1MB for better streaming performance
-            // Larger chunks reduce overhead and improve load times for video content
-            $chunkSize = 1024 * 1024; // 1MB chunks
+        $headers = [
+            'Access-Control-Allow-Origin' => '*',
+            'Content-Disposition' => 'inline',
+        ];
 
-            while (!feof($file) && $remaining > 0) {
-                $toRead = min($chunkSize, $remaining);
-                echo fread($file, $toRead);
-                flush();
-                $remaining -= $toRead;
-            }
-            fclose($file);
-        }, $status, $headers);
-
-        return $response;
+        // Using Laravel's built-in file response which handles Range requests (206 Partial Content) automatically
+        // and is highly optimized.
+        return response()->file($fullPath, $headers);
     }
 
     /**
