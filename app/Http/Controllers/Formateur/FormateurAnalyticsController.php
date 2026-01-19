@@ -1,0 +1,305 @@
+<?php
+
+namespace App\Http\Controllers\Formateur;
+
+use App\Http\Controllers\Controller;
+use App\Models\Stagiaire;
+use App\Models\Quiz;
+use App\Models\QuizParticipation;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+
+class FormateurAnalyticsController extends Controller
+{
+    /**
+     * Vérifier que l'utilisateur est un formateur
+     */
+    private function checkFormateur()
+    {
+        $user = Auth::user();
+        if ($user->role !== 'formateur' && $user->role !== 'formatrice') {
+            abort(403, 'Accès réservé aux formateurs.');
+        }
+
+        if (!$user->formateur) {
+            abort(404, 'Profil formateur non trouvé.');
+        }
+    }
+
+    /**
+     * API: Get quiz success rate analytics
+     * GET /formateur/analytics/quiz-success-rate
+     */
+    public function getQuizSuccessRate(Request $request)
+    {
+        $this->checkFormateur();
+        $formateur = Auth::user()->formateur;
+
+        $period = $request->get('period', 30); // days
+
+        // Get stagiaires for this formateur
+        $stagiaireIds = $formateur->stagiaires()->pluck('stagiaires.id');
+
+        // Get quiz participations with success rates
+        $quizStats = QuizParticipation::whereIn('stagiaire_id', $stagiaireIds)
+            ->where('status', 'completed')
+            ->where('created_at', '>=', Carbon::now()->subDays($period))
+            ->with('quiz')
+            ->get()
+            ->groupBy('quiz_id')
+            ->map(function ($participations) {
+                $total = $participations->count();
+                $quiz = $participations->first()->quiz;
+                
+                // Calculate success (score >= 50%)
+                $successful = $participations->filter(function ($p) use ($quiz) {
+                    $maxScore = $quiz->nb_points_total ?? 100;
+                    return ($p->score / $maxScore) >= 0.5;
+                })->count();
+
+                $successRate = $total > 0 ? round(($successful / $total) * 100, 1) : 0;
+
+                return [
+                    'quiz_id' => $quiz->id,
+                    'quiz_name' => $quiz->nom,
+                    'category' => $quiz->categorie ?? 'Général',
+                    'total_attempts' => $total,
+                    'successful_attempts' => $successful,
+                    'success_rate' => $successRate,
+                    'average_score' => round($participations->avg('score'), 1),
+                ];
+            })
+            ->values();
+
+        return response()->json([
+            'period_days' => $period,
+            'quiz_stats' => $quizStats,
+        ]);
+    }
+
+    /**
+     * API: Get completion time analytics
+     * GET /formateur/analytics/completion-time
+     */
+    public function getCompletionTime(Request $request)
+    {
+        $this->checkFormateur();
+        $formateur = Auth::user()->formateur;
+
+        $period = $request->get('period', 30);
+        $stagiaireIds = $formateur->stagiaires()->pluck('stagiaires.id');
+
+        // Get average completion time per quiz over time
+        $completionTrends = QuizParticipation::whereIn('stagiaire_id', $stagiaireIds)
+            ->where('status', 'completed')
+            ->where('created_at', '>=', Carbon::now()->subDays($period))
+            ->select(
+                DB::raw('DATE(created_at) as date'),
+                DB::raw('AVG(time_spent) as avg_time'),
+                DB::raw('COUNT(*) as count')
+            )
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'date' => $item->date,
+                    'avg_time_minutes' => round($item->avg_time / 60, 1),
+                    'quiz_count' => $item->count,
+                ];
+            });
+
+        // Get average time per quiz
+        $quizAvgTimes = QuizParticipation::whereIn('stagiaire_id', $stagiaireIds)
+            ->where('status', 'completed')
+            ->where('created_at', '>=', Carbon::now()->subDays($period))
+            ->with('quiz')
+            ->get()
+            ->groupBy('quiz_id')
+            ->map(function ($participations) {
+                $quiz = $participations->first()->quiz;
+                return [
+                    'quiz_name' => $quiz->nom,
+                    'category' => $quiz->categorie ?? 'Général',
+                    'avg_time_minutes' => round($participations->avg('time_spent') / 60, 1),
+                    'attempts' => $participations->count(),
+                ];
+            })
+            ->values();
+
+        return response()->json([
+            'period_days' => $period,
+            'completion_trends' => $completionTrends,
+            'quiz_avg_times' => $quizAvgTimes,
+        ]);
+    }
+
+    /**
+     * API: Get activity heatmap (which days/hours students are active)
+     * GET /formateur/analytics/activity-heatmap
+     */
+    public function getActivityHeatmap(Request $request)
+    {
+        $this->checkFormateur();
+        $formateur = Auth::user()->formateur;
+
+        $period = $request->get('period', 30);
+        $stagiaireIds = $formateur->stagiaires()->pluck('stagiaires.id');
+
+        // Get activity by day of week and hour
+        $activityByDay = QuizParticipation::whereIn('stagiaire_id', $stagiaireIds)
+            ->where('created_at', '>=', Carbon::now()->subDays($period))
+            ->select(
+                DB::raw('DAYOFWEEK(created_at) as day_of_week'),
+                DB::raw('COUNT(*) as activity_count')
+            )
+            ->groupBy('day_of_week')
+            ->orderBy('day_of_week')
+            ->get()
+            ->map(function ($item) {
+                $days = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+                return [
+                    'day' => $days[$item->day_of_week - 1] ?? 'Unknown',
+                    'activity_count' => $item->activity_count,
+                ];
+            });
+
+        $activityByHour = QuizParticipation::whereIn('stagiaire_id', $stagiaireIds)
+            ->where('created_at', '>=', Carbon::now()->subDays($period))
+            ->select(
+                DB::raw('HOUR(created_at) as hour'),
+                DB::raw('COUNT(*) as activity_count')
+            )
+            ->groupBy('hour')
+            ->orderBy('hour')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'hour' => $item->hour,
+                    'activity_count' => $item->activity_count,
+                ];
+            });
+
+        return response()->json([
+            'period_days' => $period,
+            'activity_by_day' => $activityByDay,
+            'activity_by_hour' => $activityByHour,
+        ]);
+    }
+
+    /**
+     * API: Get dropout rate (where students abandon formations/quizzes)
+     * GET /formateur/analytics/dropout-rate
+     */
+    public function getDropoutRate(Request $request)
+    {
+        $this->checkFormateur();
+        $formateur = Auth::user()->formateur;
+
+        $stagiaireIds = $formateur->stagiaires()->pluck('stagiaires.id');
+
+        // Quiz abandonment (started but not completed)
+        $quizDropout = QuizParticipation::whereIn('stagiaire_id', $stagiaireIds)
+            ->select(
+                'quiz_id',
+                DB::raw('COUNT(*) as total_attempts'),
+                DB::raw('SUM(CASE WHEN status = "completed" THEN 1 ELSE 0 END) as completed'),
+                DB::raw('SUM(CASE WHEN status != "completed" THEN 1 ELSE 0 END) as abandoned')
+            )
+            ->with('quiz')
+            ->groupBy('quiz_id')
+            ->get()
+            ->map(function ($item) {
+                $dropoutRate = $item->total_attempts > 0
+                    ? round(($item->abandoned / $item->total_attempts) * 100, 1)
+                    : 0;
+
+                return [
+                    'quiz_name' => $item->quiz->nom ?? 'Unknown',
+                    'category' => $item->quiz->categorie ?? 'Général',
+                    'total_attempts' => $item->total_attempts,
+                    'completed' => $item->completed,
+                    'abandoned' => $item->abandoned,
+                    'dropout_rate' => $dropoutRate,
+                ];
+            })
+            ->sortByDesc('dropout_rate')
+            ->values();
+
+        // Overall stats
+        $totalAttempts = $quizDropout->sum('total_attempts');
+        $totalCompleted = $quizDropout->sum('completed');
+        $totalAbandoned = $quizDropout->sum('abandoned');
+        $overallDropoutRate = $totalAttempts > 0
+            ? round(($totalAbandoned / $totalAttempts) * 100, 1)
+            : 0;
+
+        return response()->json([
+            'overall' => [
+                'total_attempts' => $totalAttempts,
+                'completed' => $totalCompleted,
+                'abandoned' => $totalAbandoned,
+                'dropout_rate' => $overallDropoutRate,
+            ],
+            'quiz_dropout' => $quizDropout,
+        ]);
+    }
+
+    /**
+     * API: Get comprehensive dashboard stats
+     * GET /formateur/analytics/dashboard
+     */
+    public function getDashboard(Request $request)
+    {
+        $this->checkFormateur();
+        $formateur = Auth::user()->formateur;
+
+        $period = $request->get('period', 30);
+        $stagiaireIds = $formateur->stagiaires()->pluck('stagiaires.id');
+
+        // Total stagiaires
+        $totalStagiaires = $stagiaireIds->count();
+
+        // Active stagiaires (participated in last 7 days)
+        $activeStagiaires = QuizParticipation::whereIn('stagiaire_id', $stagiaireIds)
+            ->where('created_at', '>=', Carbon::now()->subDays(7))
+            ->distinct('stagiaire_id')
+            ->count('stagiaire_id');
+
+        // Total quiz completions
+        $totalCompletions = QuizParticipation::whereIn('stagiaire_id', $stagiaireIds)
+            ->where('status', 'completed')
+            ->where('created_at', '>=', Carbon::now()->subDays($period))
+            ->count();
+
+        // Average score
+        $avgScore = QuizParticipation::whereIn('stagiaire_id', $stagiaireIds)
+            ->where('status', 'completed')
+            ->where('created_at', '>=', Carbon::now()->subDays($period))
+            ->avg('score');
+
+        // Trend (compare with previous period)
+        $previousCompletions = QuizParticipation::whereIn('stagiaire_id', $stagiaireIds)
+            ->where('status', 'completed')
+            ->where('created_at', '>=', Carbon::now()->subDays($period * 2))
+            ->where('created_at', '<', Carbon::now()->subDays($period))
+            ->count();
+
+        $trend = $previousCompletions > 0
+            ? round((($totalCompletions - $previousCompletions) / $previousCompletions) * 100, 1)
+            : 0;
+
+        return response()->json([
+            'period_days' => $period,
+            'summary' => [
+                'total_stagiaires' => $totalStagiaires,
+                'active_stagiaires' => $activeStagiaires,
+                'total_completions' => $totalCompletions,
+                'average_score' => round($avgScore, 1),
+                'trend_percentage' => $trend,
+            ],
+        ]);
+    }
+}

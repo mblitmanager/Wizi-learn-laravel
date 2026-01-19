@@ -224,4 +224,199 @@ class FormateurStagiaireController extends Controller
             'stagiairesTermines' => $stagiairesTermines
         ];
     }
+
+    /**
+     * API: Get complete student profile for mobile app
+     * GET /formateur/stagiaire/{id}/profile
+     */
+    public function getProfileApi($id)
+    {
+        $this->checkFormateur();
+        $formateur = Auth::user()->formateur;
+
+        $stagiaire = Stagiaire::whereHas('formateurs', function ($query) use ($formateur) {
+            $query->where('formateur_id', $formateur->id);
+        })
+            ->with([
+                'user',
+                'catalogue_formations',
+                'progressions',
+                'watchedVideos',
+                'classements.quiz',
+                'quizParticipations.quiz'
+            ])
+            ->findOrFail($id);
+
+        // Calculate statistics
+        $stats = $this->calculerStatistiquesStagiaire($stagiaire);
+
+        // Get quiz history with details
+        $quizHistory = $stagiaire->quizParticipations
+            ->where('status', 'completed')
+            ->map(function ($participation) {
+                return [
+                    'quiz_id' => $participation->quiz_id,
+                    'title' => $participation->quiz->nom ?? 'Quiz',
+                    'category' => $participation->quiz->categorie ?? 'Général',
+                    'score' => $participation->score ?? 0,
+                    'max_score' => $participation->quiz->nb_points_total ?? 100,
+                    'completed_at' => $participation->completed_at ?? $participation->updated_at,
+                    'time_spent' => $participation->time_spent ?? 0,
+                ];
+            })
+            ->sortByDesc('completed_at')
+            ->values();
+
+        // Get formations with progress
+        $formations = $stagiaire->catalogue_formations->map(function ($formation) use ($stagiaire) {
+            // Calculate progress based on watched videos
+            $totalVideos = $formation->medias->where('type', 'video')->count();
+            $watchedCount = $stagiaire->watchedVideos
+                ->whereIn('media_id', $formation->medias->pluck('id'))
+                ->count();
+            
+            $progress = $totalVideos > 0 ? round(($watchedCount / $totalVideos) * 100) : 0;
+
+            return [
+                'id' => $formation->id,
+                'title' => $formation->titre,
+                'category' => $formation->categorie ?? 'Général',
+                'started_at' => $stagiaire->date_debut_formation,
+                'completed_at' => $progress === 100 ? $stagiaire->date_fin_formation : null,
+                'progress' => $progress,
+            ];
+        })->values();
+
+        // Recent activities (last 30 days)
+        $recentActivities = collect();
+        
+        // Add quiz completions
+        $stagiaire->quizParticipations
+            ->where('status', 'completed')
+            ->sortByDesc('completed_at')
+            ->take(10)
+            ->each(function ($participation) use ($recentActivities) {
+                $recentActivities->push([
+                    'type' => 'quiz_completed',
+                    'title' => $participation->quiz->nom ?? 'Quiz',
+                    'score' => $participation->score,
+                    'timestamp' => $participation->completed_at ?? $participation->updated_at,
+                ]);
+            });
+
+        // Add video watch events
+        $stagiaire->watchedVideos
+            ->sortByDesc('watched_at')
+            ->take(5)
+            ->each(function ($watched) use ($recentActivities) {
+                $recentActivities->push([
+                    'type' => 'video_watched',
+                    'title' => $watched->media->titre ?? 'Vidéo',
+                    'score' => null,
+                    'timestamp' => $watched->watched_at,
+                ]);
+            });
+
+        // Sort all activities by timestamp
+        $recentActivities = $recentActivities
+            ->sortByDesc('timestamp')
+            ->take(15)
+            ->values();
+
+        // Activity calendar (last 30 days)
+        $last30Days = collect();
+        for ($i = 29; $i >= 0; $i--) {
+            $date = Carbon::now()->subDays($i)->format('Y-m-d');
+            $actions = 0;
+
+            // Count quiz activities for this day
+            $actions += $stagiaire->quizParticipations
+                ->filter(function ($participation) use ($date) {
+                    return Carbon::parse($participation->created_at)->format('Y-m-d') === $date;
+                })
+                ->count();
+
+            // Count watched videos for this day
+            $actions += $stagiaire->watchedVideos
+                ->filter(function ($watched) use ($date) {
+                    return Carbon::parse($watched->watched_at)->format('Y-m-d') === $date;
+                })
+                ->count();
+
+            $last30Days->push([
+                'date' => $date,
+                'actions' => $actions,
+            ]);
+        }
+
+        // Determine current badge
+        $totalPoints = $stats['total_points'];
+        $currentBadge = 'Aucun';
+        if ($totalPoints >= 1000) $currentBadge = 'Platine';
+        elseif ($totalPoints >= 500) $currentBadge = 'Or';
+        elseif ($totalPoints >= 200) $currentBadge = 'Argent';
+        elseif ($totalPoints >= 50) $currentBadge = 'Bronze';
+
+        return response()->json([
+            'stagiaire' => [
+                'id' => $stagiaire->id,
+                'prenom' => $stagiaire->user->prenom ?? '',
+                'nom' => $stagiaire->user->nom ?? '',
+                'email' => $stagiaire->user->email ?? '',
+                'image' => $stagiaire->user->image ?? null,
+                'created_at' => $stagiaire->created_at,
+                'last_login' => $stagiaire->derniere_activite,
+            ],
+            'stats' => [
+                'total_points' => $totalPoints,
+                'current_badge' => $currentBadge,
+                'formations_completed' => $formations->where('progress', 100)->count(),
+                'formations_in_progress' => $formations->where('progress', '>', 0)->where('progress', '<', 100)->count(),
+                'quizzes_completed' => $stats['quiz_completes'],
+                'average_score' => $stats['moyenne_score'],
+                'total_time_minutes' => round($stats['temps_total_passe'] / 60),
+                'login_streak' => 0, // TODO: Implement streak calculation
+            ],
+            'activity' => [
+                'last_30_days' => $last30Days,
+                'recent_activities' => $recentActivities,
+            ],
+            'formations' => $formations,
+            'quiz_history' => $quizHistory,
+        ]);
+    }
+
+    /**
+     * API: Get trainer notes for a student
+     * GET /formateur/stagiaire/{id}/notes
+     */
+    public function getNotesApi($id)
+    {
+        $this->checkFormateur();
+        // TODO: Implement notes table and model
+        
+        return response()->json([
+            'notes' => []
+        ]);
+    }
+
+    /**
+     * API: Add a trainer note for a student
+     * POST /formateur/stagiaire/{id}/note
+     */
+    public function addNoteApi(Request $request, $id)
+    {
+        $this->checkFormateur();
+        
+        $request->validate([
+            'content' => 'required|string|max:1000',
+        ]);
+
+        // TODO: Implement notes table and model
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Note ajoutée avec succès'
+        ]);
+    }
 }

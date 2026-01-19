@@ -32,6 +32,11 @@ use App\Http\Controllers\Api\Commercial\CommercialStatisticsController;
 // use App\Http\Controllers\Api\Admin\UserClientStatsController as AdminUserClientStatsController;
 use App\Http\Controllers\Api\Admin\StatisticsController as AdminStatisticsController;
 use App\Http\Controllers\Api\Formateur\FormateurStatisticsController;
+use App\Http\Controllers\Formateur\FormateurStagiaireController;
+use App\Http\Controllers\Formateur\FormateurFormationController;
+use App\Http\Controllers\Formateur\FormateurAnalyticsController;
+use App\Http\Controllers\Formateur\FormateurAlertsController;
+use App\Http\Controllers\Formateur\FormateurQuizController;
 
 // Stagiaire Controllers
 use App\Http\Controllers\Stagiaire\AchievementController as StagiaireAchievementController;
@@ -301,6 +306,42 @@ Route::middleware(['auth:api', 'detectClient'])->group(function () {
         Route::get('/stagiaires/never-connected', [FormateurController::class, 'getNeverConnected']);
         Route::get('/stagiaires/performance', [FormateurController::class, 'getStudentsPerformance']);
         Route::get('/stagiaire/{id}/stats', [FormateurController::class, 'getStagiaireStats']);
+        
+        // Student Profile API
+        Route::get('/stagiaire/{id}/profile', [FormateurStagiaireController::class, 'getProfileApi']);
+        Route::get('/stagiaire/{id}/notes', [FormateurStagiaireController::class, 'getNotesApi']);
+        Route::post('/stagiaire/{id}/note', [FormateurStagiaireController::class, 'addNoteApi']);
+        
+        // Formation Management API
+        Route::get('/formations/available', [FormateurFormationController::class, 'getAvailable']);
+        Route::get('/formations/{id}/stagiaires', [FormateurFormationController::class, 'getStagiairesByFormation']);
+        Route::post('/formations/{id}/assign', [FormateurFormationController::class, 'assignStagiaires']);
+        Route::get('/formations/{id}/stats', [FormateurFormationController::class, 'getFormationStats']);
+        Route::get('/stagiaires/unassigned/{formationId}', [FormateurFormationController::class, 'getUnassignedStagiaires']);
+        Route::put('/formations/{id}/schedule', [FormateurFormationController::class, 'updateSchedule']);
+        
+        // Analytics API
+        Route::get('/analytics/quiz-success-rate', [FormateurAnalyticsController::class, 'getQuizSuccessRate']);
+        Route::get('/analytics/completion-time', [FormateurAnalyticsController::class, 'getCompletionTime']);
+        Route::get('/analytics/activity-heatmap', [FormateurAnalyticsController::class, 'getActivityHeatmap']);
+        Route::get('/analytics/dropout-rate', [FormateurAnalyticsController::class, 'getDropoutRate']);
+        Route::get('/analytics/dashboard', [FormateurAnalyticsController::class, 'getDashboard']);
+        
+        // Alerts API
+        Route::get('/alerts', [FormateurAlertsController::class, 'getAlerts']);
+        Route::get('/alerts/stats', [FormateurAlertsController::class, 'getAlertStats']);
+        
+        // Quiz Creator API
+        Route::get('/quizzes', [FormateurQuizController::class, 'index']);
+        Route::get('/quizzes/{id}', [FormateurQuizController::class, 'show']);
+        Route::post('/quizzes', [FormateurQuizController::class, 'store']);
+        Route::put('/quizzes/{id}', [FormateurQuizController::class, 'update']);
+        Route::delete('/quizzes/{id}', [FormateurQuizController::class, 'destroy']);
+        Route::post('/quizzes/{id}/questions', [FormateurQuizController::class, 'addQuestion']);
+        Route::put('/quizzes/{quizId}/questions/{questionId}', [FormateurQuizController::class, 'updateQuestion']);
+        Route::delete('/quizzes/{quizId}/questions/{questionId}', [FormateurQuizController::class, 'deleteQuestion']);
+        Route::post('/quizzes/{id}/publish', [FormateurQuizController::class, 'publish']);
+        Route::get('/formations-list', [FormateurQuizController::class, 'getFormations']);
         
         Route::post('/send-notification', [FormateurController::class, 'sendNotification']);
         Route::post('/send-email', [FormateurController::class, 'sendEmail']);
