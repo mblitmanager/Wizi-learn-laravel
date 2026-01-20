@@ -13,61 +13,64 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Setup PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: '8.4'
-        extensions: mbstring, ctype, fileinfo, openssl, PDO, tokenizer, xml, gd, exif, pcntl, bcmath
-        coverage: none
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: mbstring, ctype, fileinfo, openssl, PDO, tokenizer, xml, gd, exif, pcntl, bcmath
+          coverage: none
 
-    - name: Validate composer.json
-      run: composer validate
+      - name: Validate composer.json
+        run: composer validate
 
-    - name: Deploy via SSH using password
-      uses: appleboy/ssh-action@v0.1.10
-      with:
-        host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USERNAME }}
-        password: ${{ secrets.SSH_PASSPHRASE }}  # <-- ton mot de passe
-        timeout: 30s
-        script_stop: true
-        script: |
+      - name: Deploy via SSH using password
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSPHRASE }} # <-- ton mot de passe
+          timeout: 30s
+          script_stop: true
+          script: |
             set -e
             cd /var/www/wizilearn
-          
+
             echo "➤ Marking directory as safe for Git..."
             git config --global --add safe.directory /var/www/wizilearn
-          
+
             echo "➤ Fixing repository permissions..."
             sudo chown -R ubuntu:ubuntu /var/www/wizilearn
             sudo chmod -R 755 /var/www/wizilearn
-          
+
             echo "➤ Pulling latest changes..."
             git fetch --all
             git reset --hard origin/main
             echo "✓ Code updated"
-          
+
             echo "➤ Installing composer dependencies..."
             composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
             echo "✓ Dependencies installed"
-          
+
+            echo "➤ Manually clearing stale configuration cache..."
+            rm -f bootstrap/cache/config.php || true
+
             echo "➤ Running Laravel optimizations..."
             php artisan optimize:clear
             php artisan config:cache
             php artisan route:cache
             php artisan view:cache
             echo "✓ Laravel optimized"
-          
+
             echo "➤ Running migrations..."
             php artisan migrate --force
             echo "✓ Database updated"
-          
+
             echo "➤ Restarting queue..."
             php artisan queue:restart
-          
+
             echo "➤ Fixing Laravel storage permissions..."
             sudo chown -R www-data:www-data storage bootstrap/cache
             sudo chmod -R 775 storage bootstrap/cache
