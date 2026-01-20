@@ -4,11 +4,11 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2c3affbdd7272c189a3e53f2b28f97ab",
+    "content-hash": "0afcf8e88ca08e0da9364602ab1a9c08",
     "packages": [
         {
             "name": "api-platform/documentation",
-            "version": "v4.2.12",
+            "version": "v4.2.13",
             "source": {
                 "type": "git",
                 "url": "https://github.com/api-platform/documentation.git",
@@ -65,13 +65,13 @@
             ],
             "description": "API Platform documentation controller.",
             "support": {
-                "source": "https://github.com/api-platform/documentation/tree/v4.2.12"
+                "source": "https://github.com/api-platform/documentation/tree/v4.2.13"
             },
             "time": "2025-12-27T22:15:57+00:00"
         },
         {
             "name": "api-platform/hal",
-            "version": "v4.2.12",
+            "version": "v4.2.13",
             "source": {
                 "type": "git",
                 "url": "https://github.com/api-platform/hal.git",
@@ -143,13 +143,13 @@
             ],
             "support": {
                 "issues": "https://github.com/api-platform/hal/issues",
-                "source": "https://github.com/api-platform/hal/tree/v4.2.12"
+                "source": "https://github.com/api-platform/hal/tree/v4.2.13"
             },
             "time": "2025-12-27T22:15:57+00:00"
         },
         {
             "name": "api-platform/hydra",
-            "version": "v4.2.12",
+            "version": "v4.2.13",
             "source": {
                 "type": "git",
                 "url": "https://github.com/api-platform/hydra.git",
@@ -230,13 +230,13 @@
                 "rest"
             ],
             "support": {
-                "source": "https://github.com/api-platform/hydra/tree/v4.2.12"
+                "source": "https://github.com/api-platform/hydra/tree/v4.2.13"
             },
             "time": "2025-12-27T22:15:57+00:00"
         },
         {
             "name": "api-platform/json-api",
-            "version": "v4.2.12",
+            "version": "v4.2.13",
             "source": {
                 "type": "git",
                 "url": "https://github.com/api-platform/json-api.git",
@@ -312,22 +312,22 @@
                 "rest"
             ],
             "support": {
-                "source": "https://github.com/api-platform/json-api/tree/v4.2.12"
+                "source": "https://github.com/api-platform/json-api/tree/v4.2.13"
             },
             "time": "2025-12-27T22:15:57+00:00"
         },
         {
             "name": "api-platform/json-schema",
-            "version": "v4.2.12",
+            "version": "v4.2.13",
             "source": {
                 "type": "git",
                 "url": "https://github.com/api-platform/json-schema.git",
-                "reference": "161d5d2eab6717261155c06de6892064db458fc0"
+                "reference": "3fd511bce06c58a3d52f24372b80ddc6700cf0e3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/api-platform/json-schema/zipball/161d5d2eab6717261155c06de6892064db458fc0",
-                "reference": "161d5d2eab6717261155c06de6892064db458fc0",
+                "url": "https://api.github.com/repos/api-platform/json-schema/zipball/3fd511bce06c58a3d52f24372b80ddc6700cf0e3",
+                "reference": "3fd511bce06c58a3d52f24372b80ddc6700cf0e3",
                 "shasum": ""
             },
             "require": {
@@ -393,22 +393,22 @@
                 "swagger"
             ],
             "support": {
-                "source": "https://github.com/api-platform/json-schema/tree/v4.2.12"
+                "source": "https://github.com/api-platform/json-schema/tree/v4.2.13"
             },
-            "time": "2025-12-27T22:15:57+00:00"
+            "time": "2026-01-12T13:36:15+00:00"
         },
         {
             "name": "api-platform/jsonld",
-            "version": "v4.2.12",
+            "version": "v4.2.13",
             "source": {
                 "type": "git",
                 "url": "https://github.com/api-platform/jsonld.git",
-                "reference": "b6a35c735e3b4b2342e64ab3172151dcb3aaf78d"
+                "reference": "ef0a361b0f29158243478d3fff5038ec2f5aa76c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/api-platform/jsonld/zipball/b6a35c735e3b4b2342e64ab3172151dcb3aaf78d",
-                "reference": "b6a35c735e3b4b2342e64ab3172151dcb3aaf78d",
+                "url": "https://api.github.com/repos/api-platform/jsonld/zipball/ef0a361b0f29158243478d3fff5038ec2f5aa76c",
+                "reference": "ef0a361b0f29158243478d3fff5038ec2f5aa76c",
                 "shasum": ""
             },
             "require": {
@@ -473,13 +473,13 @@
                 "rest"
             ],
             "support": {
-                "source": "https://github.com/api-platform/jsonld/tree/v4.2.12"
+                "source": "https://github.com/api-platform/jsonld/tree/v4.2.13"
             },
-            "time": "2025-12-27T22:15:57+00:00"
+            "time": "2026-01-12T13:36:15+00:00"
         },
         {
             "name": "api-platform/laravel",
-            "version": "v4.2.12",
+            "version": "v4.2.13",
             "source": {
                 "type": "git",
                 "url": "https://github.com/api-platform/laravel.git",
@@ -596,22 +596,22 @@
                 "swagger"
             ],
             "support": {
-                "source": "https://github.com/api-platform/laravel/tree/v4.2.12"
+                "source": "https://github.com/api-platform/laravel/tree/v4.2.13"
             },
             "time": "2026-01-09T09:57:11+00:00"
         },
         {
             "name": "api-platform/metadata",
-            "version": "v4.2.12",
+            "version": "v4.2.13",
             "source": {
                 "type": "git",
                 "url": "https://github.com/api-platform/metadata.git",
-                "reference": "429ee219f930efd274a9f4e91e92921add7f988a"
+                "reference": "590195d1038e66a039f1847b43040b7e6b78475f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/api-platform/metadata/zipball/429ee219f930efd274a9f4e91e92921add7f988a",
-                "reference": "429ee219f930efd274a9f4e91e92921add7f988a",
+                "url": "https://api.github.com/repos/api-platform/metadata/zipball/590195d1038e66a039f1847b43040b7e6b78475f",
+                "reference": "590195d1038e66a039f1847b43040b7e6b78475f",
                 "shasum": ""
             },
             "require": {
@@ -694,22 +694,22 @@
                 "swagger"
             ],
             "support": {
-                "source": "https://github.com/api-platform/metadata/tree/v4.2.12"
+                "source": "https://github.com/api-platform/metadata/tree/v4.2.13"
             },
-            "time": "2025-12-27T22:15:57+00:00"
+            "time": "2026-01-12T13:36:15+00:00"
         },
         {
             "name": "api-platform/openapi",
-            "version": "v4.2.12",
+            "version": "v4.2.13",
             "source": {
                 "type": "git",
                 "url": "https://github.com/api-platform/openapi.git",
-                "reference": "3417415125f3ebbcb620f84ef9dd1cd07e2b2621"
+                "reference": "3600d57bf2729c8fa82d831edbdd21244037ee1b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/api-platform/openapi/zipball/3417415125f3ebbcb620f84ef9dd1cd07e2b2621",
-                "reference": "3417415125f3ebbcb620f84ef9dd1cd07e2b2621",
+                "url": "https://api.github.com/repos/api-platform/openapi/zipball/3600d57bf2729c8fa82d831edbdd21244037ee1b",
+                "reference": "3600d57bf2729c8fa82d831edbdd21244037ee1b",
                 "shasum": ""
             },
             "require": {
@@ -784,22 +784,22 @@
                 "swagger"
             ],
             "support": {
-                "source": "https://github.com/api-platform/openapi/tree/v4.2.12"
+                "source": "https://github.com/api-platform/openapi/tree/v4.2.13"
             },
-            "time": "2026-01-08T18:17:35+00:00"
+            "time": "2026-01-16T15:43:25+00:00"
         },
         {
             "name": "api-platform/serializer",
-            "version": "v4.2.12",
+            "version": "v4.2.13",
             "source": {
                 "type": "git",
                 "url": "https://github.com/api-platform/serializer.git",
-                "reference": "f29558c3e212f3b9f18f222240971ea0a8f09f4c"
+                "reference": "006df770d82860922c7faee493d5d3c14906f810"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/api-platform/serializer/zipball/f29558c3e212f3b9f18f222240971ea0a8f09f4c",
-                "reference": "f29558c3e212f3b9f18f222240971ea0a8f09f4c",
+                "url": "https://api.github.com/repos/api-platform/serializer/zipball/006df770d82860922c7faee493d5d3c14906f810",
+                "reference": "006df770d82860922c7faee493d5d3c14906f810",
                 "shasum": ""
             },
             "require": {
@@ -877,22 +877,22 @@
                 "serializer"
             ],
             "support": {
-                "source": "https://github.com/api-platform/serializer/tree/v4.2.12"
+                "source": "https://github.com/api-platform/serializer/tree/v4.2.13"
             },
-            "time": "2026-01-09T09:40:33+00:00"
+            "time": "2026-01-12T13:36:15+00:00"
         },
         {
             "name": "api-platform/state",
-            "version": "v4.2.12",
+            "version": "v4.2.13",
             "source": {
                 "type": "git",
                 "url": "https://github.com/api-platform/state.git",
-                "reference": "348d19a2e5fedb01aa55ff7b866691777e54ec39"
+                "reference": "fa3e7b41bcb54e7ba6d3078de224620e422d6732"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/api-platform/state/zipball/348d19a2e5fedb01aa55ff7b866691777e54ec39",
-                "reference": "348d19a2e5fedb01aa55ff7b866691777e54ec39",
+                "url": "https://api.github.com/repos/api-platform/state/zipball/fa3e7b41bcb54e7ba6d3078de224620e422d6732",
+                "reference": "fa3e7b41bcb54e7ba6d3078de224620e422d6732",
                 "shasum": ""
             },
             "require": {
@@ -974,9 +974,9 @@
                 "swagger"
             ],
             "support": {
-                "source": "https://github.com/api-platform/state/tree/v4.2.12"
+                "source": "https://github.com/api-platform/state/tree/v4.2.13"
             },
-            "time": "2025-12-27T22:15:57+00:00"
+            "time": "2026-01-12T13:36:15+00:00"
         },
         {
             "name": "aws/aws-crt-php",
@@ -1034,16 +1034,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.369.14",
+            "version": "3.369.15",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "b40eb1177d2e621c18cd797ca6cc9efb5a0e99d9"
+                "reference": "7c62f41fb0460c3e5d5c1f70e93e726f1daa75f5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/b40eb1177d2e621c18cd797ca6cc9efb5a0e99d9",
-                "reference": "b40eb1177d2e621c18cd797ca6cc9efb5a0e99d9",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/7c62f41fb0460c3e5d5c1f70e93e726f1daa75f5",
+                "reference": "7c62f41fb0460c3e5d5c1f70e93e726f1daa75f5",
                 "shasum": ""
             },
             "require": {
@@ -1125,9 +1125,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.369.14"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.369.15"
             },
-            "time": "2026-01-15T19:10:54+00:00"
+            "time": "2026-01-16T19:18:57+00:00"
         },
         {
             "name": "barryvdh/laravel-dompdf",
@@ -2530,16 +2530,16 @@
         },
         {
             "name": "google/apiclient-services",
-            "version": "v0.428.0",
+            "version": "v0.429.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/googleapis/google-api-php-client-services.git",
-                "reference": "94a3c50a80a36cafb76e32fb76b8007e9f572deb"
+                "reference": "9dd334c8e6d3f25f91efcab86454c6bc0bc928c1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/googleapis/google-api-php-client-services/zipball/94a3c50a80a36cafb76e32fb76b8007e9f572deb",
-                "reference": "94a3c50a80a36cafb76e32fb76b8007e9f572deb",
+                "url": "https://api.github.com/repos/googleapis/google-api-php-client-services/zipball/9dd334c8e6d3f25f91efcab86454c6bc0bc928c1",
+                "reference": "9dd334c8e6d3f25f91efcab86454c6bc0bc928c1",
                 "shasum": ""
             },
             "require": {
@@ -2568,9 +2568,9 @@
             ],
             "support": {
                 "issues": "https://github.com/googleapis/google-api-php-client-services/issues",
-                "source": "https://github.com/googleapis/google-api-php-client-services/tree/v0.428.0"
+                "source": "https://github.com/googleapis/google-api-php-client-services/tree/v0.429.0"
             },
-            "time": "2026-01-12T00:58:26+00:00"
+            "time": "2026-01-19T01:08:26+00:00"
         },
         {
             "name": "google/auth",
@@ -12694,16 +12694,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "11.5.47",
+            "version": "11.5.48",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "a8c3c540923f8a3d499659b927228059bb3809d8"
+                "reference": "fe3665c15e37140f55aaf658c81a2eb9030b6d89"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/a8c3c540923f8a3d499659b927228059bb3809d8",
-                "reference": "a8c3c540923f8a3d499659b927228059bb3809d8",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/fe3665c15e37140f55aaf658c81a2eb9030b6d89",
+                "reference": "fe3665c15e37140f55aaf658c81a2eb9030b6d89",
                 "shasum": ""
             },
             "require": {
@@ -12775,7 +12775,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/phpunit/issues",
                 "security": "https://github.com/sebastianbergmann/phpunit/security/policy",
-                "source": "https://github.com/sebastianbergmann/phpunit/tree/11.5.47"
+                "source": "https://github.com/sebastianbergmann/phpunit/tree/11.5.48"
             },
             "funding": [
                 {
@@ -12799,7 +12799,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-01-15T12:00:46+00:00"
+            "time": "2026-01-16T16:26:27+00:00"
         },
         {
             "name": "sebastian/cli-parser",
