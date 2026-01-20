@@ -183,17 +183,28 @@ class FormateurController extends Controller
     public function getOnlineStagiaires(Request $request)
     {
         try {
-            $formateur = $request->user();
-            
-            // Vérification du rôle
-            if (!in_array($formateur->role, ['formateur', 'formatrice'])) {
-                return response()->json([
-                    'error' => 'Accès refusé - Rôle formateur requis'
-                ], 403);
+            $user = $request->user();
+            $formateurModel = Formateur::where('user_id', $user->id)->first();
+            $formateurId = $formateurModel ? $formateurModel->id : null;
+
+            if (!$formateurId) {
+                return response()->json(['stagiaires' => [], 'total' => 0], 200);
             }
-            
-            // Récupérer les stagiaires en ligne (is_online = 1)
+
+            // Get stagiaires linked directly OR via formations
             $onlineStagiaires = Stagiaire::with(['user', 'catalogue_formations'])
+                ->where(function($q) use ($formateurId) {
+                    // Directly linked
+                    $q->whereHas('formateurs', function($query) use ($formateurId) {
+                        $query->where('formateurs.id', $formateurId);
+                    })
+                    // OR via formations
+                    ->orWhereHas('catalogue_formations', function($query) use ($formateurId) {
+                        $query->whereHas('formateurs', function($sub) use ($formateurId) {
+                            $sub->where('formateurs.id', $formateurId);
+                        });
+                    });
+                })
                 ->whereHas('user', function($query) {
                     $query->where('is_online', 1);
                 })
@@ -205,7 +216,7 @@ class FormateurController extends Controller
                         'prenom' => $stagiaire->prenom,
                         'nom' => $stagiaire->user->name ?? '',
                         'email' => $stagiaire->user->email ?? '',
-                        'avatar' => $stagiaire->user->avatar ?? null,
+                        'avatar' => $stagiaire->user->image ?? $stagiaire->user->avatar ?? null,
                         'last_activity_at' => $stagiaire->user->last_activity_at,
                         'formations' => $formations,
                     ];
@@ -215,6 +226,8 @@ class FormateurController extends Controller
                 'stagiaires' => $onlineStagiaires,
                 'total' => $onlineStagiaires->count(),
             ], 200);
+
+        } catch (\Throwable $e) {
 
         } catch (\Throwable $e) {
             Log::error('Erreur getOnlineStagiaires: ' . $e->getMessage());
@@ -337,53 +350,66 @@ class FormateurController extends Controller
     {
         try {
             $days = $request->query('days', 7);
-            $platform = $request->query('platform'); // web, android, ios
-            $scope = $request->query('scope', 'mine'); // mine or all
+            $scope = $request->query('scope', 'mine');
             
             $thresholdDate = Carbon::now()->subDays($days);
-            
+            $user = $request->user();
+            $formateurModel = Formateur::where('user_id', $user->id)->first();
+            $formateurId = $formateurModel ? $formateurModel->id : null;
+
             $query = Stagiaire::with(['user']);
 
-            // Filtre par formateur si scope = mine
-            if ($scope === 'mine') {
-                $user = $request->user();
-                $formateurModel = Formateur::where('user_id', $user->id)->first();
-                $formateurId = $formateurModel ? $formateurModel->id : null;
-                
-                if ($formateurId) {
-                    $query->whereHas('formateurs', function($q) use ($formateurId) {
-                        $q->where('formateurs.id', $formateurId);
+            // Filtre par formateur (Direct + Formations)
+            if ($scope === 'mine' && $formateurId) {
+                $query->where(function($q) use ($formateurId) {
+                    $q->whereHas('formateurs', function($query) use ($formateurId) {
+                        $query->where('formateurs.id', $formateurId);
+                    })
+                    ->orWhereHas('catalogue_formations', function($query) use ($formateurId) {
+                        $query->whereHas('formateurs', function($sub) use ($formateurId) {
+                            $sub->where('formateurs.id', $formateurId);
+                        });
                     });
-                }
+                });
             }
 
-            $query->whereHas('user', function($q) use ($thresholdDate, $platform) {
-                $q->where(function($query) use ($thresholdDate) {
-                    $query->whereNull('last_activity_at')
-                          ->orWhere('last_activity_at', '<', $thresholdDate);
+            // Inactivity logic: last_activity_at OR last_login_at < threshold
+            $query->whereHas('user', function($q) use ($thresholdDate) {
+                $q->where(function($sub) use ($thresholdDate) {
+                    $sub->where(function($inner) use ($thresholdDate) {
+                        $inner->whereNull('last_activity_at')
+                              ->orWhere('last_activity_at', '<', $thresholdDate);
+                    })
+                    ->where(function($inner) use ($thresholdDate) {
+                        $inner->whereNull('last_login_at')
+                              ->orWhere('last_login_at', '<', $thresholdDate);
+                    });
                 });
-                
-                if ($platform) {
-                    $q->where('last_client', $platform);
-                }
             });
             
             $inactiveStagiaires = $query->get()->map(function($stagiaire) {
-                $daysSinceActivity = null;
-                if ($stagiaire->user?->last_activity_at) {
-                    $daysSinceActivity = Carbon::parse($stagiaire->user->last_activity_at)
-                        ->diffInDays(Carbon::now());
+                $lastActivity = $stagiaire->user?->last_activity_at;
+                $lastLogin = $stagiaire->user?->last_login_at;
+                
+                $maxActivity = null;
+                if ($lastActivity && $lastLogin) {
+                    $maxActivity = Carbon::parse($lastActivity)->gt(Carbon::parse($lastLogin)) ? $lastActivity : $lastLogin;
+                } else {
+                    $maxActivity = $lastActivity ?? $lastLogin;
                 }
+
+                $daysSinceActivity = $maxActivity ? Carbon::parse($maxActivity)->diffInDays(Carbon::now()) : null;
                 
                 return [
                     'id' => $stagiaire->id,
                     'prenom' => $stagiaire->prenom,
                     'nom' => $stagiaire->user?->name ?? '',
                     'email' => $stagiaire->user?->email ?? '',
-                    'last_activity_at' => $stagiaire->user?->last_activity_at,
+                    'last_activity_at' => $maxActivity,
                     'days_since_activity' => $daysSinceActivity,
-                    'never_connected' => !$stagiaire->user?->last_login_at,
+                    'never_connected' => !$lastLogin,
                     'last_client' => $stagiaire->user?->last_client,
+                    'image' => $stagiaire->user?->image ?? $stagiaire->user?->avatar,
                 ];
             });
 
@@ -710,6 +736,7 @@ class FormateurController extends Controller
     {
         try {
             $formateur = $request->user();
+            $period = $request->query('period', 'all');
             
             // Récupérer l'ID du formateur
             $formateurModel = Formateur::where('user_id', $formateur->id)->first();
@@ -719,7 +746,15 @@ class FormateurController extends Controller
             $query = DB::table('stagiaires')
                 ->join('users', 'stagiaires.user_id', '=', 'users.id')
                 ->join('stagiaire_catalogue_formations', 'stagiaires.id', '=', 'stagiaire_catalogue_formations.stagiaire_id')
-                ->leftJoin('quiz_participations', 'users.id', '=', 'quiz_participations.user_id')
+                ->leftJoin('quiz_participations', function($join) use ($period) {
+                    $join->on('users.id', '=', 'quiz_participations.user_id');
+                    
+                    if ($period === 'week') {
+                        $join->where('quiz_participations.created_at', '>=', Carbon::now()->subWeek());
+                    } elseif ($period === 'month') {
+                        $join->where('quiz_participations.created_at', '>=', Carbon::now()->subMonth());
+                    }
+                })
                 ->where('stagiaire_catalogue_formations.catalogue_formation_id', $formationId);
             
             // Filtrer par formateur si disponible
@@ -728,22 +763,38 @@ class FormateurController extends Controller
                       ->where('formateur_stagiaire.formateur_id', $formateurId);
             }
             
-            $stagiaires = $query->select(
+            $ranking = $query->select(
                     'stagiaires.id',
                     'stagiaires.prenom',
                     'users.name as nom',
                     'users.email',
+                    'users.image',
                     DB::raw('COALESCE(SUM(quiz_participations.score), 0) as total_points'),
-                    DB::raw('COUNT(quiz_participations.id) as total_quiz')
+                    DB::raw('COUNT(DISTINCT quiz_participations.id) as total_quiz'),
+                    DB::raw('COALESCE(AVG(quiz_participations.score), 0) as avg_score')
                 )
-                ->groupBy('stagiaires.id', 'stagiaires.prenom', 'users.name', 'users.email')
+                ->groupBy('stagiaires.id', 'stagiaires.prenom', 'users.name', 'users.email', 'users.image')
                 ->orderBy('total_points', 'desc')
-                ->get();
+                ->get()
+                ->map(function($stagiaire, $index) {
+                    return [
+                        'rank' => $index + 1,
+                        'id' => $stagiaire->id,
+                        'prenom' => $stagiaire->prenom,
+                        'nom' => $stagiaire->nom,
+                        'email' => $stagiaire->email,
+                        'image' => $stagiaire->image,
+                        'total_points' => (int) $stagiaire->total_points,
+                        'total_quiz' => (int) $stagiaire->total_quiz,
+                        'avg_score' => round($stagiaire->avg_score, 1),
+                    ];
+                });
 
             return response()->json([
                 'formation_id' => $formationId,
-                'ranking' => $stagiaires,
-                'total_stagiaires' => $stagiaires->count(),
+                'ranking' => $ranking,
+                'total_stagiaires' => $ranking->count(),
+                'period' => $period,
             ], 200);
 
         } catch (\Exception $e) {
@@ -1055,55 +1106,59 @@ class FormateurController extends Controller
     {
         try {
             $user = $request->user();
-            
-            // Récupérer l'ID du formateur
             $formateurModel = Formateur::where('user_id', $user->id)->first();
             $formateurId = $formateurModel ? $formateurModel->id : null;
 
-            // Base query for stagiaires
-            $query = DB::table('stagiaires')
-                ->join('users', 'stagiaires.user_id', '=', 'users.id')
-                ->select(
-                    'stagiaires.id',
-                    'stagiaires.prenom',
-                    'users.id as user_id',
-                    'users.name as nom',
-                    'users.email',
-                    'users.image'
-                );
-
-            // Filtrer par formateur
-            if ($formateurId) {
-                $query->join('formateur_stagiaire', 'stagiaires.id', '=', 'formateur_stagiaire.stagiaire_id')
-                      ->where('formateur_stagiaire.formateur_id', $formateurId);
+            if (!$formateurId) {
+                return response()->json([
+                    'performance' => [],
+                    'rankings' => [
+                        'most_quizzes' => [],
+                        'most_active' => [],
+                    ]
+                ]);
             }
 
-            // Subquery for last quiz date
-            $query->addSelect([
-                'last_quiz_at' => DB::table('quiz_participations')
-                    ->select('completed_at')
-                    ->whereColumn('user_id', 'users.id')
+            // Get stagiaires linked directly OR via formations
+            $studentsQuery = Stagiaire::with(['user'])
+                ->where(function($q) use ($formateurId) {
+                    $q->whereHas('formateurs', function($query) use ($formateurId) {
+                        $query->where('formateurs.id', $formateurId);
+                    })
+                    ->orWhereHas('catalogue_formations', function($query) use ($formateurId) {
+                        $query->whereHas('formateurs', function($sub) use ($formateurId) {
+                            $sub->where('formateurs.id', $formateurId);
+                        });
+                    });
+                });
+
+            $students = $studentsQuery->get()->map(function($stagiaire) {
+                $userId = $stagiaire->user_id;
+                
+                // Aggregate quiz stats
+                $totalQuizzes = DB::table('quiz_participations')
+                    ->where('user_id', $userId)
+                    ->where('status', 'completed')
+                    ->count();
+                
+                $lastQuizAt = DB::table('quiz_participations')
+                    ->where('user_id', $userId)
                     ->whereNotNull('completed_at')
                     ->latest('completed_at')
-                    ->limit(1),
-                'total_quizzes' => DB::table('quiz_participations')
-                    ->select(DB::raw('count(*)'))
-                    ->whereColumn('user_id', 'users.id')
-                    ->where('status', 'completed'),
-                'total_logins' => DB::table('login_histories')
-                    ->select(DB::raw('count(*)'))
-                    ->whereColumn('user_id', 'users.id')
-            ]);
+                    ->value('completed_at');
 
-            $students = $query->get()->map(function($student) {
+                $totalLogins = DB::table('login_histories')
+                    ->where('user_id', $userId)
+                    ->count();
+
                 return [
-                    'id' => $student->id,
-                    'name' => "{$student->prenom} {$student->nom}",
-                    'email' => $student->email,
-                    'image' => $student->image,
-                    'last_quiz_at' => $student->last_quiz_at,
-                    'total_quizzes' => (int)$student->total_quizzes,
-                    'total_logins' => (int)$student->total_logins,
+                    'id' => $stagiaire->id,
+                    'name' => "{$stagiaire->prenom} " . ($stagiaire->user->name ?? ''),
+                    'email' => $stagiaire->user->email ?? '',
+                    'image' => $stagiaire->user->image ?? $stagiaire->user->avatar ?? null,
+                    'last_quiz_at' => $lastQuizAt,
+                    'total_quizzes' => (int)$totalQuizzes,
+                    'total_logins' => (int)$totalLogins,
                 ];
             });
 

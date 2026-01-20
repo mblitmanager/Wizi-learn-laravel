@@ -329,6 +329,7 @@ Route::middleware(['auth:api', 'detectClient'])->group(function () {
         Route::get('/analytics/completion-time', [FormateurAnalyticsController::class, 'getCompletionTime']);
         Route::get('/analytics/activity-heatmap', [FormateurAnalyticsController::class, 'getActivityHeatmap']);
         Route::get('/analytics/dropout-rate', [FormateurAnalyticsController::class, 'getDropoutRate']);
+        Route::get('/analytics/formations/performance', [FormateurAnalyticsController::class, 'getFormationsPerformance']);
         Route::get('/analytics/dashboard', [FormateurAnalyticsController::class, 'getDashboard']);
         
         // Alerts API

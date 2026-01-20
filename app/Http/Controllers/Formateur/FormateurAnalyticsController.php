@@ -302,4 +302,47 @@ class FormateurAnalyticsController extends Controller
             ],
         ]);
     }
+
+    /**
+     * API: Get performance stats for all formations belonging to the formateur
+     * GET /formateur/analytics/formations/performance
+     */
+    public function getFormationsPerformance(Request $request)
+    {
+        $this->checkFormateur();
+        $formateur = Auth::user()->formateur;
+
+        // Get formations assigned to this formateur
+        $formations = $formateur->catalogue_formations()
+            ->withCount('stagiaires as student_count')
+            ->get();
+
+        $performance = $formations->map(function ($formation) use ($formateur) {
+            // Get stagiaire user IDs for this formation
+            $stagiaireUserIds = $formation->stagiaires()->pluck('users.id');
+
+            // Aggregate results for quizzes belonging to this formation's base formation
+            $stats = DB::table('quiz_participations')
+                ->join('quizzes', 'quiz_participations.quiz_id', '=', 'quizzes.id')
+                ->where('quizzes.formation_id', $formation->formation_id)
+                ->whereIn('quiz_participations.user_id', $stagiaireUserIds)
+                ->select([
+                    DB::raw('AVG(score) as avg_score'),
+                    DB::raw('COUNT(CASE WHEN status = "completed" THEN 1 END) as total_completions')
+                ])
+                ->first();
+
+            return [
+                'id' => $formation->id,
+                'titre' => $formation->titre,
+                'image_url' => $formation->image_url,
+                'tarif' => $formation->tarif,
+                'student_count' => (int) $formation->student_count,
+                'avg_score' => round($stats->avg_score ?? 0, 1),
+                'total_completions' => (int) ($stats->total_completions ?? 0),
+            ];
+        });
+
+        return response()->json($performance);
+    }
 }
