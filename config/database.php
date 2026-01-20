@@ -142,7 +142,7 @@ return [
 
     'redis' => [
 
-        'client' => env('REDIS_CLIENT') ?: 'predis',
+        'client' => in_array(env('REDIS_CLIENT'), ['phpredis', 'predis']) ? env('REDIS_CLIENT') : 'predis',
 
         'options' => [
             'cluster' => env('REDIS_CLUSTER', 'redis'),
