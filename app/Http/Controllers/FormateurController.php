@@ -1124,12 +1124,12 @@ class FormateurController extends Controller
                 ->where(function($q) use ($formateurId) {
                     $q->whereHas('formateurs', function($query) use ($formateurId) {
                         $query->where('formateurs.id', $formateurId);
-                    })
-                    ->orWhereHas('catalogue_formations', function($query) use ($formateurId) {
-                        $query->whereHas('formateurs', function($sub) use ($formateurId) {
-                            $sub->where('formateurs.id', $formateurId);
-                        });
                     });
+                    // ->orWhereHas('catalogue_formations', function($query) use ($formateurId) {
+                    //     $query->whereHas('formateurs', function($sub) use ($formateurId) {
+                    //         $sub->where('formateurs.id', $formateurId);
+                    //     });
+                    // });
                 });
 
             $students = $studentsQuery->get()->map(function($stagiaire) {
