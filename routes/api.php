@@ -24,6 +24,7 @@ use App\Http\Controllers\Api\TestFcmController;
 use App\Http\Controllers\FcmTokenController;
 use App\Http\Controllers\NotificationAPIController;
 use App\Http\Controllers\Api\NotificationController as UserNotificationController;
+use App\Http\Controllers\Api\CalendarSyncController;
 
 // Role Controllers
 use App\Http\Controllers\FormateurController;
@@ -130,6 +131,9 @@ Route::get('/test-notif', function () {
 // ==============================================================================
 
 Route::middleware(['auth:api', 'detectClient'])->group(function () {
+
+    // Google Calendar Sync
+    Route::post('/calendar/sync', [CalendarSyncController::class, 'sync']);
 
     // --------------------------------------------------------------------------
     // USER & CORE
