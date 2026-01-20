@@ -319,7 +319,7 @@ class FormateurAnalyticsController extends Controller
 
         $performance = $formations->map(function ($formation) use ($formateur) {
             // Get stagiaire user IDs for this formation
-            $stagiaireUserIds = $formation->stagiaires()->pluck('users.id');
+            $stagiaireUserIds = $formation->stagiaires()->pluck('user_id');
 
             // Aggregate results for quizzes belonging to this formation's base formation
             $stats = DB::table('quiz_participations')
@@ -328,7 +328,7 @@ class FormateurAnalyticsController extends Controller
                 ->whereIn('quiz_participations.user_id', $stagiaireUserIds)
                 ->select([
                     DB::raw('AVG(score) as avg_score'),
-                    DB::raw('COUNT(CASE WHEN status = "completed" THEN 1 END) as total_completions')
+                    DB::raw('COUNT(CASE WHEN quiz_participations.status = "completed" THEN 1 END) as total_completions')
                 ])
                 ->first();
 

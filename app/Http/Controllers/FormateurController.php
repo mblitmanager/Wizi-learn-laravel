@@ -1153,9 +1153,9 @@ class FormateurController extends Controller
 
                 return [
                     'id' => $stagiaire->id,
-                    'name' => "{$stagiaire->prenom} " . ($stagiaire->user->name ?? ''),
-                    'email' => $stagiaire->user->email ?? '',
-                    'image' => $stagiaire->user->image ?? $stagiaire->user->avatar ?? null,
+                    'name' => trim("{$stagiaire->prenom} " . ($stagiaire->user ? $stagiaire->user->name : '')),
+                    'email' => $stagiaire->user ? $stagiaire->user->email : ($stagiaire->email ?? ''),
+                    'image' => $stagiaire->user ? ($stagiaire->user->image ?? $stagiaire->user->avatar ?? null) : null,
                     'last_quiz_at' => $lastQuizAt,
                     'total_quizzes' => (int)$totalQuizzes,
                     'total_logins' => (int)$totalLogins,
