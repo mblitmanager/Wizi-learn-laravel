@@ -191,19 +191,19 @@ class FormateurController extends Controller
                 return response()->json(['stagiaires' => [], 'total' => 0], 200);
             }
 
-            // Get stagiaires linked directly OR via formations
+            // Get stagiaires linked directly only (strict parity with Node.js)
             $onlineStagiaires = Stagiaire::with(['user', 'catalogue_formations'])
                 ->where(function($q) use ($formateurId) {
-                    // Directly linked
+                    // Directly linked only
                     $q->whereHas('formateurs', function($query) use ($formateurId) {
                         $query->where('formateurs.id', $formateurId);
-                    })
-                    // OR via formations
-                    ->orWhereHas('catalogue_formations', function($query) use ($formateurId) {
-                        $query->whereHas('formateurs', function($sub) use ($formateurId) {
-                            $sub->where('formateurs.id', $formateurId);
-                        });
                     });
+                    // OR via formations - COMMENTED for strict parity
+                    // ->orWhereHas('catalogue_formations', function($query) use ($formateurId) {
+                    //     $query->whereHas('formateurs', function($sub) use ($formateurId) {
+                    //         $sub->where('formateurs.id', $formateurId);
+                    //     });
+                    // });
                 })
                 ->whereHas('user', function($query) {
                     $query->where('is_online', 1);
@@ -364,12 +364,12 @@ class FormateurController extends Controller
                 $query->where(function($q) use ($formateurId) {
                     $q->whereHas('formateurs', function($query) use ($formateurId) {
                         $query->where('formateurs.id', $formateurId);
-                    })
-                    ->orWhereHas('catalogue_formations', function($query) use ($formateurId) {
-                        $query->whereHas('formateurs', function($sub) use ($formateurId) {
-                            $sub->where('formateurs.id', $formateurId);
-                        });
                     });
+                    // ->orWhereHas('catalogue_formations', function($query) use ($formateurId) {
+                    //     $query->whereHas('formateurs', function($sub) use ($formateurId) {
+                    //         $sub->where('formateurs.id', $formateurId);
+                    //     });
+                    // });
                 });
             }
 
