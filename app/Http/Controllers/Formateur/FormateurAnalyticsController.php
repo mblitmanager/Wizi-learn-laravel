@@ -40,10 +40,10 @@ class FormateurAnalyticsController extends Controller
         $period = $request->get('period', 30); // days
 
         // Get stagiaires for this formateur
-        $stagiaireIds = $formateur->stagiaires()->pluck('stagiaires.id');
+        $userIds = $formateur->stagiaires()->pluck('stagiaires.user_id');
 
         // Get quiz participations with success rates
-        $quizStats = QuizParticipation::whereIn('stagiaire_id', $stagiaireIds)
+        $quizStats = QuizParticipation::whereIn('user_id', $userIds)
             ->where('status', 'completed')
             ->where('created_at', '>=', Carbon::now()->subDays($period))
             ->with('quiz')
@@ -89,10 +89,10 @@ class FormateurAnalyticsController extends Controller
         $formateur = Auth::user()->formateur;
 
         $period = $request->get('period', 30);
-        $stagiaireIds = $formateur->stagiaires()->pluck('stagiaires.id');
+        $userIds = $formateur->stagiaires()->pluck('stagiaires.user_id');
 
         // Get average completion time per quiz over time
-        $completionTrends = QuizParticipation::whereIn('stagiaire_id', $stagiaireIds)
+        $completionTrends = QuizParticipation::whereIn('user_id', $userIds)
             ->where('status', 'completed')
             ->where('created_at', '>=', Carbon::now()->subDays($period))
             ->select(
@@ -112,7 +112,7 @@ class FormateurAnalyticsController extends Controller
             });
 
         // Get average time per quiz
-        $quizAvgTimes = QuizParticipation::whereIn('stagiaire_id', $stagiaireIds)
+        $quizAvgTimes = QuizParticipation::whereIn('user_id', $userIds)
             ->where('status', 'completed')
             ->where('created_at', '>=', Carbon::now()->subDays($period))
             ->with('quiz')
@@ -146,10 +146,10 @@ class FormateurAnalyticsController extends Controller
         $formateur = Auth::user()->formateur;
 
         $period = $request->get('period', 30);
-        $stagiaireIds = $formateur->stagiaires()->pluck('stagiaires.id');
+        $userIds = $formateur->stagiaires()->pluck('stagiaires.user_id');
 
         // Get activity by day of week and hour
-        $activityByDay = QuizParticipation::whereIn('stagiaire_id', $stagiaireIds)
+        $activityByDay = QuizParticipation::whereIn('user_id', $userIds)
             ->where('created_at', '>=', Carbon::now()->subDays($period))
             ->select(
                 DB::raw('DAYOFWEEK(created_at) as day_of_week'),
@@ -166,7 +166,7 @@ class FormateurAnalyticsController extends Controller
                 ];
             });
 
-        $activityByHour = QuizParticipation::whereIn('stagiaire_id', $stagiaireIds)
+        $activityByHour = QuizParticipation::whereIn('user_id', $userIds)
             ->where('created_at', '>=', Carbon::now()->subDays($period))
             ->select(
                 DB::raw('HOUR(created_at) as hour'),
@@ -198,10 +198,10 @@ class FormateurAnalyticsController extends Controller
         $this->checkFormateur();
         $formateur = Auth::user()->formateur;
 
-        $stagiaireIds = $formateur->stagiaires()->pluck('stagiaires.id');
+        $userIds = $formateur->stagiaires()->pluck('stagiaires.user_id');
 
         // Quiz abandonment (started but not completed)
-        $quizDropout = QuizParticipation::whereIn('stagiaire_id', $stagiaireIds)
+        $quizDropout = QuizParticipation::whereIn('user_id', $userIds)
             ->select(
                 'quiz_id',
                 DB::raw('COUNT(*) as total_attempts'),
@@ -257,31 +257,31 @@ class FormateurAnalyticsController extends Controller
         $formateur = Auth::user()->formateur;
 
         $period = $request->get('period', 30);
-        $stagiaireIds = $formateur->stagiaires()->pluck('stagiaires.id');
+        $userIds = $formateur->stagiaires()->pluck('stagiaires.user_id');
 
         // Total stagiaires
-        $totalStagiaires = $stagiaireIds->count();
+        $totalStagiaires = $userIds->count();
 
         // Active stagiaires (participated in last 7 days)
-        $activeStagiaires = QuizParticipation::whereIn('stagiaire_id', $stagiaireIds)
+        $activeStagiaires = QuizParticipation::whereIn('user_id', $userIds)
             ->where('created_at', '>=', Carbon::now()->subDays(7))
             ->distinct('stagiaire_id')
             ->count('stagiaire_id');
 
         // Total quiz completions
-        $totalCompletions = QuizParticipation::whereIn('stagiaire_id', $stagiaireIds)
+        $totalCompletions = QuizParticipation::whereIn('user_id', $userIds)
             ->where('status', 'completed')
             ->where('created_at', '>=', Carbon::now()->subDays($period))
             ->count();
 
         // Average score
-        $avgScore = QuizParticipation::whereIn('stagiaire_id', $stagiaireIds)
+        $avgScore = QuizParticipation::whereIn('user_id', $userIds)
             ->where('status', 'completed')
             ->where('created_at', '>=', Carbon::now()->subDays($period))
             ->avg('score');
 
         // Trend (compare with previous period)
-        $previousCompletions = QuizParticipation::whereIn('stagiaire_id', $stagiaireIds)
+        $previousCompletions = QuizParticipation::whereIn('user_id', $userIds)
             ->where('status', 'completed')
             ->where('created_at', '>=', Carbon::now()->subDays($period * 2))
             ->where('created_at', '<', Carbon::now()->subDays($period))

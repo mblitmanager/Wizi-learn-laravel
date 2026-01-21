@@ -34,6 +34,11 @@ class QuizParticipation extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function stagiaire()
+    {
+        return $this->belongsTo(Stagiaire::class, 'user_id', 'user_id');
+    }
+
     public function answers()
     {
         return $this->hasMany(QuizParticipationAnswer::class, 'participation_id');
