@@ -277,4 +277,27 @@ class NotificationService
             return false;
         }
     }
+
+    /**
+     * Envoie une notification FCM à plusieurs tokens
+     */
+    public function sendToMultiple($tokens, $title, $body, $data = [])
+    {
+        if (empty($tokens)) {
+            return false;
+        }
+
+        $results = [];
+        foreach ($tokens as $token) {
+            // Mock a user object with the token for compatibility with sendFcmToUser
+            $user = (object)['fcm_token' => $token];
+            $results[] = $this->sendFcmToUser($user, $title, $body, $data);
+        }
+
+        return [
+            'success' => in_array(true, $results),
+            'sent_count' => count(array_filter($results)),
+            'total_count' => count($tokens)
+        ];
+    }
 }

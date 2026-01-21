@@ -82,7 +82,7 @@ class FormateurController extends Controller
                 ->leftJoin('quiz_participations', 'users.id', '=', 'quiz_participations.user_id')
                 ->select(
                     'catalogue_formations.id',
-                    'catalogue_formations.titre as nom',
+                    'catalogue_formations.titre as title',
                     DB::raw('COUNT(DISTINCT stagiaires.id) as total_stagiaires'),
                     DB::raw('COUNT(DISTINCT CASE WHEN users.last_activity_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN stagiaires.id END) as stagiaires_actifs'),
                     DB::raw('COALESCE(AVG(quiz_participations.score), 0) as score_moyen')
@@ -489,7 +489,7 @@ class FormateurController extends Controller
                 AVG(score) as avg_score,
                 MAX(score) as best_score,
                 SUM(correct_answers) as total_correct,
-                SUM(total_questions) as total_questions
+                SUM((SELECT COUNT(*) FROM questions WHERE questions.quiz_id = quiz_participations.quiz_id)) as total_questions
             ')
             ->first();
             
