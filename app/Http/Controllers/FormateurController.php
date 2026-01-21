@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Stagiaire;
 use App\Models\Formateur;
-use App\Models\QuizSubmission;
+use App\Models\QuizParticipation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -481,15 +481,17 @@ class FormateurController extends Controller
             $stagiaire = Stagiaire::with(['user'])->findOrFail($id);
             
             // Stats quiz
-            $quizStats = QuizSubmission::where('stagiaire_id', $id)
-                ->selectRaw('
-                    COUNT(*) as total_quiz,
-                    AVG(score) as avg_score,
-                    MAX(score) as best_score,
-                    SUM(correct_answers) as total_correct,
-                    SUM(total_questions) as total_questions
-                ')
-                ->first();
+            $quizStats = QuizParticipation::whereHas('stagiaire', function($q) use ($id) {
+                $q->where('id', $id);
+            })
+            ->selectRaw('
+                COUNT(*) as total_quiz,
+                AVG(score) as avg_score,
+                MAX(score) as best_score,
+                SUM(correct_answers) as total_correct,
+                SUM(total_questions) as total_questions
+            ')
+            ->first();
             
             // Dernière activité
             $lastActivity = $stagiaire->user?->last_activity_at 
