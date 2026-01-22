@@ -818,17 +818,27 @@ class FormateurController extends Controller
             $formateurModel = Formateur::where('user_id', $formateur->id)->first();
             $formateurId = $formateurModel ? $formateurModel->id : null;
             
-            // Récupérer tous les stagiaires avec leurs points totaux
+            // Construire la sous-requête pour obtenir le meilleur score par quiz
+            $periodCondition = '';
+            if ($period === 'week') {
+                $periodCondition = 'AND qp.created_at >= DATE_SUB(NOW(), INTERVAL 1 WEEK)';
+            } elseif ($period === 'month') {
+                $periodCondition = 'AND qp.created_at >= DATE_SUB(NOW(), INTERVAL 1 MONTH)';
+            }
+            
+            // Récupérer tous les stagiaires avec leurs meilleurs scores
             $query = DB::table('stagiaires')
                 ->join('users', 'stagiaires.user_id', '=', 'users.id')
-                ->leftJoin('quiz_participations', function($join) use ($period) {
-                    $join->on('users.id', '=', 'quiz_participations.user_id');
-                    
-                    if ($period === 'week') {
-                        $join->where('quiz_participations.created_at', '>=', Carbon::now()->subWeek());
-                    } elseif ($period === 'month') {
-                        $join->where('quiz_participations.created_at', '>=', Carbon::now()->subMonth());
-                    }
+                ->leftJoin(DB::raw("(
+                    SELECT 
+                        user_id,
+                        quiz_id,
+                        MAX(score) as best_score
+                    FROM quiz_participations qp
+                    WHERE 1=1 {$periodCondition}
+                    GROUP BY user_id, quiz_id
+                ) as best_attempts"), function($join) {
+                    $join->on('users.id', '=', 'best_attempts.user_id');
                 });
             
             // Filtrer par formateur si disponible
@@ -843,9 +853,9 @@ class FormateurController extends Controller
                     'users.name as nom',
                     'users.email',
                     'users.image',
-                    DB::raw('COALESCE(SUM(quiz_participations.score), 0) as total_points'),
-                    DB::raw('COUNT(DISTINCT quiz_participations.id) as total_quiz'),
-                    DB::raw('COALESCE(AVG(quiz_participations.score), 0) as avg_score')
+                    DB::raw('COALESCE(SUM(best_attempts.best_score), 0) as total_points'),
+                    DB::raw('COUNT(DISTINCT best_attempts.quiz_id) as total_quiz'),
+                    DB::raw('COALESCE(AVG(best_attempts.best_score), 0) as avg_score')
                 )
                 ->groupBy('stagiaires.id', 'stagiaires.prenom', 'users.name', 'users.email', 'users.image')
                 ->orderBy('total_points', 'desc')
