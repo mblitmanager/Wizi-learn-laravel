@@ -35,17 +35,21 @@ class RankingService
 
     public function getStagiaireProgress($stagiaireId)
     {
-
         // Récupérer les participations du stagiaire
         $userId = \App\Models\Stagiaire::where('id', $stagiaireId)->value('user_id');
-        $participations = \App\Models\QuizParticipation::where('user_id', $userId)->get();
+        
+        // Aggréger les meilleures participations par quiz
+        $bestParticipations = \App\Models\QuizParticipation::where('user_id', $userId)
+            ->where('status', 'completed')
+            ->select('quiz_id', \Illuminate\Support\Facades\DB::raw('MAX(score) as best_score'), \Illuminate\Support\Facades\DB::raw('MAX(time_spent) as max_time_spent'))
+            ->groupBy('quiz_id')
+            ->get();
 
-        $total_quizzes = $participations->count();
-
-        $completed_quizzes = $participations->where('status', 'completed')->count();
-        $average_score = $participations->avg('score');
-        $total_points = $participations->sum('score');
-        $total_time_spent = $participations->sum('time_spent');
+        $total_quizzes = $bestParticipations->count();
+        $completed_quizzes = $total_quizzes; // Puisqu'on ne prend que les 'completed'
+        $average_score = $bestParticipations->avg('best_score');
+        $total_points = $bestParticipations->sum('best_score');
+        $total_time_spent = $bestParticipations->sum('max_time_spent');
 
         // Récupérer le rang et les points depuis Classement si besoin
         $classement = \App\Models\Classement::where('stagiaire_id', $stagiaireId)->first();

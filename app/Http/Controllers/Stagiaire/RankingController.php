@@ -59,6 +59,7 @@ class RankingController extends Controller
                             'image' => $group->first()->stagiaire->user->image ?? null
                         ],
                         'totalPoints' => $totalPoints,
+                        'score' => $totalPoints,
                         'quizCount' => $group->count(),
                         'averageScore' => $group->avg('points'),
                     ];
@@ -134,6 +135,7 @@ class RankingController extends Controller
                             'image' => $group->first()->stagiaire->user->image ?? null
                         ],
                         'totalPoints' => $totalPoints,
+                        'score' => $totalPoints,
                         'quizCount' => $group->count(),
                         'averageScore' => $group->avg('points'),
                     ];
@@ -260,6 +262,7 @@ class RankingController extends Controller
                             'image' => $group->first()->stagiaire->user->image ?? null
                         ],
                         'totalPoints' => $group->sum('points'),
+                        'score' => $group->sum('points'),
                         'quizCount' => $group->count(),
                         'averageScore' => $group->avg('points')
                     ];

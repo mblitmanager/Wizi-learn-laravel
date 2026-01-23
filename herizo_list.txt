@@ -1,0 +1,5 @@
+--- Herizo Stagiaires ---
+Stagiaire ID: 8, Name: Herizo , User ID: 19, Total Classement Points: 6, Participations: 43
+Stagiaire ID: 18, Name: Herizo Nomenjanahary , User ID: 29, Total Classement Points: 0, Participations: 0
+Stagiaire ID: 1602, Name: Herizo , User ID: 1688, Total Classement Points: 0, Participations: 12
+Stagiaire ID: 1603, Name: Herizo , User ID: 1689, Total Classement Points: 0, Participations: 0

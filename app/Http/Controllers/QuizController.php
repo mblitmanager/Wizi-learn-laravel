@@ -744,12 +744,34 @@ class QuizController extends Controller
             $result = Progression::create([
                 'stagiaire_id' => $stagiaire->id,
                 'quiz_id' => $quiz->id,
-                'formation_id' => $quiz->formation->id,
+                'formation_id' => $quiz->formation->id ?? null,
                 'score' => $score,
                 'correct_answers' => $correctAnswers,
                 'total_questions' => $totalQuestions,
                 'completion_time' => now()
             ]);
+
+            // Mettre à jour le classement (meilleur score uniquement)
+            $classement = Classement::where('stagiaire_id', $stagiaire->id)
+                ->where('quiz_id', $quiz->id)
+                ->first();
+
+            if ($classement) {
+                if ($score > $classement->points) {
+                    $classement->update([
+                        'points' => $score,
+                        'updated_at' => now()
+                    ]);
+                }
+            } else {
+                Classement::create([
+                    'stagiaire_id' => $stagiaire->id,
+                    'quiz_id' => $quiz->id,
+                    'points' => $score,
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+            }
 
             // Mettre à jour la participation
             $participation->update([
@@ -1125,6 +1147,7 @@ class QuizController extends Controller
                             return $formateur['formations']->isNotEmpty();
                         })->values(),
                         'totalPoints' => $totalPoints,
+                        'score' => $totalPoints,
                         'quizCount' => $quizCount,
                         'averageScore' => $averageScore,
                     ];
@@ -1251,6 +1274,143 @@ class QuizController extends Controller
                 'message' => 'Erreur lors de la mise à jour de la participation',
                 'error' => $e->getMessage()
             ], 500);
+        }
+    }
+
+    public function resumeParticipation($quizId)
+    {
+        try {
+            $user = Auth::user();
+            
+            // Trouver la participation en cours
+            $participation = QuizParticipation::where('user_id', $user->id)
+                ->where('quiz_id', $quizId)
+                ->where('status', 'in_progress')
+                ->with(['quiz.formation', 'answers'])  // Eager load answers
+                ->first();
+
+            if (!$participation) {
+                return response()->json(['message' => 'Aucune participation en cours'], 404);
+            }
+
+            // Récupérer les réponses sauvegardées
+            // Format attendu par le frontend: Record<questionId, answer>
+            $savedAnswers = [];
+            foreach ($participation->answers as $answer) {
+                 // On décode si c'est du JSON, sinon on prend la valeur brute
+                 // Le frontend attend souvent un tableau de strings pour les réponses
+                 $val = $answer->answer_ids ?? $answer->answer_texts;
+                 if (is_string($val) && ($val[0] === '[' || $val[0] === '{')) {
+                     $val = json_decode($val, true);
+                 }
+                 $savedAnswers[$answer->question_id] = $val;
+            }
+            
+            // Récupérer tous les IDs de questions pour ce quiz pour reconstruire l'ordre
+            $questionIds = $participation->quiz->questions()->pluck('id')->map(fn($id) => (string)$id)->toArray();
+
+            return response()->json([
+                'quizId' => (string)$quizId,
+                'quizTitle' => $participation->quiz->titre,
+                'questionIds' => $questionIds,
+                'answers' => $savedAnswers,
+                'currentIndex' => $this->determineCurrentIndex($participation, $questionIds),
+                'timeSpent' => $participation->time_spent,
+                'formationId' => $participation->quiz->formation_id
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur resumeParticipation', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Erreur serveur'], 500);
+        }
+    }
+
+    private function determineCurrentIndex($participation, $allQuestionIds)
+    {
+        // Si on a stocké current_question_id
+        if ($participation->current_question_id) {
+            $idx = array_search((string)$participation->current_question_id, $allQuestionIds);
+            if ($idx !== false) return $idx;
+        }
+        
+        // Sinon on essaie de deviner basé sur le nombre de réponses (fallback)
+        $answeredCount = $participation->answers->count();
+        if ($answeredCount > 0 && $answeredCount < count($allQuestionIds)) {
+            return $answeredCount; // Assume on est à la suivante
+        }
+        
+        return 0;
+    }
+
+    public function saveProgress(Request $request, $quizId)
+    {
+        try {
+            $user = Auth::user();
+            
+            $participation = QuizParticipation::where('user_id', $user->id)
+                ->where('quiz_id', $quizId)
+                ->where('status', 'in_progress')
+                ->first();
+
+            if (!$participation) {
+                // Optionnel: Créer si n'existe pas? Le frontend appelle startParticipation avant normalement.
+                // Pour sécuriser, on peut créer à la volée si manquant.
+                 $participation = QuizParticipation::create([
+                    'user_id' => $user->id,
+                    'quiz_id' => $quizId,
+                    'status' => 'in_progress',
+                    'started_at' => now(),
+                    'score' => 0,
+                    'time_spent' => 0
+                ]);
+            }
+
+            // Mise à jour du temps et de la question courante
+            $updateData = [];
+            if ($request->has('timeSpent')) {
+                $updateData['time_spent'] = $request->timeSpent;
+            }
+            
+            // Identification de la question courante
+            if ($request->has('currentIndex') && $request->has('questionIds')) {
+                 $idx = $request->currentIndex;
+                 $qIds = $request->questionIds;
+                 if (isset($qIds[$idx])) {
+                     $updateData['current_question_id'] = $qIds[$idx];
+                 }
+            }
+
+            if (!empty($updateData)) {
+                $participation->update($updateData);
+            }
+
+            // Sauvegarde des réponses
+            if ($request->has('answers') && is_array($request->answers)) {
+                foreach ($request->answers as $questionId => $answerValue) {
+                    // Logique similaire à submitQuizResult mais plus permissive (juste stockage)
+                    // On encode en JSON pour stocker dans answer_ids ou answer_texts
+                    $valueToStore = is_array($answerValue) || is_object($answerValue) 
+                        ? json_encode($answerValue) 
+                        : $answerValue;
+
+                    QuizParticipationAnswer::updateOrCreate(
+                        [
+                            'participation_id' => $participation->id,
+                            'question_id' => $questionId
+                        ],
+                        [
+                            'answer_ids' => $valueToStore, // Utilisation générique de cette colonne
+                            // 'answer_texts' => ... // Si besoin
+                        ]
+                    );
+                }
+            }
+
+            return response()->json(['success' => true]);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur saveProgress', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Erreur sauvegarde progression'], 500);
         }
     }
 
@@ -1819,60 +1979,5 @@ class QuizController extends Controller
             ], 500);
         }
     }
-    public function resumeParticipation($quizId)
-    {
-        $user = Auth::user();
 
-        $participation = QuizParticipation::where('user_id', $user->id)
-            ->where('quiz_id', $quizId)
-            ->where('status', 'in_progress')
-            ->first();
-
-        if (!$participation) {
-            return response()->json(['error' => 'No participation found'], 404);
-        }
-
-        $participation->load('answers');
-        return response()->json($participation->resume_data);
-    }
-    public function saveProgress(Request $request, $quizId)
-    {
-        $validated = $request->validate([
-            'current_question_id' => 'nullable|exists:questions,id',
-            'answers' => 'nullable|array',
-            'time_spent' => 'nullable|integer',
-        ]);
-
-        $user = Auth::user();
-
-        $participation = QuizParticipation::where('user_id', $user->id)
-            ->where('quiz_id', $quizId)
-            ->firstOrFail();
-
-        if ($request->has('current_question_id')) {
-            $participation->current_question_id = $request->current_question_id;
-        }
-
-        if ($request->has('time_spent')) {
-            $participation->time_spent = $request->time_spent;
-        }
-
-        $participation->save();
-
-        if ($request->has('answers')) {
-            foreach ($request->answers as $questionId => $answerData) {
-                QuizParticipationAnswer::updateOrCreate(
-                    [
-                        'participation_id' => $participation->id,
-                        'question_id' => $questionId
-                    ],
-                    [
-                        'answer_ids' => $answerData
-                    ]
-                );
-            }
-        }
-
-        return response()->json(['success' => true]);
-    }
 }

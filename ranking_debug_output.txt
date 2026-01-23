@@ -1,0 +1,52 @@
+--- Ranking Data for Herizo (Stagiaire ID 8, User ID 19) ---
+
+Stagiaire ID 8: User ID 19
+
+--- Quiz Participations (All) ---
+ID: 258, Quiz: 89, Score: 4, Status: completed, Created: 2025-08-22 10:32:13
+ID: 267, Quiz: 90, Score: 4, Status: completed, Created: 2025-08-26 13:42:22
+ID: 268, Quiz: 90, Score: 6, Status: completed, Created: 2025-08-26 13:43:31
+ID: 269, Quiz: 91, Score: 6, Status: completed, Created: 2025-08-26 13:51:03
+ID: 277, Quiz: 92, Score: 8, Status: completed, Created: 2025-09-11 12:24:39
+ID: 278, Quiz: 93, Score: 6, Status: completed, Created: 2025-09-11 12:27:05
+ID: 279, Quiz: 94, Score: 4, Status: completed, Created: 2025-09-12 08:23:10
+ID: 288, Quiz: 89, Score: 10, Status: completed, Created: 2025-09-17 13:59:09
+ID: 316, Quiz: 89, Score: 8, Status: completed, Created: 2025-09-20 09:32:32
+ID: 378, Quiz: 89, Score: 10, Status: completed, Created: 2025-10-16 13:32:06
+ID: 403, Quiz: 310, Score: 0, Status: completed, Created: 2025-10-24 14:02:36
+ID: 404, Quiz: 303, Score: 4, Status: completed, Created: 2025-10-24 15:00:33
+ID: 496, Quiz: 303, Score: 6, Status: completed, Created: 2025-11-21 09:02:08
+ID: 497, Quiz: 303, Score: 6, Status: completed, Created: 2025-11-21 09:06:58
+ID: 498, Quiz: 304, Score: 2, Status: completed, Created: 2025-11-21 09:10:23
+ID: 499, Quiz: 304, Score: 4, Status: completed, Created: 2025-11-21 09:17:23
+ID: 518, Quiz: 304, Score: 6, Status: completed, Created: 2025-11-24 12:31:18
+ID: 519, Quiz: 304, Score: 6, Status: completed, Created: 2025-11-24 12:31:47
+ID: 520, Quiz: 305, Score: 2, Status: completed, Created: 2025-11-24 12:35:56
+ID: 521, Quiz: 305, Score: 4, Status: completed, Created: 2025-11-24 13:49:44
+ID: 522, Quiz: 304, Score: 6, Status: completed, Created: 2025-11-24 13:51:25
+ID: 523, Quiz: 305, Score: 4, Status: completed, Created: 2025-11-24 14:25:21
+ID: 524, Quiz: 305, Score: 2, Status: completed, Created: 2025-11-24 15:25:35
+ID: 532, Quiz: 305, Score: 6, Status: completed, Created: 2025-11-25 14:09:19
+ID: 533, Quiz: 306, Score: 6, Status: completed, Created: 2025-11-25 14:10:43
+ID: 534, Quiz: 307, Score: 0, Status: in_progress, Created: 2025-11-25 14:12:32
+ID: 535, Quiz: 306, Score: 4, Status: completed, Created: 2025-11-25 14:37:27
+ID: 536, Quiz: 303, Score: 4, Status: completed, Created: 2025-11-25 14:37:54
+ID: 537, Quiz: 405, Score: 6, Status: completed, Created: 2025-11-25 14:38:37
+ID: 538, Quiz: 305, Score: 4, Status: completed, Created: 2025-11-25 14:41:47
+ID: 539, Quiz: 405, Score: 4, Status: completed, Created: 2025-11-26 15:12:37
+ID: 540, Quiz: 303, Score: 0, Status: completed, Created: 2025-11-27 11:58:25
+ID: 541, Quiz: 304, Score: 0, Status: completed, Created: 2025-11-27 12:01:56
+ID: 557, Quiz: 303, Score: 6, Status: completed, Created: 2025-12-09 08:54:58
+ID: 565, Quiz: 304, Score: 2, Status: completed, Created: 2025-12-27 10:25:30
+ID: 574, Quiz: 305, Score: 4, Status: completed, Created: 2026-01-07 10:38:57
+ID: 578, Quiz: 81, Score: 8, Status: completed, Created: 
+ID: 580, Quiz: 313, Score: 2, Status: completed, Created: 
+ID: 581, Quiz: 403, Score: 4, Status: completed, Created: 
+ID: 582, Quiz: 403, Score: 6, Status: completed, Created: 
+ID: 583, Quiz: 403, Score: 4, Status: completed, Created: 2026-01-22 14:10:03
+
+--- Classements ---
+ID: 1, Quiz: 403, Points: 6, Updated: 2026-01-22 14:10:03
+
+Calculated Sum of Best Participations: 86
+Sum of Classement Points: 6

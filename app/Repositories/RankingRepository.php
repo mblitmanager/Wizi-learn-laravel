@@ -16,22 +16,22 @@ class RankingRepository implements RankingRepositoryInterface
      */
     public function getUserProgress(int $userId): array
     {
-        $progress = Progression::where('stagiaire_id', $userId)
-            ->select('score', 'completed_quizzes', 'completed_challenges')
-            ->first();
+        // Aggéger les meilleurs scores par quiz pour ce stagiaire
+        $bestScores = Progression::where('stagiaire_id', $userId)
+            ->select('quiz_id', DB::raw('MAX(score) as best_score'))
+            ->groupBy('quiz_id')
+            ->get();
 
-        if (!$progress) {
-            return [
-                'points' => 0,
-                'completed_quizzes' => 0,
-                'completed_challenges' => 0,
-                'rank' => $this->calculateUserRank($userId),
-            ];
-        }
+        $points = $bestScores->sum('best_score');
+        $completedQuizzes = $bestScores->count();
+        $completedChallenges = 0; // Pas encore implémenté
 
-        return array_merge($progress->toArray(), [
+        return [
+            'points' => $points,
+            'completed_quizzes' => $completedQuizzes,
+            'completed_challenges' => $completedChallenges,
             'rank' => $this->calculateUserRank($userId),
-        ]);
+        ];
     }
 
     /**
@@ -42,10 +42,17 @@ class RankingRepository implements RankingRepositoryInterface
      */
     public function getGlobalRanking(int $limit = 10): array
     {
-        return DB::table('progressions')
-            ->join('users', 'progressions.stagiaire_id', '=', 'users.id')
-            ->select('users.id', 'users.name', 'progressions.score as points')
-            ->orderBy('progressions.score', 'desc')
+        $subquery = DB::table('progressions')
+            ->select('stagiaire_id', 'quiz_id', DB::raw('MAX(score) as best_score'))
+            ->groupBy('stagiaire_id', 'quiz_id');
+
+        return DB::table(DB::raw("({$subquery->toSql()}) as best_attempts"))
+            ->mergeBindings($subquery)
+            ->join('stagiaires', 'best_attempts.stagiaire_id', '=', 'stagiaires.id')
+            ->join('users', 'stagiaires.user_id', '=', 'users.id')
+            ->select('users.id', 'users.name', DB::raw('SUM(best_attempts.best_score) as points'))
+            ->groupBy('users.id', 'users.name')
+            ->orderBy('points', 'desc')
             ->limit($limit)
             ->get()
             ->toArray();
@@ -74,12 +81,23 @@ class RankingRepository implements RankingRepositoryInterface
      */
     private function calculateUserRank(int $userId): int
     {
-        $userPoints = Progression::where('stagiaire_id', $userId)
-            ->value('score') ?? 0;
+        $subquery = DB::table('progressions')
+            ->select('stagiaire_id', 'quiz_id', DB::raw('MAX(score) as best_score'))
+            ->groupBy('stagiaire_id', 'quiz_id');
 
-        return DB::table('progressions')
-            ->where('score', '>', $userPoints)
-            ->count() + 1;
+        $userPoints = DB::table(DB::raw("({$subquery->toSql()}) as best_attempts"))
+            ->mergeBindings($subquery)
+            ->where('stagiaire_id', $userId)
+            ->sum('best_score');
+
+        $rankings = DB::table(DB::raw("({$subquery->toSql()}) as best_attempts"))
+            ->mergeBindings($subquery)
+            ->select('stagiaire_id', DB::raw('SUM(best_attempts.best_score) as total_points'))
+            ->groupBy('stagiaire_id')
+            ->having('total_points', '>', $userPoints)
+            ->get();
+
+        return $rankings->count() + 1;
     }
 
     /**
@@ -90,11 +108,18 @@ class RankingRepository implements RankingRepositoryInterface
      */
     public function getFormationRanking(int $formationId): array
     {
-        return DB::table('progressions')
-            ->join('users', 'progressions.stagiaire_id', '=', 'users.id')
-            ->where('progressions.formation_id', $formationId)
-            ->select('users.id', 'users.name', 'progressions.score as points')
-            ->orderBy('progressions.score', 'desc')
+        $subquery = DB::table('progressions')
+            ->where('formation_id', $formationId)
+            ->select('stagiaire_id', 'quiz_id', DB::raw('MAX(score) as best_score'))
+            ->groupBy('stagiaire_id', 'quiz_id');
+
+        return DB::table(DB::raw("({$subquery->toSql()}) as best_attempts"))
+            ->mergeBindings($subquery)
+            ->join('stagiaires', 'best_attempts.stagiaire_id', '=', 'stagiaires.id')
+            ->join('users', 'stagiaires.user_id', '=', 'users.id')
+            ->select('users.id', 'users.name', DB::raw('SUM(best_attempts.best_score) as points'))
+            ->groupBy('users.id', 'users.name')
+            ->orderBy('points', 'desc')
             ->get()
             ->toArray();
     }
@@ -107,29 +132,22 @@ class RankingRepository implements RankingRepositoryInterface
      */
     public function getStagiaireRewards(int $stagiaireId): array
     {
-        $progress = Progression::where('stagiaire_id', $stagiaireId)
-            ->select('score')
-            ->first();
+        // Aggéger les meilleurs scores par quiz pour ce stagiaire
+        $bestScores = Progression::where('stagiaire_id', $stagiaireId)
+            ->select('quiz_id', DB::raw('MAX(score) as best_score'))
+            ->groupBy('quiz_id')
+            ->get();
 
-        if (!$progress) {
-            return [
-                'points' => 0,
-                'completed_quizzes' => 0,
-                'completed_challenges' => 0
-            ];
-        }
+        $points = $bestScores->sum('best_score');
 
-        // Calculer le nombre de quizzes complétés depuis participations
-        $completedQuizzes = DB::table('participations')
-            ->where('stagiaire_id', $stagiaireId)
-            ->where('deja_jouer', 1)
-            ->count();
+        // Calculer le nombre de quizzes complétés (unique par quiz_id)
+        $completedQuizzes = $bestScores->count();
 
         // Pour l'instant, on met completed_challenges à 0 car on n'a pas encore implémenté cette fonctionnalité
         $completedChallenges = 0;
 
         return [
-            'points' => $progress->score,
+            'points' => (int) $points,
             'completed_quizzes' => $completedQuizzes,
             'completed_challenges' => $completedChallenges
         ];
