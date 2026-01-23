@@ -23,9 +23,9 @@ class RankingService
         return $this->rankingRepository->getGlobalRanking();
     }
 
-    public function getFormationRanking($formationId)
+    public function getFormationRanking($formationId, $period = 'all')
     {
-        return $this->rankingRepository->getFormationRanking($formationId);
+        return $this->rankingRepository->getFormationRanking($formationId, $period);
     }
 
     public function getStagiaireRewards($stagiaireId)

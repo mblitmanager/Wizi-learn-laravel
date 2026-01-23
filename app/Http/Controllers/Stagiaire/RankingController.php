@@ -178,13 +178,10 @@ class RankingController extends Controller
     {
         try {
             $user = JWTAuth::parseToken()->authenticate();
-            // Charger la relation stagiaire si elle n'est pas déjà chargée
-            if (!isset($user->relations['stagiaire'])) {
-                $user->load('stagiaire');
-            }
+            $period = request('period', 'all');
 
             // Vérifier si l'utilisateur est bien le stagiaire demandé ou a les droits d'accès
-            $ranking = $this->rankingService->getFormationRanking($formationId);
+            $ranking = $this->rankingService->getFormationRanking($formationId, $period);
             return response()->json($ranking);
         } catch (JWTException $e) {
             return response()->json(['error' => 'non autorisé'], 403);

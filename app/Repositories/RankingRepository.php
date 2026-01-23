@@ -106,22 +106,44 @@ class RankingRepository implements RankingRepositoryInterface
      * @param int $formationId
      * @return array
      */
-    public function getFormationRanking(int $formationId): array
+    public function getFormationRanking(int $formationId, string $period = 'all'): array
     {
-        $subquery = DB::table('progressions')
-            ->where('formation_id', $formationId)
-            ->select('stagiaire_id', 'quiz_id', DB::raw('MAX(score) as best_score'))
+        $query = DB::table('progressions')
+            ->where('formation_id', $formationId);
+
+        // Appliquer le filtre de période
+        if ($period === 'week') {
+            $query->where('updated_at', '>=', now()->startOfWeek());
+        } elseif ($period === 'month') {
+            $query->whereMonth('updated_at', now()->month)
+                  ->whereYear('updated_at', now()->year);
+        }
+
+        $subquery = $query->select('stagiaire_id', 'quiz_id', DB::raw('MAX(score) as best_score'))
             ->groupBy('stagiaire_id', 'quiz_id');
 
-        return DB::table(DB::raw("({$subquery->toSql()}) as best_attempts"))
+        $results = DB::table(DB::raw("({$subquery->toSql()}) as best_attempts"))
             ->mergeBindings($subquery)
             ->join('stagiaires', 'best_attempts.stagiaire_id', '=', 'stagiaires.id')
             ->join('users', 'stagiaires.user_id', '=', 'users.id')
-            ->select('users.id', 'users.name', DB::raw('SUM(best_attempts.best_score) as points'))
-            ->groupBy('users.id', 'users.name')
+            ->select(
+                'stagiaires.id',
+                'users.name as lastname',
+                'stagiaires.prenom as firstname',
+                DB::raw('CONCAT(stagiaires.prenom, " ", users.name) as name'),
+                'users.image',
+                DB::raw('SUM(best_attempts.best_score) as points'),
+                DB::raw('SUM(best_attempts.best_score) as score')
+            )
+            ->groupBy('stagiaires.id', 'users.name', 'stagiaires.prenom', 'users.image')
             ->orderBy('points', 'desc')
-            ->get()
-            ->toArray();
+            ->get();
+
+        // Ajouter le rang
+        return $results->map(function ($item, $index) {
+            $item->rang = $index + 1;
+            return (array)$item;
+        })->toArray();
     }
 
     /**
