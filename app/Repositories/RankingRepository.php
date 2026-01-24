@@ -50,7 +50,13 @@ class RankingRepository implements RankingRepositoryInterface
             ->mergeBindings($subquery)
             ->join('stagiaires', 'best_attempts.stagiaire_id', '=', 'stagiaires.id')
             ->join('users', 'stagiaires.user_id', '=', 'users.id')
-            ->select('users.id', 'users.name', DB::raw('SUM(best_attempts.best_score) as points'))
+            ->select(
+                'users.id', 
+                'users.name', 
+                DB::raw('SUM(best_attempts.best_score) as points'),
+                DB::raw('SUM(best_attempts.best_score) as score'),
+                DB::raw('SUM(best_attempts.best_score) as totalPoints')
+            )
             ->groupBy('users.id', 'users.name')
             ->orderBy('points', 'desc')
             ->limit($limit)
@@ -133,7 +139,8 @@ class RankingRepository implements RankingRepositoryInterface
                 DB::raw('CONCAT(stagiaires.prenom, " ", users.name) as name'),
                 'users.image',
                 DB::raw('SUM(best_attempts.best_score) as points'),
-                DB::raw('SUM(best_attempts.best_score) as score')
+                DB::raw('SUM(best_attempts.best_score) as score'),
+                DB::raw('SUM(best_attempts.best_score) as totalPoints')
             )
             ->groupBy('stagiaires.id', 'users.name', 'stagiaires.prenom', 'users.image')
             ->orderBy('points', 'desc')

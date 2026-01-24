@@ -60,10 +60,18 @@ class FormateurController extends Controller
             })->count();
             
             // Score moyen des quiz (via user_id car quiz_participations utilise user_id pas stagiaire_id)
+            // Correction: Utiliser le meilleur score par quiz pour éviter de fausser la moyenne
             $userIds = $stagiaires->pluck('user.id')->filter();
-            $avgQuizScore = DB::table('quiz_participations')
+            
+            $bestScoresSubquery = DB::table('quiz_participations')
+                ->select('user_id', 'quiz_id', DB::raw('MAX(score) as best_score'))
                 ->whereIn('user_id', $userIds)
-                ->avg('score') ?? 0;
+                ->where('status', 'completed')
+                ->groupBy('user_id', 'quiz_id');
+
+            $avgQuizScore = DB::table(DB::raw("({$bestScoresSubquery->toSql()}) as best_attempts"))
+                ->mergeBindings($bestScoresSubquery)
+                ->avg('best_score') ?? 0;
             
             // Total heures vidéos (si table video_views existe, sinon 0)
             $totalVideoHours = 0;
@@ -75,17 +83,24 @@ class FormateurController extends Controller
             }
             
             // Stats par formation (avec pagination)
+            // Correction: Utiliser le meilleur score par quiz pour le score moyen
+            $bestScoresSubquery = DB::table('quiz_participations')
+                ->select('user_id', 'quiz_id', DB::raw('MAX(score) as best_score'))
+                ->where('status', 'completed')
+                ->groupBy('user_id', 'quiz_id');
+
             $formationsQuery = DB::table('catalogue_formations')
                 ->leftJoin('stagiaire_catalogue_formations', 'catalogue_formations.id', '=', 'stagiaire_catalogue_formations.catalogue_formation_id')
                 ->leftJoin('stagiaires', 'stagiaire_catalogue_formations.stagiaire_id', '=', 'stagiaires.id')
                 ->leftJoin('users', 'stagiaires.user_id', '=', 'users.id')
-                ->leftJoin('quiz_participations', 'users.id', '=', 'quiz_participations.user_id')
+                ->leftJoin(DB::raw("({$bestScoresSubquery->toSql()}) as best_attempts"), 'users.id', '=', 'best_attempts.user_id')
+                ->mergeBindings($bestScoresSubquery)
                 ->select(
                     'catalogue_formations.id',
                     'catalogue_formations.titre as title',
                     DB::raw('COUNT(DISTINCT stagiaires.id) as total_stagiaires'),
                     DB::raw('COUNT(DISTINCT CASE WHEN users.last_activity_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN stagiaires.id END) as stagiaires_actifs'),
-                    DB::raw('COALESCE(AVG(quiz_participations.score), 0) as score_moyen')
+                    DB::raw('COALESCE(AVG(best_attempts.best_score), 0) as score_moyen')
                 )
                 ->groupBy('catalogue_formations.id', 'catalogue_formations.titre')
                 ->orderBy('total_stagiaires', 'desc');
@@ -145,11 +160,12 @@ class FormateurController extends Controller
                     ->count('catalogue_formations.id');
             }
 
-            // Nombre total de quiz terminés par ses stagiaires
+            // Nombre total de quiz terminés par ses stagiaires (uniques par quiz)
             $totalQuizzesTaken = DB::table('quiz_participations')
                 ->whereIn('user_id', $userIds)
                 ->where('status', 'completed')
-                ->count();
+                ->distinct('quiz_id')
+                ->count('quiz_id');
             
             return response()->json([
                 'total_stagiaires' => $totalStagiaires,
@@ -744,19 +760,24 @@ class FormateurController extends Controller
             $formateurModel = Formateur::where('user_id', $formateur->id)->first();
             $formateurId = $formateurModel ? $formateurModel->id : null;
             
-            // Récupérer tous les stagiaires de la formation avec leurs points
+            // Récupérer tous les stagiaires de la formation avec leurs points (meilleurs scores uniquement)
+            $bestScoresSubquery = DB::table('quiz_participations')
+                ->select('user_id', 'quiz_id', DB::raw('MAX(score) as best_score'), DB::raw('MAX(created_at) as last_attempt_at'))
+                ->where('status', 'completed');
+            
+            if ($period === 'week') {
+                $bestScoresSubquery->where('created_at', '>=', Carbon::now()->subWeek());
+            } elseif ($period === 'month') {
+                $bestScoresSubquery->where('created_at', '>=', Carbon::now()->subMonth());
+            }
+            
+            $bestScoresSubquery->groupBy('user_id', 'quiz_id');
+
             $query = DB::table('stagiaires')
                 ->join('users', 'stagiaires.user_id', '=', 'users.id')
                 ->join('stagiaire_catalogue_formations', 'stagiaires.id', '=', 'stagiaire_catalogue_formations.stagiaire_id')
-                ->leftJoin('quiz_participations', function($join) use ($period) {
-                    $join->on('users.id', '=', 'quiz_participations.user_id');
-                    
-                    if ($period === 'week') {
-                        $join->where('quiz_participations.created_at', '>=', Carbon::now()->subWeek());
-                    } elseif ($period === 'month') {
-                        $join->where('quiz_participations.created_at', '>=', Carbon::now()->subMonth());
-                    }
-                })
+                ->leftJoin(DB::raw("({$bestScoresSubquery->toSql()}) as best_attempts"), 'users.id', '=', 'best_attempts.user_id')
+                ->mergeBindings($bestScoresSubquery)
                 ->where('stagiaire_catalogue_formations.catalogue_formation_id', $formationId);
             
             // Filtrer par formateur si disponible
@@ -771,9 +792,9 @@ class FormateurController extends Controller
                     'users.name as nom',
                     'users.email',
                     'users.image',
-                    DB::raw('COALESCE(SUM(quiz_participations.score), 0) as total_points'),
-                    DB::raw('COUNT(DISTINCT quiz_participations.id) as total_quiz'),
-                    DB::raw('COALESCE(AVG(quiz_participations.score), 0) as avg_score')
+                    DB::raw('COALESCE(SUM(best_attempts.best_score), 0) as total_points'),
+                    DB::raw('COUNT(DISTINCT best_attempts.quiz_id) as total_quiz'),
+                    DB::raw('COALESCE(AVG(best_attempts.best_score), 0) as avg_score')
                 )
                 ->groupBy('stagiaires.id', 'stagiaires.prenom', 'users.name', 'users.email', 'users.image')
                 ->orderBy('total_points', 'desc')
@@ -1148,16 +1169,19 @@ class FormateurController extends Controller
                 $userId = $stagiaire->user_id;
                 
                 // Aggregate quiz stats
-                $totalQuizzes = DB::table('quiz_participations')
+                $bestScoresSubquery = DB::table('quiz_participations')
+                    ->select('quiz_id', DB::raw('MAX(score) as best_score'), DB::raw('MAX(completed_at) as last_completed_at'))
                     ->where('user_id', $userId)
                     ->where('status', 'completed')
-                    ->count();
+                    ->groupBy('quiz_id');
                 
-                $lastQuizAt = DB::table('quiz_participations')
-                    ->where('user_id', $userId)
-                    ->whereNotNull('completed_at')
-                    ->latest('completed_at')
-                    ->value('completed_at');
+                $stats = DB::table(DB::raw("({$bestScoresSubquery->toSql()}) as best_attempts"))
+                    ->mergeBindings($bestScoresSubquery)
+                    ->select(
+                        DB::raw('COUNT(*) as total_quizzes'),
+                        DB::raw('MAX(last_completed_at) as last_quiz_at')
+                    )
+                    ->first();
 
                 $totalLogins = DB::table('login_histories')
                     ->where('user_id', $userId)
@@ -1168,8 +1192,8 @@ class FormateurController extends Controller
                     'name' => trim("{$stagiaire->prenom} " . ($stagiaire->user ? $stagiaire->user->name : '')),
                     'email' => $stagiaire->user ? $stagiaire->user->email : ($stagiaire->email ?? ''),
                     'image' => $stagiaire->user ? ($stagiaire->user->image ?? $stagiaire->user->avatar ?? null) : null,
-                    'last_quiz_at' => $lastQuizAt,
-                    'total_quizzes' => (int)$totalQuizzes,
+                    'last_quiz_at' => $stats->last_quiz_at ?? null,
+                    'total_quizzes' => (int)($stats->total_quizzes ?? 0),
                     'total_logins' => (int)$totalLogins,
                 ];
             });
