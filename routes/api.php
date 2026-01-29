@@ -125,6 +125,9 @@ Route::get('/test-notif', function () {
     return 'Notification envoyée !';
 });
 
+// External Sync Route (Protected by Secret)
+Route::post('/calendar/sync', [CalendarSyncController::class, 'sync'])->middleware('checkSyncSecret');
+
 
 // ==============================================================================
 // AUTHENTICATED ROUTES
@@ -132,8 +135,9 @@ Route::get('/test-notif', function () {
 
 Route::middleware(['auth:api', 'detectClient'])->group(function () {
 
+
     // Google Calendar Sync
-    Route::post('/calendar/sync', [CalendarSyncController::class, 'sync']);
+    // Route::post('/calendar/sync', [CalendarSyncController::class, 'sync']); // MOVED
     Route::get('/agendas', [\App\Http\Controllers\Api\AgendasApiController::class, 'index']);
 
     // --------------------------------------------------------------------------

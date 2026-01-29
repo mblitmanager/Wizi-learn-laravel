@@ -21,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'isFormateur' => \App\Http\Middleware\IsFormateur::class,
             'detectClient' => \App\Http\Middleware\DetectClientPlatform::class,
             'role' => \App\Http\Middleware\RoleMiddleware::class,
+            'checkSyncSecret' => \App\Http\Middleware\CheckSyncSecret::class,
         ]);
 
         // Ajoutez le middleware aux groupes web et api

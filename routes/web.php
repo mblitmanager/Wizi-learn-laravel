@@ -81,6 +81,7 @@ Route::middleware(['auth'])->get('/logout', [AdminController::class, 'logout'])-
 Route::middleware(['auth'])->group(function () {
     Route::get('/agenda', [\App\Http\Controllers\Admin\AgendaController::class, 'index'])->name('agenda.index');
     Route::get('/agenda/events', [\App\Http\Controllers\Admin\AgendaController::class, 'getEvents'])->name('agenda.events');
+    Route::post('/agenda/sync', [\App\Http\Controllers\Admin\AgendaController::class, 'sync'])->name('agenda.sync');
 });
 
 // Routes pour les administrateurs

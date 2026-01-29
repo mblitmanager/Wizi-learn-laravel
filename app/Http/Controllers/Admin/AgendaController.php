@@ -5,12 +5,20 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\GoogleCalendar;
 use App\Models\GoogleCalendarEvent;
+use App\Models\User;
+use App\Services\GoogleCalendarSyncService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AgendaController extends Controller
 {
+    protected $syncService;
+
+    public function __construct(GoogleCalendarSyncService $syncService)
+    {
+        $this->syncService = $syncService;
+    }
     public function index()
     {
         $user = Auth::user();
@@ -50,5 +58,47 @@ class AgendaController extends Controller
         });
 
         return response()->json($events);
+    }
+
+    public function sync(Request $request)
+    {
+        $user = Auth::user();
+        $authCode = $request->input('authCode');
+
+        try {
+            if ($authCode) {
+                // Connection/Sync for the current user
+                $this->syncService->exchangeCode($authCode, $user);
+                $result = $this->syncService->syncByUserId($user->id);
+                return response()->json([
+                    'message' => 'Synchronisation de votre compte réussie.',
+                    'info' => $result
+                ]);
+            } else {
+                // Global sync for admin
+                $isAdmin = in_array(strtolower($user->role), ['administrateur', 'admin']);
+                if (!$isAdmin) {
+                    return response()->json(['message' => 'Seul l\'administrateur peut lancer la synchronisation globale.'], 403);
+                }
+
+                $users = User::whereNotNull('google_refresh_token')->get();
+                $results = [];
+                foreach ($users as $u) {
+                    try {
+                        $res = $this->syncService->syncByUserId($u->id);
+                        $results[] = ['userId' => $u->id, 'status' => 'success', 'info' => $res];
+                    } catch (\Exception $e) {
+                        $results[] = ['userId' => $u->id, 'status' => 'error', 'message' => $e->getMessage()];
+                    }
+                }
+
+                return response()->json([
+                    'message' => 'Synchronisation globale terminée.',
+                    'results' => $results
+                ]);
+            }
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 400);
+        }
     }
 }

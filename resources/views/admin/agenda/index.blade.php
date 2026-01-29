@@ -120,15 +120,11 @@
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Synchronisation...';
 
             try {
-                // We call the Node.js API
-                // Assuming the token is shared or we use a secret
-                const response = await fetch('http://127.0.0.1:3000/api/agendas/sync', {
+                const response = await fetch('{{ route("agenda.sync") }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        // In a real app, we'd need the JWT from the logged-in user
-                        // For admin 'sync all', we might need a special header if Node.js requires it
-                        'Authorization': 'Bearer ' + '{{ $token }}'
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     },
                     body: JSON.stringify({ authCode })
                 });
