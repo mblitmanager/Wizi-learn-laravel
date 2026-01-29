@@ -77,6 +77,12 @@ Route::middleware(['auth'])->get('/dashboard', function () {
 
 Route::middleware(['auth'])->get('/logout', [AdminController::class, 'logout'])->name('logout');
 
+// Routes Agenda (Blade)
+Route::middleware(['auth'])->group(function () {
+    Route::get('/agenda', [\App\Http\Controllers\Admin\AgendaController::class, 'index'])->name('agenda.index');
+    Route::get('/agenda/events', [\App\Http\Controllers\Admin\AgendaController::class, 'getEvents'])->name('agenda.events');
+});
+
 // Routes pour les administrateurs
 Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');

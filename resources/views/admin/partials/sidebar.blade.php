@@ -132,6 +132,12 @@
         <!-- Profil Formateur -->
         @if (auth()->user()->role === 'formateur' || auth()->user()->role === 'formatrice')
             <li>
+                <a href="{{ route('agenda.index') }}">
+                    <div class="parent-icon"><i class='bx bx-calendar'></i></div>
+                    <div class="menu-title">Mon Agenda</div>
+                </a>
+            </li>
+            <li>
                 <a href="{{ route('formateur.profile') }}">
                     <div class="parent-icon"><i class='bx bx-user'></i></div>
                     <div class="menu-title">Mon Profil</div>
@@ -171,11 +177,11 @@
                 </a>
             </li>
 
-            <!-- Planning -->
+            <!-- Planning / Agenda -->
             <li>
-                <a href="javascript:;">
-                    <div class="parent-icon"><i class='fadeIn animated bx bx-calendar'></i></div>
-                    <div class="menu-title">Planning</div>
+                <a href="{{ route('agenda.index') }}">
+                    <div class="parent-icon"><i class='bx bx-calendar'></i></div>
+                    <div class="menu-title">Agenda</div>
                 </a>
             </li>
 
