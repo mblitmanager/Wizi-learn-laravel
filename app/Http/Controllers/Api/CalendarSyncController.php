@@ -11,65 +11,83 @@ use App\Models\User;
 
 class CalendarSyncController extends Controller
 {
+    protected $syncService;
+
+    public function __construct(\App\Services\GoogleCalendarSyncService $syncService)
+    {
+        $this->syncService = $syncService;
+    }
+
     public function sync(Request $request)
     {
-        // Valider les données entrantes
         $request->validate([
-            'userId' => 'required|string',
-            'calendars' => 'required|array',
-            'events' => 'required|array',
-            'calendars.*.googleId' => 'required|string',
-            'calendars.*.summary' => 'required|string',
-            'calendars.*.description' => 'nullable|string',
-            'calendars.*.backgroundColor' => 'nullable|string',
-            'calendars.*.foregroundColor' => 'nullable|string',
-            // Ajoutez d'autres validations pour les champs de calendrier si nécessaire
-            'events.*.googleId' => 'required|string',
-            'events.*.calendarId' => 'required|string',
-            'events.*.summary' => 'nullable|string',
-            'events.*.description' => 'nullable|string',
-            'events.*.location' => 'nullable|string',
-            'events.*.start' => 'required|string',
-            'events.*.end' => 'required|string',
-            'events.*.htmlLink' => 'nullable|string',
-            'events.*.hangoutLink' => 'nullable|string',
-            'events.*.organizer' => 'nullable|array',
-            'events.*.attendees' => 'nullable|array',
-            // Ajoutez d'autres validations pour les champs d'événement si nécessaire
+            'accessToken' => 'nullable|string',
+            'authCode' => 'nullable|string',
+            'userId' => 'nullable|string',
+            // ...
         ]);
 
-        $userId = $request->input('userId');
-        $calendarsData = $request->input('calendars');
-        $eventsData = $request->input('events');
+        $user = auth()->user() ?: User::find($request->input('userId'));
 
-        // Assurez-vous que l'utilisateur existe
-        $user = User::where('id', $userId)->first();
         if (!$user) {
             return response()->json(['error' => 'Utilisateur non trouvé.'], 404);
         }
 
-        Log::info("Synchronisation Google Calendar reçue pour l'utilisateur: {$userId}");
+        // Cas 1: Le front-end envoie un authCode (nouveau flux pour avoir le refresh_token)
+        if ($request->filled('authCode')) {
+            try {
+                $token = $this->syncService->exchangeCode($request->input('authCode'), $user);
+                $result = $this->syncService->syncAll($token['access_token'], $user);
+                return response()->json([
+                    'message' => 'Authentification réussie et synchronisation effectuée.',
+                    'userId' => $user->id,
+                    'calendarsSynced' => $result['calendarsSynced'],
+                    'eventsSynced' => $result['eventsSynced'],
+                ]);
+            } catch (\Exception $e) {
+                Log::error("Erreur exchangeCode Laravel: " . $e->getMessage());
+                return response()->json(['error' => $e->getMessage()], 500);
+            }
+        }
+
+        // Cas 2: Le front-end envoie un accessToken (flux rapide)
+        if ($request->filled('accessToken')) {
+            try {
+                $result = $this->syncService->syncAll($request->input('accessToken'), $user);
+                return response()->json([
+                    'message' => 'Synchronisation effectuée par le serveur Laravel.',
+                    'userId' => $user->id,
+                    'calendarsSynced' => $result['calendarsSynced'],
+                    'eventsSynced' => $result['eventsSynced'],
+                ]);
+            } catch (\Exception $e) {
+                Log::error("Erreur sync Laravel: " . $e->getMessage());
+                return response()->json(['error' => $e->getMessage()], 500);
+            }
+        }
+        $calendarsData = $request->input('calendars') ?: [];
+        $eventsData = $request->input('events') ?: [];
+
+        Log::info("Synchronisation Google Calendar reçue pour l'utilisateur: {$user->id}");
 
         $calendarsSyncedCount = 0;
         $eventsSyncedCount = 0;
 
         foreach ($calendarsData as $calendarData) {
             $calendar = GoogleCalendar::updateOrCreate(
-                ['google_id' => $calendarData['googleId'], 'user_id' => $userId],
+                ['google_id' => $calendarData['googleId'], 'user_id' => $user->id],
                 [
                     'summary' => $calendarData['summary'],
                     'description' => $calendarData['description'] ?? null,
                     'background_color' => $calendarData['backgroundColor'] ?? null,
                     'foreground_color' => $calendarData['foregroundColor'] ?? null,
-                    'access_role' => $calendarData['accessRole'] ?? null, // Assurez-vous que ce champ est envoyé par le front-end
-                    'time_zone' => $calendarData['timeZone'] ?? null,     // Assurez-vous que ce champ est envoyé par le front-end
+                    'access_role' => $calendarData['accessRole'] ?? null,
+                    'time_zone' => $calendarData['timeZone'] ?? null,
                     'synced_at' => now(),
                 ]
             );
             $calendarsSyncedCount++;
 
-            // Supprimer tous les événements existants pour ce calendrier et cette date
-            // Alternativement, vous pouvez faire une mise à jour intelligente ou supprimer seulement les événements non présents
             GoogleCalendarEvent::where('google_calendar_id', $calendar->id)->delete();
 
             foreach ($eventsData as $eventData) {
@@ -86,9 +104,9 @@ class CalendarSyncController extends Controller
                         'hangout_link' => $eventData['hangoutLink'] ?? null,
                         'organizer' => $eventData['organizer'] ?? null,
                         'attendees' => $eventData['attendees'] ?? null,
-                        'status' => $eventData['status'] ?? null, // Assurez-vous que ce champ est envoyé par le front-end
-                        'recurrence' => $eventData['recurrence'] ?? null, // Assurez-vous que ce champ est envoyé par le front-end
-                        'event_type' => $eventData['eventType'] ?? null, // Assurez-vous que ce champ est envoyé par le front-end
+                        'status' => $eventData['status'] ?? null,
+                        'recurrence' => $eventData['recurrence'] ?? null,
+                        'event_type' => $eventData['eventType'] ?? null,
                     ]);
                     $eventsSyncedCount++;
                 }
@@ -96,8 +114,8 @@ class CalendarSyncController extends Controller
         }
 
         return response()->json([
-            'message' => 'Données Google Calendar synchronisées avec succès sur Laravel.',
-            'userId' => $userId,
+            'message' => 'Données Google Calendar synchronisées avec succès sur Laravel (Legacy).',
+            'userId' => $user->id,
             'calendarsSynced' => $calendarsSyncedCount,
             'eventsSynced' => $eventsSyncedCount,
         ]);

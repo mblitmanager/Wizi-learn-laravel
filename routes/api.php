@@ -134,6 +134,7 @@ Route::middleware(['auth:api', 'detectClient'])->group(function () {
 
     // Google Calendar Sync
     Route::post('/calendar/sync', [CalendarSyncController::class, 'sync']);
+    Route::get('/agendas', [\App\Http\Controllers\Api\AgendasApiController::class, 'index']);
 
     // --------------------------------------------------------------------------
     // USER & CORE

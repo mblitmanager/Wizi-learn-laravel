@@ -37,7 +37,10 @@ class User extends Authenticatable implements JWTSubject
         'is_online',
         'fcm_token',
         'last_client',
-        'adresse'
+        'adresse',
+        'google_access_token',
+        'google_refresh_token',
+        'google_token_expires_at',
     ];
 
     /**
