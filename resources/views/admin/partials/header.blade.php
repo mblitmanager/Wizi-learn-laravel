@@ -23,36 +23,36 @@
                                     <div class="app-box mx-auto bg-gradient-cosmic text-white"><i
                                             class='bx bx-group'></i>
                                     </div>
-                                    <div class="app-title">Teams</div>
+                                    <div class="app-title">Équipes</div>
                                 </div>
                                 <div class="col text-center">
                                     <div class="app-box mx-auto bg-gradient-burning text-white"><i
                                             class='bx bx-atom'></i>
                                     </div>
-                                    <div class="app-title">Projects</div>
+                                    <div class="app-title">Projets</div>
                                 </div>
                                 <div class="col text-center">
                                     <div class="app-box mx-auto bg-gradient-lush text-white"><i
                                             class='bx bx-shield'></i>
                                     </div>
-                                    <div class="app-title">Tasks</div>
+                                    <div class="app-title">Tâches</div>
                                 </div>
                                 <div class="col text-center">
                                     <div class="app-box mx-auto bg-gradient-kyoto text-dark"><i
                                             class='bx bx-notification'></i>
                                     </div>
-                                    <div class="app-title">Feeds</div>
+                                    <div class="app-title">Flux</div>
                                 </div>
                                 <div class="col text-center">
                                     <div class="app-box mx-auto bg-gradient-blues text-dark"><i class='bx bx-file'></i>
                                     </div>
-                                    <div class="app-title">Files</div>
+                                    <div class="app-title">Fichiers</div>
                                 </div>
                                 <div class="col text-center">
                                     <div class="app-box mx-auto bg-gradient-moonlit text-white"><i
                                             class='bx bx-filter-alt'></i>
                                     </div>
-                                    <div class="app-title">Alerts</div>
+                                    <div class="app-title">Alertes</div>
                                 </div>
                             </div>
                         </div>
@@ -67,14 +67,14 @@
                             <a href="javascript:;">
                                 <div class="msg-header">
                                     <p class="msg-header-title">Notifications</p>
-                                    <p class="msg-header-clear ms-auto">Marks all as read</p>
+                                    <p class="msg-header-clear ms-auto">Tout marquer comme lu</p>
                                 </div>
                             </a>
                             <div class="header-notifications-list">
 
                             </div>
                             <a href="javascript:;">
-                                <div class="text-center msg-footer">View All Notifications</div>
+                                <div class="text-center msg-footer">Voir toutes les notifications</div>
                             </a>
                         </div>
                     </li>
@@ -88,7 +88,7 @@
                             <a href="javascript:;">
                                 <div class="msg-header">
                                     <p class="msg-header-title">Messages</p>
-                                    <p class="msg-header-clear ms-auto">Marks all as read</p>
+                                    <p class="msg-header-clear ms-auto">Tout marquer comme lu</p>
                                 </div>
                             </a>
                             <div class="header-message-list">
@@ -220,7 +220,7 @@
                                 </a>
                             </div>
                             <a href="javascript:;">
-                                <div class="text-center msg-footer">View All Messages</div>
+                                <div class="text-center msg-footer">Voir tous les messages</div>
                             </a>
                         </div>
                     </li>
@@ -253,17 +253,17 @@
                 <ul class="dropdown-menu dropdown-menu-end">
                     <li>
                         <a class="dropdown-item" href="{{ route('parametre.show', $user->id) }}">
-                            <i class="bx bx-user"></i><span>Profile</span>
+                            <i class="bx bx-user"></i><span>Profil</span>
                         </a>
                     </li>
                     <li>
                         <a class="dropdown-item" href="{{ route('parametre.index') }}">
-                            <i class="bx bx-cog"></i><span>Settings</span>
+                            <i class="bx bx-cog"></i><span>Paramètres</span>
                         </a>
                     </li>
                     <li>
                         <a class="dropdown-item" href="{{ route('dashboard') }}">
-                            <i class='bx bx-home-circle'></i><span>Dashboard</span>
+                            <i class='bx bx-home-circle'></i><span>Tableau de bord</span>
                         </a>
                     </li>
                     <li>

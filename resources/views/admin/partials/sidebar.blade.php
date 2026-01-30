@@ -55,7 +55,7 @@
             <li>
                 <a href="{{ route('stagiaires.index') }}">
                     <div class="parent-icon"><i class='lni lni-users'></i></div>
-                    <div class="menu-title">Stagiaire</div>
+                    <div class="menu-title">Stagiaires</div>
                 </a>
             </li>
         @endif
