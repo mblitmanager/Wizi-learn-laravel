@@ -151,6 +151,7 @@ Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function
     Route::get('/data-reset', function() {
         return view('admin.data-reset');
     })->name('admin.data-reset');
+    Route::post('/data-reset', [ParametreAdminController::class, 'resetDataAjax'])->name('admin.data-reset.post');
 
     Route::resource('parametre', ParametreAdminController::class);
     Route::put('/parametre/{id}/update-image', [ParametreAdminController::class, 'updateImage'])->name('parametre.updateImage');

@@ -295,4 +295,89 @@ class ParametreAdminController extends Controller
                 ->with('error', 'Une erreur est survenue lors de la réinitialisation des données : ' . $e->getMessage());
         }
     }
+
+    /**
+     * Réinitialise les données via AJAX (nouvelle interface).
+     */
+    public function resetDataAjax(\Illuminate\Http\Request $request)
+    {
+        try {
+            $dataTypes = $request->input('dataTypes', []);
+            $confirmation = $request->input('confirmation', false);
+
+            if (!$confirmation) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'La confirmation est requise.'
+                ], 400);
+            }
+
+            if (empty($dataTypes)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Aucun type de données sélectionné.'
+                ], 400);
+            }
+
+            $deleted = [];
+            
+            \Illuminate\Support\Facades\Schema::disableForeignKeyConstraints();
+            \Illuminate\Support\Facades\DB::beginTransaction();
+
+            // Mapping types to tables
+            $mapping = [
+                'login_histories' => ['login_histories'],
+                'user_app_usages' => ['user_app_usages'],
+                'user_activity_log' => ['user_activity_log'],
+                'user_client_sessions' => ['user_client_sessions'],
+                'classements' => ['classements'],
+                'progressions' => ['progressions'],
+                'achievements' => ['user_achievements', 'stagiaire_achievements'],
+                'quiz_participations' => ['quiz_participations'],
+                'quiz_participation_answers' => ['quiz_participation_answers'],
+                'participations' => ['participations'],
+                'participation_answers' => ['participation_answers'],
+                'quiz_statistics' => ['quiz_statistics'],
+                'media_stagiaire' => ['media_stagiaire'],
+                'demande_inscriptions' => ['demande_inscriptions'],
+                'notification_history' => ['notification_history'],
+            ];
+
+            foreach ($dataTypes as $type) {
+                if (isset($mapping[$type])) {
+                    foreach ($mapping[$type] as $table) {
+                        if (\Illuminate\Support\Facades\Schema::hasTable($table)) {
+                            $count = \Illuminate\Support\Facades\DB::table($table)->count();
+                            \Illuminate\Support\Facades\DB::table($table)->truncate();
+                            $deleted[$type] = ($deleted[$type] ?? 0) + $count;
+                        }
+                    }
+                }
+            }
+
+            // Always reset stagiaire fields if any activity data is cleared
+            \App\Models\Stagiaire::query()->update([
+                'login_streak' => 0,
+                'last_login_at' => null,
+            ]);
+
+            \Illuminate\Support\Facades\DB::commit();
+            \Illuminate\Support\Facades\Schema::enableForeignKeyConstraints();
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'deleted' => $deleted
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            \Illuminate\Support\Facades\Schema::enableForeignKeyConstraints();
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

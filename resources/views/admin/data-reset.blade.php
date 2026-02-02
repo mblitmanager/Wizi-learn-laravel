@@ -40,22 +40,29 @@
                             <div class="form-check mb-3">
                                 <input class="form-check-input data-checkbox" type="checkbox" value="classements" id="classements">
                                 <label class="form-check-label" for="classements">
-                                    <strong>Classements</strong>
-                                    <br><small class="text-muted">Supprime tous les classements et scores des stagiaires</small>
+                                    <strong>Classements</strong> <span class="badge bg-light text-dark border">classements</span>
+                                    <br><small class="text-muted">Supprime tous les scores et rangs des stagiaires</small>
                                 </label>
                             </div>
                             <div class="form-check mb-3">
                                 <input class="form-check-input data-checkbox" type="checkbox" value="progressions" id="progressions">
                                 <label class="form-check-label" for="progressions">
-                                    <strong>Progression des stagiaires</strong>
-                                    <br><small class="text-muted">Réinitialise l'avancement dans les formations</small>
+                                    <strong>Progression</strong> <span class="badge bg-light text-dark border">progressions</span>
+                                    <br><small class="text-muted">Réinitialise l'avancement dans les leçons et modules</small>
+                                </label>
+                            </div>
+                            <div class="form-check mb-3">
+                                <input class="form-check-input data-checkbox" type="checkbox" value="achievements" id="achievements">
+                                <label class="form-check-label" for="achievements">
+                                    <strong>Succès</strong> <span class="badge bg-light text-dark border">user_achievements</span>
+                                    <br><small class="text-muted">Efface les succès débloqués par les utilisateurs</small>
                                 </label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input data-checkbox" type="checkbox" value="achievements" id="achievements">
-                                <label class="form-check-label" for="achievements">
-                                    <strong>Succès et statistiques</strong>
-                                    <br><small class="text-muted">Efface les succès débloqués et réinitialise les statistiques</small>
+                                <input class="form-check-input data-checkbox" type="checkbox" value="quiz_statistics" id="quiz_statistics">
+                                <label class="form-check-label" for="quiz_statistics">
+                                    <strong>Stats Globales Quiz</strong> <span class="badge bg-light text-dark border">quiz_statistics</span>
+                                    <br><small class="text-muted">Réinitialise les moyennes et performances agrégées des quiz</small>
                                 </label>
                             </div>
                         </div>
@@ -63,29 +70,98 @@
 
                     <div class="card mb-4">
                         <div class="card-header bg-light">
-                            <h6 class="mb-0">Données des quiz</h6>
+                            <h6 class="mb-0">Détails des Participations</h6>
                         </div>
                         <div class="card-body">
-                            <div class="form-check mb-3">
-                                <input class="form-check-input data-checkbox" type="checkbox" value="quiz_participations" id="quiz_participations">
-                                <label class="form-check-label" for="quiz_participations">
-                                    <strong>Participations aux quiz</strong>
-                                    <br><small class="text-muted">Supprime l'historique des participations aux quiz</small>
-                                </label>
+                            <div class="row">
+                                <div class="col-md-6 border-end">
+                                    <h6 class="small fw-bold text-uppercase mb-3">Quiz</h6>
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input data-checkbox" type="checkbox" value="quiz_participations" id="quiz_participations">
+                                        <label class="form-check-label" for="quiz_participations">
+                                            <strong>Participations</strong> <span class="badge bg-light text-dark border">quiz_participations</span>
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input data-checkbox" type="checkbox" value="quiz_participation_answers" id="quiz_participation_answers">
+                                        <label class="form-check-label" for="quiz_participation_answers">
+                                            <strong>Réponses</strong> <span class="badge bg-light text-dark border">quiz_participation_answers</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 ps-md-4">
+                                    <h6 class="small fw-bold text-uppercase mb-3">Formations</h6>
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input data-checkbox" type="checkbox" value="participations" id="participations">
+                                        <label class="form-check-label" for="participations">
+                                            <strong>Participations</strong> <span class="badge bg-light text-dark border">participations</span>
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input data-checkbox" type="checkbox" value="participation_answers" id="participation_answers">
+                                        <label class="form-check-label" for="participation_answers">
+                                            <strong>Réponses</strong> <span class="badge bg-light text-dark border">participation_answers</span>
+                                        </label>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="form-check mb-3">
-                                <input class="form-check-input data-checkbox" type="checkbox" value="quiz_answers" id="quiz_answers">
-                                <label class="form-check-label" for="quiz_answers">
-                                    <strong>Réponses aux quiz</strong>
-                                    <br><small class="text-muted">Efface toutes les réponses données aux questions</small>
-                                </label>
-                            </div>
+                            <hr>
                             <div class="form-check">
-                                <input class="form-check-input data-checkbox" type="checkbox" value="quiz_history" id="quiz_history">
-                                <label class="form-check-label" for="quiz_history">
-                                    <strong>Historique des quiz joués</strong>
-                                    <br><small class="text-muted">Supprime l'historique complet des sessions de quiz</small>
+                                <input class="form-check-input data-checkbox" type="checkbox" value="media_stagiaire" id="media_stagiaire">
+                                <label class="form-check-label" for="media_stagiaire">
+                                    <strong>Historique Vidéo</strong> <span class="badge bg-light text-dark border">media_stagiaire</span>
+                                    <br><small class="text-muted">Efface les données de visionnage des vidéos</small>
                                 </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">Logs, Sessions et Demandes</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input data-checkbox" type="checkbox" value="user_activity_log" id="user_activity_log">
+                                        <label class="form-check-label" for="user_activity_log">
+                                            <strong>Logs d'activité</strong> <span class="badge bg-light text-dark border">user_activity_log</span>
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input data-checkbox" type="checkbox" value="login_histories" id="login_histories">
+                                        <label class="form-check-label" for="login_histories">
+                                            <strong>Historique Login</strong> <span class="badge bg-light text-dark border">login_histories</span>
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input data-checkbox" type="checkbox" value="notification_history" id="notification_history">
+                                        <label class="form-check-label" for="notification_history">
+                                            <strong>Logs Notifications</strong> <span class="badge bg-light text-dark border">notification_history</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input data-checkbox" type="checkbox" value="user_app_usages" id="user_app_usages">
+                                        <label class="form-check-label" for="user_app_usages">
+                                            <strong>Usage Mobile</strong> <span class="badge bg-light text-dark border">user_app_usages</span>
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input data-checkbox" type="checkbox" value="user_client_sessions" id="user_client_sessions">
+                                        <label class="form-check-label" for="user_client_sessions">
+                                            <strong>Sessions Clients</strong> <span class="badge bg-light text-dark border">user_client_sessions</span>
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input data-checkbox" type="checkbox" value="demande_inscriptions" id="demande_inscriptions">
+                                        <label class="form-check-label" for="demande_inscriptions">
+                                            <strong>Demandes Formation</strong> <span class="badge bg-light text-dark border">demande_inscriptions</span>
+                                        </label>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -182,12 +258,11 @@ document.addEventListener('DOMContentLoaded', function() {
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Suppression en cours...';
 
         try {
-            const token = localStorage.getItem('token') || '{{ session("jwt_token") }}';
-            const response = await fetch('{{ config("app.node_api_url", "http://localhost:8000") }}/api/admin/data/reset', {
+            const response = await fetch('{{ route("admin.data-reset.post") }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
                 body: JSON.stringify({
                     dataTypes: selectedData,
