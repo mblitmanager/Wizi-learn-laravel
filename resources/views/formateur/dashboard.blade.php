@@ -255,16 +255,16 @@
 
     <style>
         :root {
-            --primary: #4361ee;
-            --secondary: #3f37c9;
-            --success: #4cc9f0;
-            --info: #4895ef;
-            --warning: #f72585;
-            --danger: #e63946;
-            --light: #f8f9fa;
-            --dark: #212529;
-            --gradient-start: #4361ee;
-            --gradient-end: #3a0ca3;
+            --primary: #231E15;
+            --secondary: #3A3226;
+            --success: #16A34A;
+            --info: #0284C7;
+            --warning: #FCB829;
+            --danger: #DC2626;
+            --light: #FAF9F6;
+            --dark: #1A1712;
+            --gradient-start: #231E15;
+            --gradient-end: #3A3226;
             --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
             --card-hover: 0 8px 30px rgba(0, 0, 0, 0.12);
         }
@@ -304,19 +304,19 @@
             font-size: 24px;
             background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
             color: white;
-            box-shadow: 0 4px 10px rgba(67, 97, 238, 0.3);
+            box-shadow: 0 4px 10px rgba(35, 30, 21, 0.3);
         }
 
         .card-icon.bg-success {
-            background: linear-gradient(135deg, #4cc9f0, #4895ef);
+            background: linear-gradient(135deg, #FCB829, #D99A12);
         }
 
         .card-icon.bg-info {
-            background: linear-gradient(135deg, #4895ef, #4361ee);
+            background: linear-gradient(135deg, #231E15, #3A3226);
         }
 
         .card-icon.bg-warning {
-            background: linear-gradient(135deg, #f72585, #b5179e);
+            background: linear-gradient(135deg, #EA7A1A, #C2410C);
         }
 
         .stat-number {
@@ -331,13 +331,13 @@
 
         .stat-label {
             font-size: 0.9rem;
-            color: #718096;
+            color: #7A7366;
             font-weight: 500;
         }
 
         .card-title {
             font-weight: 600;
-            color: #2d3748;
+            color: #231E15;
             margin-bottom: 1.5rem;
             position: relative;
             padding-bottom: 0.5rem;

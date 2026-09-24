@@ -166,7 +166,7 @@
                                                 Afficher
                                             </a>
                                             <a href="{{ route('stagiaires.edit', $row->id) }}"
-                                                class="btn btn-sm btn-success text-white" title="Modifier">
+                                                                class="btn btn-sm btn-warning" title="Modifier">
                                                 Modifier
                                             </a>
                                             @if ($row->statut == 1)
@@ -462,7 +462,7 @@
         }
 
         .table-hover tbody tr:hover {
-            background-color: rgba(0, 123, 255, 0.04) !important;
+            background-color: rgba(252, 184, 41, 0.04) !important;
         }
 
         .filters input {
@@ -472,7 +472,7 @@
         .dataTables_empty {
             text-align: center;
             padding: 2rem !important;
-            color: #6c757d !important;
+            color: #7A7366 !important;
         }
 
         .table-striped tbody tr:nth-of-type(odd) {

@@ -359,7 +359,7 @@
     }
 
     .table-hover tbody tr:hover {
-        background-color: rgba(0, 123, 255, 0.04) !important;
+        background-color: rgba(252, 184, 41, 0.04) !important;
     }
 
     /* Style pour les cartes de contact */

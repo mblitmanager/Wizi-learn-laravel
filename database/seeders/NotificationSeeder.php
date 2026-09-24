@@ -2,7 +2,10 @@
 
 namespace Database\Seeders;
 
+use App\Models\CatalogueFormation;
+use App\Models\Media;
 use App\Models\Notification;
+use App\Models\Quiz;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -10,70 +13,35 @@ class NotificationSeeder extends Seeder
 {
     public function run(): void
     {
-        // Récupérer tous les utilisateurs stagiaires
-        $users = User::where('role', 'stagiaire')->get();
+        $users = User::where('email', 'like', 'stagiaire%@wizi-learn.com')->orderBy('id')->take(10)->get();
+        if ($users->isEmpty()) {
+            return;
+        }
 
-        foreach ($users as $user) {
-            // Notifications de quiz
-            Notification::create([
-                'user_id' => $user->id,
-                'type' => 'quiz',
-                'message' => 'Un nouveau quiz sur JavaScript est disponible !',
-                'data' => [
-                    'quiz_id' => 1,
-                    'quiz_title' => 'Introduction à JavaScript'
-                ],
-                'read' => false
-            ]);
+        $quiz = Quiz::orderBy('id')->first();
+        $quizExcel = Quiz::where('titre', 'like', 'Excel%')->first() ?? $quiz;
+        $formation = CatalogueFormation::orderBy('id')->first();
+        $media = Media::orderBy('id')->first();
 
-            Notification::create([
-                'user_id' => $user->id,
-                'type' => 'quiz',
-                'message' => 'Vous avez obtenu 8/10 points au quiz PHP !',
-                'data' => [
-                    'quiz_id' => 2,
-                    'quiz_title' => 'Les bases de PHP',
-                    'score' => 8,
-                    'total_questions' => 10
-                ],
-                'read' => true
-            ]);
+        // [type, message, data, lue]
+        $notifications = [
+            ['quiz', "Un nouveau quiz est disponible : « {$quiz?->titre} » !", ['quiz_id' => $quiz?->id, 'quiz_title' => $quiz?->titre], false],
+            ['quiz', "Vous avez obtenu 8/10 au quiz « {$quizExcel?->titre} ».", ['quiz_id' => $quizExcel?->id, 'quiz_title' => $quizExcel?->titre, 'score' => 8, 'total_questions' => 5], true],
+            ['formation', "Votre formation « {$formation?->titre} » commence la semaine prochaine.", ['formation_id' => $formation?->id, 'formation_title' => $formation?->titre], false],
+            ['media', "Nouvelle vidéo disponible : « {$media?->titre} ».", ['media_id' => $media?->id, 'media_title' => $media?->titre], false],
+            ['badge', 'Félicitations ! Vous avez débloqué le badge « Premier quiz ».', ['achievement_code' => 'first_quiz'], true],
+            ['badge', 'Bravo, 5 jours de connexion d\'affilée !', ['achievement_code' => 'login_streak_5'], false],
+            ['parrainage', 'Votre filleul s\'est inscrit : vous gagnez 2 points et 50 € !', ['points' => 2, 'gains' => 50], false],
+            ['formation', 'Votre rendez-vous de suivi avec votre formateur est confirmé.', ['action' => 'agenda'], true],
+            ['system', 'Bienvenue sur Wizi Learn ! Commencez votre parcours d\'apprentissage.', ['action' => 'welcome'], true],
+            ['system', 'Pensez à compléter votre profil pour profiter de toutes les fonctionnalités.', ['action' => 'profile'], false],
+        ];
 
-            // Notifications de formation
-            Notification::create([
-                'user_id' => $user->id,
-                'type' => 'formation',
-                'message' => 'La formation "Développement Web" a été mise à jour !',
-                'data' => [
-                    'formation_id' => 1,
-                    'formation_title' => 'Développement Web'
-                ],
-                'read' => false
-            ]);
-
-            // Notifications de récompenses
-            Notification::create([
-                'user_id' => $user->id,
-                'type' => 'badge',
-                'message' => 'Félicitations ! Vous avez gagné le badge "Expert JavaScript" !',
-                'data' => [
-                    'badge_id' => 1,
-                    'badge_name' => 'Expert JavaScript',
-                    'points' => 100
-                ],
-                'read' => false
-            ]);
-
-            // Notifications système
-            Notification::create([
-                'user_id' => $user->id,
-                'type' => 'system',
-                'message' => 'Bienvenue sur Wizi Learn ! Commencez votre parcours d\'apprentissage.',
-                'data' => [
-                    'action' => 'welcome'
-                ],
-                'read' => true
-            ]);
+        foreach ($notifications as $i => [$type, $message, $data, $read]) {
+            Notification::updateOrCreate(
+                ['user_id' => $users[$i % $users->count()]->id, 'message' => $message],
+                ['type' => $type, 'data' => $data, 'read' => $read]
+            );
         }
     }
 }

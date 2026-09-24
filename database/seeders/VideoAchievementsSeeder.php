@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Achievement;
+use Illuminate\Database\Seeder;
 
 class VideoAchievementsSeeder extends Seeder
 {
@@ -14,7 +14,7 @@ class VideoAchievementsSeeder extends Seeder
     {
         // Succès : première vidéo vue
         Achievement::updateOrCreate(
-            [ 'code' => 'first_video' ],
+            ['code' => 'first_video'],
             [
                 'name' => 'Première vidéo',
                 'description' => 'A regardé sa première vidéo',
@@ -28,7 +28,7 @@ class VideoAchievementsSeeder extends Seeder
 
         // Succès : toutes les vidéos vues
         Achievement::updateOrCreate(
-            [ 'code' => 'all_videos' ],
+            ['code' => 'all_videos'],
             [
                 'name' => 'Toutes les vidéos',
                 'description' => 'A regardé toutes les vidéos de la plateforme',

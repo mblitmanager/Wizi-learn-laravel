@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Achievement;
+use Illuminate\Database\Seeder;
 
 class AchievementSeeder extends Seeder
 {
@@ -92,7 +92,7 @@ class AchievementSeeder extends Seeder
         ];
 
         foreach ($achievements as $data) {
-            if (!empty($data['code'])) {
+            if (! empty($data['code'])) {
                 Achievement::updateOrCreate([
                     'code' => $data['code'],
                 ], $data);

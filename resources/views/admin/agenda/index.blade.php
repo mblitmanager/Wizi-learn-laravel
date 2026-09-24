@@ -49,15 +49,15 @@
     .fc .fc-toolbar-title {
         font-size: 1.5rem;
         font-weight: 700;
-        color: #2d3748;
+        color: #231E15;
     }
     .fc .fc-button-primary {
-        background-color: #4361ee;
-        border-color: #4361ee;
+        background-color: #231E15;
+        border-color: #231E15;
     }
     .fc .fc-button-primary:hover {
-        background-color: #3f37c9;
-        border-color: #3f37c9;
+        background-color: #16130E;
+        border-color: #16130E;
     }
     .fc-event {
         cursor: pointer;

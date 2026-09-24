@@ -430,8 +430,8 @@
                         datasets: [{
                             label: 'Points',
                             data: data,
-                            backgroundColor: 'rgba(13, 110, 253, 0.1)',
-                            borderColor: 'rgba(13, 110, 253, 1)',
+                            backgroundColor: 'rgba(252, 184, 41, 0.1)',
+                            borderColor: 'rgba(252, 184, 41, 1)',
                             borderWidth: 1,
                             borderRadius: 4,
                             borderSkipped: false

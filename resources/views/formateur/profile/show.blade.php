@@ -339,7 +339,7 @@
         }
 
         .profile-summary-avatar img {
-            border: 4px solid #dee2e6;
+            border: 4px solid #ECE9E2;
             object-fit: cover;
         }
 
@@ -352,7 +352,7 @@
         .stat-item {
             padding: 15px;
             border-radius: 10px;
-            background: #f8f9fa;
+            background: #FAF9F6;
         }
 
         .account-info .info-item {

@@ -31,7 +31,7 @@
                         <!-- Informations principales -->
                         <div class="col-md-8">
                             <div class="card mb-4">
-                                <div class="card-header text-white" style="background: #65baee;">
+                                <div class="card-header text-white" style="background: #231E15;">
                                     <h6 class="card-title mb-0 text-white">
                                         <i class="fas fa-info-circle"></i> Informations de la Formation
                                     </h6>
@@ -118,14 +118,14 @@
                         <!-- Statistiques -->
                         <div class="col-md-4">
                             <div class="card mb-4">
-                                <div class="card-header text-white" style="background: #65baee;">
+                                <div class="card-header text-white" style="background: #231E15;">
                                     <h6 class="card-title mb-0 text-white">
                                         <i class="fas fa-chart-bar"></i> Statistiques
                                     </h6>
                                 </div>
                                 <div class="card-body">
                                     <div class="text-center mb-4">
-                                        <div class="stats-box text-white px-2 py-2" style="background: #65baee;">
+                                        <div class="stats-box text-white px-2 py-2" style="background: #231E15;">
                                             <i class="fas fa-users fa-2x"></i>
                                             <h3 class="mt-2 text-white">{{ $formation->stagiaires->count() }}</h3>
                                             <p class="mb-0">Stagiaires assignés</p>
@@ -167,7 +167,7 @@
 
                             <!-- Actions rapides -->
                             <div class="card">
-                                <div class="card-header text-white" style="background: #75c988; color: white;">
+                                <div class="card-header text-white" style="background: #16A34A; color: white;">
                                     <h6 class="card-title text-white mb-0">
                                         <i class="fas fa-bolt"></i> Actions rapides
                                     </h6>
@@ -277,7 +277,7 @@
 @push('styles')
 <style>
 .stats-box {
-    background: linear-gradient(45deg, #007bff, #0056b3);
+    background: linear-gradient(45deg, #231E15, #3A3226);
     color: white;
     padding: 20px;
     border-radius: 10px;
@@ -295,7 +295,7 @@
     opacity: 0.9;
 }
 .info-item {
-    border-bottom: 1px solid #f8f9fa;
+    border-bottom: 1px solid #FAF9F6;
     padding-bottom: 10px;
 }
 .info-item:last-child {
@@ -305,8 +305,8 @@
     border-radius: 10px;
 }
 .table th {
-    background-color: #f8f9fa;
-    border-bottom: 2px solid #dee2e6;
+    background-color: #FAF9F6;
+    border-bottom: 2px solid #ECE9E2;
 }
 </style>
 @endpush

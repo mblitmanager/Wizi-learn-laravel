@@ -240,4 +240,26 @@ class ParrainageController extends Controller
             'gains' => Parrainage::where('parrain_id', $parrain_id)->sum('gains'),
         ]);
     }
+
+    public function getFilleuls(Request $request)
+    {
+        $filleuls = Parrainage::with('filleul.stagiaire')
+            ->where('parrain_id', $request->user()->id)
+            ->latest('date_parrainage')
+            ->get()
+            ->map(fn (Parrainage $parrainage) => [
+                'id' => $parrainage->filleul_id,
+                'name' => $parrainage->filleul?->name,
+                'prenom' => $parrainage->filleul?->stagiaire?->prenom,
+                'email' => $parrainage->filleul?->email,
+                'date' => $parrainage->date_parrainage,
+                'points' => $parrainage->points,
+                'gains' => $parrainage->gains,
+            ]);
+
+        return response()->json([
+            'success' => true,
+            'data' => $filleuls,
+        ]);
+    }
 }

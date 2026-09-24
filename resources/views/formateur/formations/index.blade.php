@@ -192,7 +192,7 @@
     transition: all 0.3s ease;
     border-radius: 15px;
     overflow: hidden;
-    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    background: linear-gradient(135deg, #ffffff 0%, #FAF9F6 100%);
 }
 
 .formation-card:hover {
@@ -215,7 +215,7 @@
 .formation-icon {
     width: 60px;
     height: 60px;
-    background: linear-gradient(135deg, #007bff, #0056b3);
+    background: linear-gradient(135deg, #231E15, #3A3226);
     border-radius: 12px;
     display: flex;
     align-items: center;
@@ -253,7 +253,7 @@
 
 .progress {
     border-radius: 10px;
-    background-color: #e9ecef;
+    background-color: #F1EFE9;
 }
 
 .progress-bar {

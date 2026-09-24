@@ -206,7 +206,7 @@
         .dataTables_empty {
             text-align: center;
             padding: 2rem !important;
-            color: #6c757d !important;
+            color: #7A7366 !important;
         }
     </style>
 @endsection

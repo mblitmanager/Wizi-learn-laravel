@@ -23,8 +23,9 @@ return [
 
     'routes' => [
         'domain' => null,
-        // Global middleware applied to every API Platform routes
-        // 'middleware' => []
+        // Global middleware applied to every API Platform routes.
+        // Sans lui, les CRUD générés par #[ApiResource] sont publics.
+        'middleware' => ['auth:api'],
     ],
 
     'resources' => [

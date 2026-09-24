@@ -186,10 +186,6 @@ Route::middleware(['auth', 'isAdmin'])->prefix('administrateur')->group(function
     Route::get('demande/historique', [DemandeHistoriqueController::class, 'index'])->name('demande.historique.index');
     Route::get('demande/historique/{id}', [DemandeHistoriqueController::class, 'show'])->name('demande.historique.show');
     Route::post('partenaires/import', [PartenaireController::class, 'import'])->name('partenaires.import');
-    // routes/web.php
-    Route::get('demandes/export/xlsx', [DemandeHistoriqueController::class, 'exportXLSX'])
-        ->name('demande.historique.export.xlsx');
-
     Route::get('demandes/export/csv', [DemandeHistoriqueController::class, 'exportCSV'])
         ->name('demande.historique.export.csv');
 

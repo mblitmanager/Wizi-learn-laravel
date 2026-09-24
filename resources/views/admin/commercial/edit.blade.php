@@ -312,7 +312,7 @@
 
             // Style personnalisé pour Select2
             $('.select2-container--default .select2-selection--multiple').css({
-                'border': '1px solid #dee2e6',
+                'border': '1px solid #ECE9E2',
                 'border-radius': '8px',
                 'min-height': '38px'
             });
@@ -332,13 +332,13 @@
         .form-control,
         .form-select {
             border-radius: 8px;
-            border: 1px solid #dee2e6;
+            border: 1px solid #ECE9E2;
         }
 
         .form-control:focus,
         .form-select:focus {
-            border-color: #0d6efd;
-            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+            border-color: #D99A12;
+            box-shadow: 0 0 0 0.2rem rgba(252, 184, 41, 0.25);
         }
 
         .badge {
@@ -352,7 +352,7 @@
 
         .form-text {
             font-size: 0.8rem;
-            color: #6c757d;
+            color: #7A7366;
         }
     </style>
 @endsection

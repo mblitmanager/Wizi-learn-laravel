@@ -311,7 +311,7 @@
         .form-control,
         .form-select {
             border-radius: 8px;
-            border: 1px solid #dee2e6;
+            border: 1px solid #ECE9E2;
         }
 
         .alert {
@@ -319,26 +319,26 @@
         }
 
         .bg-light-warning {
-            background-color: rgba(255, 193, 7, 0.1) !important;
+            background-color: rgba(252, 184, 41, 0.1) !important;
         }
 
         .bg-light-primary {
-            background-color: rgba(13, 110, 253, 0.05) !important;
+            background-color: rgba(252, 184, 41, 0.05) !important;
         }
 
         .form-check-input:checked {
-            background-color: #0d6efd;
-            border-color: #0d6efd;
+            background-color: #231E15;
+            border-color: #D99A12;
         }
 
         .form-check-input:focus {
-            border-color: #0d6efd;
-            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+            border-color: #D99A12;
+            box-shadow: 0 0 0 0.2rem rgba(252, 184, 41, 0.25);
         }
 
         .form-text {
             font-size: 0.8rem;
-            color: #6c757d;
+            color: #7A7366;
             margin-left: 1.5rem;
         }
 

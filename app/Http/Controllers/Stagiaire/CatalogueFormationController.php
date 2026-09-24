@@ -153,7 +153,7 @@ class CatalogueFormationController extends Controller
             }
 
             // Vérifier si l'utilisateur est bien le stagiaire demandé ou a les droits d'accès
-            if ($user->role != 'formateur' && $user->role != 'admin') {
+            if ($user->role != 'formateur' && !$user->isAdmin()) {
                 // Vérifier si l'utilisateur est associé à ce stagiaire
                 $userStagiaire = $user->stagiaire;
                 if (!$userStagiaire) {

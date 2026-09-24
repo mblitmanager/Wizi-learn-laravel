@@ -242,7 +242,7 @@ class AutoReminderController extends Controller
     public function runManualReminders(Request $request)
     {
         $user = $request->user();
-        if ($user->role !== 'administrateur' && $user->role !== 'admin') {
+        if (!$user->isAdmin()) {
             return response()->json(['message' => 'Non autorisé'], 403);
         }
 

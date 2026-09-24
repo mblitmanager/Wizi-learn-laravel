@@ -115,7 +115,7 @@ class ProcessScheduledAnnouncements extends Command
     {
         if (!$sender) return collect(); // Should not happen if foreign key integrity
         
-        if ($sender->role === 'admin') {
+        if ($sender->isAdmin()) {
             return User::where('role', 'stagiaire')->get();
         }
 

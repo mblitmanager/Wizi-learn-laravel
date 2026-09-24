@@ -31,7 +31,7 @@ class AnnouncementController extends Controller
         // Or if Admin, see all? For now, let's show history of what THEY sent.
         $query = Announcement::with('creator')->orderBy('created_at', 'desc');
 
-        if ($user->role !== 'admin') {
+        if (!$user->isAdmin()) {
            $query->where('created_by', $user->id);
         }
 
@@ -69,7 +69,7 @@ class AnnouncementController extends Controller
              // ... scoped validation logic ...
               $allowedUsers = $this->getScopedStagiaireUsers($user);
               $requestedIds = $request->recipient_ids;
-               if ($user->role !== 'admin') {
+               if (!$user->isAdmin()) {
                    $allowedIds = $allowedUsers->pluck('id')->toArray();
                    $validIds = array_intersect($requestedIds, $allowedIds);
                    // Reset validIds to be array of integers
@@ -108,15 +108,15 @@ class AnnouncementController extends Controller
         $recipients = collect();
 
         if ($targetAudience === 'all') {
-            if ($user->role === 'admin') {
+            if ($user->isAdmin()) {
                 $recipients = User::whereNotNull('fcm_token')->get();
             }
         } elseif ($targetAudience === 'formateurs') {
-             if ($user->role === 'admin') {
+             if ($user->isAdmin()) {
                 $recipients = User::whereIn('role', ['formateur', 'formatrice'])->whereNotNull('fcm_token')->get();
              }
         } elseif ($targetAudience === 'autres') {
-             if ($user->role === 'admin') {
+             if ($user->isAdmin()) {
                 $recipients = User::whereIn('role', ['commercial', 'admin'])->whereNotNull('fcm_token')->get();
              }
         } elseif ($targetAudience === 'stagiaires') {
@@ -162,7 +162,7 @@ class AnnouncementController extends Controller
         }
 
         // Authorization: Creator or Admin
-        if ($announcement->created_by !== $user->id && $user->role !== 'admin') {
+        if ($announcement->created_by !== $user->id && !$user->isAdmin()) {
             return response()->json(['error' => 'Unauthorized.'], 403);
         }
 
@@ -177,7 +177,7 @@ class AnnouncementController extends Controller
      */
     private function getScopedStagiaireUsers($sender)
     {
-        if ($sender->role === 'admin') {
+        if ($sender->isAdmin()) {
             return User::where('role', 'stagiaire')->with(['stagiaire.formations'])->get();
         }
 
@@ -217,7 +217,7 @@ class AnnouncementController extends Controller
         $user = Auth::user();
         $recipients = collect();
 
-        if ($user->role === 'admin') {
+        if ($user->isAdmin()) {
             $recipients = User::select('id', 'name', 'email', 'role')->get();
         } else {
             // Formateur / Commercial -> Only their stagiaires

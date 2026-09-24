@@ -522,15 +522,15 @@
 
         /* Styles par défaut pour les autres catégories */
         .custom-card-secondary {
-            border: 2px solid #6c757d;
+            border: 2px solid #7A7366;
         }
 
         .custom-header-secondary {
-            background-color: #6c757d !important;
+            background-color: #7A7366 !important;
         }
 
         .custom-badge-secondary {
-            background-color: #6c757d !important;
+            background-color: #7A7366 !important;
         }
     </style>
 @endsection

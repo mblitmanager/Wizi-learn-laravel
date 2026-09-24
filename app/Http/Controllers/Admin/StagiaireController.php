@@ -168,6 +168,16 @@ class StagiaireController extends Controller
     }
 
     /**
+     * Supprimer un stagiaire (suppression logique, restaurable)
+     */
+    public function destroy($id)
+    {
+        Stagiaire::findOrFail($id)->delete();
+
+        return redirect()->route('stagiaires.index')->with('success', 'Stagiaire supprimé.');
+    }
+
+    /**
      * Activer un stagiaire
      */
     public function active($id)

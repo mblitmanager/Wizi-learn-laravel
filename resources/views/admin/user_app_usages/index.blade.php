@@ -339,7 +339,7 @@
         }
 
         .table-hover tbody tr:hover {
-            background-color: rgba(0, 123, 255, 0.04);
+            background-color: rgba(252, 184, 41, 0.04);
         }
     </style>
 @endsection

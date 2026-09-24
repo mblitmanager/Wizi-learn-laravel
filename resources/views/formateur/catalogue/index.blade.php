@@ -226,7 +226,7 @@
     transition: all 0.3s ease;
     border-radius: 15px;
     overflow: hidden;
-    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    background: linear-gradient(135deg, #ffffff 0%, #FAF9F6 100%);
 }
 
 .formation-card:hover {
@@ -243,7 +243,7 @@
 .formation-icon {
     width: 60px;
     height: 60px;
-    background: linear-gradient(135deg, #17a2b8, #138496);
+    background: linear-gradient(135deg, #231E15, #3A3226);
     border-radius: 12px;
     display: flex;
     align-items: center;
@@ -252,11 +252,11 @@
 }
 
 .formation-assigned {
-    border-left: 4px solid #28a745;
+    border-left: 4px solid #FCB829;
 }
 
 .formation-not-assigned {
-    border-left: 4px solid #6c757d;
+    border-left: 4px solid #7A7366;
 }
 
 /* Animation pour les filtres */

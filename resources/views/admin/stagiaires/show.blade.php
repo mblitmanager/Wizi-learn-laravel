@@ -112,9 +112,9 @@
 
             <div class="col-lg-8 col-xl-9">
                 <!-- Informations personnelles -->
-                <div class="card border-0 shadow-sm mb-4">
-                    <div class="card-header bg-primary text-white py-3">
-                        <h5 class="mb-0">
+                <div class="card border-0 shadow-sm mb-4 ">
+                    <div class="card-header bg-primary  py-3">
+                        <h5 class="mb-0 text-white">
                             <i class="bx bx-user me-2"></i>Informations personnelles
                         </h5>
                     </div>
@@ -157,8 +157,8 @@
                 <!-- Partenaire associé -->
                 @if ($stagiaire->partenaire)
                     <div class="card border-0 shadow-sm mb-4">
-                        <div class="card-header bg-info text-white py-3">
-                            <h5 class="mb-0">
+                        <div class="card-header bg-primary py-3">
+                            <h5 class="mb-0 text-white">
                                 <i class="bx bx-building me-2"></i>Partenaire associé
                             </h5>
                         </div>
@@ -218,8 +218,8 @@
                 <!-- Formations associées -->
                 @unless ($stagiaire->catalogue_formations->isEmpty())
                     <div class="card border-0 shadow-sm mb-4">
-                        <div class="card-header bg-success text-white py-3">
-                            <h5 class="mb-0">
+                        <div class="card-header bg-primary text-white py-3">
+                            <h5 class="mb-0 text-white">
                                 <i class="bx bx-book-reader me-2"></i>Formations associées
                             </h5>
                         </div>
@@ -242,7 +242,7 @@
                                                 $bgColor = '#9392BE';
                                                 break;
                                             default:
-                                                $bgColor = '#6c757d';
+                                                $bgColor = '#7A7366';
                                         }
                                         $formateur = $formation->pivot->formateur_id
                                             ? \App\Models\Formateur::find($formation->pivot->formateur_id)
@@ -369,7 +369,7 @@
                                                                                 $bgColor = '#9392BE';
                                                                                 break;
                                                                             default:
-                                                                                $bgColor = '#6c757d';
+                                                                                $bgColor = '#7A7366';
                                                                         }
                                                                     @endphp
                                                                     <span class="badge text-white me-1 mb-1"

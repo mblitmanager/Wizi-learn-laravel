@@ -252,7 +252,7 @@
         }
 
         .bg-light {
-            background-color: #f8f9fa !important;
+            background-color: #FAF9F6 !important;
         }
 
         .text-truncate {

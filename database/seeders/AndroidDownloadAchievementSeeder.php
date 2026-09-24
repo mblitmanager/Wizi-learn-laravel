@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Achievement;
+use Illuminate\Database\Seeder;
 
 class AndroidDownloadAchievementSeeder extends Seeder
 {
@@ -13,7 +13,7 @@ class AndroidDownloadAchievementSeeder extends Seeder
     public function run(): void
     {
         Achievement::updateOrCreate(
-            [ 'code' => 'android_download' ],
+            ['code' => 'android_download'],
             [
                 'name' => 'Téléchargement de l\'application Android',
                 'description' => 'A téléchargé l\'application Android depuis l\'accueil',

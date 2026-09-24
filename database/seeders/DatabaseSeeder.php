@@ -2,28 +2,55 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
     /**
      * Seed the application's database.
+     *
+     * L'ordre compte : chaque seeder s'appuie sur les données des précédents.
+     * Tous les comptes créés ont le mot de passe "password".
      */
     public function run(): void
     {
         $this->call([
+            // Référentiels
+            PermissionSeeder::class,
             UserSeeder::class,
-            StagiaireSeeder::class,
             FormationSeeder::class,
-            NotificationSeeder::class,
-            TeamSeeder::class,
+            CatalogueFormationSeeder::class,
+            PartenaireSeeder::class,
             AchievementSeeder::class,
             AndroidDownloadAchievementSeeder::class,
             VideoAchievementsSeeder::class,
-        ]);
 
-        // Les achievements (streaks, vidéos, quiz, points, etc.) sont désormais gérés par AchievementSeeder
+            // Utilisateurs et profils
+            FormateurSeeder::class,
+            CommercialSeeder::class,
+            PoleRelationClientSeeder::class,
+            StagiaireSeeder::class,
+
+            // Contenus pédagogiques
+            QuizSeeder::class,
+            MediaSeeder::class,
+
+            // Activité
+            ParticipationSeeder::class,
+            ClassementSeeder::class,
+            ProgressionSeeder::class,
+            ChallengeSeeder::class,
+            AgendaSeeder::class,
+            LoginHistorySeeder::class,
+
+            // Parrainage
+            ParrainageEventSeeder::class,
+            ParrainageSeeder::class,
+            DemandeInscriptionSeeder::class,
+
+            // Communication
+            NotificationSeeder::class,
+            AnnouncementSeeder::class,
+        ]);
     }
 }

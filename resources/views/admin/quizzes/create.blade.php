@@ -552,7 +552,7 @@
         }
 
         .bg-gradient-primary {
-            background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+            background: linear-gradient(135deg, #231E15 0%, #3A3226 100%);
         }
 
         .rounded-3 {
@@ -561,7 +561,7 @@
 
         .reponse-form {
             transition: all 0.3s ease;
-            border-left: 4px solid #0d6efd;
+            border-left: 4px solid #FCB829;
         }
 
         .reponse-form:hover {
@@ -569,7 +569,7 @@
         }
 
         .new-reponse {
-            border: 2px solid #4CAF50 !important;
+            border: 2px solid #16A34A !important;
             background-color: #e8f5e9 !important;
         }
 
@@ -577,7 +577,7 @@
         input:disabled,
         select:disabled,
         textarea:disabled {
-            background-color: #f8f9fa !important;
+            background-color: #FAF9F6 !important;
             opacity: 0.6;
             cursor: not-allowed;
         }

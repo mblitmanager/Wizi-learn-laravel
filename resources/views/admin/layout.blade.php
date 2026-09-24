@@ -1,94 +1,64 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr">
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!--favicon-->
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>@yield('title', 'Wizi Learn')</title>
     <link rel="icon" href="{{ asset('assets/images/logowizi.png') }}" type="image/png" />
-    <!--plugins-->
-    <link href="{{ asset('assets/plugins/vectormap/jquery-jvectormap-2.0.2.css') }}" rel="stylesheet" />
-    <link href="{{ asset('assets/plugins/simplebar/css/simplebar.css') }}" rel="stylesheet" />
-    <link href="{{ asset('assets/plugins/perfect-scrollbar/css/perfect-scrollbar.css') }}" rel="stylesheet" />
-    <link href="{{ asset('assets/plugins/metismenu/css/metisMenu.min.css') }}" rel="stylesheet" />
-    <!-- loader-->
-    <!-- <link href="{{ asset('assets/css/pace.min.css') }}" rel="stylesheet" />
-    <script src="{{ asset('assets/js/pace.min.js') }}"></script> -->
-    <!-- Bootstrap CSS -->
-    <link href="{{ asset('assets/css/bootstrap.min.css') }}" rel="stylesheet">
-    <link href="{{ asset('assets/css/bootstrap-extended.css') }}" rel="stylesheet">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Sono:wght@200..800&display=swap"
-        rel="stylesheet">
-    <link href="{{ asset('assets/css/app.css') }}" rel="stylesheet">
-    <link href="{{ asset('assets/css/icons.css') }}" rel="stylesheet">
-    <!-- Theme Style CSS -->
-    <link rel="stylesheet" href="{{ asset('assets/css/dark-theme.css') }}" />
-    <link rel="stylesheet" href="{{ asset('assets/css/semi-dark.css') }}" />
-    <link rel="stylesheet" href="{{ asset('assets/css/header-colors.css') }}" />
-    <link rel="stylesheet" href="{{ asset('assets/css/custom.css') }}" />
-    <!-- DataTables CSS -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <!-- Select2 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <script src="https://cdn.ckeditor.com/ckeditor5/23.0.0/classic/ckeditor.js"></script>
-    <!-- Include Bootstrap and Font Awesome for icons -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 
+    {{-- Thème Spark Admin (Bootstrap 5.3) aux couleurs Wizi --}}
+    <link rel="stylesheet" href="{{ asset('assets/spark/libs/bootstrap/css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/spark/libs/bootstrap-icons/bootstrap-icons.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/spark/css/spark.css') }}">
+
+    {{-- Icônes utilisées par les vues (boxicons, lineicons, Font Awesome) --}}
+    <link rel="stylesheet" href="{{ asset('assets/css/icons.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
         integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css"
-        integrity="sha512-P9vJUXK+LyvAzj8otTOKzdfF1F3UYVl13+F8Fof8/2QNb8Twd6Vb+VD52I7+87tex9UXxnzPgWA3rH96RExA7A=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-    <title>@yield('title', 'Wizi Learn')</title>
+    {{-- Plugins --}}
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.ckeditor.com/ckeditor5/23.0.0/classic/ckeditor.js"></script>
+
+    @stack('styles')
+    {{-- Couleurs de marque + compatibilité des vues : toujours en dernier --}}
+    <link rel="stylesheet" href="{{ asset('assets/css/wizi-theme.css') }}">
 </head>
 
 <body>
-    <!--wrapper-->
-    <div class="wrapper">
-        <!--sidebar wrapper -->
-        <div class="sidebar-wrapper" data-simplebar="true">
-            @include('admin.partials.sidebar')
-            {{-- <ul class="nav flex-column mt-3">
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('admin.achievements.index') }}">
-                        <i class="fas fa-trophy me-2"></i> Gestion des Succès
-                    </a>
-                </li>
-            </ul> --}}
-        </div>
-        <!--end sidebar wrapper -->
-        <!--start header -->
+    @include('admin.partials.sidebar')
+
+    <div class="main-wrapper">
         @include('admin.partials.header')
-        <!--end header -->
-        <!--start page wrapper -->
-        <div class="page-wrapper">
-            <div class="page-content">
-                @yield('content')
+
+        <main class="page-content">
+            @yield('content')
+        </main>
+
+        <footer class="footer-custom">
+            <div class="footer-left">
+                <span class="footer-logo">
+                    <img src="{{ asset('assets/images/logowizi.png') }}" alt="Wizi Learn">
+                </span>
+                <span class="footer-separator">|</span>
+                <span class="footer-copy">&copy; {{ date('Y') }} Wizi Learn. Tous droits réservés.</span>
             </div>
-        </div>
-        <!--end page wrapper -->
-        <!--start overlay-->
-        <div class="overlay toggle-icon"></div>
-        <!--end overlay-->
-        <!--Start Back To Top Button-->
-        <a href="javaScript:;" class="back-to-top"><i class='bx bxs-up-arrow-alt'></i></a>
-        <!--End Back To Top Button-->
-        <footer class="page-footer">
-            <p class="mb-0">Copyright © 2025. Tous droits réservés.</p>
         </footer>
     </div>
-    <!--end wrapper-->
+
+    <a href="#" class="back-to-top" aria-label="Retour en haut"><i class="bi bi-arrow-up"></i></a>
+
     @yield('manual-scripts')
-    <!-- Bootstrap JS -->
     @yield('scripts')
     @include('admin.partials.scripts')
+    @stack('scripts')
 </body>
 
 </html>

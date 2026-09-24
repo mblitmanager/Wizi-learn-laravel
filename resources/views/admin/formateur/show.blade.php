@@ -202,7 +202,7 @@
                                                 $bgColor = '#9392BE';
                                                 break;
                                             default:
-                                                $bgColor = '#6c757d';
+                                                $bgColor = '#7A7366';
                                         }
                                     @endphp
                                     <div class="accordion-item border-0 mb-3">
@@ -321,7 +321,7 @@
     }
 
     .table-hover tbody tr:hover {
-        background-color: rgba(0, 123, 255, 0.04) !important;
+        background-color: rgba(252, 184, 41, 0.04) !important;
     }
 
     .accordion-button {

@@ -31,7 +31,7 @@
                 <!-- Statistiques -->
                 <div class="row mb-4">
                     <div class="col-md-3">
-                        <div class="info-box px-2 py-2" style="background: #75c988; color: white;">
+                        <div class="info-box px-2 py-2" style="background: #16A34A; color: white;">
                             <span class="info-box-icon"><i class="fas fa-users"></i></span>
                             <div class="info-box-content">
                                 <span class="info-box-text">Utilisateurs actifs</span>
@@ -40,7 +40,7 @@
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <div class="info-box px-2 py-2" style="background: #65baee; color: white;">
+                        <div class="info-box px-2 py-2" style="background: #231E15; color: white;">
                             <span class="info-box-icon"><i class="fas fa-question-circle"></i></span>
                             <div class="info-box-content">
                                 <span class="info-box-text">Quiz complétés</span>
@@ -49,7 +49,7 @@
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <div class="info-box px-2 py-2" style="background: #f39c12; color: white;">
+                        <div class="info-box px-2 py-2" style="background: #EA7A1A; color: white;">
                             <span class="info-box-icon"><i class="fas fa-film"></i></span>
                             <div class="info-box-content">
                                 <span class="info-box-text">Vidées regardées</span>
@@ -58,7 +58,7 @@
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <div class="info-box px-2 py-2" style="background: #e74c3c; color: white;">
+                        <div class="info-box px-2 py-2" style="background: #DC2626; color: white;">
                             <span class="info-box-icon"><i class="fas fa-chart-line"></i></span>
                             <div class="info-box-content">
                                 <span class="info-box-text">Progression moyenne</span>

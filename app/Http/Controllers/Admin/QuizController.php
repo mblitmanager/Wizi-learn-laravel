@@ -1567,4 +1567,55 @@ class QuizController extends Controller
                 ->with('error', 'Une erreur est survenue lors de la suppression du quiz : ' . $e->getMessage());
         }
     }
+
+    /**
+     * Exporte un quiz (questions et réponses) au format JSON.
+     */
+    public function exportQuiz($id)
+    {
+        $quiz = Quiz::with('questions.reponses')->findOrFail($id);
+
+        return $this->downloadJson($this->quizExportPayload($quiz), 'quiz_export_' . $quiz->id . '.json');
+    }
+
+    /**
+     * Exporte plusieurs quiz sélectionnés dans un seul fichier JSON.
+     */
+    public function exportMultipleQuizzes(Request $request)
+    {
+        $quizIds = $request->input('quiz_ids', []);
+
+        if (empty($quizIds)) {
+            return redirect()->back()->with('error', 'Aucun quiz sélectionné pour l\'exportation.');
+        }
+
+        $payload = Quiz::with('questions.reponses')
+            ->whereIn('id', $quizIds)
+            ->get()
+            ->map(fn (Quiz $quiz) => $this->quizExportPayload($quiz));
+
+        return $this->downloadJson($payload, 'quizzes_export_' . now()->format('Ymd_His') . '.json');
+    }
+
+    private function quizExportPayload(Quiz $quiz): array
+    {
+        return [
+            'quiz' => $quiz->only(['id', 'titre', 'description', 'niveau', 'duree', 'nb_points_total', 'formation_id']),
+            'questions' => $quiz->questions->map(fn (Questions $question) => [
+                ...$question->only(['id', 'text', 'type', 'points']),
+                'reponses' => $question->reponses->map(fn (Reponse $reponse) => $reponse->only([
+                    'id', 'text', 'is_correct', 'position', 'match_pair', 'bank_group', 'flashcard_back',
+                ])),
+            ]),
+        ];
+    }
+
+    private function downloadJson($data, string $fileName)
+    {
+        return response()->streamDownload(
+            fn () => print(json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)),
+            $fileName,
+            ['Content-Type' => 'application/json']
+        );
+    }
 }

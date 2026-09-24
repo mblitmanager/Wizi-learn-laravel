@@ -86,6 +86,17 @@ class User extends Authenticatable implements JWTSubject
         return $this->role === 'administrateur';
     }
 
+    /**
+     * Les comptes admin sont créés avec le rôle "administrateur" ;
+     * "admin" est accepté comme alias historique.
+     */
+    public const ADMIN_ROLES = ['administrateur', 'admin'];
+
+    public function isAdmin(): bool
+    {
+        return in_array($this->role, self::ADMIN_ROLES, true);
+    }
+
     public function stagiaire()
     {
         return $this->hasOne(Stagiaire::class, 'user_id');

@@ -1,0 +1,979 @@
+/*
+========================================================================
+   WIZI LEARN — THÈME BACK-OFFICE
+   Basé sur Spark Admin (public/assets/spark/css/spark.css), aux couleurs
+   du logo Wizi : jaune ambré + noir chaud.
+
+   Chargé APRÈS bootstrap et spark.css. Il :
+     1. définit les couleurs de marque (modifier ici pour tout ajuster)
+     2. remappe les couleurs Bootstrap (primary, warning, success…)
+     3. rend les vues existantes compatibles avec la mise en page Spark
+========================================================================
+*/
+
+/* ---------------------------------------------------------------------
+   1. Couleurs de marque
+--------------------------------------------------------------------- */
+:root {
+    --wz-yellow: #FCB829;          /* Jaune du logo */
+    --wz-yellow-hover: #FDC54E;
+    --wz-yellow-dark: #D99A12;     /* Jaune lisible sur fond clair (bordures, icônes) */
+    --wz-yellow-text: #8A5A00;     /* Texte sur fond jaune pâle */
+    --wz-yellow-soft: #FEF1D2;     /* Fond jaune pâle */
+    --wz-yellow-rgb: 252, 184, 41;
+
+    --wz-ink: #16130E;             /* Noir chaud du logo (sidebar) */
+    --wz-ink-2: #231E15;           /* Primary : boutons, en-têtes sombres */
+    --wz-ink-3: #3A3226;
+    --wz-ink-rgb: 35, 30, 21;
+
+    --wz-canvas: #F6F5F1;
+    --wz-surface: #FFFFFF;
+    --wz-surface-2: #FAF9F6;
+    --wz-border: #ECE9E2;
+    --wz-text: #1A1712;
+    --wz-muted: #7A7366;
+
+    --wz-success: #16A34A;
+    --wz-danger: #DC2626;
+    --wz-info: #0284C7;
+    --wz-orange: #EA7A1A;
+
+    /* ---- Bootstrap 5.3 ---- */
+    --bs-primary: var(--wz-ink-2);
+    --bs-primary-rgb: var(--wz-ink-rgb);
+    --bs-primary-bg-subtle: #EFECE5;
+    --bs-primary-border-subtle: #D9D4C8;
+    --bs-primary-text-emphasis: var(--wz-ink-2);
+
+    --bs-secondary: var(--wz-muted);
+    --bs-secondary-rgb: 122, 115, 102;
+
+    --bs-warning: var(--wz-yellow);
+    --bs-warning-rgb: var(--wz-yellow-rgb);
+    --bs-warning-bg-subtle: var(--wz-yellow-soft);
+    --bs-warning-border-subtle: #FBDD99;
+    --bs-warning-text-emphasis: var(--wz-yellow-text);
+
+    --bs-success: var(--wz-success);
+    --bs-success-rgb: 22, 163, 74;
+    --bs-danger: var(--wz-danger);
+    --bs-danger-rgb: 220, 38, 38;
+    --bs-info: var(--wz-info);
+    --bs-info-rgb: 2, 132, 199;
+    --bs-dark: var(--wz-ink);
+    --bs-dark-rgb: 22, 19, 14;
+    --bs-light: var(--wz-surface-2);
+    --bs-light-rgb: 250, 249, 246;
+
+    --bs-body-bg: var(--wz-canvas);
+    --bs-body-color: var(--wz-text);
+    --bs-body-color-rgb: 26, 23, 18;
+    --bs-secondary-color: var(--wz-muted);
+    --bs-border-color: var(--wz-border);
+    --bs-border-radius: 10px;
+    --bs-border-radius-sm: 6px;
+    --bs-border-radius-lg: 14px;
+    --bs-link-color: var(--wz-ink-2);
+    --bs-link-color-rgb: var(--wz-ink-rgb);
+    --bs-link-hover-color: var(--wz-yellow-dark);
+    --bs-link-hover-color-rgb: 217, 154, 18;
+    --bs-focus-ring-color: rgba(var(--wz-yellow-rgb), 0.35);
+}
+
+::selection {
+    background: rgba(var(--wz-yellow-rgb), 0.35);
+}
+
+a:hover {
+    color: var(--wz-yellow-dark);
+}
+
+/* ---------------------------------------------------------------------
+   2. Boutons
+--------------------------------------------------------------------- */
+.btn {
+    font-size: 0.875rem;
+    --bs-btn-font-weight: 600;
+    --bs-btn-border-radius: var(--radius-lg, 14px);
+    --bs-btn-focus-box-shadow: 0 0 0 3px rgba(var(--wz-yellow-rgb), 0.35);
+    padding: 0.6rem 1.25rem;
+    border-width: 1px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    line-height: 1.5;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(var(--wz-yellow-rgb), 0.35);
+}
+.btn:active {
+    transform: scale(0.97);
+}
+.btn-sm, .btn-group-sm > .btn {
+    padding: 0.35rem 0.75rem;
+    font-size: 0.75rem;
+    --bs-btn-border-radius: var(--radius-md, 10px);
+}
+.btn-lg, .btn-group-lg > .btn {
+    padding: 0.75rem 1.75rem;
+    font-size: 1rem;
+    --bs-btn-border-radius: var(--radius-xl, 18px);
+}
+.btn-group > .btn {
+    display: inline-flex;
+}
+
+/* Groupes d'actions : boutons lisibles et espaces régulièrement répartis. */
+.page-content .btn-group {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+.page-content .btn-group > .btn,
+.page-content .btn-group > .btn-group,
+.page-content .btn-group > form {
+    margin: 0 !important;
+}
+.page-content .btn-group > .btn:not(:first-child):not(:last-child),
+.page-content .btn-group > .btn:first-child,
+.page-content .btn-group > .btn:last-child {
+    border-radius: var(--radius-md, 10px);
+}
+
+/* Les actions de tableau restent compactes sans se coller entre elles. */
+.page-content table td:has(.btn-group) {
+    min-width: 220px;
+    text-align: center;
+    white-space: nowrap;
+}
+.page-content table td .btn-group {
+    justify-content: center;
+    flex-wrap: nowrap;
+}
+.page-content table td .btn-group > .btn,
+.page-content table td .btn-group > form .btn {
+    min-width: 84px;
+    height: 34px;
+    padding-right: 0.65rem;
+    padding-left: 0.65rem;
+}
+.page-content table td .btn-group > form .btn:has(i:only-child) {
+    min-width: 84px;
+}
+
+/* Les actions d'en-tête tiennent sur une ligne quand l'espace le permet. */
+.page-content .card-header .d-flex.flex-wrap.justify-content-md-end {
+    align-items: center;
+    flex-wrap: nowrap !important;
+}
+
+@media (max-width: 767.98px) {
+    .page-content .card-header .d-flex.flex-wrap.justify-content-md-end {
+        flex-wrap: wrap !important;
+        justify-content: flex-start !important;
+    }
+
+    .page-content table td:has(.btn-group) {
+        min-width: 190px;
+    }
+
+    .page-content table td .btn-group {
+        flex-wrap: wrap;
+    }
+}
+
+.btn-primary {
+    --bs-btn-bg: var(--wz-ink-2);
+    --bs-btn-border-color: var(--wz-ink-2);
+    --bs-btn-color: #fff;
+    --bs-btn-hover-bg: var(--wz-ink);
+    --bs-btn-hover-border-color: var(--wz-ink);
+    --bs-btn-hover-color: var(--wz-yellow);
+    --bs-btn-active-bg: var(--wz-ink);
+    --bs-btn-active-border-color: var(--wz-ink);
+    --bs-btn-active-color: var(--wz-yellow);
+    --bs-btn-disabled-bg: var(--wz-ink-3);
+    --bs-btn-disabled-border-color: var(--wz-ink-3);
+}
+.btn-warning {
+    --bs-btn-bg: var(--wz-yellow);
+    --bs-btn-border-color: var(--wz-yellow);
+    --bs-btn-color: var(--wz-ink-2);
+    --bs-btn-hover-bg: var(--wz-yellow-hover);
+    --bs-btn-hover-border-color: var(--wz-yellow-hover);
+    --bs-btn-hover-color: var(--wz-ink-2);
+    --bs-btn-active-bg: var(--wz-yellow-dark);
+    --bs-btn-active-border-color: var(--wz-yellow-dark);
+    --bs-btn-active-color: var(--wz-ink-2);
+    --bs-btn-disabled-bg: var(--wz-yellow);
+    --bs-btn-disabled-border-color: var(--wz-yellow);
+    --bs-btn-disabled-color: var(--wz-ink-2);
+}
+.btn-success {
+    --bs-btn-bg: var(--wz-success);
+    --bs-btn-border-color: var(--wz-success);
+    --bs-btn-hover-bg: #15803D;
+    --bs-btn-hover-border-color: #15803D;
+    --bs-btn-active-bg: #166534;
+    --bs-btn-active-border-color: #166534;
+}
+.btn-danger {
+    --bs-btn-bg: var(--wz-danger);
+    --bs-btn-border-color: var(--wz-danger);
+    --bs-btn-hover-bg: #B91C1C;
+    --bs-btn-hover-border-color: #B91C1C;
+    --bs-btn-active-bg: #991B1B;
+    --bs-btn-active-border-color: #991B1B;
+}
+.btn-info {
+    --bs-btn-bg: var(--wz-info);
+    --bs-btn-border-color: var(--wz-info);
+    --bs-btn-color: #fff;
+    --bs-btn-hover-bg: #0369A1;
+    --bs-btn-hover-border-color: #0369A1;
+    --bs-btn-hover-color: #fff;
+    --bs-btn-active-bg: #075985;
+    --bs-btn-active-border-color: #075985;
+    --bs-btn-active-color: #fff;
+}
+.btn-secondary,
+.btn-light {
+    --bs-btn-bg: var(--wz-surface-2);
+    --bs-btn-border-color: rgba(20, 17, 12, 0.1);
+    --bs-btn-color: var(--wz-ink-2);
+    --bs-btn-hover-bg: #F1EFE9;
+    --bs-btn-hover-border-color: rgba(20, 17, 12, 0.16);
+    --bs-btn-hover-color: var(--wz-ink);
+    --bs-btn-active-bg: #E6E2D8;
+    --bs-btn-active-border-color: rgba(20, 17, 12, 0.16);
+    --bs-btn-active-color: var(--wz-ink);
+}
+.btn-dark {
+    --bs-btn-bg: var(--wz-ink);
+    --bs-btn-border-color: var(--wz-ink);
+    --bs-btn-hover-bg: var(--wz-ink-3);
+    --bs-btn-hover-border-color: var(--wz-ink-3);
+    --bs-btn-hover-color: var(--wz-yellow);
+}
+
+.btn-outline-primary {
+    --bs-btn-color: var(--wz-ink-2);
+    --bs-btn-border-color: rgba(var(--wz-ink-rgb), 0.35);
+    --bs-btn-hover-bg: var(--wz-ink-2);
+    --bs-btn-hover-border-color: var(--wz-ink-2);
+    --bs-btn-hover-color: #fff;
+    --bs-btn-active-bg: var(--wz-ink);
+    --bs-btn-active-border-color: var(--wz-ink);
+    --bs-btn-active-color: var(--wz-yellow);
+}
+.btn-outline-warning {
+    --bs-btn-color: var(--wz-yellow-text);
+    --bs-btn-border-color: var(--wz-yellow);
+    --bs-btn-hover-bg: var(--wz-yellow);
+    --bs-btn-hover-border-color: var(--wz-yellow);
+    --bs-btn-hover-color: var(--wz-ink-2);
+    --bs-btn-active-bg: var(--wz-yellow-dark);
+    --bs-btn-active-border-color: var(--wz-yellow-dark);
+    --bs-btn-active-color: var(--wz-ink-2);
+}
+.btn-outline-secondary {
+    --bs-btn-color: var(--wz-muted);
+    --bs-btn-border-color: rgba(20, 17, 12, 0.14);
+    --bs-btn-hover-bg: var(--wz-surface-2);
+    --bs-btn-hover-border-color: rgba(20, 17, 12, 0.24);
+    --bs-btn-hover-color: var(--wz-ink-2);
+    --bs-btn-active-bg: #F1EFE9;
+    --bs-btn-active-color: var(--wz-ink-2);
+}
+.btn-outline-success {
+    --bs-btn-color: var(--wz-success);
+    --bs-btn-border-color: var(--wz-success);
+    --bs-btn-hover-bg: var(--wz-success);
+    --bs-btn-hover-border-color: var(--wz-success);
+}
+.btn-outline-danger {
+    --bs-btn-color: var(--wz-danger);
+    --bs-btn-border-color: var(--wz-danger);
+    --bs-btn-hover-bg: var(--wz-danger);
+    --bs-btn-hover-border-color: var(--wz-danger);
+}
+.btn-outline-info {
+    --bs-btn-color: var(--wz-info);
+    --bs-btn-border-color: var(--wz-info);
+    --bs-btn-hover-bg: var(--wz-info);
+    --bs-btn-hover-border-color: var(--wz-info);
+    --bs-btn-hover-color: #fff;
+}
+
+.btn-link {
+    --bs-btn-color: var(--wz-ink-2);
+    --bs-btn-hover-color: var(--wz-yellow-dark);
+}
+
+/* ---------------------------------------------------------------------
+   3. Cartes : compatibilité avec le balisage existant (card-header / card-body)
+--------------------------------------------------------------------- */
+/* Spark met un padding sur .card ; les vues ont déjà card-header/card-body */
+.card:has(> .card-body),
+.card:has(> .card-header),
+.card:has(> .card-footer),
+.card:has(> .list-group),
+.card:has(> .table-responsive),
+.card:has(> .table) {
+    padding: 0;
+}
+.card {
+    border: 1px solid rgba(20, 17, 12, 0.05);
+    border-radius: var(--radius-xl, 18px);
+    box-shadow: var(--shadow-md);
+}
+.card.border-0 {
+    border: none;
+}
+.card.shadow-sm {
+    box-shadow: var(--shadow-md) !important;
+}
+.card > .card-header {
+    padding: 1rem 1.5rem !important;
+    margin-bottom: 0;
+    border-bottom: 1px solid var(--wz-border) !important;
+    background-color: var(--wz-surface) !important;
+    color: var(--wz-text);
+    font-weight: 700;
+}
+.card > .card-header.border-0,
+.card > .card-header.border-bottom-0 {
+    border-bottom: none !important;
+}
+.card > .card-header:first-child {
+    border-radius: var(--radius-xl, 18px) var(--radius-xl, 18px) 0 0;
+}
+.card > .card-header h1, .card > .card-header h2, .card > .card-header h3,
+.card > .card-header h4, .card > .card-header h5, .card > .card-header h6 {
+    margin-bottom: 0;
+}
+
+/* En-têtes colorés (bg-primary text-white…) : on garde la couleur demandée */
+.card > .card-header.bg-transparent { background-color: transparent !important; }
+.card > .card-header.bg-white { background-color: #fff !important; }
+.card > .card-header.bg-light { background-color: var(--wz-surface-2) !important; }
+.card > .card-header.bg-primary,
+.card > .card-header.bg-dark {
+    background-color: var(--wz-ink-2) !important;
+    color: #fff;
+    border-bottom: 3px solid var(--wz-yellow) !important;
+}
+.card > .card-header.bg-warning { background-color: var(--wz-yellow) !important; color: var(--wz-ink-2) !important; }
+.card > .card-header.bg-success { background-color: var(--wz-success) !important; }
+.card > .card-header.bg-danger { background-color: var(--wz-danger) !important; }
+.card > .card-header.bg-info { background-color: var(--wz-info) !important; }
+.card > .card-header.bg-secondary { background-color: var(--wz-muted) !important; }
+.card > .card-header[class*="bg-gradient"] { background-image: none !important; }
+
+.card-body {
+    padding: 1.5rem;
+}
+.card > .card-footer {
+    padding: 1rem 1.5rem;
+    background-color: var(--wz-surface-2);
+    border-top: 1px solid var(--wz-border);
+}
+.card-title {
+    font-size: 1.05rem;
+}
+
+/* ---------------------------------------------------------------------
+   4. Tableaux (style « table-custom » de Spark appliqué à .table)
+--------------------------------------------------------------------- */
+.table {
+    --bs-table-bg: transparent;
+    --bs-table-color: var(--wz-text);
+    --bs-table-border-color: rgba(20, 17, 12, 0.06);
+    --bs-table-striped-bg: rgba(20, 17, 12, 0.018);
+    --bs-table-hover-bg: rgba(var(--wz-yellow-rgb), 0.07);
+    --bs-table-active-bg: rgba(var(--wz-yellow-rgb), 0.12);
+    vertical-align: middle;
+    margin-bottom: 0;
+}
+.table > :not(caption) > * > * {
+    padding: 0.85rem 1rem;
+}
+.table.table-sm > :not(caption) > * > * {
+    padding: 0.45rem 0.65rem;
+}
+.table > thead > tr > th,
+.table > thead > tr > td {
+    background-color: var(--wz-surface-2);
+    color: var(--wz-muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid rgba(20, 17, 12, 0.08);
+    white-space: nowrap;
+}
+.table > thead.table-dark > tr > th,
+.table > thead.table-primary > tr > th,
+.table-dark > thead > tr > th {
+    background-color: var(--wz-ink-2);
+    color: #fff;
+}
+.table-light {
+    --bs-table-bg: var(--wz-surface-2);
+    --bs-table-color: var(--wz-muted);
+    --bs-table-border-color: rgba(20, 17, 12, 0.08);
+}
+.table-bordered > :not(caption) > * {
+    border-color: rgba(20, 17, 12, 0.06);
+}
+.table tbody tr:last-child > * {
+    border-bottom: none;
+}
+.table-responsive {
+    border-radius: var(--radius-lg, 14px);
+}
+.card > .table-responsive:last-child,
+.card-body > .table-responsive:only-child {
+    border-radius: 0 0 var(--radius-xl, 18px) var(--radius-xl, 18px);
+}
+
+/* DataTables */
+.dataTables_wrapper {
+    font-size: 0.875rem;
+}
+.dataTables_wrapper .dataTables_filter input,
+.dataTables_wrapper .dataTables_length select {
+    border: 1px solid rgba(20, 17, 12, 0.12);
+    border-radius: var(--radius-md, 10px);
+    padding: 0.4rem 0.75rem;
+    background-color: #fff;
+    margin-left: 0.5rem;
+}
+.dataTables_wrapper .dataTables_filter input:focus,
+.dataTables_wrapper .dataTables_length select:focus {
+    outline: none;
+    border-color: var(--wz-yellow-dark);
+    box-shadow: 0 0 0 3px rgba(var(--wz-yellow-rgb), 0.25);
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    border-radius: var(--radius-md, 10px) !important;
+    border: 1px solid transparent !important;
+    color: var(--wz-ink-2) !important;
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+    background: var(--wz-surface-2) !important;
+    border-color: var(--wz-border) !important;
+    color: var(--wz-ink) !important;
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button.current,
+.dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+    background: var(--wz-yellow) !important;
+    border-color: var(--wz-yellow) !important;
+    color: var(--wz-ink-2) !important;
+    font-weight: 700;
+}
+table.dataTable thead th,
+table.dataTable thead td {
+    border-bottom: 1px solid rgba(20, 17, 12, 0.08) !important;
+}
+table.dataTable.no-footer {
+    border-bottom: 1px solid rgba(20, 17, 12, 0.06) !important;
+}
+.dt-buttons .dt-button {
+    background: #fff !important;
+    border: 1px solid rgba(20, 17, 12, 0.12) !important;
+    border-radius: var(--radius-md, 10px) !important;
+    color: var(--wz-ink-2) !important;
+    font-weight: 600;
+    font-size: 0.8rem;
+    padding: 0.4rem 0.85rem !important;
+}
+.dt-buttons .dt-button:hover {
+    background: var(--wz-yellow) !important;
+    border-color: var(--wz-yellow) !important;
+}
+
+/* ---------------------------------------------------------------------
+   5. Formulaires
+--------------------------------------------------------------------- */
+.form-label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--wz-text);
+}
+.form-control,
+.form-select {
+    border: 1px solid rgba(20, 17, 12, 0.12);
+    border-radius: var(--radius-lg, 14px);
+    padding: 0.6rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--wz-text);
+}
+.form-control-sm,
+.form-select-sm {
+    border-radius: var(--radius-md, 10px);
+    padding: 0.35rem 0.75rem;
+    font-size: 0.8rem;
+}
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--wz-yellow-dark);
+    box-shadow: 0 0 0 3px rgba(var(--wz-yellow-rgb), 0.25);
+}
+.form-control::placeholder {
+    color: var(--wz-muted);
+    opacity: 0.6;
+}
+.form-control:disabled,
+.form-control[readonly] {
+    background-color: var(--wz-surface-2);
+}
+.form-control.is-invalid:focus,
+.form-select.is-invalid:focus {
+    border-color: var(--wz-danger);
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15);
+}
+.input-group-text {
+    border: 1px solid rgba(20, 17, 12, 0.12);
+    background-color: var(--wz-surface-2);
+    color: var(--wz-muted);
+    border-radius: var(--radius-lg, 14px);
+}
+.form-check-input {
+    border-color: rgba(20, 17, 12, 0.2);
+}
+.form-check-input:focus {
+    border-color: var(--wz-yellow-dark);
+    box-shadow: 0 0 0 3px rgba(var(--wz-yellow-rgb), 0.25);
+}
+.form-check-input:checked {
+    background-color: var(--wz-yellow);
+    border-color: var(--wz-yellow);
+}
+.form-check-input:checked[type="checkbox"] {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23231E15' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e");
+}
+.form-check-input:checked[type="radio"] {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='2' fill='%23231E15'/%3e%3c/svg%3e");
+}
+.form-switch .form-check-input:checked {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23231E15'/%3e%3c/svg%3e");
+}
+.form-range::-webkit-slider-thumb { background-color: var(--wz-yellow); }
+.form-range::-moz-range-thumb { background-color: var(--wz-yellow); }
+
+/* Select2 */
+.select2-container--default .select2-selection--single,
+.select2-container--default .select2-selection--multiple {
+    border: 1px solid rgba(20, 17, 12, 0.12) !important;
+    border-radius: var(--radius-lg, 14px) !important;
+    min-height: 42px;
+}
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 40px !important;
+    padding-left: 1rem !important;
+}
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 40px !important;
+}
+.select2-container--default.select2-container--focus .select2-selection--multiple,
+.select2-container--default.select2-container--open .select2-selection--single {
+    border-color: var(--wz-yellow-dark) !important;
+    box-shadow: 0 0 0 3px rgba(var(--wz-yellow-rgb), 0.25);
+}
+.select2-container--default .select2-results__option--highlighted[aria-selected],
+.select2-container--default .select2-results__option--highlighted.select2-results__option--selectable {
+    background-color: var(--wz-yellow) !important;
+    color: var(--wz-ink-2) !important;
+}
+.select2-container--default .select2-selection--multiple .select2-selection__choice {
+    background-color: var(--wz-yellow-soft) !important;
+    border: 1px solid #FBDD99 !important;
+    color: var(--wz-yellow-text) !important;
+    border-radius: 50rem !important;
+}
+.select2-dropdown {
+    border-color: var(--wz-border) !important;
+    border-radius: var(--radius-md, 10px) !important;
+    overflow: hidden;
+}
+
+/* ---------------------------------------------------------------------
+   6. Badges, alertes, composants Bootstrap
+--------------------------------------------------------------------- */
+.badge {
+    font-weight: 700;
+    border-radius: 50rem;
+    padding: 0.35em 0.75em;
+    letter-spacing: 0.01em;
+}
+.badge.bg-warning,
+.badge.text-bg-warning {
+    color: var(--wz-ink-2) !important;
+}
+.badge.bg-light {
+    color: var(--wz-ink-2);
+}
+
+.alert {
+    border-radius: var(--radius-lg, 14px);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+.alert-primary {
+    --bs-alert-bg: #EFECE5;
+    --bs-alert-border-color: #D9D4C8;
+    --bs-alert-color: var(--wz-ink-2);
+}
+.alert-success {
+    --bs-alert-bg: #F0FDF4;
+    --bs-alert-border-color: #BBF7D0;
+    --bs-alert-color: #166534;
+}
+.alert-danger {
+    --bs-alert-bg: #FEF2F2;
+    --bs-alert-border-color: #FECACA;
+    --bs-alert-color: #991B1B;
+}
+.alert-warning {
+    --bs-alert-bg: var(--wz-yellow-soft);
+    --bs-alert-border-color: #FBDD99;
+    --bs-alert-color: var(--wz-yellow-text);
+}
+.alert-info {
+    --bs-alert-bg: #F0F9FF;
+    --bs-alert-border-color: #BAE6FD;
+    --bs-alert-color: #075985;
+}
+
+.pagination {
+    --bs-pagination-color: var(--wz-ink-2);
+    --bs-pagination-hover-color: var(--wz-ink);
+    --bs-pagination-hover-bg: var(--wz-surface-2);
+    --bs-pagination-focus-color: var(--wz-ink);
+    --bs-pagination-focus-box-shadow: 0 0 0 3px rgba(var(--wz-yellow-rgb), 0.3);
+    --bs-pagination-active-bg: var(--wz-yellow);
+    --bs-pagination-active-border-color: var(--wz-yellow);
+    --bs-pagination-active-color: var(--wz-ink-2);
+    --bs-pagination-border-color: var(--wz-border);
+    gap: 0.25rem;
+}
+.page-link {
+    border-radius: var(--radius-md, 10px) !important;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.nav-pills {
+    --bs-nav-pills-link-active-bg: var(--wz-ink-2);
+    --bs-nav-pills-link-active-color: var(--wz-yellow);
+    --bs-nav-pills-border-radius: var(--radius-md, 10px);
+}
+.nav-link {
+    --bs-nav-link-color: var(--wz-muted);
+    --bs-nav-link-hover-color: var(--wz-ink-2);
+    font-weight: 600;
+}
+.nav-tabs {
+    --bs-nav-tabs-border-color: var(--wz-border);
+    --bs-nav-tabs-link-active-color: var(--wz-ink-2);
+    --bs-nav-tabs-link-active-border-color: var(--wz-border) var(--wz-border) #fff;
+}
+.nav-tabs .nav-link.active {
+    box-shadow: inset 0 -3px 0 var(--wz-yellow);
+}
+
+.progress {
+    --bs-progress-bg: #F1EFE9;
+    --bs-progress-bar-bg: var(--wz-yellow);
+    --bs-progress-border-radius: 50rem;
+}
+.progress-bar.bg-primary {
+    background-color: var(--wz-ink-2) !important;
+}
+
+.list-group {
+    --bs-list-group-border-color: var(--wz-border);
+    --bs-list-group-active-bg: var(--wz-ink-2);
+    --bs-list-group-active-border-color: var(--wz-ink-2);
+    --bs-list-group-action-hover-bg: var(--wz-surface-2);
+}
+
+.accordion {
+    --bs-accordion-border-color: var(--wz-border);
+    --bs-accordion-border-radius: var(--radius-lg, 14px);
+    --bs-accordion-inner-border-radius: calc(var(--radius-lg, 14px) - 1px);
+    --bs-accordion-active-bg: var(--wz-yellow-soft);
+    --bs-accordion-active-color: var(--wz-ink-2);
+    --bs-accordion-btn-focus-box-shadow: 0 0 0 3px rgba(var(--wz-yellow-rgb), 0.25);
+}
+.accordion-button {
+    font-weight: 700;
+}
+
+.modal {
+    --bs-modal-border-radius: var(--radius-xl, 18px);
+    --bs-modal-border-color: transparent;
+    --bs-modal-header-border-color: var(--wz-border);
+    --bs-modal-footer-border-color: var(--wz-border);
+}
+.modal-content {
+    box-shadow: var(--shadow-lg);
+}
+.modal-header.bg-primary,
+.modal-header.bg-dark {
+    background-color: var(--wz-ink-2) !important;
+    color: #fff;
+    border-bottom: 3px solid var(--wz-yellow);
+}
+
+.dropdown-menu {
+    --bs-dropdown-border-color: var(--wz-border);
+    --bs-dropdown-border-radius: var(--radius-lg, 14px);
+    --bs-dropdown-link-hover-bg: var(--wz-surface-2);
+    --bs-dropdown-link-active-bg: var(--wz-yellow);
+    --bs-dropdown-link-active-color: var(--wz-ink-2);
+    box-shadow: var(--shadow-lg);
+    padding: 0.5rem;
+}
+.dropdown-item {
+    border-radius: var(--radius-sm, 6px);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.tooltip {
+    --bs-tooltip-bg: var(--wz-ink);
+}
+
+/* Anciennes couleurs dégradées du thème Rocker → teintes de marque */
+.bg-gradient-primary,
+.bg-gradient-cosmic,
+.bg-gradient-moonlit { background: linear-gradient(135deg, var(--wz-ink-2), var(--wz-ink-3)) !important; color: #fff; }
+.bg-gradient-warning,
+.bg-gradient-kyoto,
+.bg-gradient-burning { background: linear-gradient(135deg, var(--wz-yellow), var(--wz-yellow-dark)) !important; color: var(--wz-ink-2); }
+.bg-gradient-success,
+.bg-gradient-lush { background: linear-gradient(135deg, #22C55E, var(--wz-success)) !important; color: #fff; }
+.bg-gradient-info,
+.bg-gradient-blues { background: linear-gradient(135deg, #38BDF8, var(--wz-info)) !important; color: #fff; }
+.bg-gradient-danger { background: linear-gradient(135deg, #F87171, var(--wz-danger)) !important; color: #fff; }
+
+.bg-light-primary { background-color: #EFECE5 !important; }
+.bg-light-warning { background-color: var(--wz-yellow-soft) !important; }
+.bg-light-success { background-color: #DCFCE7 !important; }
+.bg-light-danger { background-color: #FEE2E2 !important; }
+.bg-light-info { background-color: #E0F2FE !important; }
+
+/* Icône sur fond teinté (ex. bg-primary bg-opacity-10 text-primary) */
+.bg-warning.bg-opacity-10 { color: var(--wz-yellow-text); }
+.text-warning { color: var(--wz-yellow-dark) !important; }
+
+/* ---------------------------------------------------------------------
+   7. Mise en page Spark adaptée à Wizi
+--------------------------------------------------------------------- */
+.sidebar-brand {
+    padding-left: 0.25rem;
+    margin-bottom: 2rem;
+}
+.sidebar-brand-logo {
+    height: 38px;
+    width: auto;
+    background: #fff;
+    border-radius: var(--radius-md, 10px);
+    padding: 4px 8px;
+}
+body.sidebar-minimized .sidebar-brand-logo {
+    height: 30px;
+    padding: 3px 4px;
+}
+.sidebar-menu-link {
+    width: 100%;
+    background: none;
+    border: none;
+    text-align: left;
+}
+.sidebar-menu-link i.bx,
+.sidebar-menu-link i.bi,
+.sidebar-menu-link i.fas,
+.sidebar-menu-link i.lni {
+    font-size: 1.15rem;
+    width: 1.25rem;
+    text-align: center;
+    flex-shrink: 0;
+}
+.sidebar-menu-link .dropdown-caret {
+    margin-left: auto;
+}
+.sidebar-menu-link.active,
+.sidebar-menu-link.parent-active {
+    color: #fff;
+}
+.sidebar-menu-link.parent-active i:first-child {
+    color: var(--wz-yellow);
+}
+.sidebar-submenu-link.active {
+    color: var(--wz-yellow);
+    font-weight: 700;
+}
+.sidebar-submenu-link::before {
+    content: '';
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.5;
+    margin-right: 0.6rem;
+    vertical-align: middle;
+}
+body.sidebar-minimized .sidebar-submenu,
+body.sidebar-minimized .sidebar-menu-link .dropdown-caret,
+body.sidebar-minimized .sidebar-menu-title {
+    display: none !important;
+}
+.sidebar-wrapper .overflow-y-auto {
+    margin-right: -0.75rem;
+    padding-right: 0.75rem;
+}
+.sidebar-wrapper .overflow-y-auto::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.12);
+}
+.sidebar-profile-role {
+    text-transform: capitalize;
+}
+
+/* Barre du haut : Spark prévoit une recherche centrale, absente ici */
+.navbar-custom {
+    grid-template-columns: 1fr auto !important;
+}
+.navbar-page-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--wz-text);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.navbar-profile-role {
+    font-size: 0.7rem;
+    color: var(--wz-muted);
+    text-transform: capitalize;
+    display: block;
+    line-height: 1;
+}
+
+.page-content {
+    flex-grow: 1;
+}
+
+/* Fil d'Ariane des vues existantes (.page-breadcrumb du thème Rocker) */
+.page-breadcrumb {
+    margin-bottom: 1.5rem !important;
+    gap: 0.75rem;
+}
+.page-breadcrumb .breadcrumb-title {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--wz-text);
+    letter-spacing: -0.025em;
+    border-right: 2px solid var(--wz-yellow);
+    padding-right: 1rem !important;
+    margin-right: 0.25rem;
+}
+.breadcrumb {
+    --bs-breadcrumb-divider-color: var(--wz-muted);
+    --bs-breadcrumb-item-active-color: var(--wz-muted);
+    margin-bottom: 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+.breadcrumb-item a {
+    color: var(--wz-ink-2);
+}
+.breadcrumb-item a:hover {
+    color: var(--wz-yellow-dark);
+}
+.breadcrumb .bx-home-alt {
+    font-size: 1rem;
+    vertical-align: -2px;
+}
+
+/* Cartes statistiques des tableaux de bord existants */
+.dashboard-card,
+.info-box {
+    border-radius: var(--radius-xl, 18px);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.dashboard-card:hover,
+.info-box:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+.stat-number,
+.info-box-number {
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--wz-text);
+}
+
+.footer-custom {
+    margin-top: 2rem;
+}
+.footer-logo img {
+    height: 22px;
+    width: auto;
+}
+
+/* Bouton retour en haut */
+.back-to-top {
+    position: fixed;
+    right: 1.5rem;
+    bottom: 1.5rem;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: var(--wz-yellow);
+    color: var(--wz-ink-2);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    box-shadow: var(--shadow-lg);
+    z-index: 1020;
+}
+.back-to-top.show {
+    display: flex;
+}
+.back-to-top:hover {
+    background: var(--wz-ink-2);
+    color: var(--wz-yellow);
+}
+
+/* ---------------------------------------------------------------------
+   8. Pages de connexion
+--------------------------------------------------------------------- */
+.login-brand img {
+    height: 56px;
+    width: auto;
+}
+.login-card .alert {
+    font-size: 0.85rem;
+}
+.login-card .invalid-feedback {
+    display: block;
+    font-size: 0.8rem;
+    margin-top: 0.35rem;
+}
+.login-input.is-invalid {
+    border-color: var(--wz-danger);
+}

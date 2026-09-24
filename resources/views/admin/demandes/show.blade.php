@@ -115,12 +115,12 @@
 
     <style>
         .bg-purple {
-            background-color: #6f42c1;
+            background-color: #231E15;
         }
 
         dl.row dt {
             font-weight: normal;
-            color: #6c757d;
+            color: #7A7366;
         }
 
         dl.row dd {

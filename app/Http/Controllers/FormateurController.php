@@ -306,7 +306,7 @@ class FormateurController extends Controller
             $user = $request->user();
             
             // Vérification du rôle
-            if (!in_array($user->role, ['admin', 'commercial', 'formateur', 'formatrice'])) {
+            if (!($user->isAdmin() || in_array($user->role, ['commercial', 'formateur', 'formatrice']))) {
                 return response()->json(['error' => 'Accès refusé'], 403);
             }
 

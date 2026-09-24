@@ -24,6 +24,11 @@ class RoleMiddleware
         $userRole = $request->user()->role;
 
         // Vérifier si le rôle de l'utilisateur est dans les rôles autorisés
+        // "admin" dans une route désigne tous les rôles administrateur
+        if (in_array('admin', $roles, true)) {
+            $roles = array_merge($roles, \App\Models\User::ADMIN_ROLES);
+        }
+
         if (!in_array($userRole, $roles)) {
             return response()->json([
                 'error' => 'Accès refusé',

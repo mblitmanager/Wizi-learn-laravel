@@ -1,221 +1,164 @@
-<div class="sidebar-wrapper" data-simplebar="true">
-    <div class="sidebar-header">
-        <div>
-            <img src="{{ asset('assets/images/logowizi.png') }}" class="logo-icon" alt="logo icon">
+@php
+    $user = auth()->user();
+    $isAdmin = $user->isAdmin();
+    $isFormateur = in_array($user->role, ['formateur', 'formatrice']);
+
+    // Menu par section : ['label', 'icône', 'route'] ou ['label', 'icône', 'children' => [[label, route], …]]
+    $sections = [
+        'Général' => [
+            [
+                'label' => 'Tableau de bord',
+                'icon' => 'bx bx-home-circle',
+                'children' => array_filter([
+                    ['Tableau de bord', 'dashboard'],
+                    $isAdmin ? ['Activité des utilisateurs', 'dashboard.activity'] : null,
+                    $isAdmin ? ['Usages mobiles', 'admin.user_app_usages.index'] : null,
+                    $isAdmin ? ['Stats stagiaires', 'admin.stagiaires.stats'] : null,
+                    $isAdmin ? ['Inactivité', 'admin.inactivity.index'] : null,
+                    $isAdmin ? ['Gestion des succès', 'admin.achievements.index'] : null,
+                    $isFormateur ? ['Stats de mes stagiaires', 'formateur.stagiaires.stats'] : null,
+                ]),
+            ],
+        ],
+    ];
+
+    if ($isFormateur) {
+        $sections['Mon espace'] = [
+            [
+                'label' => 'Mes stagiaires',
+                'icon' => 'bx bx-group',
+                'children' => [
+                    ['Tous mes stagiaires', 'formateur.stagiaires.index'],
+                    ['En cours de formation', 'formateur.stagiaires.en-cours'],
+                    ['Formation terminée', 'formateur.stagiaires.termines'],
+                ],
+            ],
+            [
+                'label' => 'Mes formations',
+                'icon' => 'bx bx-library',
+                'children' => [
+                    ['Mes formations', 'formateur.formations.index'],
+                    ['Catalogue formations', 'formateur.catalogue.index'],
+                ],
+            ],
+            ['label' => 'Mon agenda', 'icon' => 'bx bx-calendar', 'route' => 'agenda.index'],
+            ['label' => 'Mon profil', 'icon' => 'bx bx-user', 'route' => 'formateur.profile'],
+        ];
+    }
+
+    if ($isAdmin) {
+        $sections['Pédagogie'] = [
+            ['label' => 'Stagiaires', 'icon' => 'bx bx-group', 'route' => 'stagiaires.index'],
+            [
+                'label' => 'Formation',
+                'icon' => 'bx bx-library',
+                'children' => [
+                    ['Catalogue formation', 'catalogue_formation.index'],
+                    ['Domaine formation', 'formations.index'],
+                ],
+            ],
+            ['label' => 'Quiz', 'icon' => 'bx bx-brain', 'route' => 'quiz.index'],
+            ['label' => 'Classement', 'icon' => 'bx bx-list-ol', 'route' => 'classement.index'],
+            ['label' => 'Média', 'icon' => 'bx bx-play-circle', 'route' => 'medias.index'],
+            ['label' => 'Agenda', 'icon' => 'bx bx-calendar', 'route' => 'agenda.index'],
+        ];
+        $sections['Relations'] = [
+            [
+                'label' => 'Contacts',
+                'icon' => 'bx bx-phone-outgoing',
+                'children' => [
+                    ['Partenaires', 'partenaires.index'],
+                    ['Formateurs', 'formateur.index'],
+                    ['Pôle relation client', 'pole_relation_clients.index'],
+                    ['Commerciaux', 'commercials.index'],
+                ],
+            ],
+            [
+                'label' => 'Parrainage',
+                'icon' => 'bx bx-git-branch',
+                'children' => [
+                    ['Liste des parrains', 'parrainage.index'],
+                    ['Événements parrainage', 'parrainage_events.index'],
+                ],
+            ],
+            ['label' => 'Historique des demandes', 'icon' => 'bx bx-folder', 'route' => 'demande.historique.index'],
+        ];
+        $sections['Administration'] = [
+            ['label' => 'Statistiques', 'icon' => 'bx bx-line-chart', 'route' => 'admin.parametre.reset-data'],
+            [
+                'label' => 'Paramètres',
+                'icon' => 'bx bx-cog',
+                'children' => [
+                    ['Paramètres généraux', 'parametre.index'],
+                    ['Rôles', 'roles.index'],
+                    ['Permissions', 'permissions.index'],
+                ],
+            ],
+        ];
+    }
+
+    // Une entrée est active sur sa route et sur les pages en dessous (…/create, …/{id}/edit)
+    $current = rtrim(request()->url(), '/') . '/';
+    $isActive = fn (string $route) => request()->routeIs($route)
+        || ($route !== 'dashboard' && str_starts_with($current, rtrim(route($route), '/') . '/'));
+@endphp
+
+<aside class="sidebar-wrapper" id="sidebar">
+    <a href="{{ route('dashboard') }}" class="sidebar-brand">
+        <img src="{{ asset('assets/images/logowizi.png') }}" alt="Wizi Learn" class="sidebar-brand-logo">
+    </a>
+
+    <nav class="flex-grow-1 overflow-y-auto" aria-label="Menu principal">
+        @foreach ($sections as $title => $items)
+            <div class="sidebar-menu-section">
+                <div class="sidebar-menu-title">{{ $title }}</div>
+                <ul class="sidebar-menu-list">
+                    @foreach ($items as $item)
+                        @if (isset($item['children']))
+                            @php
+                                $open = collect($item['children'])->contains(fn ($child) => $isActive($child[1]));
+                                $id = 'menu-' . \Illuminate\Support\Str::slug($item['label']);
+                            @endphp
+                            <li class="sidebar-menu-item">
+                                <button type="button" class="sidebar-menu-link {{ $open ? 'parent-active' : 'collapsed' }}"
+                                    data-bs-toggle="collapse" data-bs-target="#{{ $id }}"
+                                    aria-expanded="{{ $open ? 'true' : 'false' }}" aria-controls="{{ $id }}"
+                                    title="{{ $item['label'] }}">
+                                    <i class="{{ $item['icon'] }}"></i>
+                                    <span>{{ $item['label'] }}</span>
+                                    <i class="bi bi-chevron-down dropdown-caret"></i>
+                                </button>
+                                <ul class="sidebar-submenu collapse {{ $open ? 'show' : '' }}" id="{{ $id }}">
+                                    @foreach ($item['children'] as [$label, $route])
+                                        <li>
+                                            <a href="{{ route($route) }}"
+                                                class="sidebar-submenu-link {{ $isActive($route) ? 'active' : '' }}">{{ $label }}</a>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </li>
+                        @else
+                            <li class="sidebar-menu-item">
+                                <a href="{{ route($item['route']) }}"
+                                    class="sidebar-menu-link {{ $isActive($item['route']) ? 'active' : '' }}"
+                                    title="{{ $item['label'] }}">
+                                    <i class="{{ $item['icon'] }}"></i>
+                                    <span>{{ $item['label'] }}</span>
+                                </a>
+                            </li>
+                        @endif
+                    @endforeach
+                </ul>
+            </div>
+        @endforeach
+    </nav>
+
+    <div class="sidebar-profile">
+        <img src="{{ $user->image ? asset($user->image) : asset('assets/spark/avatar.png') }}" alt="{{ $user->name }}"
+            class="sidebar-profile-img">
+        <div class="sidebar-profile-info">
+            <div class="sidebar-profile-name">{{ $user->name }}</div>
+            <div class="sidebar-profile-email sidebar-profile-role">{{ $user->role }}</div>
         </div>
-        <div class="toggle-icon ms-auto"><i class='bx bx-arrow-to-left'></i></div>
     </div>
-
-    <!--navigation-->
-    <ul class="metismenu" id="menu">
-        <!-- Tableau de bord -->
-        <li>
-            <a href="javascript:;" class="has-arrow">
-                <div class="parent-icon"><i class='bx bx-home-circle'></i></div>
-                <div class="menu-title">Tableau de bord</div>
-            </a>
-            <ul>
-                <li><a href="{{ route('dashboard') }}"><i class="bx bx-right-arrow-alt"></i>Tableau de bord</a></li>
-
-                @if (auth()->user()->role === 'administrateur')
-                    <li><a href="{{ route('dashboard.activity') }}"><i class="bx bx-right-arrow-alt"></i>Activité des
-                            utilisateurs</a></li>
-                    <li><a href="{{ route('admin.user_app_usages.index') }}"><i class="bx bx-right-arrow-alt"></i>Usages
-                            mobiles</a></li>
-                    <li><a href="{{ route('admin.stagiaires.stats') }}"><i class="bx bx-right-arrow-alt"></i>Stats
-                            stagiaires</a></li>
-                    <li><a href="{{ route('admin.inactivity.index') }}"><i
-                                class="bx bx-right-arrow-alt"></i>Inactivité</a></li>
-                    <li><a href="{{ route('admin.achievements.index') }}"><i class="bx bx-right-arrow-alt"></i>Gestion
-                            des Succès</a></li>
-                @elseif(auth()->user()->role === 'Formateur')
-                    <li><a href="{{ route('formateur.stagiaires.stats') }}"><i class="bx bx-right-arrow-alt"></i>Stats
-                            de mes stagiaires</a></li>
-                @endif
-            </ul>
-        </li>
-
-        <!-- Stagiaires -->
-        @if (auth()->user()->role === 'formateur' || auth()->user()->role === 'formatrice')
-            <li>
-                <a href="javascript:;" class="has-arrow">
-                    <div class="parent-icon"><i class='lni lni-users'></i></div>
-                    <div class="menu-title">Mes Stagiaires</div>
-                </a>
-                <ul>
-                    <li><a href="{{ route('formateur.stagiaires.index') }}"><i class="bx bx-right-arrow-alt"></i>Tous
-                            mes stagiaires</a></li>
-                    <li><a href="{{ route('formateur.stagiaires.en-cours') }}"><i class="bx bx-right-arrow-alt"></i>En
-                            cours de formation</a></li>
-                    <li><a href="{{ route('formateur.stagiaires.termines') }}"><i
-                                class="bx bx-right-arrow-alt"></i>Formation terminée</a></li>
-                </ul>
-            </li>
-        @elseif(auth()->user()->role === 'administrateur')
-            <li>
-                <a href="{{ route('stagiaires.index') }}">
-                    <div class="parent-icon"><i class='lni lni-users'></i></div>
-                    <div class="menu-title">Stagiaires</div>
-                </a>
-            </li>
-        @endif
-
-        <!-- Quiz (Admin seulement) -->
-        @if (auth()->user()->role === 'administrateur')
-            <li>
-                <a href="{{ route('quiz.index') }}">
-                    <div class="parent-icon"><i class='fadeIn animated bx bx-brain'></i></div>
-                    <div class="menu-title">Quiz</div>
-                </a>
-            </li>
-        @endif
-
-        <!-- Contact (Admin seulement) -->
-        @if (auth()->user()->role === 'administrateur')
-            <li>
-                <a href="javascript:;" class="has-arrow">
-                    <div class="parent-icon"><i class='fadeIn animated bx bx-phone-outgoing'></i></div>
-                    <div class="menu-title">Contact</div>
-                </a>
-                <ul>
-                    <li><a href="{{ route('partenaires.index') }}"><i class="bx bx-right-arrow-alt"></i>Partenaire</a>
-                    </li>
-                    <li><a href="{{ route('formateur.index') }}"><i class="bx bx-right-arrow-alt"></i>Formateur</a>
-                    </li>
-                    <li><a href="{{ route('pole_relation_clients.index') }}"><i class="bx bx-right-arrow-alt"></i>Pôle
-                            relation client</a></li>
-                    <li><a href="{{ route('commercials.index') }}"><i class="bx bx-right-arrow-alt"></i>Commercial</a>
-                    </li>
-                </ul>
-            </li>
-        @endif
-
-        <!-- Classement (Admin seulement) -->
-        @if (auth()->user()->role === 'administrateur')
-            <li>
-                <a href="{{ route('classement.index') }}">
-                    <div class="parent-icon"><i class='fadeIn animated bx bx-list-ol'></i></div>
-                    <div class="menu-title">Classement</div>
-                </a>
-            </li>
-        @endif
-
-        <!-- Formation -->
-        @if (auth()->user()->role === 'formateur' || auth()->user()->role === 'formatrice')
-            <li>
-                <a href="javascript:;" class="has-arrow">
-                    <div class="parent-icon"><i class="lni lni-library"></i></div>
-                    <div class="menu-title">Mes Formations</div>
-                </a>
-                <ul>
-                    <li><a href="{{ route('formateur.formations.index') }}"><i class="bx bx-right-arrow-alt"></i>Mes
-                            formations</a></li>
-                    <li><a href="{{ route('formateur.catalogue.index') }}"><i
-                                class="bx bx-right-arrow-alt"></i>Catalogue formations</a></li>
-                </ul>
-            </li>
-        @elseif(auth()->user()->role === 'administrateur')
-            <li>
-                <a href="javascript:;" class="has-arrow">
-                    <div class="parent-icon"><i class="lni lni-library"></i></div>
-                    <div class="menu-title">Formation</div>
-                </a>
-                <ul>
-                    <li><a href="{{ route('catalogue_formation.index') }}"><i
-                                class="bx bx-right-arrow-alt"></i>Catalogue formation</a></li>
-                    <li><a href="{{ route('formations.index') }}"><i class="bx bx-right-arrow-alt"></i>Domaine
-                            formation</a></li>
-                </ul>
-            </li>
-        @endif
-
-        <!-- Profil Formateur -->
-        @if (auth()->user()->role === 'formateur' || auth()->user()->role === 'formatrice')
-            <li>
-                <a href="{{ route('agenda.index') }}">
-                    <div class="parent-icon"><i class='bx bx-calendar'></i></div>
-                    <div class="menu-title">Mon Agenda</div>
-                </a>
-            </li>
-            <li>
-                <a href="{{ route('formateur.profile') }}">
-                    <div class="parent-icon"><i class='bx bx-user'></i></div>
-                    <div class="menu-title">Mon Profil</div>
-                </a>
-            </li>
-        @endif
-
-        <!-- Menus Admin seulement -->
-        @if (auth()->user()->role === 'administrateur')
-            <!-- Parrainage -->
-            <li>
-                <a href="javascript:;" class="has-arrow">
-                    <div class="parent-icon"><i class='fadeIn animated bx bx-git-branch'></i></div>
-                    <div class="menu-title">Parrainage</div>
-                </a>
-                <ul>
-                    <li><a href="{{ route('parrainage.index') }}"><i class="bx bx-right-arrow-alt"></i>Liste des
-                            parrains</a></li>
-                    <li><a href="{{ route('parrainage_events.index') }}"><i class="bx bx-right-arrow-alt"></i>Événement
-                            parrainage</a></li>
-                </ul>
-            </li>
-
-            <!-- Media -->
-            <li>
-                <a href="{{ route('medias.index') }}">
-                    <div class="parent-icon"><i class='fadeIn animated bx bx-play-circle'></i></div>
-                    <div class="menu-title">Media</div>
-                </a>
-            </li>
-
-            <!-- Défis -->
-            <li>
-                <a href="javascript:;">
-                    <div class="parent-icon"><i class='fadeIn animated bx bx-target-lock'></i></div>
-                    <div class="menu-title">Défis</div>
-                </a>
-            </li>
-
-            <!-- Planning / Agenda -->
-            <li>
-                <a href="{{ route('agenda.index') }}">
-                    <div class="parent-icon"><i class='bx bx-calendar'></i></div>
-                    <div class="menu-title">Agenda</div>
-                </a>
-            </li>
-
-            <!-- Statistiques -->
-            <li>
-                <a href="{{ route('admin.parametre.reset-data') }}">
-                    <div class="parent-icon"><i class='fadeIn animated bx bx-line-chart'></i></div>
-                    <div class="menu-title">Statistiques</div>
-                </a>
-            </li>
-
-            <!-- Historique des demandes -->
-            <li>
-                <a href="{{ route('demande.historique.index') }}">
-                    <div class="parent-icon"><i class='bx bx-folder'></i></div>
-                    <div class="menu-title">Historique des demandes</div>
-                </a>
-            </li>
-
-            <!-- Paramètres -->
-            <li>
-                <a href="javascript:;" class="has-arrow">
-                    <div class="parent-icon"><i class='bx bx-cog bx-spin'></i></div>
-                    <div class="menu-title">Paramètres</div>
-                </a>
-                <ul>
-                    <li><a href="{{ route('parametre.index') }}"><i class="bx bx-right-arrow-alt"></i>Paramètres
-                            généraux</a></li>
-                    <li><a href="{{ route('roles.index') }}"><i class="bx bx-right-arrow-alt"></i>Rôles</a></li>
-                    <li><a href="{{ route('permissions.index') }}"><i
-                                class="bx bx-right-arrow-alt"></i>Permissions</a></li>
-                </ul>
-            </li>
-        @endif
-    </ul>
-    <!--end navigation-->
-</div>
+</aside>

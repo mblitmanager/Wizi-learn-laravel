@@ -341,18 +341,18 @@
 
 /* Styles par défaut */
 .custom-card-secondary {
-    border: 2px solid #6c757d;
+    border: 2px solid #7A7366;
 }
 .custom-header-secondary {
-    background-color: #6c757d !important;
+    background-color: #7A7366 !important;
 }
 .custom-badge-secondary {
-    background-color: #6c757d !important;
+    background-color: #7A7366 !important;
 }
 
 /* Améliorations visuelles */
 .formation-dates {
-    background-color: #f8f9fa;
+    background-color: #FAF9F6;
     padding: 8px;
     border-radius: 4px;
     margin: 10px 0;

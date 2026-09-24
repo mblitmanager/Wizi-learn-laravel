@@ -107,24 +107,6 @@ Route::post('/pusher/auth', function (Request $request) {
     return Broadcast::auth($request);
 });
 
-// Test Endpoint (Development)
-Route::get('/test-fcm', function () {
-    $user = \App\Models\User::whereNotNull('fcm_token')->first();
-    if (!$user) return 'No user with FCM token found';
-    return app(\App\Services\NotificationService::class)->sendFcmToUser(
-        $user,
-        'Test FCM',
-        'Ceci est un test FCM via route',
-        ['type' => 'test']
-    ) ? 'OK' : 'Erreur';
-});
-Route::post('/test-fcm', [TestFcmController::class, 'send']);
-Route::get('/test-notif', function () {
-    $data = ['title' => 'Nouvelle notification', 'message' => 'Une notification vient d’être envoyée !'];
-    event(new TestNotification($data));
-    return 'Notification envoyée !';
-});
-
 // External Sync Route (Protected by Secret)
 Route::post('/calendar/sync', [CalendarSyncController::class, 'sync'])->middleware('checkSyncSecret');
 
@@ -280,9 +262,6 @@ Route::middleware(['auth:api', 'detectClient'])->group(function () {
     Route::prefix('stagiaire/parrainage')->group(function () {
         Route::get('stats', [ParrainageController::class, 'getStatsParrain']);
         Route::get('filleuls', [ParrainageController::class, 'getFilleuls']);
-        Route::post('accept', [ParrainageController::class, 'acceptParrainage']);
-        Route::get('rewards', [ParrainageController::class, 'getParrainageRewards']);
-        Route::get('history', [ParrainageController::class, 'getParrainageHistory']);
     });
     Route::post('/parrainage/generate-link', [ParrainageController::class, 'generateLink']);
     Route::get('/parrainage/stats/{parrain_id}', [ParrainageController::class, 'getStatsParrain']);
@@ -386,7 +365,7 @@ Route::middleware(['auth:api', 'detectClient'])->group(function () {
     
     // Announcements
     Route::get('announcements/recipients', [AnnouncementController::class, 'getRecipients']);
-    Route::apiResource('announcements', AnnouncementController::class);
+    Route::apiResource('announcements', AnnouncementController::class)->only(['index', 'store', 'destroy']);
     
     // Auto-reminders
     Route::get('auto-reminders/stats', [AutoReminderController::class, 'getStats']);
@@ -398,16 +377,16 @@ Route::middleware(['auth:api', 'detectClient'])->group(function () {
     // ADMIN
     // --------------------------------------------------------------------------
     Route::middleware(['role:admin'])->group(function () {
-        Route::get('/admin/stats/dashboard', [AdminController::class, 'dashboard']);
+        Route::get('/admin/stats/dashboard', [AdminStatisticsController::class, 'dashboard']);
         Route::get('/admin/stats/dashboard-api', [AdminStatisticsController::class, 'dashboard']); // Alias
-        
-        Route::get('/admin/stats/quiz', [AdminController::class, 'quizStats']);
-        Route::get('/admin/stats/formation', [AdminController::class, 'formationStats']);
-        Route::get('/admin/stats/online-users', [AdminController::class, 'onlineUsers']);
-        Route::get('/admin/stats/affluence', [AdminController::class, 'affluence']);
-        
-        Route::post('/admin/stats/export/pdf', [AdminController::class, 'exportPdf']);
-        Route::post('/admin/stats/export/excel', [AdminController::class, 'exportExcel']);
+
+        Route::get('/admin/stats/quiz', [AdminStatisticsController::class, 'quizStats']);
+        Route::get('/admin/stats/formation', [AdminStatisticsController::class, 'formationStats']);
+        Route::get('/admin/stats/online-users', [AdminStatisticsController::class, 'onlineUsers']);
+        Route::get('/admin/stats/affluence', [AdminStatisticsController::class, 'affluence']);
+
+        Route::post('/admin/stats/export/pdf', [AdminStatisticsController::class, 'exportPdf']);
+        Route::post('/admin/stats/export/excel', [AdminStatisticsController::class, 'exportExcel']);
         
         Route::get('/admin/achievements', [AdminAchievementController::class, 'apiIndex']);
         // Route::get('/admin/user-client-stats', [UserClientStatsController::class, 'index']);

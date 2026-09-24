@@ -36,3 +36,20 @@ routes.txt
 .env
 *.pdf
 storage/cert/isrgrootx1.pem
+
+# Fichiers locaux de diagnostic et exports temporaires
+.env.docker
+*.phar
+check_ps.php
+debug_*.php
+extract_ranking_data.php
+investigate_herizo.php
+list_herizos.php
+herizo_list.txt
+output.json
+ranking_debug_output.txt
+read_logs.php
+route.txt
+routes.txt
+routes_list.txt
+storage/reports/*.txt

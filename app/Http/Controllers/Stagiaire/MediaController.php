@@ -206,6 +206,59 @@ class MediaController extends Controller
         }
     }
 
+    /**
+     * Enregistre la position de lecture d'une vidéo (appelé périodiquement par le lecteur).
+     * La vidéo est marquée comme vue à partir de 90 % de visionnage.
+     */
+    public function updateProgress(Request $request)
+    {
+        $validated = $request->validate([
+            'media_id' => 'required|integer|exists:media,id',
+            'current_time' => 'required|integer|min:0',
+            'duration' => 'required|integer|min:1',
+        ]);
+
+        $stagiaire = $request->user()?->stagiaire;
+        if (!$stagiaire) {
+            return response()->json(['error' => 'Stagiaire not found'], 404);
+        }
+
+        $currentTime = min($validated['current_time'], $validated['duration']);
+        $percentage = round($currentTime / $validated['duration'] * 100, 2);
+
+        $existing = DB::table('media_stagiaire')
+            ->where('media_id', $validated['media_id'])
+            ->where('stagiaire_id', $stagiaire->id)
+            ->first();
+
+        $alreadyWatched = (bool) $existing?->is_watched;
+        $nowWatched = !$alreadyWatched && $percentage >= 90;
+
+        DB::table('media_stagiaire')->updateOrInsert(
+            ['media_id' => $validated['media_id'], 'stagiaire_id' => $stagiaire->id],
+            array_filter([
+                'current_time' => $currentTime,
+                'duration' => $validated['duration'],
+                'percentage' => $percentage,
+                'is_watched' => $alreadyWatched || $nowWatched,
+                'watched_at' => $nowWatched ? now() : null,
+                'created_at' => $existing ? null : now(),
+                'updated_at' => now(),
+            ], fn ($value) => $value !== null)
+        );
+
+        $newAchievements = $nowWatched
+            ? app(\App\Services\StagiaireAchievementService::class)->checkAchievements($stagiaire)
+            : [];
+
+        return response()->json([
+            'success' => true,
+            'percentage' => $percentage,
+            'is_watched' => $alreadyWatched || $nowWatched,
+            'newAchievements' => $newAchievements,
+        ]);
+    }
+
     public function getFormationsWithWatchedStatus(Request $request)
     {
         try {

@@ -344,12 +344,12 @@
         }
 
         .profile-image-container:hover .profile-image-overlay {
-            background: #0d6efd;
+            background: #231E15;
             color: white;
         }
 
         .bg-light {
-            background-color: #f8f9fa !important;
+            background-color: #FAF9F6 !important;
         }
     </style>
 @endsection

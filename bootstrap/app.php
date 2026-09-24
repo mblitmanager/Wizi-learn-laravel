@@ -19,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'isAdmin' => \App\Http\Middleware\IsAdmin::class,
             'trackActivity' => TrackUserActivity::class,
             'isFormateur' => \App\Http\Middleware\IsFormateur::class,
+            'isCommercial' => \App\Http\Middleware\IsCommercial::class,
             'detectClient' => \App\Http\Middleware\DetectClientPlatform::class,
             'role' => \App\Http\Middleware\RoleMiddleware::class,
             'checkSyncSecret' => \App\Http\Middleware\CheckSyncSecret::class,
